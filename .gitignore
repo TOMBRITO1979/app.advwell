@@ -1,0 +1,45 @@
+# Node modules
+node_modules/
+*/node_modules/
+
+# Build outputs
+dist/
+build/
+*.log
+
+# Environment files (contém credenciais sensíveis)
+.env
+.env.local
+.env.production
+
+# Docker
+docker-compose.yml.backup*
+
+# Backups
+backups/
+
+# Temporary files
+/tmp/
+*.tmp
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+ACESSO.md
+docker-compose.prod.yml
+*.prod.yml
+
+# Arquivos com credenciais sensíveis
+AWS_S3_SETUP_COMPLETE.md
+docker-compose.optimized.yml
+docker-compose.yml.pre_optimization
+docker-compose-resolved.yml
+CREDENTIALS.txt
+CREDENTIALS_COMPLETE.txt
+*.backup*
+*_pre_*
+*_optimized*

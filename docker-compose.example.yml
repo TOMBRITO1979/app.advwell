@@ -1,0 +1,91 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=advtom
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=YOUR_SECURE_POSTGRES_PASSWORD_HERE
+    networks:
+      - network_public
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+
+  backend:
+    image: tomautomations/advwell-backend:v40-pdf-fix-real
+    environment:
+      # Database
+      - DATABASE_URL=postgresql://postgres:YOUR_SECURE_POSTGRES_PASSWORD_HERE@postgres:5432/advtom
+
+      # JWT
+      - JWT_SECRET=YOUR_SECURE_JWT_SECRET_HERE_CHANGE_IN_PRODUCTION
+
+      # AWS S3
+      - AWS_ACCESS_KEY_ID=YOUR_AWS_ACCESS_KEY_ID_HERE
+      - AWS_SECRET_ACCESS_KEY=YOUR_AWS_SECRET_ACCESS_KEY_HERE
+      - AWS_REGION=us-east-1
+      - S3_BUCKET_NAME=YOUR_S3_BUCKET_NAME_HERE
+
+      # SMTP
+      - SMTP_HOST=smtp.gmail.com
+      - SMTP_PORT=587
+      - SMTP_USER=YOUR_SMTP_USER_HERE
+      - SMTP_PASSWORD=YOUR_SMTP_APP_PASSWORD_HERE
+      - SMTP_FROM=AdvWell <YOUR_SMTP_USER_HERE>
+
+      # API URLs
+      - API_URL=https://api.your-domain.com
+      - FRONTEND_URL=https://app.your-domain.com
+
+      # DataJud CNJ API
+      - DATAJUD_API_KEY=YOUR_DATAJUD_API_KEY_HERE
+
+      # Server
+      - PORT=3000
+      - NODE_ENV=production
+    networks:
+      - network_public
+    depends_on:
+      - postgres
+    deploy:
+      replicas: 1
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.advwell-backend.rule=Host(`api.advwell.pro`)"
+        - "traefik.http.routers.advwell-backend.entrypoints=websecure"
+        - "traefik.http.routers.advwell-backend.tls=true"
+        - "traefik.http.routers.advwell-backend.tls.certresolver=letsencryptresolver"
+        - "traefik.http.services.advwell-backend.loadbalancer.server.port=3000"
+        - "traefik.docker.network=network_public"
+
+  frontend:
+    image: tomautomations/advwell-frontend:v25-pdf-converter
+    environment:
+      - VITE_API_URL=https://api.advwell.pro/api
+    networks:
+      - network_public
+    depends_on:
+      - backend
+    deploy:
+      replicas: 1
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.advwell-frontend.rule=Host(`app.advwell.pro`)"
+        - "traefik.http.routers.advwell-frontend.entrypoints=websecure"
+        - "traefik.http.routers.advwell-frontend.tls=true"
+        - "traefik.http.routers.advwell-frontend.tls.certresolver=letsencryptresolver"
+        - "traefik.http.services.advwell-frontend.loadbalancer.server.port=80"
+        - "traefik.docker.network=network_public"
+
+networks:
+  network_public:
+    external: true
+
+volumes:
+  postgres_data:
