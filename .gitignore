@@ -43,3 +43,13 @@ CREDENTIALS_COMPLETE.txt
 *.backup*
 *_pre_*
 *_optimized*
+
+# Guias e documentação com credenciais antigas
+CREATE_S3_BUCKET_GUIDE.md
+S3_MIGRATION_REPORT.md
+
+# Scripts de teste/utilidade com credenciais
+create_admin_user.js
+fix_master_user.js
+update_master_password.js
+update_password.js
