@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AdvTom - Teste de Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            display: none;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            margin-top: 20px;
+            padding: 15px;
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+            border-radius: 4px;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 AdvTom - Teste de Login</h1>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" value="joao@escritorio.com.br" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Senha:</label>
+                <input type="password" id="password" value="senha123" required>
+            </div>
+
+            <button type="submit" id="loginBtn">Fazer Login</button>
+        </form>
+
+        <div id="result" class="result"></div>
+
+        <div class="info">
+            <strong>📋 Usuários de Teste:</strong>
+            <ul>
+                <li><strong>Admin:</strong> joao@escritorio.com.br / senha123</li>
+                <li><strong>Admin:</strong> teste@advtom.com / teste123</li>
+                <li><strong>Super Admin:</strong> carlos@superadmin.com / senha123</li>
+            </ul>
+            <strong>🔗 API URL:</strong> https://api.advtom.com/api
+        </div>
+
+        <div id="details" style="margin-top: 20px;"></div>
+    </div>
+
+    <script>
+        const API_URL = 'https://api.advtom.com/api';
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const resultDiv = document.getElementById('result');
+            const detailsDiv = document.getElementById('details');
+            const loginBtn = document.getElementById('loginBtn');
+
+            // Reset
+            resultDiv.style.display = 'none';
+            resultDiv.className = 'result';
+            detailsDiv.innerHTML = '';
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Fazendo login...';
+
+            try {
+                console.log('Tentando login com:', email);
+
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                console.log('Status da resposta:', response.status);
+                const data = await response.json();
+                console.log('Dados recebidos:', data);
+
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <h3>✅ Login realizado com sucesso!</h3>
+                        <p><strong>Nome:</strong> ${data.user.name}</p>
+                        <p><strong>Email:</strong> ${data.user.email}</p>
+                        <p><strong>Função:</strong> ${data.user.role}</p>
+                        <p><strong>Empresa:</strong> ${data.user.companyName || 'N/A'}</p>
+                    `;
+
+                    detailsDiv.innerHTML = `
+                        <strong>🔑 Token JWT recebido:</strong>
+                        <pre>${data.token.substring(0, 100)}...</pre>
+                        <strong>📦 Dados completos:</strong>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+
+                    // Salvar no localStorage
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+
+                } else {
+                    throw new Error(data.error || 'Erro desconhecido');
+                }
+
+            } catch (error) {
+                console.error('Erro:', error);
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `
+                    <h3>❌ Erro ao fazer login</h3>
+                    <p>${error.message}</p>
+                `;
+
+                detailsDiv.innerHTML = `
+                    <strong>⚠️ Detalhes do erro:</strong>
+                    <pre>${error.stack || error.toString()}</pre>
+                `;
+            } finally {
+                resultDiv.style.display = 'block';
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Fazer Login';
+            }
+        });
+
+        // Verificar se já está logado
+        window.addEventListener('load', () => {
+            const token = localStorage.getItem('token');
+            const user = localStorage.getItem('user');
+
+            if (token && user) {
+                const userData = JSON.parse(user);
+                document.getElementById('details').innerHTML = `
+                    <div class="info">
+                        <h4>✓ Você já está logado!</h4>
+                        <p><strong>Usuário:</strong> ${userData.name} (${userData.email})</p>
+                        <p><strong>Função:</strong> ${userData.role}</p>
+                        <button onclick="localStorage.clear(); location.reload();" style="width: auto; padding: 8px 16px; margin-top: 10px; background: #dc3545;">
+                            Limpar sessão
+                        </button>
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>

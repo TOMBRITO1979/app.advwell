@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AdvTom - Aceitar Certificado SSL</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            max-width: 800px;
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+            text-align: center;
+        }
+        .warning {
+            background: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .info {
+            background: #d1ecf1;
+            border-left: 5px solid #17a2b8;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .success {
+            background: #d4edda;
+            border-left: 5px solid #28a745;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .step {
+            background: #f8f9fa;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        .step-number {
+            background: #667eea;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 20px;
+            margin-right: 15px;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            margin: 10px 5px;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        button:hover, a.button:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .button-group {
+            text-align: center;
+            margin-top: 30px;
+        }
+        code {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+        .highlight {
+            background: yellow;
+            padding: 2px 5px;
+            font-weight: bold;
+        }
+        img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin: 10px 0;
+            border: 2px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔒 Aceitar Certificado SSL</h1>
+
+        <div class="warning">
+            <h2>⚠️ PROBLEMA IDENTIFICADO</h2>
+            <p><strong>O sistema está usando um certificado SSL auto-assinado.</strong></p>
+            <p>Por motivos de segurança, seu navegador está bloqueando todas as requisições à API com a mensagem <code>Failed to fetch</code>.</p>
+        </div>
+
+        <div class="info">
+            <h3>📋 O que você precisa fazer:</h3>
+            <p>Você precisa <strong>aceitar manualmente o certificado SSL</strong> da API no seu navegador. Isso é seguro neste caso pois você controla o servidor.</p>
+        </div>
+
+        <h2 style="margin-top: 30px; color: #667eea;">🎯 Instruções Passo a Passo</h2>
+
+        <div class="step">
+            <span class="step-number">1</span>
+            <strong>Clique no botão abaixo para abrir a API em uma nova aba:</strong>
+            <div class="button-group">
+                <a href="https://api.advtom.com/health" target="_blank" class="button" style="text-decoration: none;">
+                    🔗 Abrir API (https://api.advtom.com)
+                </a>
+            </div>
+        </div>
+
+        <div class="step">
+            <span class="step-number">2</span>
+            <strong>Você verá um aviso de segurança. Siga as instruções do seu navegador:</strong>
+            <br><br>
+
+            <strong style="color: #17a2b8;">🌐 Google Chrome / Microsoft Edge:</strong>
+            <ul style="margin-left: 60px; margin-top: 10px;">
+                <li>Clique em <span class="highlight">"Avançado"</span> ou <span class="highlight">"Advanced"</span></li>
+                <li>Depois clique em <span class="highlight">"Continuar para api.advtom.com (não seguro)"</span></li>
+            </ul>
+            <br>
+
+            <strong style="color: #ff7300;">🦊 Mozilla Firefox:</strong>
+            <ul style="margin-left: 60px; margin-top: 10px;">
+                <li>Clique em <span class="highlight">"Avançado"</span> ou <span class="highlight">"Advanced"</span></li>
+                <li>Clique em <span class="highlight">"Aceitar o risco e continuar"</span></li>
+            </ul>
+        </div>
+
+        <div class="step">
+            <span class="step-number">3</span>
+            <strong>Você verá uma mensagem JSON:</strong>
+            <pre style="background: #2d3748; color: #e2e8f0; padding: 15px; border-radius: 8px; margin-top: 10px;">{"status":"ok","timestamp":"..."}</pre>
+            <p style="margin-top: 10px;">Isso significa que o certificado foi aceito! ✅</p>
+        </div>
+
+        <div class="step">
+            <span class="step-number">4</span>
+            <strong>Volte para o sistema e faça login:</strong>
+            <div class="button-group">
+                <a href="https://app.advtom.com/login" target="_blank" class="button" style="text-decoration: none;">
+                    🚀 Ir para Login
+                </a>
+                <a href="https://app.advtom.com/diagnostico.html" target="_blank" class="button" style="text-decoration: none; background: #28a745;">
+                    🧪 Testar Diagnóstico
+                </a>
+            </div>
+        </div>
+
+        <div class="success">
+            <h3>✅ Depois de aceitar o certificado:</h3>
+            <ul style="margin-left: 20px; margin-top: 10px;">
+                <li>✅ O login funcionará normalmente</li>
+                <li>✅ Todas as funcionalidades estarão disponíveis</li>
+                <li>✅ Você não precisará fazer isso novamente</li>
+            </ul>
+        </div>
+
+        <div class="info" style="margin-top: 30px;">
+            <h3>🔧 Solução Permanente (Opcional)</h3>
+            <p>Para resolver permanentemente, você pode:</p>
+            <ol style="margin-left: 20px; margin-top: 10px;">
+                <li><strong>Configurar Let's Encrypt</strong> - Certificados SSL válidos e gratuitos</li>
+                <li><strong>Usar HTTP em ambiente de desenvolvimento</strong> - Menos seguro mas sem avisos</li>
+                <li><strong>Importar o certificado auto-assinado</strong> - No armazenamento de certificados do Windows/Linux</li>
+            </ol>
+        </div>
+
+        <div class="button-group" style="margin-top: 40px;">
+            <button onclick="window.location.reload()">🔄 Recarregar Esta Página</button>
+        </div>
+
+        <div style="text-align: center; margin-top: 30px; color: #6c757d; font-size: 14px;">
+            <p><strong>Credenciais de Teste:</strong></p>
+            <p>Email: <code>joao@escritorio.com.br</code></p>
+            <p>Senha: <code>senha123</code></p>
+        </div>
+    </div>
+
+    <script>
+        // Verificar se o certificado já foi aceito
+        window.addEventListener('load', async () => {
+            try {
+                const response = await fetch('https://api.advtom.com/health');
+                if (response.ok) {
+                    const container = document.querySelector('.container');
+                    container.innerHTML = `
+                        <h1 style="color: #28a745;">✅ Certificado Aceito!</h1>
+                        <div class="success">
+                            <h2>Parabéns! O certificado SSL já foi aceito.</h2>
+                            <p>Você pode usar o sistema normalmente agora.</p>
+                        </div>
+                        <div class="button-group">
+                            <a href="https://app.advtom.com/login" class="button">
+                                🚀 Ir para o Login
+                            </a>
+                            <a href="https://app.advtom.com/diagnostico.html" class="button" style="background: #17a2b8;">
+                                🧪 Página de Diagnóstico
+                            </a>
+                            <a href="https://app.advtom.com/" class="button" style="background: #6c757d;">
+                                🏠 Página Inicial
+                            </a>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.log('Certificado ainda não aceito:', error);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Melhorias de responsividade para mobile */
+@layer components {
+  /* Inputs e selects maiores em mobile */
+  input, select, textarea {
+    @apply min-h-[44px] text-base;
+  }
+
+  /* Botões maiores em mobile */
+  button {
+    @apply min-h-[44px] touch-manipulation;
+  }
+
+  /* Tabelas responsivas com scroll horizontal */
+  .responsive-table {
+    @apply w-full overflow-x-auto -mx-3 sm:mx-0;
+  }
+
+  .responsive-table table {
+    @apply min-w-full;
+  }
+
+  /* Modais responsivos */
+  .modal-content {
+    @apply w-full max-h-[90vh] overflow-y-auto;
+  }
+}
+
+/* Prevenir zoom em inputs no iOS */
+@supports (-webkit-touch-callout: none) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}

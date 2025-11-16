@@ -1,0 +1,494 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Tabela de empresas (tenants)
+model Company {
+  id        String   @id @default(uuid())
+  name      String
+  cnpj      String?  @unique
+  email     String   @unique
+  phone     String?
+  address   String?
+  city      String?
+  state     String?
+  zipCode   String?
+  logo      String?  // URL do logo da empresa
+  apiKey    String?  @unique // API Key para integrações externas (Chatwoot, etc)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users                 User[]
+  clients               Client[]
+  cases                 Case[]
+  financialTransactions FinancialTransaction[]
+  documents             Document[]
+  scheduleEvents        ScheduleEvent[]
+  accountsPayable       AccountPayable[]
+  smtpConfig            SMTPConfig?
+  emailCampaigns        EmailCampaign[]
+
+  @@map("companies")
+}
+
+// Enum para níveis de usuário
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  USER
+}
+
+// Tabela de usuários
+model User {
+  id                        String    @id @default(uuid())
+  companyId                 String?
+  name                      String
+  email                     String    @unique
+  password                  String
+  role                      UserRole  @default(USER)
+  active                    Boolean   @default(true)
+  emailVerified             Boolean   @default(false)
+  emailVerificationToken    String?
+  emailVerificationExpiry   DateTime?
+  resetToken                String?
+  resetTokenExpiry          DateTime?
+  failedLoginAttempts       Int       @default(0)
+  lastFailedLoginAt         DateTime?
+  accountLockedUntil        DateTime?
+  createdAt                 DateTime  @default(now())
+  updatedAt                 DateTime  @updatedAt
+
+  company           Company?  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  permissions       Permission[]
+  documents         Document[]
+  scheduleEvents    ScheduleEvent[]
+  accountsPayable   AccountPayable[]
+  emailCampaigns    EmailCampaign[]
+
+  @@map("users")
+}
+
+// Tabela de permissões
+model Permission {
+  id        String   @id @default(uuid())
+  userId    String
+  resource  String   // ex: "clients", "cases", "settings"
+  canView   Boolean  @default(false)
+  canEdit   Boolean  @default(false)
+  canDelete Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, resource])
+  @@map("permissions")
+}
+
+// Tabela de clientes
+model Client {
+  id            String    @id @default(uuid())
+  companyId     String
+  name          String
+  cpf           String?
+  rg            String?
+  email         String?
+  phone         String?
+  address       String?
+  city          String?
+  state         String?
+  zipCode       String?
+  profession    String?   // Profissão
+  maritalStatus String?   // Estado civil
+  birthDate     DateTime? // Data de nascimento
+  notes         String?
+  tag           String?   // Tag/Categoria do cliente
+  active        Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  company               Company               @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  cases                 Case[]
+  financialTransactions FinancialTransaction[]
+  documents             Document[]
+  scheduleEvents        ScheduleEvent[]
+
+  @@map("clients")
+}
+
+// Enum para status do processo
+enum CaseStatus {
+  ACTIVE
+  ARCHIVED
+  FINISHED
+}
+
+// Tabela de processos
+model Case {
+  id                String     @id @default(uuid())
+  companyId         String
+  clientId          String
+  processNumber     String     @unique
+  court             String     // Tribunal
+  subject           String     // Assunto
+  value             Float?     // Valor da causa
+  status            CaseStatus @default(ACTIVE)
+  notes             String?
+  ultimoAndamento   String?    // Último movimento do processo (atualizado via API)
+  informarCliente   String?    // Texto explicativo do andamento para informar ao cliente
+  linkProcesso      String?    // Link/URL do processo no tribunal
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+  lastSyncedAt      DateTime?  // Última sincronização com DataJud
+  lastAcknowledgedAt DateTime? // Última vez que o advogado marcou como "ciente" das atualizações
+
+  company               Company               @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  client                Client                @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  movements             CaseMovement[]
+  caseDocuments         CaseDocument[]        @relation("CaseDocuments")
+  parts                 CasePart[]
+  financialTransactions FinancialTransaction[]
+  documents             Document[]
+  scheduleEvents        ScheduleEvent[]
+
+  @@map("cases")
+}
+
+// Tabela de movimentações do processo
+model CaseMovement {
+  id              String   @id @default(uuid())
+  caseId          String
+  movementCode    Int
+  movementName    String
+  movementDate    DateTime
+  description     String?
+  createdAt       DateTime @default(now())
+
+  case            Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  @@map("case_movements")
+}
+
+// Tabela de documentos do processo
+model CaseDocument {
+  id          String   @id @default(uuid())
+  caseId      String
+  name        String
+  s3Key       String   // Chave do arquivo no S3
+  s3Url       String   // URL do arquivo no S3
+  fileSize    Int
+  mimeType    String
+  createdAt   DateTime @default(now())
+
+  case        Case     @relation("CaseDocuments", fields: [caseId], references: [id], onDelete: Cascade)
+
+  @@map("case_documents")
+}
+
+// Enum para tipo de parte do processo
+enum CasePartType {
+  AUTOR                // Autor/Requerente
+  REU                  // Réu/Requerido
+  REPRESENTANTE_LEGAL  // Representante Legal
+}
+
+// Tabela de partes do processo (Autor, Réu, Representante Legal)
+model CasePart {
+  id              String       @id @default(uuid())
+  caseId          String
+  type            CasePartType
+
+  // Campos comuns
+  name            String
+  cpfCnpj         String?      // CPF ou CNPJ
+  phone           String?
+  address         String?
+
+  // Campos específicos para AUTOR
+  email           String?
+  civilStatus     String?      // Estado civil
+  profession      String?      // Profissão
+  rg              String?      // RG
+  birthDate       DateTime?    // Data de nascimento
+
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  case            Case         @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  @@map("case_parts")
+}
+
+// Tabela de configurações do sistema
+model SystemConfig {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("system_config")
+}
+
+// Enum para tipo de transação financeira
+enum TransactionType {
+  INCOME    // Recebimento
+  EXPENSE   // Despesa
+}
+
+// Tabela de transações financeiras
+model FinancialTransaction {
+  id          String          @id @default(uuid())
+  companyId   String
+  clientId    String
+  caseId      String?         // Opcional - pode não estar vinculado a um processo
+  type        TransactionType
+  description String
+  amount      Float
+  date        DateTime        @default(now())
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  company     Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  client      Client          @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  case        Case?           @relation(fields: [caseId], references: [id], onDelete: SetNull)
+
+  @@map("financial_transactions")
+}
+
+// Enum para tipo de armazenamento de documentos
+enum StorageType {
+  upload    // Arquivo carregado no S3
+  link      // Link externo
+}
+
+// Enum para tipo de link externo
+enum ExternalType {
+  google_drive
+  google_docs
+  minio
+  other
+}
+
+// Tabela de documentos gerais (novos - diferente de CaseDocument)
+model Document {
+  id          String        @id @default(uuid())
+  companyId   String
+
+  // Relacionamentos (um dos dois é obrigatório)
+  caseId      String?
+  clientId    String?
+
+  // Dados do documento
+  name        String
+  description String?
+
+  // Tipo de armazenamento
+  storageType StorageType
+
+  // Para documentos carregados (storage_type = 'upload')
+  fileUrl     String?       // URL no S3
+  fileKey     String?       // Key no S3
+  fileSize    Int?          // Tamanho em bytes
+  fileType    String?       // MIME type
+
+  // Para links externos (storage_type = 'link')
+  externalUrl  String?
+  externalType ExternalType?
+
+  // Metadados
+  uploadedBy  String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // Relations
+  company     Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  case        Case?         @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  client      Client?       @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  user        User?         @relation(fields: [uploadedBy], references: [id], onDelete: SetNull)
+
+  @@map("documents")
+}
+
+// Enum para tipo de evento na agenda
+enum ScheduleEventType {
+  COMPROMISSO  // Reunião, encontro
+  TAREFA       // Tarefa interna
+  PRAZO        // Prazo processual
+  AUDIENCIA    // Audiência judicial
+  GOOGLE_MEET  // Reunião Google Meet
+}
+
+// Tabela de eventos da agenda
+model ScheduleEvent {
+  id          String            @id @default(uuid())
+  companyId   String
+
+  // Dados do evento
+  title       String
+  description String?
+  type        ScheduleEventType @default(COMPROMISSO)
+
+  // Data e hora
+  date        DateTime
+  endDate     DateTime?         // Data/hora de término (opcional)
+
+  // Relacionamentos (opcionais)
+  clientId    String?
+  caseId      String?
+
+  // Status e responsável
+  completed   Boolean           @default(false)
+  createdBy   String?           // Quem criou o evento
+
+  // Google Meet
+  googleMeetLink String?         // Link do Google Calendar para criar reunião com Google Meet
+
+  // Metadados
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  // Relations
+  company     Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  client      Client?           @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  case        Case?             @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  user        User?             @relation(fields: [createdBy], references: [id], onDelete: SetNull)
+
+  @@map("schedule_events")
+}
+
+// Enum para status de conta a pagar
+enum AccountPayableStatus {
+  PENDING   // Pendente
+  PAID      // Pago
+  OVERDUE   // Atrasado
+  CANCELLED // Cancelado
+}
+
+enum RecurrencePeriod {
+  DAYS_15  // 15 dias
+  DAYS_30  // 30 dias (mensal)
+  MONTHS_6 // 6 meses (semestral)
+  YEAR_1   // 1 ano (anual)
+}
+
+// Tabela de contas a pagar
+model AccountPayable {
+  id          String               @id @default(uuid())
+  companyId   String
+
+  // Dados da conta
+  supplier    String               // Fornecedor/Credor
+  description String               // Descrição da conta
+  amount      Float                // Valor
+  dueDate     DateTime             // Data de vencimento
+  paidDate    DateTime?            // Data de pagamento (quando pago)
+  status      AccountPayableStatus @default(PENDING)
+  category    String?              // Categoria (ex: Aluguel, Salários, etc)
+  notes       String?              // Observações
+
+  // Recorrência
+  isRecurring       Boolean?           @default(false)  // Se é uma conta recorrente
+  recurrencePeriod  RecurrencePeriod?                   // Período de recorrência
+  parentId          String?                             // ID da conta original (para rastreamento)
+
+  // Metadados
+  createdBy   String?              // Quem criou
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+
+  // Relations
+  company     Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user        User?                @relation(fields: [createdBy], references: [id], onDelete: SetNull)
+
+  @@map("accounts_payable")
+}
+
+// ============================================================================
+// EMAIL CAMPAIGN SYSTEM
+// ============================================================================
+
+// SMTP Configuration per Company
+model SMTPConfig {
+  id         String   @id @default(uuid())
+  companyId  String
+  host       String
+  port       Int
+  user       String
+  password   String   // Encrypted with AES-256
+  fromEmail  String
+  fromName   String?
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relations
+  company    Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId])
+  @@map("smtp_configs")
+}
+
+// Campaign Status
+enum CampaignStatus {
+  draft
+  sending
+  completed
+  failed
+  cancelled
+}
+
+// Email Campaigns
+model EmailCampaign {
+  id              String         @id @default(uuid())
+  companyId       String
+  name            String
+  subject         String
+  body            String         @db.Text // HTML content
+  status          CampaignStatus @default(draft)
+  totalRecipients Int            @default(0)
+  sentCount       Int            @default(0)
+  failedCount     Int            @default(0)
+  scheduledAt     DateTime?
+  sentAt          DateTime?
+  createdBy       String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  // Relations
+  company         Company                @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user            User?                  @relation(fields: [createdBy], references: [id], onDelete: SetNull)
+  recipients      CampaignRecipient[]
+
+  @@map("email_campaigns")
+}
+
+// Recipient Status
+enum RecipientStatus {
+  pending
+  sent
+  failed
+}
+
+// Campaign Recipients
+model CampaignRecipient {
+  id             String          @id @default(uuid())
+  campaignId     String
+  recipientEmail String
+  recipientName  String?
+  status         RecipientStatus @default(pending)
+  sentAt         DateTime?
+  errorMessage   String?         @db.Text
+  createdAt      DateTime        @default(now())
+
+  // Relations
+  campaign       EmailCampaign   @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@map("campaign_recipients")
+}
