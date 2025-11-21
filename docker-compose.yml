@@ -68,7 +68,7 @@ services:
         - "traefik.docker.network=network_public"
 
   frontend:
-    image: tomautomations/advwell-frontend:v40-tag-filter
+    image: tomautomations/advwell-frontend:v41-menu-reorder
     environment:
       - VITE_API_URL=${VITE_API_URL}
     networks:

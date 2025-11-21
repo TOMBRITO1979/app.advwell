@@ -54,13 +54,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   const menuItems = [
     { path: '/dashboard', label: 'Dashboard', icon: Home },
+    { path: '/schedule', label: 'Agenda', icon: Calendar },
     { path: '/clients', label: 'Clientes', icon: Users },
     { path: '/cases', label: 'Processos', icon: FileText },
+    { path: '/documents', label: 'Uploads', icon: FolderOpen },
     { path: '/updates', label: 'Atualizações', icon: Bell },
     { path: '/financial', label: 'Financeiro', icon: DollarSign },
     { path: '/accounts-payable', label: 'Contas a Pagar', icon: CreditCard },
-    { path: '/documents', label: 'Documentos', icon: FolderOpen },
-    { path: '/schedule', label: 'Agenda', icon: Calendar },
   ];
 
   if (user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') {
