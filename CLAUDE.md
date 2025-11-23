@@ -11,9 +11,9 @@ AdvWell is a multitenant SaaS for Brazilian law firms with DataJud CNJ integrati
 - Backend API: https://api.advwell.pro
 
 **Current Versions:**
-- Backend: v52-user-profile - User profile management with photo upload
-- Frontend: v72-priority-linkprocesso - Prioritize manual linkProcesso field for 100% accuracy
-- Database: PostgreSQL 16
+- Backend: v53-priority-multi-user - Schedule events with priority and multi-user assignment
+- Frontend: v72-priority-linkprocesso - Prioritize manual linkProcesso field for 100% accuracy (updating to v73)
+- Database: PostgreSQL 16 (with Priority enum and EventAssignment table)
 
 **Production Configuration (100+ Companies Ready):**
 - **Horizontal Scaling:** Backend 3 replicas, Frontend 2 replicas (Docker Swarm)
@@ -504,12 +504,20 @@ Send bulk email campaigns to clients with tracking (`backend/src/controllers/cam
 
 ### Schedule/Agenda System
 
-Calendar and event management for legal proceedings:
+Calendar and event management for legal proceedings with priority and multi-user assignment:
 
 **Event Types:** COMPROMISSO, TAREFA, PRAZO, AUDIENCIA, GOOGLE_MEET
-**Features:** Google Meet link generation, client/case association
+**Priority Levels:** BAIXA (green), MEDIA (yellow), ALTA (orange), URGENTE (red)
+**Features:**
+- Google Meet link generation
+- Client/case association
+- **Multi-user assignment** - Assign tasks to multiple users
+- **Priority management** - Visual color-coded priorities
 **API:** `/api/schedule` (GET, POST, PUT, DELETE)
-**Table:** `ScheduleEvent`
+**Tables:** `ScheduleEvent`, `EventAssignment` (many-to-many with users)
+**New Fields (v53):**
+- `priority` - Priority enum (default: MEDIA)
+- `assignedUsers` - Array of EventAssignment with user details
 
 ### Accounts Payable Module
 
