@@ -65,8 +65,9 @@ const ToDo: React.FC = () => {
       const response = await api.get('/schedule', { params });
       const todoEvents = response.data.filter((e: any) => e.type === 'TAREFA');
       setTodos(todoEvents);
-    } catch (error) {
-      toast.error('Erro ao carregar tarefas');
+    } catch (error: any) {
+      console.error('Erro ao carregar tarefas:', error);
+      toast.error(error.response?.data?.error || 'Erro ao carregar tarefas');
     } finally {
       setLoading(false);
     }
