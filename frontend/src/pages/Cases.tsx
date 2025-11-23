@@ -1233,8 +1233,48 @@ const Cases: React.FC = () => {
                     </div>
                   )}
 
-                  {/* Link Automático para Consulta no Tribunal */}
+                  {/* Link do Processo no Tribunal */}
                   {(() => {
+                    // Prioridade 1: Usar linkProcesso se existir (mais confiável)
+                    if (selectedCase.linkProcesso) {
+                      return (
+                        <div className="bg-green-50 border-2 border-green-300 rounded-lg p-4">
+                          <h3 className="text-sm font-semibold text-green-900 mb-2 flex items-center">
+                            <span className="mr-2">🔗</span>
+                            Consultar Processo no Tribunal
+                          </h3>
+                          <div className="bg-white border border-green-300 rounded p-3 mb-3">
+                            <p className="text-sm text-neutral-700 mb-1">
+                              <strong>Número do Processo:</strong>
+                            </p>
+                            <p className="text-lg font-mono font-semibold text-green-900 select-all">
+                              {selectedCase.processNumber}
+                            </p>
+                            <p className="text-xs text-neutral-500 mt-1">
+                              Clique no número acima para copiar
+                            </p>
+                          </div>
+                          <a
+                            href={selectedCase.linkProcesso}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors font-medium"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                              <polyline points="15 3 21 3 21 9"></polyline>
+                              <line x1="10" y1="14" x2="21" y2="3"></line>
+                            </svg>
+                            Abrir Processo no {selectedCase.court}
+                          </a>
+                          <p className="text-xs text-green-700 mt-2">
+                            ✅ Link direto para o processo no site do tribunal
+                          </p>
+                        </div>
+                      );
+                    }
+
+                    // Prioridade 2: Tentar gerar automaticamente pelo código CNJ
                     const tribunalInfo = generateTribunalLink(selectedCase.court, selectedCase.processNumber);
                     return tribunalInfo ? (
                       <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
@@ -1268,28 +1308,12 @@ const Cases: React.FC = () => {
                         </a>
                         <p className="text-xs text-blue-700 mt-2">
                           {tribunalInfo.url.includes('show.do')
-                            ? 'Link direto para o processo. Caso não funcione, use a consulta manual com o número acima.'
+                            ? '⚠️ Link gerado automaticamente. Para melhor confiabilidade, adicione o link oficial no campo "Link do Processo" ao editar.'
                             : 'Abre a página de consulta processual oficial. Cole o número do processo acima para buscar.'}
                         </p>
                       </div>
                     ) : null;
                   })()}
-
-                  {/* Link do Processo (manual) */}
-                  {selectedCase.linkProcesso && (
-                    <div>
-                      <h3 className="text-sm font-medium text-neutral-500 mb-2">Link Adicional do Processo</h3>
-                      <a
-                        href={selectedCase.linkProcesso}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-info-600 hover:text-info-800 hover:underline bg-info-50 p-3 rounded-md block break-all"
-                      >
-                        {selectedCase.linkProcesso}
-                      </a>
-                      <p className="text-xs text-neutral-500 mt-1">Link personalizado adicionado manualmente</p>
-                    </div>
-                  )}
 
                   {/* Informar Andamento ao Cliente */}
                   {selectedCase.informarCliente && (
