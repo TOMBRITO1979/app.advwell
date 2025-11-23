@@ -22,11 +22,17 @@ interface User {
   email?: string;
 }
 
+interface EventAssignment {
+  id: string;
+  user: User;
+}
+
 interface ScheduleEvent {
   id: string;
   title: string;
   description?: string;
   type: 'COMPROMISSO' | 'TAREFA' | 'PRAZO' | 'AUDIENCIA' | 'GOOGLE_MEET';
+  priority: 'BAIXA' | 'MEDIA' | 'ALTA' | 'URGENTE';
   date: string;
   endDate?: string;
   completed: boolean;
@@ -34,6 +40,7 @@ interface ScheduleEvent {
   client?: Client;
   case?: Case;
   user?: User;
+  assignedUsers?: EventAssignment[];
   createdAt: string;
 }
 
@@ -41,10 +48,12 @@ interface ScheduleFormData {
   title: string;
   description: string;
   type: 'COMPROMISSO' | 'TAREFA' | 'PRAZO' | 'AUDIENCIA' | 'GOOGLE_MEET';
+  priority: 'BAIXA' | 'MEDIA' | 'ALTA' | 'URGENTE';
   date: string;
   endDate: string;
   clientId: string;
   caseId: string;
+  assignedUserIds: string[];
 }
 
 const Schedule: React.FC = () => {
@@ -57,6 +66,10 @@ const Schedule: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<string>('');
   const [filterCompleted, setFilterCompleted] = useState<string>('');
+
+  // Estados para multi-seleção de usuários
+  const [companyUsers, setCompanyUsers] = useState<User[]>([]);
+  const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
 
   // Autocomplete states
   const [clientSearchTerm, setClientSearchTerm] = useState('');
@@ -72,10 +85,12 @@ const Schedule: React.FC = () => {
     title: '',
     description: '',
     type: 'COMPROMISSO',
+    priority: 'MEDIA',
     date: '',
     endDate: '',
     clientId: '',
     caseId: '',
+    assignedUserIds: [],
   });
 
   const eventTypeLabels = {
@@ -94,8 +109,23 @@ const Schedule: React.FC = () => {
     GOOGLE_MEET: 'bg-orange-100 text-orange-800',
   };
 
+  const priorityLabels = {
+    BAIXA: 'Baixa',
+    MEDIA: 'Média',
+    ALTA: 'Alta',
+    URGENTE: 'Urgente',
+  };
+
+  const priorityColors = {
+    BAIXA: 'bg-green-100 text-green-800',
+    MEDIA: 'bg-yellow-100 text-yellow-800',
+    ALTA: 'bg-orange-100 text-orange-800',
+    URGENTE: 'bg-red-100 text-red-800',
+  };
+
   useEffect(() => {
     fetchEvents();
+    fetchCompanyUsers();
   }, [searchTerm, filterType, filterCompleted]);
 
   // Debounce para busca de clientes
@@ -123,6 +153,15 @@ const Schedule: React.FC = () => {
 
     return () => clearTimeout(timer);
   }, [caseSearchTerm]);
+
+  const fetchCompanyUsers = async () => {
+    try {
+      const response = await api.get('/users');
+      setCompanyUsers(response.data || []);
+    } catch (error) {
+      console.error('Erro ao buscar usuários:', error);
+    }
+  };
 
   const fetchEvents = async () => {
     setLoading(true);
@@ -172,6 +211,7 @@ const Schedule: React.FC = () => {
         clientId: selectedClient?.id || null,
         caseId: selectedCase?.id || null,
         endDate: formData.endDate || null,
+        assignedUserIds: selectedUserIds.length > 0 ? selectedUserIds : undefined,
       };
 
       if (editingEvent) {
@@ -199,10 +239,12 @@ const Schedule: React.FC = () => {
       title: event.title,
       description: event.description || '',
       type: event.type,
+      priority: event.priority || 'MEDIA',
       date: event.date.split('T')[0] + 'T' + event.date.split('T')[1].substring(0, 5),
       endDate: event.endDate ? event.endDate.split('T')[0] + 'T' + event.endDate.split('T')[1].substring(0, 5) : '',
       clientId: event.client?.id || '',
       caseId: event.case?.id || '',
+      assignedUserIds: [],
     });
     // Set selected client and case for autocomplete
     if (event.client) {
@@ -212,6 +254,10 @@ const Schedule: React.FC = () => {
     if (event.case) {
       setSelectedCase(event.case);
       setCaseSearchTerm(event.case.processNumber);
+    }
+    // Set selected users
+    if (event.assignedUsers && event.assignedUsers.length > 0) {
+      setSelectedUserIds(event.assignedUsers.map(a => a.user.id));
     }
     setShowModal(true);
   };
@@ -258,10 +304,12 @@ const Schedule: React.FC = () => {
       title: '',
       description: '',
       type: 'COMPROMISSO',
+      priority: 'MEDIA',
       date: '',
       endDate: '',
       clientId: '',
       caseId: '',
+      assignedUserIds: [],
     });
     setEditingEvent(null);
     setSelectedClient(null);
@@ -272,6 +320,7 @@ const Schedule: React.FC = () => {
     setCaseSuggestions([]);
     setShowClientSuggestions(false);
     setShowCaseSuggestions(false);
+    setSelectedUserIds([]);
   };
 
   const formatDateTime = (dateString: string) => {
