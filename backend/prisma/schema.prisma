@@ -79,6 +79,7 @@ model User {
   scheduleEvents    ScheduleEvent[]
   accountsPayable   AccountPayable[]
   emailCampaigns    EmailCampaign[]
+  assignedEvents    EventAssignment[]
 
   @@map("users")
 }
@@ -344,6 +345,13 @@ enum ScheduleEventType {
   GOOGLE_MEET  // Reunião Google Meet
 }
 
+enum Priority {
+  BAIXA      // Prioridade baixa
+  MEDIA      // Prioridade média
+  ALTA       // Prioridade alta
+  URGENTE    // Urgente
+}
+
 // Tabela de eventos da agenda
 model ScheduleEvent {
   id          String            @id @default(uuid())
@@ -353,6 +361,7 @@ model ScheduleEvent {
   title       String
   description String?
   type        ScheduleEventType @default(COMPROMISSO)
+  priority    Priority          @default(MEDIA)
 
   // Data e hora
   date        DateTime
@@ -378,8 +387,23 @@ model ScheduleEvent {
   client      Client?           @relation(fields: [clientId], references: [id], onDelete: Cascade)
   case        Case?             @relation(fields: [caseId], references: [id], onDelete: Cascade)
   user        User?             @relation(fields: [createdBy], references: [id], onDelete: SetNull)
+  assignedUsers EventAssignment[]
 
   @@map("schedule_events")
+}
+
+// Tabela intermediária para atribuição de usuários a eventos
+model EventAssignment {
+  id        String        @id @default(uuid())
+  eventId   String
+  userId    String
+  createdAt DateTime      @default(now())
+
+  event     ScheduleEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+  @@map("event_assignments")
 }
 
 // Enum para status de conta a pagar
