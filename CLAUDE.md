@@ -15,6 +15,15 @@ AdvWell is a multitenant SaaS for Brazilian law firms with DataJud CNJ integrati
 - Frontend: v67-buttons-mobile - Complete mobile button optimization (Contas a Pagar, Campanhas, Config SMTP, IA)
 - Database: PostgreSQL 16
 
+**Production Configuration (100+ Companies Ready):**
+- **Horizontal Scaling:** Backend 3 replicas, Frontend 2 replicas (Docker Swarm)
+- **PostgreSQL Optimizations:** max_connections=300, shared_buffers=1GB, work_mem=16MB
+- **Resource Limits:** Backend (1 CPU/1GB RAM), Frontend (0.5 CPU/256MB), PostgreSQL (2 CPU/3GB)
+- **Load Balancing:** Traefik with health checks (/health endpoint, 10s interval)
+- **Zero-Downtime Deployments:** Rolling updates with start-first strategy
+- **Monitoring:** Prometheus + Grafana (metrics), Winston structured logging
+- **Backups:** Automated daily S3 backups (script ready, requires AWS credentials)
+
 **Key Features:**
 - Multi-grade DataJud synchronization (G1, G2, G3)
 - AI-powered case summarization (OpenAI GPT, Google Gemini)
