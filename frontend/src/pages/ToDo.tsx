@@ -61,10 +61,11 @@ const ToDo: React.FC = () => {
       const params: any = {};
       if (searchTerm) params.search = searchTerm;
       if (filterCompleted) params.completed = filterCompleted;
+      params.type = 'TAREFA'; // Filtrar apenas tarefas no backend
 
       const response = await api.get('/schedule', { params });
-      const todoEvents = response.data.filter((e: any) => e.type === 'TAREFA');
-      setTodos(todoEvents);
+      // Backend retorna { data: [...], total, page, limit }
+      setTodos(response.data.data || []);
     } catch (error: any) {
       console.error('Erro ao carregar tarefas:', error);
       toast.error(error.response?.data?.error || 'Erro ao carregar tarefas');
@@ -79,6 +80,7 @@ const ToDo: React.FC = () => {
       const data = {
         ...formData,
         type: 'TAREFA',
+        date: formData.dueDate || new Date().toISOString(),
         startDate: formData.dueDate,
         completed: false,
       };
@@ -95,6 +97,7 @@ const ToDo: React.FC = () => {
       resetForm();
       loadTodos();
     } catch (error: any) {
+      console.error('Erro ao salvar tarefa:', error);
       toast.error(error.response?.data?.error || 'Erro ao salvar tarefa');
     }
   };
