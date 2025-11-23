@@ -513,16 +513,15 @@ const Cases: React.FC = () => {
     if (!court || !processNumber) return null;
 
     const courtUpper = court.toUpperCase();
-    const cleanProcessNumber = processNumber.replace(/[.\-\s]/g, '');
 
-    // Mapeamento de tribunais para suas URLs de consulta
+    // Mapeamento de tribunais para suas URLs de consulta pública (atualizadas em 2024)
     const tribunalUrls: { [key: string]: string } = {
-      'TJRJ': `http://www4.tjrj.jus.br/consultaProcessoWebV2/consultaProc.do?v=2&numProcesso=${cleanProcessNumber}`,
-      'TJSP': `https://esaj.tjsp.jus.br/cpopg/open.do?processo.numero=${cleanProcessNumber}`,
-      'TJMG': `https://www4.tjmg.jus.br/juridico/sf/proc_complemento2.jsp?listaProcessos=${cleanProcessNumber}`,
-      'TJSC': `https://esaj.tjsc.jus.br/cpopg/open.do?processo.numero=${cleanProcessNumber}`,
-      'TJPB': `https://esaj.tjpb.jus.br/cpopg/open.do?processo.numero=${cleanProcessNumber}`,
-      'TJCE': `https://esaj.tjce.jus.br/cpopg/open.do?processo.numero=${cleanProcessNumber}`,
+      'TJRJ': 'https://tjrj.pje.jus.br/pje/ConsultaPublica/listView.seam',
+      'TJSP': 'https://esaj.tjsp.jus.br/cpopg/open.do',
+      'TJMG': 'https://pje-consulta-publica.tjmg.jus.br/',
+      'TJSC': 'https://esaj.tjsc.jus.br/esaj/portal.do?servico=190100',
+      'TJPB': 'https://pje.tjpb.jus.br/pje/ConsultaPublica/listView.seam',
+      'TJCE': 'https://esaj.tjce.jus.br/cpopg/open.do',
     };
 
     // Tentar encontrar o tribunal no nome
@@ -1197,6 +1196,17 @@ const Cases: React.FC = () => {
                           <span className="mr-2">🔗</span>
                           Consultar no Site do Tribunal
                         </h3>
+                        <div className="bg-white border border-blue-300 rounded p-3 mb-3">
+                          <p className="text-sm text-neutral-700 mb-1">
+                            <strong>Número do Processo:</strong>
+                          </p>
+                          <p className="text-lg font-mono font-semibold text-blue-900 select-all">
+                            {selectedCase.processNumber}
+                          </p>
+                          <p className="text-xs text-neutral-500 mt-1">
+                            Clique no número acima para copiar
+                          </p>
+                        </div>
                         <a
                           href={tribunalLink}
                           target="_blank"
@@ -1208,10 +1218,10 @@ const Cases: React.FC = () => {
                             <polyline points="15 3 21 3 21 9"></polyline>
                             <line x1="10" y1="14" x2="21" y2="3"></line>
                           </svg>
-                          Abrir Andamento no {selectedCase.court}
+                          Consultar no {selectedCase.court}
                         </a>
                         <p className="text-xs text-blue-700 mt-2">
-                          Link direto para consulta processual no site oficial do tribunal
+                          Abre a página de consulta processual oficial. Cole o número do processo acima para buscar.
                         </p>
                       </div>
                     ) : null;
