@@ -509,6 +509,32 @@ const Cases: React.FC = () => {
     }).format(value);
   };
 
+  const generateTribunalLink = (court: string, processNumber: string): string | null => {
+    if (!court || !processNumber) return null;
+
+    const courtUpper = court.toUpperCase();
+    const cleanProcessNumber = processNumber.replace(/[.\-\s]/g, '');
+
+    // Mapeamento de tribunais para suas URLs de consulta
+    const tribunalUrls: { [key: string]: string } = {
+      'TJRJ': `http://www4.tjrj.jus.br/consultaProcessoWebV2/consultaProc.do?v=2&numProcesso=${cleanProcessNumber}`,
+      'TJSP': `https://esaj.tjsp.jus.br/cpopg/open.do?processo.numero=${cleanProcessNumber}`,
+      'TJMG': `https://www4.tjmg.jus.br/juridico/sf/proc_complemento2.jsp?listaProcessos=${cleanProcessNumber}`,
+      'TJSC': `https://esaj.tjsc.jus.br/cpopg/open.do?processo.numero=${cleanProcessNumber}`,
+      'TJPB': `https://esaj.tjpb.jus.br/cpopg/open.do?processo.numero=${cleanProcessNumber}`,
+      'TJCE': `https://esaj.tjce.jus.br/cpopg/open.do?processo.numero=${cleanProcessNumber}`,
+    };
+
+    // Tentar encontrar o tribunal no nome
+    for (const [key, url] of Object.entries(tribunalUrls)) {
+      if (courtUpper.includes(key)) {
+        return url;
+      }
+    }
+
+    return null;
+  };
+
   return (
     <Layout>
       <div className="space-y-4 sm:space-y-6">
@@ -1162,10 +1188,39 @@ const Cases: React.FC = () => {
                     </div>
                   )}
 
-                  {/* Link do Processo */}
+                  {/* Link Automático para Consulta no Tribunal */}
+                  {(() => {
+                    const tribunalLink = generateTribunalLink(selectedCase.court, selectedCase.processNumber);
+                    return tribunalLink ? (
+                      <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
+                        <h3 className="text-sm font-semibold text-blue-900 mb-2 flex items-center">
+                          <span className="mr-2">🔗</span>
+                          Consultar no Site do Tribunal
+                        </h3>
+                        <a
+                          href={tribunalLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                            <polyline points="15 3 21 3 21 9"></polyline>
+                            <line x1="10" y1="14" x2="21" y2="3"></line>
+                          </svg>
+                          Abrir Andamento no {selectedCase.court}
+                        </a>
+                        <p className="text-xs text-blue-700 mt-2">
+                          Link direto para consulta processual no site oficial do tribunal
+                        </p>
+                      </div>
+                    ) : null;
+                  })()}
+
+                  {/* Link do Processo (manual) */}
                   {selectedCase.linkProcesso && (
                     <div>
-                      <h3 className="text-sm font-medium text-neutral-500 mb-2">Link do Processo</h3>
+                      <h3 className="text-sm font-medium text-neutral-500 mb-2">Link Adicional do Processo</h3>
                       <a
                         href={selectedCase.linkProcesso}
                         target="_blank"
@@ -1174,7 +1229,7 @@ const Cases: React.FC = () => {
                       >
                         {selectedCase.linkProcesso}
                       </a>
-                      <p className="text-xs text-neutral-500 mt-1">Clique para abrir o processo no site do tribunal</p>
+                      <p className="text-xs text-neutral-500 mt-1">Link personalizado adicionado manualmente</p>
                     </div>
                   )}
 
