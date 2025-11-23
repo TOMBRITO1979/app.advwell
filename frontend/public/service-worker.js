@@ -1,10 +1,12 @@
-const CACHE_NAME = 'advwell-v67';
+const CACHE_NAME = 'advwell-v82';
 const urlsToCache = [
   '/',
   '/index.html'
 ];
 
 self.addEventListener('install', (event) => {
+  // Force immediate activation
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => cache.addAll(urlsToCache))
@@ -12,9 +14,10 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+  // Network first, then cache
   event.respondWith(
-    caches.match(event.request)
-      .then((response) => response || fetch(event.request))
+    fetch(event.request)
+      .catch(() => caches.match(event.request))
   );
 });
 

@@ -38,6 +38,20 @@ server {
     root /usr/share/nginx/html;
     index index.html;
 
+    # Disable cache for HTML files
+    location ~* \.(html)$ {
+        add_header Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0";
+        add_header Pragma "no-cache";
+        add_header Expires "0";
+        try_files \$uri \$uri/ /index.html;
+    }
+
+    # Disable cache for JS/CSS files (force revalidation)
+    location ~* \.(js|css)$ {
+        add_header Cache-Control "no-cache, must-revalidate, max-age=0";
+        try_files \$uri =404;
+    }
+
     location / {
         try_files \$uri \$uri/ /index.html;
     }

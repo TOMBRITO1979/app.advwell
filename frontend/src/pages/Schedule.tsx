@@ -157,7 +157,7 @@ const Schedule: React.FC = () => {
   const fetchCompanyUsers = async () => {
     try {
       const response = await api.get('/users');
-      setCompanyUsers(response.data || []);
+      setCompanyUsers(response.data.data || []);
     } catch (error) {
       console.error('Erro ao buscar usuários:', error);
     }

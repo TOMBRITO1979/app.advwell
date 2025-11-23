@@ -11,9 +11,9 @@ AdvWell is a multitenant SaaS for Brazilian law firms with DataJud CNJ integrati
 - Backend API: https://api.advwell.pro
 
 **Current Versions:**
-- Backend: v53-priority-multi-user - Schedule events with priority and multi-user assignment
-- Frontend: v72-priority-linkprocesso - Prioritize manual linkProcesso field for 100% accuracy (updating to v73)
-- Database: PostgreSQL 16 (with Priority enum and EventAssignment table)
+- Backend: v58-deadlines - Added /deadlines endpoint for tracking case deadlines
+- Frontend: v82-white-icon - White balance scale icon on login page
+- Database: PostgreSQL 16 (with deadline field, status PENDENTE, and stateRegistration)
 
 **Production Configuration (100+ Companies Ready):**
 - **Horizontal Scaling:** Backend 3 replicas, Frontend 2 replicas (Docker Swarm)
@@ -30,9 +30,11 @@ AdvWell is a multitenant SaaS for Brazilian law firms with DataJud CNJ integrati
 - Email campaigns with pre-built templates
 - Accounts payable with recurring bills
 - Agenda/schedule with Google Meet integration
+- **Deadlines tracking** with color-coded urgency indicators (red/orange/yellow/green)
 - Financial management (income/expense tracking)
 - Document management (S3 uploads + external links)
 - Case parts management with conditional fields
+- Case status management (PENDENTE, ACTIVE, ARCHIVED, FINISHED)
 - CSV import/export for clients and cases
 - Company settings with PDF integration
 - Role-based access control (SUPER_ADMIN, ADMIN, USER)
@@ -270,9 +272,20 @@ node update_master_password.js # Update master user password
 ```
 
 ### Deployment
+
+**IMPORTANT:** Docker Swarm does NOT automatically read `.env` files. Always use the `deploy.sh` script or manually export environment variables before deploying.
+
 ```bash
-./deploy_expect.sh             # Automated deployment script
-docker stack deploy -c docker-compose.yml advtom  # Manual deployment
+# Recommended: Use the automated deployment script
+./deploy.sh                    # Exports .env vars and deploys stack
+
+# Alternative: Manual deployment with env vars
+set -a && source .env && set +a && docker stack deploy -c docker-compose.yml advtom
+
+# Legacy deployment script (interactive)
+./deploy_expect.sh             # Automated deployment with expect
+
+# Check deployment status
 docker stack ps advtom         # Check service status
 docker service logs advtom_backend -f   # View backend logs
 
@@ -280,6 +293,12 @@ docker service logs advtom_backend -f   # View backend logs
 docker service update --image tomautomations/advwell-backend:NEW_VERSION advtom_backend
 docker service update --image tomautomations/advwell-frontend:NEW_VERSION advtom_frontend
 ```
+
+**Deployment Script (`deploy.sh`):**
+- Location: `/root/advtom/deploy.sh`
+- Automatically exports environment variables from `.env`
+- Deploys the stack and shows service status
+- Usage: `cd /root/advtom && ./deploy.sh`
 
 ## Architecture
 

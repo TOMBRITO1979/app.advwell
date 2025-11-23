@@ -108,6 +108,7 @@ model Client {
   personType    PersonType @default(FISICA) // Tipo de pessoa: Física ou Jurídica
   name          String
   cpf           String? // CPF para Pessoa Física ou CNPJ para Pessoa Jurídica
+  stateRegistration String? // Inscrição Estadual (para Pessoa Jurídica)
   rg            String?
   email         String?
   phone         String?
@@ -143,6 +144,7 @@ enum PersonType {
 
 // Enum para status do processo
 enum CaseStatus {
+  PENDENTE
   ACTIVE
   ARCHIVED
   FINISHED
@@ -158,6 +160,7 @@ model Case {
   subject           String     // Assunto
   value             Float?     // Valor da causa
   status            CaseStatus @default(ACTIVE)
+  deadline          DateTime?  // Prazo do processo
   notes             String?
   ultimoAndamento   String?    // Último movimento do processo (atualizado via API)
   informarCliente   String?    // Texto explicativo do andamento para informar ao cliente
