@@ -3,6 +3,7 @@ import { body, validationResult } from 'express-validator';
 import { Request, Response, NextFunction } from 'express';
 import { authenticate } from '../middleware/auth';
 import { validateTenant } from '../middleware/tenant';
+import { upload } from '../middleware/upload';
 import {
   listTransactions,
   getTransaction,
@@ -12,6 +13,7 @@ import {
   getFinancialSummary,
   exportPDF,
   exportCSV,
+  importCSV,
 } from '../controllers/financial.controller';
 
 const router = Router();
@@ -49,11 +51,11 @@ const createTransactionValidation = [
     .isUUID()
     .withMessage('ID do cliente inválido'),
   body('caseId')
-    .optional()
+    .optional({ checkFalsy: true })
     .isUUID()
     .withMessage('ID do processo inválido'),
   body('date')
-    .optional()
+    .optional({ checkFalsy: true })
     .isISO8601()
     .withMessage('Data inválida'),
 ];
@@ -61,28 +63,28 @@ const createTransactionValidation = [
 // Validações para atualização de transação financeira
 const updateTransactionValidation = [
   body('type')
-    .optional()
+    .optional({ checkFalsy: true })
     .isIn(['INCOME', 'EXPENSE'])
     .withMessage('Tipo deve ser INCOME ou EXPENSE'),
   body('description')
-    .optional()
+    .optional({ checkFalsy: true })
     .trim()
     .isLength({ min: 2, max: 500 })
     .withMessage('Descrição deve ter entre 2 e 500 caracteres'),
   body('amount')
-    .optional()
+    .optional({ checkFalsy: true })
     .isFloat({ min: 0.01 })
     .withMessage('Valor deve ser maior que zero'),
   body('clientId')
-    .optional()
+    .optional({ checkFalsy: true })
     .isUUID()
     .withMessage('ID do cliente inválido'),
   body('caseId')
-    .optional()
+    .optional({ checkFalsy: true })
     .isUUID()
     .withMessage('ID do processo inválido'),
   body('date')
-    .optional()
+    .optional({ checkFalsy: true })
     .isISO8601()
     .withMessage('Data inválida'),
 ];
@@ -92,6 +94,7 @@ router.get('/', listTransactions);                    // Listar transações com
 router.get('/summary', getFinancialSummary);          // Resumo financeiro
 router.get('/export/pdf', exportPDF);                 // Exportar para PDF
 router.get('/export/csv', exportCSV);                 // Exportar para CSV
+router.post('/import/csv', upload.single('file'), importCSV); // Importar transações via CSV
 router.get('/:id', getTransaction);                   // Buscar transação por ID
 router.post('/', createTransactionValidation, validate, createTransaction);  // Criar nova transação
 router.put('/:id', updateTransactionValidation, validate, updateTransaction); // Atualizar transação

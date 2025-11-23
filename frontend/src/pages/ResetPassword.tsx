@@ -53,13 +53,13 @@ const ResetPassword: React.FC = () => {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-500 to-purple-600 px-4">
         <div className="max-w-md w-full bg-white rounded-lg shadow-xl p-8">
           <div className="text-center">
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">Token Inválido</h1>
-            <p className="text-gray-600 mb-6">
+            <h1 className="text-3xl font-bold text-neutral-900 mb-4">Token Inválido</h1>
+            <p className="text-neutral-600 mb-6">
               O link de redefinição de senha é inválido ou expirou.
             </p>
             <a
               href="/forgot-password"
-              className="text-green-600 hover:text-green-500 font-medium"
+              className="text-primary-600 hover:text-primary-500 font-medium"
             >
               Solicitar novo link
             </a>
@@ -73,13 +73,13 @@ const ResetPassword: React.FC = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-500 to-purple-600 px-4">
       <div className="max-w-md w-full bg-white rounded-lg shadow-xl p-8">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Redefinir Senha</h1>
-          <p className="text-gray-600 mt-2">Digite sua nova senha</p>
+          <h1 className="text-3xl font-bold text-neutral-900">Redefinir Senha</h1>
+          <p className="text-neutral-600 mt-2">Digite sua nova senha</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="password" className="block text-sm font-medium text-neutral-700">
               Nova Senha
             </label>
             <input
@@ -88,13 +88,13 @@ const ResetPassword: React.FC = () => {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
+              className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
               placeholder="Mínimo 6 caracteres"
             />
           </div>
 
           <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="confirmPassword" className="block text-sm font-medium text-neutral-700">
               Confirmar Nova Senha
             </label>
             <input
@@ -103,7 +103,7 @@ const ResetPassword: React.FC = () => {
               required
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
+              className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
               placeholder="Digite a senha novamente"
             />
           </div>
@@ -111,7 +111,7 @@ const ResetPassword: React.FC = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
+            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
           >
             {loading ? 'Redefinindo...' : 'Redefinir Senha'}
           </button>
@@ -120,7 +120,7 @@ const ResetPassword: React.FC = () => {
         <div className="mt-6 text-center">
           <a
             href="/login"
-            className="text-sm text-green-600 hover:text-green-500 font-medium"
+            className="text-sm text-primary-600 hover:text-primary-500 font-medium"
           >
             Voltar para o login
           </a>

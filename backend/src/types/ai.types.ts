@@ -1,0 +1,64 @@
+// AI Provider Types
+export type AIProviderType = 'openai' | 'gemini' | 'anthropic' | 'groq';
+
+// AI Configuration Interface (matches Prisma model)
+export interface AIConfigData {
+  id: string;
+  companyId: string;
+  provider: AIProviderType;
+  apiKey: string;  // Will be encrypted
+  model: string;
+  enabled: boolean;
+  autoSummarize: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Case Movement Interface for summarization
+export interface CaseMovementData {
+  movementCode: number;
+  movementName: string;
+  movementDate: Date;
+  description?: string | null;
+}
+
+// AI Provider Interface - All providers must implement this
+export interface IAIProvider {
+  /**
+   * Generate a summary of case movements in simple, non-technical language
+   * @param movements - Array of case movements
+   * @param caseInfo - Additional case information (process number, subject, etc)
+   * @returns Summary text in Portuguese Brazilian
+   */
+  generateSummary(movements: CaseMovementData[], caseInfo: CaseInfo): Promise<string>;
+
+  /**
+   * Test the connection with the AI provider
+   * @returns Success message or throws error
+   */
+  testConnection(): Promise<string>;
+}
+
+// Additional case information for context
+export interface CaseInfo {
+  processNumber: string;
+  subject: string;
+  court: string;
+  clientName?: string;
+}
+
+// AI Provider Factory Return Type
+export interface AIProviderFactory {
+  provider: IAIProvider;
+  config: AIConfigData;
+}
+
+// Summary Generation Result
+export interface SummaryResult {
+  success: boolean;
+  summary?: string;
+  error?: string;
+  provider?: AIProviderType;
+  model?: string;
+  tokensUsed?: number;  // Optional for tracking
+}

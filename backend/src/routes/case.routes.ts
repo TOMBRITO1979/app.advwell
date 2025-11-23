@@ -43,25 +43,25 @@ const createCaseValidation = [
     .isLength({ min: 2, max: 500 })
     .withMessage('Assunto deve ter entre 2 e 500 caracteres'),
   body('value')
-    .optional()
+    .optional({ checkFalsy: true })
     .isFloat({ min: 0 })
     .withMessage('Valor deve ser um número positivo'),
   body('status')
-    .optional()
+    .optional({ checkFalsy: true })
     .isIn(['ACTIVE', 'ARCHIVED', 'FINISHED'])
     .withMessage('Status deve ser ACTIVE, ARCHIVED ou FINISHED'),
   body('notes')
-    .optional()
+    .optional({ checkFalsy: true })
     .isString()
     .isLength({ max: 5000 })
     .withMessage('Observações devem ter no máximo 5000 caracteres'),
   body('informarCliente')
-    .optional()
+    .optional({ checkFalsy: true })
     .isString()
     .isLength({ max: 5000 })
     .withMessage('Informação ao cliente deve ter no máximo 5000 caracteres'),
   body('linkProcesso')
-    .optional()
+    .optional({ checkFalsy: true })
     .isURL()
     .withMessage('Link do processo deve ser uma URL válida'),
 ];
@@ -69,44 +69,44 @@ const createCaseValidation = [
 // Validações para atualização de processo
 const updateCaseValidation = [
   body('clientId')
-    .optional()
+    .optional({ checkFalsy: true })
     .isUUID()
     .withMessage('ID do cliente inválido'),
   body('processNumber')
-    .optional()
+    .optional({ checkFalsy: true })
     .trim()
     .isLength({ min: 5, max: 50 })
     .withMessage('Número do processo deve ter entre 5 e 50 caracteres'),
   body('court')
-    .optional()
+    .optional({ checkFalsy: true })
     .trim()
     .isLength({ min: 2, max: 200 })
     .withMessage('Tribunal deve ter entre 2 e 200 caracteres'),
   body('subject')
-    .optional()
+    .optional({ checkFalsy: true })
     .trim()
     .isLength({ min: 2, max: 500 })
     .withMessage('Assunto deve ter entre 2 e 500 caracteres'),
   body('value')
-    .optional()
+    .optional({ checkFalsy: true })
     .isFloat({ min: 0 })
     .withMessage('Valor deve ser um número positivo'),
   body('status')
-    .optional()
+    .optional({ checkFalsy: true })
     .isIn(['ACTIVE', 'ARCHIVED', 'FINISHED'])
     .withMessage('Status deve ser ACTIVE, ARCHIVED ou FINISHED'),
   body('notes')
-    .optional()
+    .optional({ checkFalsy: true })
     .isString()
     .isLength({ max: 5000 })
     .withMessage('Observações devem ter no máximo 5000 caracteres'),
   body('informarCliente')
-    .optional()
+    .optional({ checkFalsy: true })
     .isString()
     .isLength({ max: 5000 })
     .withMessage('Informação ao cliente deve ter no máximo 5000 caracteres'),
   body('linkProcesso')
-    .optional()
+    .optional({ checkFalsy: true })
     .isURL()
     .withMessage('Link do processo deve ser uma URL válida'),
 ];
@@ -120,6 +120,7 @@ router.get('/updates', caseController.getPendingUpdates); // Lista atualizaçõe
 router.get('/:id', caseController.get);
 router.put('/:id', updateCaseValidation, validate, caseController.update);
 router.post('/:id/sync', caseController.syncMovements);
+router.post('/:id/generate-summary', caseController.generateSummary); // Gera resumo com IA
 router.post('/:id/acknowledge', caseController.acknowledgeUpdate); // Marca como ciente
 
 export default router;

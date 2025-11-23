@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
+import { Scale } from 'lucide-react';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -33,30 +34,35 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-600 via-green-600 to-green-700 dark:from-green-900 dark:via-green-900 dark:to-green-800 px-4 relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-500 via-primary-600 to-primary-700 px-4 relative overflow-hidden">
       {/* Animated background geometric shapes */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-32 -left-32 w-[500px] h-[500px] bg-green-300/20 rounded-full blur-3xl animate-blob"></div>
-        <div className="absolute top-1/4 -right-24 w-96 h-96 bg-green-400/20 rounded-full blur-3xl animate-blob animation-delay-2000"></div>
-        <div className="absolute -bottom-32 left-1/4 w-[600px] h-[600px] bg-green-200/15 rounded-full blur-3xl animate-blob animation-delay-4000"></div>
+        <div className="absolute -top-32 -left-32 w-[500px] h-[500px] bg-primary-300/20 rounded-full blur-3xl animate-blob"></div>
+        <div className="absolute top-1/4 -right-24 w-96 h-96 bg-primary-400/20 rounded-full blur-3xl animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-32 left-1/4 w-[600px] h-[600px] bg-primary-200/15 rounded-full blur-3xl animate-blob animation-delay-4000"></div>
 
         {/* Dot pattern overlay */}
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImRvdHMiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9IndoaXRlIiBmaWxsLW9wYWNpdHk9IjAuMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNkb3RzKSIvPjwvc3ZnPg==')] opacity-40"></div>
       </div>
 
-      <div className="max-w-md w-full backdrop-blur-xl bg-white/85 dark:bg-slate-900/75 rounded-3xl shadow-2xl border border-white/40 p-10 relative z-10">
+      <div className="max-w-md w-full backdrop-blur-xl bg-white/90 rounded-2xl shadow-2xl border border-white/40 p-10 relative z-10">
         {/* Decorative corner accents */}
-        <div className="absolute -top-3 -left-3 w-28 h-28 bg-gradient-to-br from-white/20 to-transparent rounded-tl-3xl blur-xl"></div>
-        <div className="absolute -bottom-3 -right-3 w-28 h-28 bg-gradient-to-tl from-white/20 to-transparent rounded-br-3xl blur-xl"></div>
+        <div className="absolute -top-3 -left-3 w-28 h-28 bg-gradient-to-br from-white/20 to-transparent rounded-tl-2xl blur-xl"></div>
+        <div className="absolute -bottom-3 -right-3 w-28 h-28 bg-gradient-to-tl from-white/20 to-transparent rounded-br-2xl blur-xl"></div>
 
         <div className="text-center mb-8 relative">
-          <h1 className="text-5xl font-extrabold text-slate-900 dark:text-white mb-3 drop-shadow-2xl tracking-tight">AdvWell</h1>
-          <p className="text-lg text-slate-700 dark:text-white/90 font-medium">Sistema de Advocacia</p>
+          <div className="flex justify-center mb-4">
+            <div className="w-20 h-20 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl flex items-center justify-center shadow-lg shadow-primary-500/30 transform hover:scale-105 transition-transform duration-300">
+              <Scale className="w-11 h-11 text-white" strokeWidth={2.5} />
+            </div>
+          </div>
+          <h1 className="text-5xl font-bold text-primary-600 mb-3 drop-shadow-lg tracking-tight">AdvWell</h1>
+          <p className="text-base text-neutral-600 font-medium">Sistema de Advocacia</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6 relative">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-slate-700 dark:text-white mb-2">
+            <label htmlFor="email" className="block text-sm font-medium text-neutral-700 mb-2">
               Email
             </label>
             <input
@@ -65,12 +71,13 @@ const Login: React.FC = () => {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="block w-full border-none rounded-md shadow-sm bg-white/30 dark:bg-slate-800/50 appearance-none outline outline-1 focus:outline focus:outline-2 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 sm:text-sm sm:leading-6 px-3 py-3 outline-green-400/60 hover:outline-green-500 focus:outline-green-500 focus:bg-white/40"
+              className="block w-full border rounded-lg shadow-sm bg-white appearance-none focus:outline-none text-neutral-900 placeholder:text-neutral-400 text-base px-4 py-3 border-neutral-300 hover:border-primary-400 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 focus:ring-opacity-20 transition-all min-h-[44px]"
+              placeholder="seu@email.com"
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-slate-700 dark:text-white mb-2">
+            <label htmlFor="password" className="block text-sm font-medium text-neutral-700 mb-2">
               Senha
             </label>
             <input
@@ -79,14 +86,15 @@ const Login: React.FC = () => {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="block w-full border-none rounded-md shadow-sm bg-white/30 dark:bg-slate-800/50 appearance-none outline outline-1 focus:outline focus:outline-2 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 sm:text-sm sm:leading-6 px-3 py-3 outline-green-400/60 hover:outline-green-500 focus:outline-green-500 focus:bg-white/40"
+              className="block w-full border rounded-lg shadow-sm bg-white appearance-none focus:outline-none text-neutral-900 placeholder:text-neutral-400 text-base px-4 py-3 border-neutral-300 hover:border-primary-400 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 focus:ring-opacity-20 transition-all min-h-[44px]"
+              placeholder="••••••••"
             />
           </div>
 
           <div className="flex items-center justify-between">
             <Link
               to="/forgot-password"
-              className="text-sm text-green-600 dark:text-green-200 hover:text-green-700 dark:hover:text-green-100 transition-colors duration-200 font-medium"
+              className="text-sm text-primary-600 hover:text-primary-700 transition-colors duration-200 font-medium"
             >
               Esqueceu a senha?
             </Link>
@@ -95,22 +103,22 @@ const Login: React.FC = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-xl text-sm font-medium text-white bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 hover:shadow-green-500/50 transition-all duration-300 transform hover:scale-[1.02] active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
+            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-md text-base font-semibold text-white bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 hover:shadow-lg hover:shadow-primary-500/30 transition-all duration-200 transform hover:scale-[1.01] active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
           >
             {loading ? 'Entrando...' : 'Entrar'}
           </button>
         </form>
 
         <div className="mt-6 text-center space-y-2 relative">
-          <p className="text-sm text-slate-700 dark:text-white/90">
+          <p className="text-sm text-neutral-600">
             Não tem uma conta?{' '}
-            <Link to="/register" className="text-green-600 dark:text-green-200 hover:text-green-700 dark:hover:text-green-100 transition-colors duration-200 font-bold">
+            <Link to="/register" className="text-primary-600 hover:text-primary-700 transition-colors duration-200 font-semibold">
               Cadastre-se
             </Link>
           </p>
-          <p className="text-xs text-slate-600 dark:text-white/80">
+          <p className="text-xs text-neutral-500">
             Não recebeu o email de verificação?{' '}
-            <Link to="/resend-verification" className="text-green-600 dark:text-green-200 hover:text-green-700 dark:hover:text-green-100 transition-colors duration-200 font-medium">
+            <Link to="/resend-verification" className="text-primary-600 hover:text-primary-700 transition-colors duration-200 font-medium">
               Reenviar
             </Link>
           </p>

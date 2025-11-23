@@ -8,8 +8,8 @@ export class ClientController {
   async create(req: AuthRequest, res: Response) {
     try {
       const {
-        name, cpf, rg, email, phone, address, city, state, zipCode,
-        profession, maritalStatus, birthDate, notes, tag
+        personType, name, cpf, rg, email, phone, address, city, state, zipCode,
+        profession, maritalStatus, birthDate, representativeName, representativeCpf, notes, tag
       } = req.body;
       const companyId = req.user!.companyId;
 
@@ -20,6 +20,7 @@ export class ClientController {
       const client = await prisma.client.create({
         data: {
           companyId,
+          personType: personType || 'FISICA',
           name,
           cpf,
           rg,
@@ -32,6 +33,8 @@ export class ClientController {
           profession: sanitizeString(profession),
           maritalStatus: sanitizeString(maritalStatus),
           birthDate: birthDate ? new Date(birthDate) : null,
+          representativeName: sanitizeString(representativeName),
+          representativeCpf,
           notes: sanitizeString(notes),
           tag: sanitizeString(tag),
         },
@@ -115,8 +118,8 @@ export class ClientController {
       const { id } = req.params;
       const companyId = req.user!.companyId;
       const {
-        name, cpf, rg, email, phone, address, city, state, zipCode,
-        profession, maritalStatus, birthDate, notes, tag
+        personType, name, cpf, rg, email, phone, address, city, state, zipCode,
+        profession, maritalStatus, birthDate, representativeName, representativeCpf, notes, tag
       } = req.body;
 
       const client = await prisma.client.findFirst({
@@ -133,6 +136,7 @@ export class ClientController {
       const updatedClient = await prisma.client.update({
         where: { id },
         data: {
+          personType: personType || 'FISICA',
           name,
           cpf,
           rg,
@@ -145,6 +149,8 @@ export class ClientController {
           profession: sanitizeString(profession),
           maritalStatus: sanitizeString(maritalStatus),
           birthDate: birthDate ? new Date(birthDate) : null,
+          representativeName: sanitizeString(representativeName),
+          representativeCpf,
           notes: sanitizeString(notes),
           tag: sanitizeString(tag),
         },
@@ -203,10 +209,11 @@ export class ClientController {
       });
 
       // Cabeçalho do CSV
-      const csvHeader = 'Nome,CPF,RG,Email,Telefone,Endereço,Cidade,Estado,CEP,Profissão,Estado Civil,Data de Nascimento,Observações,Data de Cadastro\n';
+      const csvHeader = 'Tipo,Nome,CPF/CNPJ,RG,Email,Telefone,Endereço,Cidade,Estado,CEP,Profissão,Estado Civil,Data de Nascimento,Representante Legal,CPF Representante,Observações,Data de Cadastro\n';
 
       // Linhas do CSV
       const csvRows = clients.map(client => {
+        const personType = `"${client.personType || 'FISICA'}"`;
         const name = `"${client.name || ''}"`;
         const cpf = `"${client.cpf || ''}"`;
         const rg = `"${client.rg || ''}"`;
@@ -219,10 +226,12 @@ export class ClientController {
         const profession = `"${client.profession || ''}"`;
         const maritalStatus = `"${client.maritalStatus || ''}"`;
         const birthDate = client.birthDate ? `"${new Date(client.birthDate).toLocaleDateString('pt-BR')}"` : '""';
+        const representativeName = `"${client.representativeName || ''}"`;
+        const representativeCpf = `"${client.representativeCpf || ''}"`;
         const notes = `"${(client.notes || '').replace(/"/g, '""')}"`;
         const createdAt = `"${new Date(client.createdAt).toLocaleDateString('pt-BR')}"`;
 
-        return `${name},${cpf},${rg},${email},${phone},${address},${city},${state},${zipCode},${profession},${maritalStatus},${birthDate},${notes},${createdAt}`;
+        return `${personType},${name},${cpf},${rg},${email},${phone},${address},${city},${state},${zipCode},${profession},${maritalStatus},${birthDate},${representativeName},${representativeCpf},${notes},${createdAt}`;
       }).join('\n');
 
       const csv = csvHeader + csvRows;
@@ -307,8 +316,9 @@ export class ClientController {
           await prisma.client.create({
             data: {
               companyId,
+              personType: record['Tipo']?.trim() === 'JURIDICA' ? 'JURIDICA' : 'FISICA',
               name: record.Nome.trim(),
-              cpf: record.CPF?.trim() || null,
+              cpf: record['CPF/CNPJ']?.trim() || record.CPF?.trim() || null,
               rg: record.RG?.trim() || null,
               email: record.Email?.trim() || null,
               phone: record.Telefone?.trim() || null,
@@ -319,6 +329,8 @@ export class ClientController {
               profession: record['Profissão']?.trim() || null,
               maritalStatus: record['Estado Civil']?.trim() || null,
               birthDate,
+              representativeName: record['Representante Legal']?.trim() || null,
+              representativeCpf: record['CPF Representante']?.trim() || null,
               notes: record['Observações']?.trim() || null,
             },
           });

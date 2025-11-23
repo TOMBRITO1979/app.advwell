@@ -4,6 +4,7 @@ import { Request, Response, NextFunction } from 'express';
 import accountsPayableController from '../controllers/accounts-payable.controller';
 import { authenticate } from '../middleware/auth';
 import { validateTenant } from '../middleware/tenant';
+import { upload } from '../middleware/upload';
 
 const router = Router();
 
@@ -39,12 +40,12 @@ const createValidation = [
     .isISO8601()
     .withMessage('Data de vencimento inválida'),
   body('category')
-    .optional()
+    .optional({ checkFalsy: true })
     .isString()
     .isLength({ max: 100 })
     .withMessage('Categoria deve ter no máximo 100 caracteres'),
   body('notes')
-    .optional()
+    .optional({ checkFalsy: true })
     .isString()
     .isLength({ max: 5000 })
     .withMessage('Observações devem ter no máximo 5000 caracteres'),
@@ -53,43 +54,49 @@ const createValidation = [
 // Validações para atualização
 const updateValidation = [
   body('supplier')
-    .optional()
+    .optional({ checkFalsy: true })
     .trim()
     .isLength({ min: 2, max: 200 })
     .withMessage('Fornecedor deve ter entre 2 e 200 caracteres'),
   body('description')
-    .optional()
+    .optional({ checkFalsy: true })
     .trim()
     .isLength({ min: 2, max: 500 })
     .withMessage('Descrição deve ter entre 2 e 500 caracteres'),
   body('amount')
-    .optional()
+    .optional({ checkFalsy: true })
     .isFloat({ min: 0 })
     .withMessage('Valor deve ser um número positivo'),
   body('dueDate')
-    .optional()
+    .optional({ checkFalsy: true })
     .isISO8601()
     .withMessage('Data de vencimento inválida'),
   body('paidDate')
-    .optional()
+    .optional({ checkFalsy: true })
     .isISO8601()
     .withMessage('Data de pagamento inválida'),
   body('status')
-    .optional()
+    .optional({ checkFalsy: true })
     .isIn(['PENDING', 'PAID', 'OVERDUE', 'CANCELLED'])
     .withMessage('Status inválido'),
   body('category')
-    .optional()
+    .optional({ checkFalsy: true })
     .isString()
     .isLength({ max: 100 })
     .withMessage('Categoria deve ter no máximo 100 caracteres'),
   body('notes')
-    .optional()
+    .optional({ checkFalsy: true })
     .isString()
     .isLength({ max: 5000 })
     .withMessage('Observações devem ter no máximo 5000 caracteres'),
 ];
 
+// Rotas de exportação e importação
+router.get('/export/pdf', accountsPayableController.exportPDF);
+router.get('/export/csv', accountsPayableController.exportCSV);
+router.post('/import/csv', upload.single('file'), accountsPayableController.importCSV);
+
+// Rotas CRUD
 router.post('/', createValidation, validate, accountsPayableController.create);
 router.get('/', accountsPayableController.list);
 router.get('/:id', accountsPayableController.get);

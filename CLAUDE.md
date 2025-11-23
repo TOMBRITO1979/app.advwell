@@ -17,7 +17,10 @@ AdvWell is a multitenant SaaS for Brazilian law firms with DataJud CNJ integrati
 
 **Key Features:**
 - Multi-grade DataJud synchronization (G1, G2, G3)
+- AI-powered case summarization (OpenAI GPT, Google Gemini)
 - Email campaigns with pre-built templates
+- Accounts payable with recurring bills
+- Agenda/schedule with Google Meet integration
 - Financial management (income/expense tracking)
 - Document management (S3 uploads + external links)
 - Case parts management with conditional fields
@@ -332,10 +335,21 @@ Frontend uses **Zustand** (not Context API) for global state:
 ### Database Schema
 
 Key relationships (backend/prisma/schema.prisma):
-- `Company` → has many `User`, `Client`, `Case`
-- `User` → belongs to `Company`, has many `Permission`
-- `Client` → belongs to `Company`, has many `Case`
-- `Case` → belongs to `Company` and `Client`, has many `CaseMovement` and `CaseDocument`
+- `Company` → has many `User`, `Client`, `Case`, `SMTPConfig`, `EmailCampaign`, `AIConfig`
+- `User` → belongs to `Company`, has many `Permission`, `ScheduleEvent`, `AccountPayable`
+- `Client` → belongs to `Company`, has many `Case`, `ScheduleEvent`, `Document`
+- `Case` → belongs to `Company` and `Client`, has many `CaseMovement`, `CaseDocument`, `CasePart`, `ScheduleEvent`
+- `AIConfig` → belongs to `Company` (one-to-one)
+- `SMTPConfig` → belongs to `Company` (one-to-one)
+- `EmailCampaign` → has many `CampaignRecipient`
+
+**New Tables (v50+):**
+- `AIConfig` - AI provider configuration per company
+- `SMTPConfig` - Email server configuration per company
+- `EmailCampaign` - Email campaigns
+- `CampaignRecipient` - Campaign recipient tracking
+- `ScheduleEvent` - Agenda/calendar events
+- `AccountPayable` - Bills and recurring payments
 
 All relations use `onDelete: Cascade` for automatic cleanup.
 
@@ -349,6 +363,13 @@ All routes are under `/api` prefix (backend/src/routes/index.ts):
 - `/api/cases/*` - Case management and DataJud sync
 - `/api/financial/*` - Financial transaction management (income/expense tracking)
 - `/api/documents/*` - Document management (uploads and external links)
+- `/api/schedule/*` - Agenda/schedule events
+- `/api/accounts-payable/*` - Bills and recurring payments
+- `/api/smtp-config/*` - SMTP configuration (ADMIN+)
+- `/api/campaigns/*` - Email campaigns
+- `/api/ai-config/*` - AI provider configuration (ADMIN+)
+- `/api/integration/*` - External integrations (Chatwoot SSO)
+- `/api/dashboard/*` - Dashboard statistics
 
 Routes are protected by `authenticateToken` and `validateTenant` middlewares.
 
@@ -411,6 +432,87 @@ Store documents for clients/cases (backend/src/controllers/document.controller.t
 
 **Storage Types:** upload | link
 **External Types:** google_drive | google_docs | minio | other
+
+### AI Integration System (v50+)
+
+AdvWell includes AI-powered case summarization using multiple providers (`backend/src/services/ai/`):
+
+**Supported Providers:**
+- **OpenAI**: GPT-4, GPT-4o, GPT-4o-mini
+- **Google Gemini**: Gemini 1.5 Pro, Gemini 1.5 Flash
+- **Future-ready**: Anthropic Claude, Groq (infrastructure in place)
+
+**How It Works:**
+1. Admin configures AI provider in `/ai-config` page
+2. API key encrypted with AES-256-CBC (stored in `AIConfig` table)
+3. Auto-summarization runs after DataJud sync (if `autoSummarize` enabled)
+4. Summary stored in `Case.aiSummary` field
+5. Manual summarization available via "Gerar Resumo" button
+
+**Configuration:**
+- **API:** `/api/ai-config` (GET, POST, PUT, DELETE, POST `/test-connection`)
+- **Encryption:** Uses `ENCRYPTION_KEY` environment variable
+- **Security:** API keys never exposed in API responses
+- **Table:** `AIConfig` with provider, model, apiKey (encrypted), autoSummarize fields
+
+**Code Locations:**
+- Service: `backend/src/services/ai/ai.service.ts`
+- Providers: `backend/src/services/ai/providers/` (factory pattern)
+- Prompts: `backend/src/services/ai/prompts.ts`
+- Controller: `backend/src/controllers/ai-config.controller.ts`
+- Frontend: `frontend/src/pages/AIConfig.tsx`
+- Encryption: `backend/src/utils/encryption.ts` (AES-256-CBC with random IV)
+
+### Email Campaign System (v51+)
+
+Send bulk email campaigns to clients with tracking (`backend/src/controllers/campaign.controller.ts`):
+
+**Features:**
+- Per-company SMTP configuration (Gmail, custom SMTP)
+- Pre-built templates (legal notices, updates, etc.)
+- Recipient status tracking (pending, sent, failed)
+- Campaign statistics (total sent, failed count)
+- Rich HTML email editor
+
+**Workflow:**
+1. Configure SMTP in `/smtp-settings` (encrypted password storage)
+2. Create campaign in `/campaigns`
+3. Select template or write custom HTML
+4. Add recipients (manual or bulk)
+5. Send immediately or schedule
+6. Track delivery status per recipient
+
+**Configuration:**
+- **API:** `/api/smtp-config`, `/api/campaigns` (GET, POST, PUT, DELETE, POST `/send/:id`)
+- **Tables:** `SMTPConfig`, `EmailCampaign`, `CampaignRecipient`
+- **Encryption:** SMTP passwords encrypted with AES-256-CBC
+- **Security:** Password never returned in API responses
+
+**Code Locations:**
+- Service: `backend/src/services/campaign.service.ts`
+- Controllers: `backend/src/controllers/campaign.controller.ts`, `smtp-config.controller.ts`
+- Frontend: `frontend/src/pages/Campaigns.tsx` (if exists)
+
+### Schedule/Agenda System
+
+Calendar and event management for legal proceedings:
+
+**Event Types:** COMPROMISSO, TAREFA, PRAZO, AUDIENCIA, GOOGLE_MEET
+**Features:** Google Meet link generation, client/case association
+**API:** `/api/schedule` (GET, POST, PUT, DELETE)
+**Table:** `ScheduleEvent`
+
+### Accounts Payable Module
+
+Bills and recurring payments management:
+
+**Features:**
+- Recurring bills (15 days, monthly, semi-annual, annual)
+- Supplier management
+- Status tracking (PENDING, PAID, OVERDUE, CANCELLED)
+- Category organization
+**API:** `/api/accounts-payable` (GET, POST, PUT, DELETE)
+**Table:** `AccountPayable` with recurrence support
 
 ## Important Patterns
 
@@ -581,6 +683,35 @@ Add parties to legal cases (`backend/src/routes/case-part.routes.ts`):
 
 **API:** `/api/cases/:caseId/parts` (GET, POST, PUT, DELETE)
 
+### Encryption Infrastructure
+
+Sensitive data encryption using `backend/src/utils/encryption.ts`:
+
+**Algorithm:** AES-256-CBC with random IV per encryption
+**Use Cases:** AI API keys, SMTP passwords
+**Environment:** `ENCRYPTION_KEY` must be 32 bytes (64 hex chars)
+
+**Pattern:**
+```typescript
+import { encrypt, decrypt } from '../utils/encryption';
+
+// Encrypting sensitive data before storage
+const encryptedKey = encrypt(apiKey);
+await prisma.aiConfig.create({
+  data: { apiKey: encryptedKey, ... }
+});
+
+// Decrypting for use
+const config = await prisma.aiConfig.findUnique(...);
+const apiKey = decrypt(config.apiKey);
+```
+
+**Security Notes:**
+- Each encryption generates new random IV (stored with ciphertext)
+- Encrypted values never returned in API responses
+- Production warning if ENCRYPTION_KEY not set
+- IV prepended to ciphertext (format: `iv:encryptedData`)
+
 ### Middleware Chain Order
 
 Backend routes follow this middleware chain (backend/src/routes/*.routes.ts):
@@ -633,8 +764,9 @@ docker service update --image tomautomations/advwell-frontend:v1-advwell advtom_
 Critical variables in docker-compose.yml:
 - `DATABASE_URL` - PostgreSQL connection string
 - `JWT_SECRET` - Secret for signing JWT tokens
+- `ENCRYPTION_KEY` - Secret for encrypting API keys and passwords (AES-256-CBC)
 - `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `S3_BUCKET_NAME` - S3 configuration
-- `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD` - Email configuration
+- `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD` - Email configuration (default system-wide)
 - `DATAJUD_API_KEY` - CNJ DataJud API access
 - `API_URL`, `FRONTEND_URL` - Service URLs for CORS and email links
 
@@ -762,6 +894,22 @@ docker service logs advtom_postgres -f
 - Test S3 connection from backend container
 - Check file size limits in backend/src/middleware/upload.ts
 
+**AI summarization not working:**
+- Check if AIConfig exists for company: `SELECT * FROM "AIConfig" WHERE "companyId" = 'xxx';`
+- Verify API key is properly encrypted and stored
+- Test connection via UI "Testar Conexão" button
+- Check `ENCRYPTION_KEY` environment variable is set
+- Review backend logs for AI service errors: `docker service logs advtom_backend -f | grep -i "ai"`
+- Verify provider and model are correctly selected
+
+**Email campaigns not sending:**
+- Check SMTPConfig exists for company
+- Verify SMTP password is properly encrypted
+- Test SMTP connection (send test email from UI)
+- Check recipient status in CampaignRecipient table
+- Review campaign service logs for errors
+- Ensure SMTP host allows connection from server IP
+
 ## Security
 
 **6-Phase Security Implementation:**
@@ -845,6 +993,18 @@ docker service logs advtom_postgres -f
 - **Tenant isolation**: `backend/src/middleware/tenant.ts` - Enforces row-level multitenancy
 - **DataJud integration**: `backend/src/services/datajud.service.ts` - Court system API client
 - **File uploads**: `backend/src/utils/s3.ts` - AWS S3 operations
+- **AI Integration**:
+  - Service: `backend/src/services/ai/ai.service.ts`
+  - Providers: `backend/src/services/ai/providers/` (OpenAI, Gemini)
+  - Controller: `backend/src/controllers/ai-config.controller.ts`
+- **Email Campaigns**:
+  - Service: `backend/src/services/campaign.service.ts`
+  - Controllers: `backend/src/controllers/campaign.controller.ts`, `smtp-config.controller.ts`
+- **Security & Logging**:
+  - Encryption: `backend/src/utils/encryption.ts` (AES-256-CBC)
+  - Logger: `backend/src/utils/logger.ts` (Winston)
+  - Sanitization: `backend/src/utils/sanitize.ts` (DOMPurify)
+  - Validation: `backend/src/middleware/validation.ts` (express-validator)
 
 ### Frontend Structure
 - **Entry point**: `frontend/src/main.tsx` - App initialization
@@ -856,11 +1016,13 @@ docker service logs advtom_postgres -f
   - Cases: `frontend/src/pages/Cases.tsx` - Includes case parts management
   - Financial: `frontend/src/pages/Financial.tsx` - Income/expense tracking
   - Settings: `frontend/src/pages/Settings.tsx` - Company configuration
+  - AI Config: `frontend/src/pages/AIConfig.tsx` - AI provider setup
+  - Schedule: `frontend/src/pages/Schedule.tsx` - Agenda/calendar
 
 ### Database
 - **Schema**: `backend/prisma/schema.prisma` - Complete database schema
 - **Manual migrations**: `backend/migrations_manual/` - SQL scripts for complex migrations
-- **Key tables**: Company, User, Client, Case, CasePart, CaseMovement, FinancialTransaction
+- **Key tables**: Company, User, Client, Case, CasePart, CaseMovement, FinancialTransaction, AIConfig, SMTPConfig, EmailCampaign, ScheduleEvent, AccountPayable
 
 ### Configuration
 - **Production**: `docker-compose.yml` - All environment variables and service configs

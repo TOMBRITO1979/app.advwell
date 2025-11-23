@@ -18,7 +18,7 @@ services:
           - node.role == manager
 
   backend:
-    image: tomautomations/advwell-backend:v51-templates
+    image: tomautomations/advwell-backend:v52-user-profile
     environment:
       # Database
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
@@ -68,7 +68,7 @@ services:
         - "traefik.docker.network=network_public"
 
   frontend:
-    image: tomautomations/advwell-frontend:v41-menu-reorder
+    image: tomautomations/advwell-frontend:v61-agenda-green
     environment:
       - VITE_API_URL=${VITE_API_URL}
     networks:

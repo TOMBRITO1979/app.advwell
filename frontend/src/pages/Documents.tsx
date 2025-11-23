@@ -329,8 +329,8 @@ const Documents: React.FC = () => {
     <Layout>
       <div className="p-6">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">Documentos</h1>
-          <p className="text-gray-600">Gerencie documentos de clientes e processos</p>
+          <h1 className="text-2xl font-bold text-neutral-800">Documentos</h1>
+          <p className="text-neutral-600">Gerencie documentos de clientes e processos</p>
         </div>
 
       {/* Search Section */}
@@ -338,7 +338,7 @@ const Documents: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {/* Search Type */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-neutral-700 mb-2">
               Buscar por
             </label>
             <select
@@ -349,7 +349,7 @@ const Documents: React.FC = () => {
                 setSelectedClient(null);
                 setSelectedCase(null);
               }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
             >
               <option value="client">Cliente</option>
               <option value="case">Processo</option>
@@ -358,7 +358,7 @@ const Documents: React.FC = () => {
 
           {/* Search Input */}
           <div className="relative sm:col-span-1 lg:col-span-1">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-neutral-700 mb-2">
               {searchType === 'client' ? 'Nome do Cliente ou CPF' : 'Número do Processo'}
             </label>
             <input
@@ -371,42 +371,42 @@ const Documents: React.FC = () => {
                   ? 'Digite o nome ou CPF'
                   : 'Digite o número do processo'
               }
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
 
             {/* Autocomplete Dropdown */}
             {showSuggestions && searchText && (
-              <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+              <div className="absolute z-10 w-full mt-1 bg-white border border-neutral-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
                 {searchType === 'client' ? (
                   filteredClients.length > 0 ? (
                     filteredClients.map((client) => (
                       <div
                         key={client.id}
                         onClick={() => handleSelectClient(client)}
-                        className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                        className="px-4 py-2 hover:bg-neutral-100 cursor-pointer"
                       >
                         <div className="font-medium">{client.name}</div>
                         {client.cpf && (
-                          <div className="text-sm text-gray-600">{client.cpf}</div>
+                          <div className="text-sm text-neutral-600">{client.cpf}</div>
                         )}
                       </div>
                     ))
                   ) : (
-                    <div className="px-4 py-2 text-gray-500">Nenhum cliente encontrado</div>
+                    <div className="px-4 py-2 text-neutral-500">Nenhum cliente encontrado</div>
                   )
                 ) : filteredCases.length > 0 ? (
                   filteredCases.map((caseItem) => (
                     <div
                       key={caseItem.id}
                       onClick={() => handleSelectCase(caseItem)}
-                      className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                      className="px-4 py-2 hover:bg-neutral-100 cursor-pointer"
                     >
                       <div className="font-medium">{caseItem.processNumber}</div>
-                      <div className="text-sm text-gray-600">{caseItem.subject}</div>
+                      <div className="text-sm text-neutral-600">{caseItem.subject}</div>
                     </div>
                   ))
                 ) : (
-                  <div className="px-4 py-2 text-gray-500">Nenhum processo encontrado</div>
+                  <div className="px-4 py-2 text-neutral-500">Nenhum processo encontrado</div>
                 )}
               </div>
             )}
@@ -417,14 +417,14 @@ const Documents: React.FC = () => {
             <button
               onClick={handleSearch}
               disabled={loading || (!selectedClient && !selectedCase)}
-              className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-sm sm:text-base whitespace-nowrap"
+              className="flex-1 px-3 py-2 bg-info-600 text-white rounded-md hover:bg-info-700 disabled:bg-neutral-400 disabled:cursor-not-allowed text-sm sm:text-base whitespace-nowrap"
             >
               {loading ? 'Buscando...' : 'Visualizar Documentos'}
             </button>
             <button
               onClick={handleAddDocument}
               disabled={!selectedClient && !selectedCase}
-              className="flex-1 px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-sm sm:text-base whitespace-nowrap"
+              className="flex-1 px-3 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:bg-neutral-400 disabled:cursor-not-allowed text-sm sm:text-base whitespace-nowrap"
             >
               + Adicionar Documento
             </button>
@@ -433,9 +433,9 @@ const Documents: React.FC = () => {
 
         {/* Selected Entity Display */}
         {(selectedClient || selectedCase) && (
-          <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-md">
+          <div className="mt-4 p-3 bg-green-50 border border-primary-200 rounded-md">
             <span className="font-medium text-green-900">Selecionado: </span>
-            <span className="text-green-700">
+            <span className="text-primary-700">
               {selectedClient
                 ? `${selectedClient.name} ${selectedClient.cpf ? `(${selectedClient.cpf})` : ''}`
                 : `Processo ${selectedCase?.processNumber}`}
@@ -448,8 +448,8 @@ const Documents: React.FC = () => {
       {showViewModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-            <div className="p-6 border-b border-gray-200">
-              <h2 className="text-xl font-bold text-gray-800">
+            <div className="p-6 border-b border-neutral-200">
+              <h2 className="text-xl font-bold text-neutral-800">
                 Documentos -{' '}
                 {selectedClient
                   ? selectedClient.name
@@ -459,7 +459,7 @@ const Documents: React.FC = () => {
 
             <div className="p-6 overflow-y-auto flex-1">
               {documents.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-8 text-neutral-500">
                   Nenhum documento encontrado
                 </div>
               ) : (
@@ -467,13 +467,13 @@ const Documents: React.FC = () => {
                   {documents.map((doc) => (
                     <div
                       key={doc.id}
-                      className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                      className="border border-neutral-200 rounded-lg p-4 hover:shadow-md transition-shadow"
                     >
                       <div className="flex justify-between items-start mb-2">
                         <div className="flex-1">
-                          <h3 className="font-semibold text-lg text-gray-800">{doc.name}</h3>
+                          <h3 className="font-semibold text-lg text-neutral-800">{doc.name}</h3>
                           {doc.description && (
-                            <p className="text-sm text-gray-600 mt-1">{doc.description}</p>
+                            <p className="text-sm text-neutral-600 mt-1">{doc.description}</p>
                           )}
                         </div>
                         <span
@@ -489,8 +489,8 @@ const Documents: React.FC = () => {
 
                       <div className="grid grid-cols-2 gap-4 mt-3 text-sm">
                         <div>
-                          <span className="text-gray-500">Tipo: </span>
-                          <span className="text-gray-700">
+                          <span className="text-neutral-500">Tipo: </span>
+                          <span className="text-neutral-700">
                             {doc.storageType === 'link'
                               ? getExternalTypeLabel(doc.externalType)
                               : doc.fileType || 'Arquivo'}
@@ -498,20 +498,20 @@ const Documents: React.FC = () => {
                         </div>
                         {doc.fileSize && (
                           <div>
-                            <span className="text-gray-500">Tamanho: </span>
-                            <span className="text-gray-700">{formatFileSize(doc.fileSize)}</span>
+                            <span className="text-neutral-500">Tamanho: </span>
+                            <span className="text-neutral-700">{formatFileSize(doc.fileSize)}</span>
                           </div>
                         )}
                         <div>
-                          <span className="text-gray-500">Adicionado em: </span>
-                          <span className="text-gray-700">
+                          <span className="text-neutral-500">Adicionado em: </span>
+                          <span className="text-neutral-700">
                             {new Date(doc.createdAt).toLocaleDateString('pt-BR')}
                           </span>
                         </div>
                         {doc.user && (
                           <div>
-                            <span className="text-gray-500">Por: </span>
-                            <span className="text-gray-700">{doc.user.name}</span>
+                            <span className="text-neutral-500">Por: </span>
+                            <span className="text-neutral-700">{doc.user.name}</span>
                           </div>
                         )}
                       </div>
@@ -519,7 +519,7 @@ const Documents: React.FC = () => {
                       <div className="flex gap-2 mt-4">
                         <button
                           onClick={() => handleOpenDocument(doc)}
-                          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm flex items-center gap-1"
+                          className="px-4 py-2 bg-info-600 text-white rounded-md hover:bg-info-700 text-sm flex items-center gap-1"
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                             <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
@@ -529,7 +529,7 @@ const Documents: React.FC = () => {
                         </button>
                         <button
                           onClick={() => handleDownloadDocument(doc)}
-                          className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm flex items-center gap-1"
+                          className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 text-sm flex items-center gap-1"
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                             <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -538,7 +538,7 @@ const Documents: React.FC = () => {
                         </button>
                         <button
                           onClick={() => handleDeleteDocument(doc.id)}
-                          className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm"
+                          className="px-4 py-2 bg-error-600 text-white rounded-md hover:bg-error-700 text-sm"
                         >
                           Excluir
                         </button>
@@ -549,10 +549,10 @@ const Documents: React.FC = () => {
               )}
             </div>
 
-            <div className="p-6 border-t border-gray-200">
+            <div className="p-6 border-t border-neutral-200">
               <button
                 onClick={() => setShowViewModal(false)}
-                className="w-full px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+                className="w-full px-4 py-2 bg-neutral-200 text-neutral-800 rounded-md hover:bg-neutral-300"
               >
                 Fechar
               </button>
@@ -565,18 +565,18 @@ const Documents: React.FC = () => {
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-            <div className="p-6 border-b border-gray-200">
-              <h2 className="text-xl font-bold text-gray-800">Adicionar Documento</h2>
+            <div className="p-6 border-b border-neutral-200">
+              <h2 className="text-xl font-bold text-neutral-800">Adicionar Documento</h2>
             </div>
 
             <form onSubmit={handleSaveDocument} className="p-6 overflow-y-auto flex-1">
               <div className="space-y-4">
                 {/* Selected Entity */}
-                <div className="p-3 bg-green-50 border border-green-200 rounded-md">
+                <div className="p-3 bg-green-50 border border-primary-200 rounded-md">
                   <span className="font-medium text-green-900">
                     {selectedClient ? 'Cliente: ' : 'Processo: '}
                   </span>
-                  <span className="text-green-700">
+                  <span className="text-primary-700">
                     {selectedClient
                       ? selectedClient.name
                       : selectedCase?.processNumber}
@@ -585,34 +585,34 @@ const Documents: React.FC = () => {
 
                 {/* Document Name */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-neutral-700 mb-2">
                     Nome do Documento *
                   </label>
                   <input
                     type="text"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                     required
                   />
                 </div>
 
                 {/* Description */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-neutral-700 mb-2">
                     Descrição (opcional)
                   </label>
                   <textarea
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                 </div>
 
                 {/* Storage Type */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-neutral-700 mb-2">
                     Tipo de Armazenamento *
                   </label>
                   <div className="space-y-2">
@@ -647,7 +647,7 @@ const Documents: React.FC = () => {
                 {formData.storageType === 'link' && (
                   <>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-neutral-700 mb-2">
                         URL do Documento *
                       </label>
                       <input
@@ -656,14 +656,14 @@ const Documents: React.FC = () => {
                         onChange={(e) =>
                           setFormData({ ...formData, externalUrl: e.target.value })
                         }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                         placeholder="https://..."
                         required
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-neutral-700 mb-2">
                         Tipo de Link
                       </label>
                       <select
@@ -674,7 +674,7 @@ const Documents: React.FC = () => {
                             externalType: e.target.value as any,
                           })
                         }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                       >
                         <option value="google_drive">Google Drive</option>
                         <option value="google_docs">Google Docs</option>
@@ -688,7 +688,7 @@ const Documents: React.FC = () => {
                 {/* Upload Fields */}
                 {formData.storageType === 'upload' && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-neutral-700 mb-2">
                       Selecionar Arquivo *
                     </label>
                     <input
@@ -703,16 +703,16 @@ const Documents: React.FC = () => {
                           }
                         }
                       }}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                      className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                       accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.jpg,.jpeg,.png,.gif,.webp,.zip,.rar"
                     />
                     {selectedFile && (
-                      <p className="mt-2 text-sm text-gray-600">
+                      <p className="mt-2 text-sm text-neutral-600">
                         Arquivo selecionado: <span className="font-medium">{selectedFile.name}</span>
                         {' '}({(selectedFile.size / (1024 * 1024)).toFixed(2)} MB)
                       </p>
                     )}
-                    <p className="mt-2 text-xs text-gray-500">
+                    <p className="mt-2 text-xs text-neutral-500">
                       Tamanho máximo: 50MB. Formatos aceitos: PDF, Word, Excel, PowerPoint, imagens, arquivos compactados.
                     </p>
                   </div>
@@ -720,21 +720,21 @@ const Documents: React.FC = () => {
               </div>
             </form>
 
-            <div className="p-6 border-t border-gray-200 flex gap-3">
+            <div className="p-6 border-t border-neutral-200 flex gap-3">
               <button
                 type="button"
                 onClick={() => {
                   setShowAddModal(false);
                   resetForm();
                 }}
-                className="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+                className="flex-1 px-4 py-2 bg-neutral-200 text-neutral-800 rounded-md hover:bg-neutral-300"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleSaveDocument}
                 disabled={loading}
-                className="flex-1 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:bg-neutral-400 disabled:cursor-not-allowed"
               >
                 {loading ? 'Enviando...' : 'Salvar Documento'}
               </button>

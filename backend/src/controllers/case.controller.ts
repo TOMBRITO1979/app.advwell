@@ -4,6 +4,7 @@ import prisma from '../utils/prisma';
 import datajudService from '../services/datajud.service';
 import { parse } from 'csv-parse/sync';
 import { sanitizeString } from '../utils/sanitize';
+import { AIService } from '../services/ai/ai.service';
 
 // Função utilitária para formatar o último movimento
 function getUltimoAndamento(movimentos: any[]): string | null {
@@ -25,6 +26,10 @@ export class CaseController {
     try {
       const { clientId, processNumber, court, subject, value, notes, informarCliente, linkProcesso } = req.body;
       const companyId = req.user!.companyId;
+
+      // Converter strings vazias em null/undefined
+      const cleanValue = value === '' || value === null || value === undefined ? undefined : parseFloat(value);
+      const cleanLinkProcesso = linkProcesso === '' ? null : linkProcesso;
 
       if (!companyId) {
         return res.status(403).json({ error: 'Usuário não possui empresa associada' });
@@ -72,11 +77,11 @@ export class CaseController {
           processNumber,
           court: court || datajudData?.tribunal || '',
           subject: sanitizeString(subject || datajudData?.assuntos?.[0]?.nome) || '',
-          value,
+          value: cleanValue,
           notes: sanitizeString(notes),
           ultimoAndamento,
           informarCliente: sanitizeString(informarCliente) || null,
-          linkProcesso: linkProcesso || null,
+          linkProcesso: cleanLinkProcesso,
           lastSyncedAt: datajudData ? new Date() : null,
         },
       });
@@ -94,6 +99,34 @@ export class CaseController {
               .join('; '),
           })),
         });
+
+        // Hook: Gerar resumo automático se configurado
+        try {
+          const aiConfig = await prisma.aIConfig.findUnique({
+            where: { companyId },
+          });
+
+          if (aiConfig && aiConfig.enabled && aiConfig.autoSummarize) {
+            // Gera resumo em background (não bloqueia resposta)
+            AIService.generateCaseSummary(caseData.id, companyId)
+              .then(async (result) => {
+                if (result.success && result.summary) {
+                  await prisma.case.update({
+                    where: { id: caseData.id },
+                    data: { informarCliente: result.summary },
+                  });
+                  console.log(`Resumo gerado automaticamente para novo processo ${caseData.id} usando ${result.provider}/${result.model}`);
+                }
+              })
+              .catch((error) => {
+                console.error('Erro ao gerar resumo automático:', error);
+                // Não impede a criação, apenas loga o erro
+              });
+          }
+        } catch (error) {
+          console.error('Erro ao verificar configuração de IA:', error);
+          // Não impede a criação, apenas loga o erro
+        }
       }
 
       // Retorna o processo com as movimentações
@@ -296,6 +329,34 @@ export class CaseController {
         },
       });
 
+      // Hook: Gerar resumo automático se configurado
+      try {
+        const aiConfig = await prisma.aIConfig.findUnique({
+          where: { companyId: companyId! },
+        });
+
+        if (aiConfig && aiConfig.enabled && aiConfig.autoSummarize) {
+          // Gera resumo em background (não bloqueia resposta)
+          AIService.generateCaseSummary(id, companyId!)
+            .then(async (result) => {
+              if (result.success && result.summary) {
+                await prisma.case.update({
+                  where: { id },
+                  data: { informarCliente: result.summary },
+                });
+                console.log(`Resumo gerado automaticamente para processo ${id} usando ${result.provider}/${result.model}`);
+              }
+            })
+            .catch((error) => {
+              console.error('Erro ao gerar resumo automático:', error);
+              // Não impede a sincronização, apenas loga o erro
+            });
+        }
+      } catch (error) {
+        console.error('Erro ao verificar configuração de IA:', error);
+        // Não impede a sincronização, apenas loga o erro
+      }
+
       // Retorna o processo atualizado
       const updatedCase = await prisma.case.findUnique({
         where: { id },
@@ -310,6 +371,58 @@ export class CaseController {
     } catch (error) {
       console.error('Erro ao sincronizar movimentações:', error);
       res.status(500).json({ error: 'Erro ao sincronizar movimentações' });
+    }
+  }
+
+  async generateSummary(req: AuthRequest, res: Response) {
+    try {
+      const { id } = req.params;
+      const companyId = req.user!.companyId!;
+
+      // Verificar se o processo existe e pertence à empresa
+      const caseData = await prisma.case.findFirst({
+        where: {
+          id,
+          companyId,
+        },
+      });
+
+      if (!caseData) {
+        return res.status(404).json({ error: 'Processo não encontrado' });
+      }
+
+      // Gerar resumo usando IA
+      const result = await AIService.generateCaseSummary(id, companyId);
+
+      if (!result.success) {
+        return res.status(400).json({ error: result.error });
+      }
+
+      // Atualizar o campo informarCliente com o resumo gerado
+      const updatedCase = await prisma.case.update({
+        where: { id },
+        data: {
+          informarCliente: result.summary,
+        },
+        include: {
+          client: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      });
+
+      res.json({
+        message: 'Resumo gerado com sucesso',
+        case: updatedCase,
+        provider: result.provider,
+        model: result.model,
+      });
+    } catch (error) {
+      console.error('Erro ao gerar resumo:', error);
+      res.status(500).json({ error: 'Erro ao gerar resumo' });
     }
   }
 

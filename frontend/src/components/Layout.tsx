@@ -8,6 +8,7 @@ import {
   DollarSign,
   FolderOpen,
   Calendar,
+  CheckSquare,
   Settings,
   LogOut,
   Building2,
@@ -19,6 +20,8 @@ import {
   Bell,
   CreditCard,
   Mail,
+  Bot,
+  Scale,
 } from 'lucide-react';
 
 interface LayoutProps {
@@ -55,6 +58,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const menuItems = [
     { path: '/dashboard', label: 'Dashboard', icon: Home },
     { path: '/schedule', label: 'Agenda', icon: Calendar },
+    { path: '/todos', label: 'Tarefas', icon: CheckSquare },
     { path: '/clients', label: 'Clientes', icon: Users },
     { path: '/cases', label: 'Processos', icon: FileText },
     { path: '/documents', label: 'Uploads', icon: FolderOpen },
@@ -66,6 +70,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   if (user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') {
     menuItems.push({ path: '/campaigns', label: 'Campanhas', icon: Mail });
     menuItems.push({ path: '/smtp-settings', label: 'Config. SMTP', icon: Settings });
+    menuItems.push({ path: '/ai-config', label: 'Config. IA', icon: Bot });
     menuItems.push({ path: '/users', label: 'Usuários', icon: UserCog });
   }
 
@@ -76,7 +81,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   menuItems.push({ path: '/settings', label: 'Configurações', icon: Settings });
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-neutral-50">
       {/* Overlay para mobile */}
       {sidebarOpen && (
         <div
@@ -86,27 +91,34 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       )}
 
       {/* Header */}
-      <header className="bg-white shadow-sm sticky top-0 z-30">
+      <header className="bg-white shadow-sm sticky top-0 z-30 border-b border-neutral-200">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
           <div className="flex justify-between items-center py-3 sm:py-4">
             <div className="flex items-center gap-2 sm:gap-4">
               <button
                 onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="p-2 rounded-lg hover:bg-gray-100 lg:hidden"
+                className="p-2 rounded-lg hover:bg-neutral-100 transition-colors lg:hidden"
                 aria-label="Menu"
               >
                 {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
               </button>
-              <h1 className="text-lg sm:text-2xl font-bold text-gray-900">AdvWell</h1>
+              <div className="flex items-center gap-2">
+                <Scale className="text-primary-600" size={28} />
+                <h1 className="text-lg sm:text-2xl font-bold text-primary-600">AdvWell</h1>
+              </div>
             </div>
             <div className="flex items-center gap-2 sm:gap-4">
-              <div className="text-right hidden sm:block">
-                <p className="text-sm font-medium text-gray-900 truncate max-w-[150px]">{user?.name}</p>
-                <p className="text-xs text-gray-500 truncate max-w-[150px]">{user?.companyName}</p>
-              </div>
+              <Link
+                to="/profile"
+                className="text-right hidden sm:block hover:bg-neutral-100 rounded-lg p-2 transition-colors"
+                title="Meu Perfil"
+              >
+                <p className="text-sm font-medium text-neutral-900 truncate max-w-[150px]">{user?.name}</p>
+                <p className="text-xs text-neutral-500 truncate max-w-[150px]">{user?.companyName}</p>
+              </Link>
               <button
                 onClick={handleLogout}
-                className="p-2 rounded-lg hover:bg-gray-100 text-gray-700 hover:text-gray-900"
+                className="p-2 rounded-lg hover:bg-neutral-100 text-neutral-700 hover:text-neutral-900 transition-colors"
                 title="Sair"
                 aria-label="Sair"
               >
@@ -124,13 +136,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             sidebarOpen ? 'translate-x-0' : '-translate-x-full'
           } lg:translate-x-0 ${
             sidebarCollapsed ? 'lg:w-16' : 'lg:w-64'
-          } w-64 bg-white shadow-lg min-h-screen fixed lg:sticky top-0 z-30 lg:z-10 transition-transform duration-300 ease-in-out`}
+          } w-64 bg-white shadow-lg min-h-screen fixed lg:sticky top-0 z-30 lg:z-10 transition-all duration-300 ease-in-out border-r border-neutral-200`}
         >
           {/* Botão de recolher (apenas desktop) */}
           <div className="hidden lg:flex justify-end p-2">
             <button
               onClick={toggleSidebarCollapse}
-              className="p-2 rounded-lg hover:bg-gray-100 text-gray-600"
+              className="p-2 rounded-lg hover:bg-neutral-100 text-neutral-600 transition-colors"
               title={sidebarCollapsed ? 'Expandir' : 'Recolher'}
             >
               {sidebarCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
@@ -147,16 +159,16 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   to={item.path}
                   className={`flex items-center ${
                     sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-6'
-                  } py-3 ${
+                  } py-3 transition-all duration-200 font-medium ${
                     isActive
-                      ? 'bg-green-50 text-green-600 border-r-4 border-green-600'
-                      : 'text-gray-700 hover:bg-gray-50'
+                      ? 'bg-primary-50 text-primary-600 border-r-4 border-primary-500'
+                      : 'text-neutral-700 hover:bg-neutral-50 hover:text-primary-600'
                   }`}
                   onClick={() => setSidebarOpen(false)}
                   title={sidebarCollapsed ? item.label : ''}
                 >
                   <Icon size={20} />
-                  {!sidebarCollapsed && <span>{item.label}</span>}
+                  {!sidebarCollapsed && <span className="text-sm">{item.label}</span>}
                 </Link>
               );
             })}

@@ -2,6 +2,10 @@ import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import prisma from '../utils/prisma';
 import bcrypt from 'bcryptjs';
+import { s3Client, getSignedS3Url } from '../utils/s3';
+import { PutObjectCommand } from '@aws-sdk/client-s3';
+import { config } from '../config';
+import crypto from 'crypto';
 
 export class UserController {
   // Admin - Listar usuários da sua empresa
@@ -229,6 +233,152 @@ export class UserController {
     } catch (error) {
       console.error('Erro ao deletar usuário:', error);
       res.status(500).json({ error: 'Erro ao deletar usuário' });
+    }
+  }
+
+  // Buscar perfil do usuário logado
+  async getProfile(req: AuthRequest, res: Response) {
+    try {
+      const userId = req.user!.userId;
+
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          phone: true,
+          mobile: true,
+          birthDate: true,
+          profilePhoto: true,
+          profilePhotoUrl: true,
+          createdAt: true,
+          company: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      });
+
+      if (!user) {
+        return res.status(404).json({ error: 'Usuário não encontrado' });
+      }
+
+      res.json(user);
+    } catch (error) {
+      console.error('Erro ao buscar perfil:', error);
+      res.status(500).json({ error: 'Erro ao buscar perfil' });
+    }
+  }
+
+  // Atualizar perfil do usuário logado
+  async updateProfile(req: AuthRequest, res: Response) {
+    try {
+      const userId = req.user!.userId;
+      const { name, phone, mobile, birthDate } = req.body;
+
+      const updatedUser = await prisma.user.update({
+        where: { id: userId },
+        data: {
+          name: name || undefined,
+          phone: phone || null,
+          mobile: mobile || null,
+          birthDate: birthDate ? new Date(birthDate) : null,
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          phone: true,
+          mobile: true,
+          birthDate: true,
+          profilePhoto: true,
+          profilePhotoUrl: true,
+        },
+      });
+
+      res.json(updatedUser);
+    } catch (error) {
+      console.error('Erro ao atualizar perfil:', error);
+      res.status(500).json({ error: 'Erro ao atualizar perfil' });
+    }
+  }
+
+  // Upload de foto de perfil
+  async uploadProfilePhoto(req: AuthRequest, res: Response) {
+    try {
+      const userId = req.user!.userId;
+      const file = req.file;
+
+      if (!file) {
+        return res.status(400).json({ error: 'Nenhum arquivo foi enviado' });
+      }
+
+      // Validar tipo de arquivo
+      const allowedMimes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+      if (!allowedMimes.includes(file.mimetype)) {
+        return res.status(400).json({ error: 'Tipo de arquivo não permitido. Use JPG, PNG ou WEBP.' });
+      }
+
+      // Validar tamanho (5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        return res.status(400).json({ error: 'Arquivo muito grande. Tamanho máximo: 5MB' });
+      }
+
+      // Buscar informações do usuário e empresa
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        include: { company: true },
+      });
+
+      if (!user || !user.company) {
+        return res.status(404).json({ error: 'Usuário ou empresa não encontrada' });
+      }
+
+      // Sanitizar email do admin para usar no caminho S3
+      const adminEmail = user.company.email.toLowerCase().replace(/@/g, '-at-').replace(/[^a-z0-9-_.]/g, '');
+
+      // Definir nome do arquivo
+      const fileExtension = file.originalname.split('.').pop();
+      const fileName = `${userId}-${Date.now()}.${fileExtension}`;
+      const s3Key = `${adminEmail}/profile-photos/${fileName}`;
+
+      // Upload para S3
+      const command = new PutObjectCommand({
+        Bucket: config.aws.s3BucketName,
+        Key: s3Key,
+        Body: file.buffer,
+        ContentType: file.mimetype,
+      });
+      await s3Client.send(command);
+
+      // Gerar URL presignada (válida por 7 dias)
+      const photoUrl = await getSignedS3Url(s3Key);
+
+      // Atualizar usuário com a foto
+      const updatedUser = await prisma.user.update({
+        where: { id: userId },
+        data: {
+          profilePhoto: s3Key,
+          profilePhotoUrl: photoUrl,
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          profilePhoto: true,
+          profilePhotoUrl: true,
+        },
+      });
+
+      res.json(updatedUser);
+    } catch (error) {
+      console.error('Erro ao fazer upload da foto:', error);
+      res.status(500).json({ error: 'Erro ao fazer upload da foto' });
     }
   }
 }
