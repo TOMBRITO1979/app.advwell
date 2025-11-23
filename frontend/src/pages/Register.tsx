@@ -101,7 +101,7 @@ const Register: React.FC = () => {
             <div className="space-y-3">
               <button
                 onClick={() => navigate('/login')}
-                className="w-full px-4 py-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-neutral-900 rounded-lg shadow-xl hover:shadow-green-500/50 transition-all duration-300 transform hover:scale-[1.02] active:scale-95 font-medium min-h-[44px]"
+                className="w-full px-4 py-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-lg shadow-xl hover:shadow-green-500/50 transition-all duration-300 transform hover:scale-[1.02] active:scale-95 font-medium min-h-[44px]"
               >
                 Ir para Login
               </button>
@@ -233,7 +233,7 @@ const Register: React.FC = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-xl text-sm font-medium text-neutral-900 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 hover:shadow-green-500/50 transition-all duration-300 transform hover:scale-[1.02] active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 min-h-[44px]"
+            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-xl text-sm font-medium text-white bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 hover:shadow-green-500/50 transition-all duration-300 transform hover:scale-[1.02] active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 min-h-[44px]"
           >
             {loading ? 'Cadastrando...' : 'Cadastrar'}
           </button>
