@@ -1297,41 +1297,56 @@ const Cases: React.FC = () => {
 
                         {/* Movimentações */}
                         <div className="space-y-6">
-                          {selectedCase.movements.map((movement, index) => (
-                            <div key={movement.id} className="relative pl-12">
-                              {/* Ponto na timeline */}
-                              <div className="absolute left-2 top-1 w-4 h-4 bg-primary-600 rounded-full border-4 border-white"></div>
+                          {selectedCase.movements.map((movement, index) => {
+                            // Parsear descrição para extrair complementos
+                            const complementos = movement.description
+                              ? movement.description.split('; ').filter(c => c.trim())
+                              : [];
 
-                              {/* Conteúdo da movimentação */}
-                              <div className="bg-neutral-50 rounded-lg p-4 hover:bg-neutral-100 transition-colors">
-                                <div className="flex items-start justify-between mb-2">
-                                  <h4 className="font-medium text-neutral-900">
-                                    {movement.movementName}
-                                  </h4>
-                                  <span className="text-xs text-neutral-500 whitespace-nowrap ml-4">
-                                    Código: {movement.movementCode}
-                                  </span>
+                            return (
+                              <div key={movement.id} className="relative pl-12">
+                                {/* Ponto na timeline */}
+                                <div className="absolute left-2 top-1 w-4 h-4 bg-primary-600 rounded-full border-4 border-white"></div>
+
+                                {/* Conteúdo da movimentação */}
+                                <div className="bg-neutral-50 rounded-lg p-4 hover:bg-neutral-100 transition-colors">
+                                  <div className="flex items-start justify-between mb-2">
+                                    <h4 className="font-semibold text-neutral-900 text-base">
+                                      Tipo do Movimento: {movement.movementName}
+                                    </h4>
+                                    {index === 0 && (
+                                      <span className="inline-block text-xs bg-green-100 text-primary-700 px-2 py-1 rounded-full whitespace-nowrap ml-2">
+                                        Mais recente
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  <div className="flex items-center text-sm text-neutral-600 mb-3">
+                                    <Calendar size={14} className="mr-1" />
+                                    <span className="font-medium">Data:</span>
+                                    <span className="ml-1">{formatDate(movement.movementDate)}</span>
+                                  </div>
+
+                                  {/* Complementos tabelados */}
+                                  {complementos.length > 0 && (
+                                    <div className="space-y-1 mt-2">
+                                      {complementos.map((comp, idx) => {
+                                        const [campo, valor] = comp.split(':').map(s => s.trim());
+                                        if (!campo || !valor) return null;
+
+                                        return (
+                                          <div key={idx} className="text-sm">
+                                            <span className="font-medium text-neutral-700">{campo}:</span>
+                                            <span className="ml-1 text-neutral-600">{valor}</span>
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                  )}
                                 </div>
-
-                                <div className="flex items-center text-sm text-neutral-500 mb-2">
-                                  <Calendar size={14} className="mr-1" />
-                                  {formatDate(movement.movementDate)}
-                                </div>
-
-                                {movement.description && (
-                                  <p className="text-sm text-neutral-700 mt-2 leading-relaxed">
-                                    {movement.description}
-                                  </p>
-                                )}
-
-                                {index === 0 && (
-                                  <span className="inline-block mt-2 text-xs bg-green-100 text-primary-700 px-2 py-1 rounded-full min-h-[44px]">
-                                    Mais recente
-                                  </span>
-                                )}
                               </div>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       </div>
                     )}
