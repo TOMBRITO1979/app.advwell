@@ -10,6 +10,7 @@ interface Client {
   personType?: 'FISICA' | 'JURIDICA';
   name: string;
   cpf?: string;
+  stateRegistration?: string;
   rg?: string;
   email?: string;
   phone?: string;
@@ -32,6 +33,7 @@ interface ClientFormData {
   personType: 'FISICA' | 'JURIDICA';
   name: string;
   cpf: string;
+  stateRegistration: string;
   rg: string;
   email: string;
   phone: string;
@@ -64,6 +66,7 @@ const Clients: React.FC = () => {
     personType: 'FISICA',
     name: '',
     cpf: '',
+    stateRegistration: '',
     rg: '',
     email: '',
     phone: '',
@@ -162,6 +165,7 @@ const Clients: React.FC = () => {
       personType: 'FISICA',
       name: '',
       cpf: '',
+      stateRegistration: '',
       rg: '',
       email: '',
       phone: '',
@@ -205,6 +209,7 @@ const Clients: React.FC = () => {
       personType: client.personType || 'FISICA',
       name: client.name || '',
       cpf: client.cpf || '',
+      stateRegistration: client.stateRegistration || '',
       rg: client.rg || '',
       email: client.email || '',
       phone: client.phone || '',
@@ -403,9 +408,11 @@ const Clients: React.FC = () => {
 
             <form onSubmit={handleSubmit} className="p-6">
               <div className="space-y-6">
-                {/* Dados Pessoais */}
+                {/* Dados da Empresa / Dados Pessoais */}
                 <div>
-                  <h3 className="text-lg font-semibold text-neutral-900 mb-4">Dados Pessoais</h3>
+                  <h3 className="text-lg font-semibold text-neutral-900 mb-4">
+                    {formData.personType === 'JURIDICA' ? 'Dados da Empresa' : 'Dados Pessoais'}
+                  </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Tipo de Pessoa */}
                     <div>
@@ -425,7 +432,7 @@ const Clients: React.FC = () => {
 
                     <div>
                       <label className="block text-sm font-medium text-neutral-700 mb-1">
-                        Nome Completo / Razão Social <span className="text-error-500">*</span>
+                        {formData.personType === 'FISICA' ? 'Nome Completo' : 'Razão Social'} <span className="text-error-500">*</span>
                       </label>
                       <input
                         type="text"
@@ -450,84 +457,73 @@ const Clients: React.FC = () => {
                       />
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">RG</label>
-                      <input
-                        type="text"
-                        value={formData.rg}
-                        onChange={(e) => setFormData({ ...formData, rg: e.target.value })}
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">
-                        Data de Nascimento
-                      </label>
-                      <input
-                        type="date"
-                        value={formData.birthDate}
-                        onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">
-                        Estado Civil
-                      </label>
-                      <select
-                        value={formData.maritalStatus}
-                        onChange={(e) => setFormData({ ...formData, maritalStatus: e.target.value })}
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
-                      >
-                        <option value="">Selecione...</option>
-                        <option value="Solteiro(a)">Solteiro(a)</option>
-                        <option value="Casado(a)">Casado(a)</option>
-                        <option value="Divorciado(a)">Divorciado(a)</option>
-                        <option value="Viúvo(a)">Viúvo(a)</option>
-                        <option value="União Estável">União Estável</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">
-                        Profissão
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.profession}
-                        onChange={(e) => setFormData({ ...formData, profession: e.target.value })}
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
-                      />
-                    </div>
-
-                    {/* Campos de Representante Legal - apenas para Pessoa Jurídica */}
+                    {/* Inscrição Estadual - apenas para Pessoa Jurídica */}
                     {formData.personType === 'JURIDICA' && (
+                      <div>
+                        <label className="block text-sm font-medium text-neutral-700 mb-1">
+                          Inscrição Estadual
+                        </label>
+                        <input
+                          type="text"
+                          value={formData.stateRegistration}
+                          onChange={(e) => setFormData({ ...formData, stateRegistration: e.target.value })}
+                          placeholder="123.456.789.012"
+                          className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        />
+                      </div>
+                    )}
+
+                    {/* Campos para Pessoa Física */}
+                    {formData.personType === 'FISICA' && (
                       <>
                         <div>
-                          <label className="block text-sm font-medium text-neutral-700 mb-1">
-                            Nome do Representante Legal
-                          </label>
+                          <label className="block text-sm font-medium text-neutral-700 mb-1">RG</label>
                           <input
                             type="text"
-                            value={formData.representativeName}
-                            onChange={(e) => setFormData({ ...formData, representativeName: e.target.value })}
-                            placeholder="Nome completo do representante"
+                            value={formData.rg}
+                            onChange={(e) => setFormData({ ...formData, rg: e.target.value })}
                             className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                           />
                         </div>
 
                         <div>
                           <label className="block text-sm font-medium text-neutral-700 mb-1">
-                            CPF do Representante Legal
+                            Data de Nascimento
+                          </label>
+                          <input
+                            type="date"
+                            value={formData.birthDate}
+                            onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
+                            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-neutral-700 mb-1">
+                            Estado Civil
+                          </label>
+                          <select
+                            value={formData.maritalStatus}
+                            onChange={(e) => setFormData({ ...formData, maritalStatus: e.target.value })}
+                            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                          >
+                            <option value="">Selecione...</option>
+                            <option value="Solteiro(a)">Solteiro(a)</option>
+                            <option value="Casado(a)">Casado(a)</option>
+                            <option value="Divorciado(a)">Divorciado(a)</option>
+                            <option value="Viúvo(a)">Viúvo(a)</option>
+                            <option value="União Estável">União Estável</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-neutral-700 mb-1">
+                            Profissão
                           </label>
                           <input
                             type="text"
-                            value={formData.representativeCpf}
-                            onChange={(e) => setFormData({ ...formData, representativeCpf: e.target.value })}
-                            placeholder="000.000.000-00"
-                            maxLength={14}
+                            value={formData.profession}
+                            onChange={(e) => setFormData({ ...formData, profession: e.target.value })}
                             className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                           />
                         </div>
@@ -535,6 +531,93 @@ const Clients: React.FC = () => {
                     )}
                   </div>
                 </div>
+
+                {/* Dados do Representante Legal - apenas para Pessoa Jurídica */}
+                {formData.personType === 'JURIDICA' && (
+                  <div>
+                    <h3 className="text-lg font-semibold text-neutral-900 mb-4">Dados do Representante Legal</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-neutral-700 mb-1">
+                          Nome do Representante Legal
+                        </label>
+                        <input
+                          type="text"
+                          value={formData.representativeName}
+                          onChange={(e) => setFormData({ ...formData, representativeName: e.target.value })}
+                          placeholder="Nome completo do representante"
+                          className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-neutral-700 mb-1">
+                          CPF do Representante Legal
+                        </label>
+                        <input
+                          type="text"
+                          value={formData.representativeCpf}
+                          onChange={(e) => setFormData({ ...formData, representativeCpf: e.target.value })}
+                          placeholder="000.000.000-00"
+                          maxLength={14}
+                          className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-neutral-700 mb-1">RG do Representante</label>
+                        <input
+                          type="text"
+                          value={formData.rg}
+                          onChange={(e) => setFormData({ ...formData, rg: e.target.value })}
+                          className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-neutral-700 mb-1">
+                          Data de Nascimento do Representante
+                        </label>
+                        <input
+                          type="date"
+                          value={formData.birthDate}
+                          onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
+                          className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-neutral-700 mb-1">
+                          Estado Civil do Representante
+                        </label>
+                        <select
+                          value={formData.maritalStatus}
+                          onChange={(e) => setFormData({ ...formData, maritalStatus: e.target.value })}
+                          className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        >
+                          <option value="">Selecione...</option>
+                          <option value="Solteiro(a)">Solteiro(a)</option>
+                          <option value="Casado(a)">Casado(a)</option>
+                          <option value="Divorciado(a)">Divorciado(a)</option>
+                          <option value="Viúvo(a)">Viúvo(a)</option>
+                          <option value="União Estável">União Estável</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-neutral-700 mb-1">
+                          Profissão do Representante
+                        </label>
+                        <input
+                          type="text"
+                          value={formData.profession}
+                          onChange={(e) => setFormData({ ...formData, profession: e.target.value })}
+                          className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Contato */}
                 <div>
@@ -713,50 +796,93 @@ const Clients: React.FC = () => {
             </div>
 
             <div className="p-6 space-y-6">
-              {/* Dados Pessoais */}
+              {/* Dados da Empresa / Dados Pessoais */}
               <div>
-                <h3 className="text-lg font-semibold text-neutral-900 mb-3">Dados Pessoais</h3>
+                <h3 className="text-lg font-semibold text-neutral-900 mb-3">
+                  {selectedClient.personType === 'JURIDICA' ? 'Dados da Empresa' : 'Dados Pessoais'}
+                </h3>
                 <div className="bg-neutral-50 rounded-lg p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm font-medium text-neutral-500">Nome</p>
+                    <p className="text-sm font-medium text-neutral-500">Tipo de Pessoa</p>
+                    <p className="text-sm text-neutral-900 mt-1">
+                      {selectedClient.personType === 'JURIDICA' ? 'Pessoa Jurídica' : 'Pessoa Física'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-neutral-500">
+                      {selectedClient.personType === 'JURIDICA' ? 'Razão Social' : 'Nome Completo'}
+                    </p>
                     <p className="text-sm text-neutral-900 mt-1">{selectedClient.name}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-500">CPF</p>
+                    <p className="text-sm font-medium text-neutral-500">
+                      {selectedClient.personType === 'JURIDICA' ? 'CNPJ' : 'CPF'}
+                    </p>
                     <p className="text-sm text-neutral-900 mt-1">{formatCPF(selectedClient.cpf)}</p>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-neutral-500">RG</p>
-                    <p className="text-sm text-neutral-900 mt-1">{selectedClient.rg || '-'}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-neutral-500">Data de Nascimento</p>
-                    <p className="text-sm text-neutral-900 mt-1">{formatDate(selectedClient.birthDate)}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-neutral-500">Estado Civil</p>
-                    <p className="text-sm text-neutral-900 mt-1">{selectedClient.maritalStatus || '-'}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-neutral-500">Profissão</p>
-                    <p className="text-sm text-neutral-900 mt-1">{selectedClient.profession || '-'}</p>
-                  </div>
 
-                  {/* Campos de Representante Legal - apenas para Pessoa Jurídica */}
-                  {selectedClient.personType === 'JURIDICA' && (
+                  {selectedClient.personType === 'JURIDICA' && selectedClient.stateRegistration && (
+                    <div>
+                      <p className="text-sm font-medium text-neutral-500">Inscrição Estadual</p>
+                      <p className="text-sm text-neutral-900 mt-1">{selectedClient.stateRegistration}</p>
+                    </div>
+                  )}
+
+                  {selectedClient.personType === 'FISICA' && (
                     <>
                       <div>
-                        <p className="text-sm font-medium text-neutral-500">Representante Legal</p>
-                        <p className="text-sm text-neutral-900 mt-1">{selectedClient.representativeName || '-'}</p>
+                        <p className="text-sm font-medium text-neutral-500">RG</p>
+                        <p className="text-sm text-neutral-900 mt-1">{selectedClient.rg || '-'}</p>
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-neutral-500">CPF do Representante</p>
-                        <p className="text-sm text-neutral-900 mt-1">{formatCPF(selectedClient.representativeCpf)}</p>
+                        <p className="text-sm font-medium text-neutral-500">Data de Nascimento</p>
+                        <p className="text-sm text-neutral-900 mt-1">{formatDate(selectedClient.birthDate)}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-neutral-500">Estado Civil</p>
+                        <p className="text-sm text-neutral-900 mt-1">{selectedClient.maritalStatus || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-neutral-500">Profissão</p>
+                        <p className="text-sm text-neutral-900 mt-1">{selectedClient.profession || '-'}</p>
                       </div>
                     </>
                   )}
                 </div>
               </div>
+
+              {/* Dados do Representante Legal - apenas para Pessoa Jurídica */}
+              {selectedClient.personType === 'JURIDICA' && (
+                <div>
+                  <h3 className="text-lg font-semibold text-neutral-900 mb-3">Dados do Representante Legal</h3>
+                  <div className="bg-neutral-50 rounded-lg p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm font-medium text-neutral-500">Nome do Representante</p>
+                      <p className="text-sm text-neutral-900 mt-1">{selectedClient.representativeName || '-'}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-neutral-500">CPF do Representante</p>
+                      <p className="text-sm text-neutral-900 mt-1">{formatCPF(selectedClient.representativeCpf)}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-neutral-500">RG do Representante</p>
+                      <p className="text-sm text-neutral-900 mt-1">{selectedClient.rg || '-'}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-neutral-500">Data de Nascimento</p>
+                      <p className="text-sm text-neutral-900 mt-1">{formatDate(selectedClient.birthDate)}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-neutral-500">Estado Civil</p>
+                      <p className="text-sm text-neutral-900 mt-1">{selectedClient.maritalStatus || '-'}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-neutral-500">Profissão</p>
+                      <p className="text-sm text-neutral-900 mt-1">{selectedClient.profession || '-'}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Contato */}
               <div>

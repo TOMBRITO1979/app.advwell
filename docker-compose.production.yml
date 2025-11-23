@@ -5,7 +5,6 @@ services:
     image: postgres:16-alpine
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./postgres-config:/etc/postgresql
     environment:
       - POSTGRES_DB=${POSTGRES_DB:-advtom}
       - POSTGRES_USER=${POSTGRES_USER:-postgres}

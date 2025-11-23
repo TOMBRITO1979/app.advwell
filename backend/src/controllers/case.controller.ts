@@ -766,6 +766,49 @@ export class CaseController {
       res.status(500).json({ error: 'Erro ao buscar processos' });
     }
   }
+
+  // Lista processos com prazo definido (ordenados por urgência)
+  async getDeadlines(req: AuthRequest, res: Response) {
+    try {
+      const companyId = req.user!.companyId;
+      const { search = '' } = req.query;
+
+      if (!companyId) {
+        return res.status(403).json({ error: 'Usuário não possui empresa associada' });
+      }
+
+      const where: any = {
+        companyId,
+        deadline: { not: null }, // Apenas processos com prazo definido
+        ...(search && {
+          OR: [
+            { processNumber: { contains: String(search) } },
+            { subject: { contains: String(search), mode: 'insensitive' } },
+            { client: { name: { contains: String(search), mode: 'insensitive' } } },
+          ],
+        }),
+      };
+
+      const cases = await prisma.case.findMany({
+        where,
+        orderBy: { deadline: 'asc' }, // Ordenar por prazo mais próximo primeiro
+        include: {
+          client: {
+            select: {
+              id: true,
+              name: true,
+              cpf: true,
+            },
+          },
+        },
+      });
+
+      res.json(cases);
+    } catch (error) {
+      console.error('Erro ao buscar prazos:', error);
+      res.status(500).json({ error: 'Erro ao buscar prazos' });
+    }
+  }
 }
 
 export default new CaseController();

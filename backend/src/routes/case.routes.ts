@@ -122,6 +122,7 @@ const updateCaseValidation = [
 router.post('/', createCaseValidation, validate, caseController.create);
 router.get('/', caseController.list);
 router.get('/search', caseController.search); // Busca rápida para autocomplete
+router.get('/deadlines', caseController.getDeadlines); // Lista processos com prazo
 router.get('/export/csv', caseController.exportCSV);
 router.post('/import/csv', upload.single('file'), caseController.importCSV);
 router.get('/updates', caseController.getPendingUpdates); // Lista atualizações pendentes

@@ -22,6 +22,7 @@ import {
   Mail,
   Bot,
   Scale,
+  Clock,
 } from 'lucide-react';
 
 interface LayoutProps {
@@ -61,6 +62,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { path: '/todos', label: 'Tarefas', icon: CheckSquare },
     { path: '/clients', label: 'Clientes', icon: Users },
     { path: '/cases', label: 'Processos', icon: FileText },
+    { path: '/deadlines', label: 'Prazos', icon: Clock },
     { path: '/documents', label: 'Uploads', icon: FolderOpen },
     { path: '/updates', label: 'Atualizações', icon: Bell },
     { path: '/financial', label: 'Financeiro', icon: DollarSign },

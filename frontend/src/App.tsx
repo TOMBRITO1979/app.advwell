@@ -11,6 +11,7 @@ import ResendVerification from './pages/ResendVerification';
 import Dashboard from './pages/Dashboard';
 import Clients from './pages/Clients';
 import Cases from './pages/Cases';
+import Deadlines from './pages/Deadlines';
 import Updates from './pages/Updates';
 import Financial from './pages/Financial';
 import Documents from './pages/Documents';
@@ -80,6 +81,14 @@ function App() {
           element={
             <PrivateRoute>
               <Cases />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/deadlines"
+          element={
+            <PrivateRoute>
+              <Deadlines />
             </PrivateRoute>
           }
         />

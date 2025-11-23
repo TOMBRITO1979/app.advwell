@@ -9,7 +9,7 @@ interface Todo {
   title: string;
   description?: string;
   dueDate?: string;
-  priority: 'LOW' | 'MEDIUM' | 'HIGH';
+  priority: 'BAIXA' | 'MEDIA' | 'ALTA' | 'URGENTE';
   completed: boolean;
   clientId?: string;
   caseId?: string;
@@ -21,6 +21,14 @@ interface Todo {
     id: string;
     processNumber: string;
   };
+  assignedUsers?: Array<{
+    id: string;
+    user: {
+      id: string;
+      name: string;
+      email: string;
+    };
+  }>;
   createdAt: string;
   updatedAt: string;
 }
@@ -29,9 +37,10 @@ interface TodoFormData {
   title: string;
   description: string;
   dueDate: string;
-  priority: 'LOW' | 'MEDIUM' | 'HIGH';
+  priority: 'BAIXA' | 'MEDIA' | 'ALTA' | 'URGENTE';
   clientId: string;
   caseId: string;
+  assignedUserIds: string[];
 }
 
 const ToDo: React.FC = () => {
@@ -43,18 +52,32 @@ const ToDo: React.FC = () => {
   const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null);
   const [editMode, setEditMode] = useState(false);
 
+  const [companyUsers, setCompanyUsers] = useState<any[]>([]);
+  const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
+
   const [formData, setFormData] = useState<TodoFormData>({
     title: '',
     description: '',
     dueDate: '',
-    priority: 'MEDIUM',
+    priority: 'MEDIA',
     clientId: '',
     caseId: '',
+    assignedUserIds: [],
   });
 
   useEffect(() => {
     loadTodos();
+    fetchCompanyUsers();
   }, [searchTerm, filterCompleted]);
+
+  const fetchCompanyUsers = async () => {
+    try {
+      const response = await api.get('/users');
+      setCompanyUsers(response.data.data || []);
+    } catch (error) {
+      console.error('Erro ao buscar usuários:', error);
+    }
+  };
 
   const loadTodos = async () => {
     try {
@@ -83,6 +106,7 @@ const ToDo: React.FC = () => {
         date: formData.dueDate || new Date().toISOString(),
         startDate: formData.dueDate,
         completed: false,
+        assignedUserIds: selectedUserIds,
       };
 
       if (editMode && selectedTodo) {
@@ -136,7 +160,9 @@ const ToDo: React.FC = () => {
       priority: todo.priority,
       clientId: todo.clientId || '',
       caseId: todo.caseId || '',
+      assignedUserIds: todo.assignedUsers?.map(au => au.user.id) || [],
     });
+    setSelectedUserIds(todo.assignedUsers?.map(au => au.user.id) || []);
     setEditMode(true);
     setShowModal(true);
   };
@@ -146,28 +172,32 @@ const ToDo: React.FC = () => {
       title: '',
       description: '',
       dueDate: '',
-      priority: 'MEDIUM',
+      priority: 'MEDIA',
       clientId: '',
       caseId: '',
+      assignedUserIds: [],
     });
+    setSelectedUserIds([]);
     setEditMode(false);
     setSelectedTodo(null);
   };
 
   const getPriorityColor = (priority: string) => {
     const colors = {
-      LOW: 'bg-blue-100 text-blue-800',
-      MEDIUM: 'bg-yellow-100 text-yellow-800',
-      HIGH: 'bg-red-100 text-red-800',
+      BAIXA: 'bg-green-100 text-green-800',
+      MEDIA: 'bg-yellow-100 text-yellow-800',
+      ALTA: 'bg-orange-100 text-orange-800',
+      URGENTE: 'bg-red-100 text-red-800',
     };
-    return colors[priority as keyof typeof colors] || colors.MEDIUM;
+    return colors[priority as keyof typeof colors] || colors.MEDIA;
   };
 
   const getPriorityLabel = (priority: string) => {
     const labels = {
-      LOW: 'Baixa',
-      MEDIUM: 'Média',
-      HIGH: 'Alta',
+      BAIXA: 'Baixa',
+      MEDIA: 'Média',
+      ALTA: 'Alta',
+      URGENTE: 'Urgente',
     };
     return labels[priority as keyof typeof labels] || priority;
   };
@@ -344,11 +374,55 @@ const ToDo: React.FC = () => {
                         onChange={(e) => setFormData({ ...formData, priority: e.target.value as any })}
                         className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       >
-                        <option value="LOW">Baixa</option>
-                        <option value="MEDIUM">Média</option>
-                        <option value="HIGH">Alta</option>
+                        <option value="BAIXA">🟢 Baixa</option>
+                        <option value="MEDIA">🟡 Média</option>
+                        <option value="ALTA">🟠 Alta</option>
+                        <option value="URGENTE">🔴 Urgente</option>
                       </select>
                     </div>
+                  </div>
+
+                  {/* Assigned Users */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Atribuir a usuários (opcional)
+                    </label>
+                    <div className="border border-gray-300 rounded-md p-3 max-h-48 overflow-y-auto">
+                      {companyUsers.length === 0 ? (
+                        <p className="text-sm text-gray-500 italic">Nenhum usuário disponível</p>
+                      ) : (
+                        <div className="space-y-2">
+                          {companyUsers.map((user) => (
+                            <label
+                              key={user.id}
+                              className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={selectedUserIds.includes(user.id)}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setSelectedUserIds([...selectedUserIds, user.id]);
+                                  } else {
+                                    setSelectedUserIds(selectedUserIds.filter(id => id !== user.id));
+                                  }
+                                }}
+                                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                              />
+                              <span className="text-sm text-gray-700">
+                                {user.name}
+                                <span className="text-gray-500 text-xs ml-1">({user.email})</span>
+                              </span>
+                            </label>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    {selectedUserIds.length > 0 && (
+                      <p className="text-sm text-gray-600 mt-2">
+                        {selectedUserIds.length} usuário(s) selecionado(s)
+                      </p>
+                    )}
                   </div>
 
                   <div className="flex justify-end gap-3 mt-6">

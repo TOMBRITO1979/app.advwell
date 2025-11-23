@@ -11,6 +11,7 @@ interface Case {
   court: string;
   subject: string;
   status: string;
+  deadline?: string;
   value?: number;
   notes?: string;
   ultimoAndamento?: string;
@@ -58,6 +59,7 @@ const Cases: React.FC = () => {
   const [clients, setClients] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showAndamentoModal, setShowAndamentoModal] = useState(false);
@@ -108,6 +110,7 @@ const Cases: React.FC = () => {
     value: '',
     notes: '',
     status: 'ACTIVE',
+    deadline: '',
     informarCliente: '',
     linkProcesso: '',
   });
@@ -115,7 +118,7 @@ const Cases: React.FC = () => {
   useEffect(() => {
     loadCases();
     loadClients();
-  }, [search]);
+  }, [search, statusFilter]);
 
   // Filter clients based on search text
   useEffect(() => {
@@ -133,7 +136,7 @@ const Cases: React.FC = () => {
   const loadCases = async () => {
     try {
       const response = await api.get('/cases', {
-        params: { search, limit: 50 },
+        params: { search, status: statusFilter, limit: 50 },
       });
       setCases(response.data.data);
     } catch (error) {
@@ -221,6 +224,7 @@ const Cases: React.FC = () => {
       value: '',
       notes: '',
       status: 'ACTIVE',
+      deadline: '',
       informarCliente: '',
       linkProcesso: '',
     });
@@ -439,6 +443,7 @@ const Cases: React.FC = () => {
         value: caseDetail.value ? caseDetail.value.toString() : '',
         notes: caseDetail.notes || '',
         status: caseDetail.status || 'ACTIVE',
+        deadline: caseDetail.deadline ? caseDetail.deadline.split('T')[0] : '',
         informarCliente: caseDetail.informarCliente || '',
         linkProcesso: caseDetail.linkProcesso || '',
       });
@@ -616,15 +621,28 @@ const Cases: React.FC = () => {
         </div>
 
         <div className="bg-white rounded-lg shadow p-4">
-          <div className="flex items-center gap-2 mb-4">
-            <Search size={20} className="text-neutral-400" />
-            <input
-              type="text"
-              placeholder="Buscar processos..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="flex-1 px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 min-h-[44px]"
-            />
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 mb-4">
+            <div className="flex items-center gap-2 flex-1 w-full">
+              <Search size={20} className="text-neutral-400" />
+              <input
+                type="text"
+                placeholder="Buscar processos..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="flex-1 px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 min-h-[44px]"
+              />
+            </div>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="w-full sm:w-auto px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 min-h-[44px]"
+            >
+              <option value="">Todos os Status</option>
+              <option value="PENDENTE">🟡 Pendente</option>
+              <option value="ACTIVE">🟢 Ativo</option>
+              <option value="ARCHIVED">⚫ Arquivado</option>
+              <option value="FINISHED">🔵 Finalizado</option>
+            </select>
           </div>
 
           {loading ? (
@@ -649,65 +667,88 @@ const Cases: React.FC = () => {
                       Status
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                      Prazo
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
                       Ações
                     </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                  {cases.map((caseItem) => (
-                    <tr key={caseItem.id} className="hover:bg-neutral-50">
-                      <td className="px-4 py-3 text-sm">
-                        <button
-                          onClick={() => handleCaseClick(caseItem.id)}
-                          className="text-primary-600 hover:text-primary-800 hover:underline font-medium"
-                          title="Ver detalhes do processo"
-                        >
-                          {caseItem.processNumber}
-                        </button>
-                      </td>
-                      <td className="px-4 py-3 text-sm text-neutral-600">
-                        {caseItem.client.name}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-neutral-600">{caseItem.subject}</td>
-                      <td className="px-4 py-3 text-sm">
-                        <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs min-h-[44px]">
-                          {caseItem.status}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-sm">
-                        <div className="flex items-center justify-center gap-2">
+                  {cases.map((caseItem) => {
+                    // Status badge colors
+                    const statusColors = {
+                      PENDENTE: 'bg-yellow-100 text-yellow-800',
+                      ACTIVE: 'bg-green-100 text-green-800',
+                      ARCHIVED: 'bg-gray-100 text-gray-800',
+                      FINISHED: 'bg-blue-100 text-blue-800',
+                    };
+
+                    const statusLabels = {
+                      PENDENTE: 'Pendente',
+                      ACTIVE: 'Ativo',
+                      ARCHIVED: 'Arquivado',
+                      FINISHED: 'Finalizado',
+                    };
+
+                    return (
+                      <tr key={caseItem.id} className="hover:bg-neutral-50">
+                        <td className="px-4 py-3 text-sm">
                           <button
-                            onClick={() => handleSync(caseItem.id)}
-                            className="text-primary-600 hover:text-primary-800 transition-colors"
-                            title="Sincronizar com DataJud"
+                            onClick={() => handleCaseClick(caseItem.id)}
+                            className="text-primary-600 hover:text-primary-800 hover:underline font-medium"
+                            title="Ver detalhes do processo"
                           >
-                            <RefreshCw size={16} />
+                            {caseItem.processNumber}
                           </button>
-                          <button
-                            onClick={() => handleViewAndamento(caseItem)}
-                            className="text-primary-600 hover:text-primary-800 transition-colors"
-                            title="Visualizar Andamento para Cliente"
-                          >
-                            <Eye size={16} />
-                          </button>
-                          <button
-                            onClick={() => handleEdit(caseItem)}
-                            className="text-primary-600 hover:text-primary-800 transition-colors"
-                            title="Editar"
-                          >
-                            <Edit size={16} />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(caseItem)}
-                            className="text-error-600 hover:text-error-800 transition-colors"
-                            title="Excluir"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-neutral-600">
+                          {caseItem.client.name}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-neutral-600">{caseItem.subject}</td>
+                        <td className="px-4 py-3 text-sm">
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[caseItem.status as keyof typeof statusColors] || 'bg-gray-100 text-gray-800'}`}>
+                            {statusLabels[caseItem.status as keyof typeof statusLabels] || caseItem.status}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-sm text-neutral-600">
+                          {caseItem.deadline ? new Date(caseItem.deadline).toLocaleDateString('pt-BR') : '-'}
+                        </td>
+                        <td className="px-4 py-3 text-sm">
+                          <div className="flex items-center justify-center gap-2">
+                            <button
+                              onClick={() => handleSync(caseItem.id)}
+                              className="text-primary-600 hover:text-primary-800 transition-colors"
+                              title="Sincronizar com DataJud"
+                            >
+                              <RefreshCw size={16} />
+                            </button>
+                            <button
+                              onClick={() => handleViewAndamento(caseItem)}
+                              className="text-primary-600 hover:text-primary-800 transition-colors"
+                              title="Visualizar Andamento para Cliente"
+                            >
+                              <Eye size={16} />
+                            </button>
+                            <button
+                              onClick={() => handleEdit(caseItem)}
+                              className="text-primary-600 hover:text-primary-800 transition-colors"
+                              title="Editar"
+                            >
+                              <Edit size={16} />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(caseItem)}
+                              className="text-error-600 hover:text-error-800 transition-colors"
+                              title="Excluir"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -827,17 +868,30 @@ const Cases: React.FC = () => {
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-neutral-700">Status</label>
-                <select
-                  value={formData.status}
-                  onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                  className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md min-h-[44px]"
-                >
-                  <option value="ACTIVE">Ativo</option>
-                  <option value="ARCHIVED">Arquivado</option>
-                  <option value="FINISHED">Finalizado</option>
-                </select>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">Status</label>
+                  <select
+                    value={formData.status}
+                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                  >
+                    <option value="PENDENTE">Pendente</option>
+                    <option value="ACTIVE">Ativo</option>
+                    <option value="ARCHIVED">Arquivado</option>
+                    <option value="FINISHED">Finalizado</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">Prazo</label>
+                  <input
+                    type="date"
+                    value={formData.deadline}
+                    onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                  />
+                </div>
               </div>
 
               <div>
@@ -1180,10 +1234,38 @@ const Cases: React.FC = () => {
                           <span className="mr-2">⚖️</span>
                           <span>Status</span>
                         </div>
-                        <span className="inline-block px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium min-h-[44px]">
-                          {selectedCase.status}
-                        </span>
+                        {(() => {
+                          const statusColors = {
+                            PENDENTE: 'bg-yellow-100 text-yellow-800',
+                            ACTIVE: 'bg-green-100 text-green-800',
+                            ARCHIVED: 'bg-gray-100 text-gray-800',
+                            FINISHED: 'bg-blue-100 text-blue-800',
+                          };
+
+                          const statusLabels = {
+                            PENDENTE: 'Pendente',
+                            ACTIVE: 'Ativo',
+                            ARCHIVED: 'Arquivado',
+                            FINISHED: 'Finalizado',
+                          };
+
+                          return (
+                            <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${statusColors[selectedCase.status as keyof typeof statusColors] || 'bg-gray-100 text-gray-800'}`}>
+                              {statusLabels[selectedCase.status as keyof typeof statusLabels] || selectedCase.status}
+                            </span>
+                          );
+                        })()}
                       </div>
+
+                      {selectedCase.deadline && (
+                        <div>
+                          <div className="flex items-center text-neutral-500 text-sm mb-1">
+                            <Calendar size={16} className="mr-2" />
+                            <span>Prazo</span>
+                          </div>
+                          <p className="text-neutral-900 font-medium">{new Date(selectedCase.deadline).toLocaleDateString('pt-BR')}</p>
+                        </div>
+                      )}
 
                       {selectedCase.lastSyncedAt && (
                         <div>

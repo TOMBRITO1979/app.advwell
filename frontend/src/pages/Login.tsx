@@ -53,7 +53,7 @@ const Login: React.FC = () => {
         <div className="text-center mb-8 relative">
           <div className="flex justify-center mb-4">
             <div className="w-20 h-20 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl flex items-center justify-center shadow-lg shadow-primary-500/30 transform hover:scale-105 transition-transform duration-300">
-              <Scale className="w-11 h-11 text-neutral-900" strokeWidth={2.5} />
+              <Scale className="w-11 h-11 text-white" strokeWidth={2.5} />
             </div>
           </div>
           <h1 className="text-5xl font-bold text-primary-600 mb-3 drop-shadow-lg tracking-tight">AdvWell</h1>
