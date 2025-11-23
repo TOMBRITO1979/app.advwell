@@ -7,7 +7,7 @@ export class ScheduleController {
   async create(req: AuthRequest, res: Response) {
     try {
       const {
-        title, description, type, date, endDate, clientId, caseId
+        title, description, type, priority, date, endDate, clientId, caseId, assignedUserIds
       } = req.body;
       const companyId = req.user!.companyId;
       const createdBy = req.user!.userId;
@@ -19,6 +19,12 @@ export class ScheduleController {
       // Validar campo obrigatório
       if (!title || !date) {
         return res.status(400).json({ error: 'Título e data são obrigatórios' });
+      }
+
+      // Validar prioridade
+      const validPriorities = ['BAIXA', 'MEDIA', 'ALTA', 'URGENTE'];
+      if (priority && !validPriorities.includes(priority)) {
+        return res.status(400).json({ error: 'Prioridade inválida. Use: BAIXA, MEDIA, ALTA ou URGENTE' });
       }
 
       // Gerar link do Google Meet se o tipo for GOOGLE_MEET
@@ -35,12 +41,21 @@ export class ScheduleController {
           title,
           description,
           type: type || 'COMPROMISSO',
+          priority: priority || 'MEDIA',
           date: new Date(date),
           endDate: endDate ? new Date(endDate) : null,
           clientId: clientId || null,
           caseId: caseId || null,
           createdBy,
           googleMeetLink,
+          // Criar relações com usuários atribuídos
+          assignedUsers: assignedUserIds && Array.isArray(assignedUserIds) && assignedUserIds.length > 0
+            ? {
+                create: assignedUserIds.map((userId: string) => ({
+                  userId,
+                })),
+              }
+            : undefined,
         },
         include: {
           client: {
@@ -51,6 +66,13 @@ export class ScheduleController {
           },
           user: {
             select: { id: true, name: true, email: true }
+          },
+          assignedUsers: {
+            include: {
+              user: {
+                select: { id: true, name: true, email: true }
+              }
+            }
           }
         }
       });
@@ -142,6 +164,13 @@ export class ScheduleController {
             },
             user: {
               select: { id: true, name: true }
+            },
+            assignedUsers: {
+              include: {
+                user: {
+                  select: { id: true, name: true, email: true }
+                }
+              }
             }
           },
         }),
@@ -180,6 +209,13 @@ export class ScheduleController {
           },
           user: {
             select: { id: true, name: true, email: true }
+          },
+          assignedUsers: {
+            include: {
+              user: {
+                select: { id: true, name: true, email: true }
+              }
+            }
           }
         },
       });
@@ -200,7 +236,7 @@ export class ScheduleController {
       const { id } = req.params;
       const companyId = req.user!.companyId;
       const {
-        title, description, type, date, endDate, clientId, caseId, completed
+        title, description, type, priority, date, endDate, clientId, caseId, completed, assignedUserIds
       } = req.body;
 
       const event = await prisma.scheduleEvent.findFirst({
@@ -212,6 +248,12 @@ export class ScheduleController {
 
       if (!event) {
         return res.status(404).json({ error: 'Evento não encontrado' });
+      }
+
+      // Validar prioridade se fornecida
+      const validPriorities = ['BAIXA', 'MEDIA', 'ALTA', 'URGENTE'];
+      if (priority && !validPriorities.includes(priority)) {
+        return res.status(400).json({ error: 'Prioridade inválida. Use: BAIXA, MEDIA, ALTA ou URGENTE' });
       }
 
       // Gerar/atualizar link do Google Meet se o tipo for GOOGLE_MEET
@@ -230,12 +272,31 @@ export class ScheduleController {
         googleMeetLink = null;
       }
 
+      // Atualizar usuários atribuídos se fornecido
+      if (assignedUserIds !== undefined && Array.isArray(assignedUserIds)) {
+        // Deletar atribuições antigas
+        await prisma.eventAssignment.deleteMany({
+          where: { eventId: id }
+        });
+
+        // Criar novas atribuições
+        if (assignedUserIds.length > 0) {
+          await prisma.eventAssignment.createMany({
+            data: assignedUserIds.map((userId: string) => ({
+              eventId: id,
+              userId,
+            })),
+          });
+        }
+      }
+
       const updatedEvent = await prisma.scheduleEvent.update({
         where: { id },
         data: {
           title,
           description,
           type,
+          priority: priority || undefined,
           date: date ? new Date(date) : undefined,
           endDate: endDate ? new Date(endDate) : null,
           clientId: clientId || null,
@@ -252,6 +313,13 @@ export class ScheduleController {
           },
           user: {
             select: { id: true, name: true }
+          },
+          assignedUsers: {
+            include: {
+              user: {
+                select: { id: true, name: true, email: true }
+              }
+            }
           }
         }
       });
