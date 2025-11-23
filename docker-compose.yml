@@ -68,7 +68,7 @@ services:
         - "traefik.docker.network=network_public"
 
   frontend:
-    image: tomautomations/advwell-frontend:v63-mobile-buttons
+    image: tomautomations/advwell-frontend:v63-mobile-buttons-hotfix
     environment:
       - VITE_API_URL=${VITE_API_URL}
     networks:
