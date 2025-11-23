@@ -509,29 +509,75 @@ const Cases: React.FC = () => {
     }).format(value);
   };
 
-  const generateTribunalLink = (court: string, processNumber: string): string | null => {
-    if (!court || !processNumber) return null;
+  const generateTribunalLink = (court: string, processNumber: string): { url: string; tribunalName: string } | null => {
+    if (!processNumber) return null;
 
-    const courtUpper = court.toUpperCase();
+    // Extrair código do tribunal do número CNJ (formato: NNNNNNN-DD.AAAA.J.TR.OOOO)
+    // Remover pontos, traços e espaços
+    const cleanNumber = processNumber.replace(/[.\-\s]/g, '');
 
-    // Mapeamento de tribunais para suas URLs de consulta pública (atualizadas em 2024)
-    const tribunalUrls: { [key: string]: string } = {
-      'TJRJ': 'https://tjrj.pje.jus.br/pje/ConsultaPublica/listView.seam',
-      'TJSP': 'https://esaj.tjsp.jus.br/cpopg/open.do',
-      'TJMG': 'https://pje-consulta-publica.tjmg.jus.br/',
-      'TJSC': 'https://esaj.tjsc.jus.br/esaj/portal.do?servico=190100',
-      'TJPB': 'https://pje.tjpb.jus.br/pje/ConsultaPublica/listView.seam',
-      'TJCE': 'https://esaj.tjce.jus.br/cpopg/open.do',
-    };
-
-    // Tentar encontrar o tribunal no nome
-    for (const [key, url] of Object.entries(tribunalUrls)) {
-      if (courtUpper.includes(key)) {
-        return url;
-      }
+    // O código do tribunal está nas posições 13-14 (considerando NNNNNNNDDAAAAJTROOOO)
+    // Exemplo: 01127725820248190001 -> posições 13-14 = "19" (TJRJ)
+    let tribunalCode = '';
+    if (cleanNumber.length >= 15) {
+      tribunalCode = cleanNumber.substring(13, 15);
     }
 
-    return null;
+    // Formatar número do processo com pontos e traços (NNNNNNN-DD.AAAA.J.TR.OOOO)
+    let formattedNumber = processNumber;
+    if (cleanNumber.length === 20) {
+      formattedNumber = `${cleanNumber.substring(0, 7)}-${cleanNumber.substring(7, 9)}.${cleanNumber.substring(9, 13)}.${cleanNumber.substring(13, 14)}.${cleanNumber.substring(14, 16)}.${cleanNumber.substring(16, 20)}`;
+    }
+
+    // Mapeamento de códigos CNJ para tribunais e URLs
+    const tribunalMap: { [key: string]: { name: string; url: string; directUrl?: (num: string) => string } } = {
+      '19': {
+        name: 'TJRJ',
+        url: 'https://tjrj.pje.jus.br/pje/ConsultaPublica/listView.seam',
+      },
+      '26': {
+        name: 'TJSP',
+        url: 'https://esaj.tjsp.jus.br/cpopg/open.do',
+        directUrl: (num) => `https://esaj.tjsp.jus.br/cpopg/show.do?processo.numero=${encodeURIComponent(num)}`,
+      },
+      '13': {
+        name: 'TJMG',
+        url: 'https://pje-consulta-publica.tjmg.jus.br/',
+      },
+      '24': {
+        name: 'TJSC',
+        url: 'https://esaj.tjsc.jus.br/esaj/portal.do?servico=190100',
+      },
+      '15': {
+        name: 'TJPB',
+        url: 'https://pje.tjpb.jus.br/pje/ConsultaPublica/listView.seam',
+      },
+      '06': {
+        name: 'TJCE',
+        url: 'https://esaj.tjce.jus.br/cpopg/open.do',
+      },
+    };
+
+    const tribunal = tribunalMap[tribunalCode];
+    if (!tribunal) {
+      // Se não encontrar pelo código CNJ, tentar pelo nome do tribunal
+      const courtUpper = (court || '').toUpperCase();
+      for (const [, info] of Object.entries(tribunalMap)) {
+        if (courtUpper.includes(info.name)) {
+          return {
+            url: info.directUrl ? info.directUrl(formattedNumber) : info.url,
+            tribunalName: info.name,
+          };
+        }
+      }
+      return null;
+    }
+
+    // Usar URL direta se disponível, senão usar URL de consulta
+    return {
+      url: tribunal.directUrl ? tribunal.directUrl(formattedNumber) : tribunal.url,
+      tribunalName: tribunal.name,
+    };
   };
 
   return (
@@ -1189,12 +1235,12 @@ const Cases: React.FC = () => {
 
                   {/* Link Automático para Consulta no Tribunal */}
                   {(() => {
-                    const tribunalLink = generateTribunalLink(selectedCase.court, selectedCase.processNumber);
-                    return tribunalLink ? (
+                    const tribunalInfo = generateTribunalLink(selectedCase.court, selectedCase.processNumber);
+                    return tribunalInfo ? (
                       <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
                         <h3 className="text-sm font-semibold text-blue-900 mb-2 flex items-center">
                           <span className="mr-2">🔗</span>
-                          Consultar no Site do Tribunal
+                          Consultar no Site do Tribunal ({tribunalInfo.tribunalName})
                         </h3>
                         <div className="bg-white border border-blue-300 rounded p-3 mb-3">
                           <p className="text-sm text-neutral-700 mb-1">
@@ -1208,7 +1254,7 @@ const Cases: React.FC = () => {
                           </p>
                         </div>
                         <a
-                          href={tribunalLink}
+                          href={tribunalInfo.url}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium"
@@ -1218,10 +1264,12 @@ const Cases: React.FC = () => {
                             <polyline points="15 3 21 3 21 9"></polyline>
                             <line x1="10" y1="14" x2="21" y2="3"></line>
                           </svg>
-                          Consultar no {selectedCase.court}
+                          Consultar Processo no {tribunalInfo.tribunalName}
                         </a>
                         <p className="text-xs text-blue-700 mt-2">
-                          Abre a página de consulta processual oficial. Cole o número do processo acima para buscar.
+                          {tribunalInfo.url.includes('show.do')
+                            ? 'Link direto para o processo. Caso não funcione, use a consulta manual com o número acima.'
+                            : 'Abre a página de consulta processual oficial. Cole o número do processo acima para buscar.'}
                         </p>
                       </div>
                     ) : null;
