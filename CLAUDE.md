@@ -12,7 +12,7 @@ AdvWell is a multitenant SaaS for Brazilian law firms with DataJud CNJ integrati
 
 **Current Versions:**
 - Backend: v52-user-profile - User profile management with photo upload
-- Frontend: v71-cnj-tribunal-detection - Auto-detect tribunal from CNJ process number + direct links
+- Frontend: v72-priority-linkprocesso - Prioritize manual linkProcesso field for 100% accuracy
 - Database: PostgreSQL 16
 
 **Production Configuration (100+ Companies Ready):**
