@@ -9,6 +9,24 @@ services:
       - POSTGRES_DB=${POSTGRES_DB:-advtom}
       - POSTGRES_USER=${POSTGRES_USER:-postgres}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    command: >
+      postgres
+      -c max_connections=300
+      -c shared_buffers=1GB
+      -c effective_cache_size=4GB
+      -c work_mem=16MB
+      -c maintenance_work_mem=256MB
+      -c random_page_cost=1.1
+      -c effective_io_concurrency=200
+      -c wal_buffers=16MB
+      -c min_wal_size=1GB
+      -c max_wal_size=2GB
+      -c max_worker_processes=4
+      -c max_parallel_workers_per_gather=2
+      -c max_parallel_workers=4
+      -c log_min_duration_statement=1000
+      -c log_connections=on
+      -c log_disconnections=on
     networks:
       - network_public
     deploy:
@@ -16,6 +34,17 @@ services:
       placement:
         constraints:
           - node.role == manager
+      resources:
+        limits:
+          cpus: '2'
+          memory: 3G
+        reservations:
+          cpus: '1'
+          memory: 2G
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
 
   backend:
     image: tomautomations/advwell-backend:v52-user-profile
@@ -52,12 +81,33 @@ services:
       # Server
       - PORT=3000
       - NODE_ENV=production
+
+      # Performance tuning
+      - NODE_OPTIONS=--max-old-space-size=1024
     networks:
       - network_public
     depends_on:
       - postgres
     deploy:
-      replicas: 1
+      replicas: 3
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
+      rollback_config:
+        parallelism: 1
+        delay: 5s
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
       labels:
         - "traefik.enable=true"
         - "traefik.http.routers.advwell-backend.rule=Host(`api.advwell.pro`)"
@@ -65,6 +115,8 @@ services:
         - "traefik.http.routers.advwell-backend.tls=true"
         - "traefik.http.routers.advwell-backend.tls.certresolver=letsencryptresolver"
         - "traefik.http.services.advwell-backend.loadbalancer.server.port=3000"
+        - "traefik.http.services.advwell-backend.loadbalancer.healthcheck.path=/health"
+        - "traefik.http.services.advwell-backend.loadbalancer.healthcheck.interval=10s"
         - "traefik.docker.network=network_public"
 
   frontend:
@@ -76,7 +128,20 @@ services:
     depends_on:
       - backend
     deploy:
-      replicas: 1
+      replicas: 2
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+      restart_policy:
+        condition: on-failure
       labels:
         - "traefik.enable=true"
         - "traefik.http.routers.advwell-frontend.rule=Host(`app.advwell.pro`)"
