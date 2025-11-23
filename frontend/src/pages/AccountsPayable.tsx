@@ -176,7 +176,7 @@ const AccountsPayable: React.FC = () => {
               resetForm();
               setShowModal(true);
             }}
-            className="bg-green-600 hover:bg-green-700 text-neutral-900 px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors min-h-[44px]"
           >
             <Plus size={20} />
             Nova Conta
@@ -193,7 +193,7 @@ const AccountsPayable: React.FC = () => {
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-md"
+                className="px-3 py-2 border border-gray-300 rounded-md min-h-[44px]"
               >
                 <option value="">Todos</option>
                 <option value="PENDING">Pendente</option>
@@ -245,7 +245,7 @@ const AccountsPayable: React.FC = () => {
                       <div className="flex items-center gap-2">
                         {account.description}
                         {(account as any).isRecurring && (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800" title="Conta recorrente">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800 min-h-[44px]" title="Conta recorrente">
                             <Repeat size={12} className="mr-1" />
                             Recorrente
                           </span>
@@ -315,7 +315,7 @@ const AccountsPayable: React.FC = () => {
                       required
                       value={formData.supplier}
                       onChange={(e) => setFormData({ ...formData, supplier: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md min-h-[44px]"
                     />
                   </div>
                   <div>
@@ -327,7 +327,7 @@ const AccountsPayable: React.FC = () => {
                       required
                       value={formData.description}
                       onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md min-h-[44px]"
                     />
                   </div>
                   <div>
@@ -340,7 +340,7 @@ const AccountsPayable: React.FC = () => {
                       step="0.01"
                       value={formData.amount}
                       onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md min-h-[44px]"
                     />
                   </div>
                   <div>
@@ -352,7 +352,7 @@ const AccountsPayable: React.FC = () => {
                       required
                       value={formData.dueDate}
                       onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md min-h-[44px]"
                     />
                   </div>
                   <div>
@@ -363,7 +363,7 @@ const AccountsPayable: React.FC = () => {
                       type="text"
                       value={formData.category}
                       onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md min-h-[44px]"
                       placeholder="Ex: Aluguel, Salários..."
                     />
                   </div>
@@ -392,7 +392,7 @@ const AccountsPayable: React.FC = () => {
                           required={formData.isRecurring}
                           value={formData.recurrencePeriod}
                           onChange={(e) => setFormData({ ...formData, recurrencePeriod: e.target.value })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md min-h-[44px]"
                         >
                           <option value="">Selecione o período</option>
                           <option value="DAYS_15">A cada 15 dias</option>
@@ -414,13 +414,13 @@ const AccountsPayable: React.FC = () => {
                         setShowModal(false);
                         resetForm();
                       }}
-                      className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+                      className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 min-h-[44px]"
                     >
                       Cancelar
                     </button>
                     <button
                       type="submit"
-                      className="px-4 py-2 bg-green-600 hover:bg-green-700 text-neutral-900 rounded-md"
+                      className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md min-h-[44px]"
                     >
                       {editingAccount ? 'Atualizar' : 'Criar'}
                     </button>

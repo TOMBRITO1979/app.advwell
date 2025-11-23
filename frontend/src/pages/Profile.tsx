@@ -166,7 +166,7 @@ const Profile: React.FC = () => {
                 </div>
                 <label
                   htmlFor="photo-upload"
-                  className="absolute bottom-0 right-0 bg-primary-600 hover:bg-primary-700 text-neutral-900 p-2 rounded-full cursor-pointer shadow-lg transition-colors"
+                  className="absolute bottom-0 right-0 bg-primary-600 hover:bg-primary-700 text-white p-2 rounded-full cursor-pointer shadow-lg transition-colors"
                 >
                   <Camera size={20} />
                   <input
@@ -293,7 +293,7 @@ const Profile: React.FC = () => {
                   <button
                     type="submit"
                     disabled={saving}
-                    className="inline-flex items-center justify-center gap-2 px-6 py-2 bg-primary-600 text-neutral-900 rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50 min-h-[44px]"
+                    className="inline-flex items-center justify-center gap-2 px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50 min-h-[44px]"
                   >
                     <Save size={20} />
                     {saving ? 'Salvando...' : 'Salvar Alterações'}

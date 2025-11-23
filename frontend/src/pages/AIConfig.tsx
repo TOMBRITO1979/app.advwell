@@ -228,7 +228,7 @@ const AIConfigPage: React.FC = () => {
                     name="provider"
                     value={config.provider}
                     onChange={handleProviderChange}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                     required
                   >
                     <option value="openai">OpenAI (GPT-4, GPT-4o)</option>
@@ -249,7 +249,7 @@ const AIConfigPage: React.FC = () => {
                     name="model"
                     value={config.model}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                     required
                   >
                     {currentModels.map((model) => (
@@ -273,7 +273,7 @@ const AIConfigPage: React.FC = () => {
 
               {/* Status da API Key Salva */}
               {hasConfig && !apiKey && (
-                <div className="mb-2 flex items-center gap-2 bg-green-50 border border-primary-200 rounded-md px-3 py-2">
+                <div className="mb-2 flex items-center gap-2 bg-green-50 border border-primary-200 rounded-md px-3 py-2 min-h-[44px]">
                   <CheckCircle className="h-4 w-4 text-primary-600" />
                   <span className="text-sm text-green-800 font-medium">
                     API Key salva e criptografada com segurança
@@ -288,7 +288,7 @@ const AIConfigPage: React.FC = () => {
                   onChange={(e) => setApiKey(e.target.value)}
                   placeholder={hasConfig ? 'Digite aqui SOMENTE para alterar a API Key' : 'Cole sua API Key aqui'}
                   required={!hasConfig}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                 />
                 <button
                   type="button"
@@ -357,7 +357,7 @@ const AIConfigPage: React.FC = () => {
                 type="button"
                 onClick={handleTestConnection}
                 disabled={testing || saving}
-                className="flex items-center gap-2 px-4 py-2 bg-info-600 text-neutral-900 rounded-md hover:bg-info-700 disabled:bg-neutral-400 disabled:cursor-not-allowed transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-info-600 text-neutral-900 rounded-md hover:bg-info-700 disabled:bg-neutral-400 disabled:cursor-not-allowed transition-colors min-h-[44px]"
               >
                 {testing ? (
                   <>
@@ -375,7 +375,7 @@ const AIConfigPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={saving || testing}
-                className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-neutral-900 rounded-md hover:bg-primary-700 disabled:bg-neutral-400 disabled:cursor-not-allowed transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:bg-neutral-400 disabled:cursor-not-allowed transition-colors min-h-[44px]"
               >
                 {saving ? (
                   <>
@@ -395,7 +395,7 @@ const AIConfigPage: React.FC = () => {
                   type="button"
                   onClick={handleDelete}
                   disabled={saving || testing}
-                  className="flex items-center gap-2 px-4 py-2 bg-error-600 text-neutral-900 rounded-md hover:bg-error-700 disabled:bg-neutral-400 disabled:cursor-not-allowed transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-error-600 text-neutral-900 rounded-md hover:bg-error-700 disabled:bg-neutral-400 disabled:cursor-not-allowed transition-colors min-h-[44px]"
                 >
                   Remover Configuração
                 </button>

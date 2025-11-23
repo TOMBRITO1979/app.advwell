@@ -264,7 +264,7 @@ const Campaigns: React.FC = () => {
           </div>
           <button
             onClick={() => setShowModal(true)}
-            className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-neutral-900 px-4 py-2 rounded-lg transition-colors"
+            className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors min-h-[44px]"
           >
             <Plus size={20} />
             Nova Campanha
@@ -331,7 +331,7 @@ const Campaigns: React.FC = () => {
             </p>
             <button
               onClick={() => setShowModal(true)}
-              className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-neutral-900 px-4 py-2 rounded-lg transition-colors"
+              className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors min-h-[44px]"
             >
               <Plus size={20} />
               Nova Campanha
@@ -448,7 +448,7 @@ const Campaigns: React.FC = () => {
                     <select
                       value={selectedTemplate}
                       onChange={(e) => handleTemplateSelect(e.target.value)}
-                      className="w-full px-3 py-2 border border-green-300 rounded-md"
+                      className="w-full px-3 py-2 border border-green-300 rounded-md min-h-[44px]"
                     >
                       <option value="">Selecione um template ou crie do zero</option>
                       {templates.map((template) => (
@@ -472,7 +472,7 @@ const Campaigns: React.FC = () => {
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       placeholder="Ex: Promoção Black Friday"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md min-h-[44px]"
                     />
                   </div>
 
@@ -486,7 +486,7 @@ const Campaigns: React.FC = () => {
                       value={formData.subject}
                       onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                       placeholder="Ex: Desconto de 50% para você!"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md min-h-[44px]"
                     />
                   </div>
 
@@ -500,7 +500,7 @@ const Campaigns: React.FC = () => {
                       onChange={(e) => setFormData({ ...formData, body: e.target.value })}
                       rows={10}
                       placeholder="<h1>Olá!</h1><p>Sua mensagem aqui...</p>"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md font-mono text-sm"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md font-mono text-sm min-h-[44px]"
                     />
                     <p className="text-xs text-gray-500 mt-1">
                       Você pode usar HTML para formatar o email
@@ -552,7 +552,7 @@ const Campaigns: React.FC = () => {
                             <select
                               value={selectedTag}
                               onChange={(e) => setSelectedTag(e.target.value)}
-                              className="w-full mt-2 px-3 py-2 border border-blue-300 rounded-md text-sm"
+                              className="w-full mt-2 px-3 py-2 border border-blue-300 rounded-md text-sm min-h-[44px]"
                             >
                               <option value="">Selecione uma tag</option>
                               {availableTags.map((tag) => {
@@ -586,13 +586,13 @@ const Campaigns: React.FC = () => {
                         setShowModal(false);
                         resetForm();
                       }}
-                      className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+                      className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 min-h-[44px]"
                     >
                       Cancelar
                     </button>
                     <button
                       type="submit"
-                      className="px-4 py-2 bg-green-600 hover:bg-green-700 text-neutral-900 rounded-md"
+                      className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md min-h-[44px]"
                     >
                       Criar Campanha
                     </button>
@@ -671,7 +671,7 @@ const Campaigns: React.FC = () => {
                 <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-gray-200">
                   <button
                     onClick={() => setShowViewModal(false)}
-                    className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+                    className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 min-h-[44px]"
                   >
                     Fechar
                   </button>

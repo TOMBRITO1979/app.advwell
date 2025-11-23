@@ -304,7 +304,7 @@ const Schedule: React.FC = () => {
             resetForm();
             setShowModal(true);
           }}
-          className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-primary-600 text-neutral-900 rounded-lg hover:bg-primary-700 transition-colors min-h-[44px]"
+          className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors min-h-[44px]"
         >
           <Plus size={18} className="sm:w-5 sm:h-5" />
           <span className="hidden sm:inline">Novo Evento</span>
@@ -331,7 +331,7 @@ const Schedule: React.FC = () => {
           <select
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px]"
           >
             <option value="">Todos os tipos</option>
             <option value="COMPROMISSO">Compromisso</option>
@@ -344,7 +344,7 @@ const Schedule: React.FC = () => {
           <select
             value={filterCompleted}
             onChange={(e) => setFilterCompleted(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px]"
           >
             <option value="">Todos os status</option>
             <option value="false">Pendentes</option>
@@ -501,7 +501,7 @@ const Schedule: React.FC = () => {
                     required
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px]"
                     placeholder="Ex: Reunião com cliente"
                   />
                 </div>
@@ -515,7 +515,7 @@ const Schedule: React.FC = () => {
                     required
                     value={formData.type}
                     onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px]"
                   >
                     <option value="COMPROMISSO">Compromisso</option>
                     <option value="TAREFA">Tarefa</option>
@@ -536,7 +536,7 @@ const Schedule: React.FC = () => {
                       required
                       value={formData.date}
                       onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px]"
                     />
                   </div>
                   <div>
@@ -547,7 +547,7 @@ const Schedule: React.FC = () => {
                       type="datetime-local"
                       value={formData.endDate}
                       onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px]"
                     />
                   </div>
                 </div>
@@ -565,7 +565,7 @@ const Schedule: React.FC = () => {
                       onChange={(e) => setClientSearchTerm(e.target.value)}
                       onFocus={() => setShowClientSuggestions(true)}
                       onBlur={() => setTimeout(() => setShowClientSuggestions(false), 200)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px]"
                       placeholder="Digite o nome ou CPF do cliente..."
                     />
                     {showClientSuggestions && clientSuggestions.length > 0 && (
@@ -578,7 +578,7 @@ const Schedule: React.FC = () => {
                               setClientSearchTerm(client.name);
                               setShowClientSuggestions(false);
                             }}
-                            className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                            className="px-4 py-2 hover:bg-gray-100 cursor-pointer min-h-[44px]"
                           >
                             <div className="font-medium text-gray-900">{client.name}</div>
                             {client.cpf && <div className="text-sm text-gray-500">CPF: {client.cpf}</div>}
@@ -604,7 +604,7 @@ const Schedule: React.FC = () => {
                       onChange={(e) => setCaseSearchTerm(e.target.value)}
                       onFocus={() => setShowCaseSuggestions(true)}
                       onBlur={() => setTimeout(() => setShowCaseSuggestions(false), 200)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px]"
                       placeholder="Digite o número ou assunto do processo..."
                     />
                     {showCaseSuggestions && caseSuggestions.length > 0 && (
@@ -617,7 +617,7 @@ const Schedule: React.FC = () => {
                               setCaseSearchTerm(caseItem.processNumber);
                               setShowCaseSuggestions(false);
                             }}
-                            className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                            className="px-4 py-2 hover:bg-gray-100 cursor-pointer min-h-[44px]"
                           >
                             <div className="font-medium text-gray-900">{caseItem.processNumber}</div>
                             <div className="text-sm text-gray-500">{caseItem.subject}</div>
@@ -642,7 +642,7 @@ const Schedule: React.FC = () => {
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px]"
                     placeholder="Detalhes adicionais..."
                   />
                 </div>
@@ -652,7 +652,7 @@ const Schedule: React.FC = () => {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="flex-1 px-4 py-2 bg-blue-600 text-neutral-900 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 min-h-[44px]"
                   >
                     {loading ? 'Salvando...' : editingEvent ? 'Atualizar' : 'Criar'}
                   </button>
@@ -662,7 +662,7 @@ const Schedule: React.FC = () => {
                       setShowModal(false);
                       resetForm();
                     }}
-                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors"
+                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors min-h-[44px]"
                   >
                     Cancelar
                   </button>
@@ -743,20 +743,20 @@ const Schedule: React.FC = () => {
                         type="text"
                         readOnly
                         value={viewingEvent.googleMeetLink}
-                        className="flex-1 px-3 py-2 border border-orange-300 rounded-md bg-white text-gray-900 text-sm"
+                        className="flex-1 px-3 py-2 border border-orange-300 rounded-md bg-white text-gray-900 text-sm min-h-[44px]"
                       />
                       <button
                         onClick={() => {
                           navigator.clipboard.writeText(viewingEvent.googleMeetLink!);
                           toast.success('Link copiado!');
                         }}
-                        className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-neutral-900 rounded-md transition-colors"
+                        className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-neutral-900 rounded-md transition-colors min-h-[44px]"
                       >
                         Copiar
                       </button>
                       <button
                         onClick={() => window.open(viewingEvent.googleMeetLink, '_blank')}
-                        className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-neutral-900 rounded-md transition-colors"
+                        className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-neutral-900 rounded-md transition-colors min-h-[44px]"
                       >
                         Abrir
                       </button>
@@ -796,13 +796,13 @@ const Schedule: React.FC = () => {
                     setShowViewModal(false);
                     handleEdit(viewingEvent);
                   }}
-                  className="flex-1 px-4 py-2 bg-blue-600 text-neutral-900 rounded-lg hover:bg-blue-700 transition-colors"
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors min-h-[44px]"
                 >
                   Editar
                 </button>
                 <button
                   onClick={() => setShowViewModal(false)}
-                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors"
+                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors min-h-[44px]"
                 >
                   Fechar
                 </button>

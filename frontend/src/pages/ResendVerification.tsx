@@ -56,7 +56,7 @@ const ResendVerification: React.FC = () => {
               </div>
               <button
                 onClick={() => navigate('/login')}
-                className="w-full px-4 py-3 bg-primary-600 text-neutral-900 rounded-lg hover:bg-primary-700 transition-colors font-medium"
+                className="w-full px-4 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium min-h-[44px]"
               >
                 Ir para Login
               </button>
@@ -96,7 +96,7 @@ const ResendVerification: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="seu@email.com"
-                className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
+                className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors min-h-[44px]"
                 required
               />
             </div>
@@ -104,7 +104,7 @@ const ResendVerification: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full px-4 py-3 bg-primary-600 text-neutral-900 rounded-lg hover:bg-primary-700 transition-colors font-medium disabled:bg-green-400 disabled:cursor-not-allowed"
+              className="w-full px-4 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium disabled:bg-green-400 disabled:cursor-not-allowed min-h-[44px]"
             >
               {loading ? 'Enviando...' : 'Enviar Novo Link'}
             </button>

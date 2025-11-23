@@ -535,7 +535,7 @@ const Cases: React.FC = () => {
             />
             <button
               onClick={handleNewCase}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-primary-600 hover:bg-primary-700 text-neutral-900 font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200 min-h-[44px]"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-primary-600 hover:bg-primary-700 text-white font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200 min-h-[44px]"
             >
               <Plus size={20} />
               <span>Novo Processo</span>
@@ -544,14 +544,14 @@ const Cases: React.FC = () => {
         </div>
 
         <div className="bg-white rounded-lg shadow p-4">
-          <div className="flex items-center space-x-2 mb-4">
+          <div className="flex items-center gap-2 mb-4">
             <Search size={20} className="text-neutral-400" />
             <input
               type="text"
               placeholder="Buscar processos..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="flex-1 px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+              className="flex-1 px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 min-h-[44px]"
             />
           </div>
 
@@ -598,12 +598,12 @@ const Cases: React.FC = () => {
                       </td>
                       <td className="px-4 py-3 text-sm text-neutral-600">{caseItem.subject}</td>
                       <td className="px-4 py-3 text-sm">
-                        <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
+                        <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs min-h-[44px]">
                           {caseItem.status}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-sm">
-                        <div className="flex items-center justify-center space-x-2">
+                        <div className="flex items-center justify-center gap-2">
                           <button
                             onClick={() => handleSync(caseItem.id)}
                             className="text-primary-600 hover:text-primary-800 transition-colors"
@@ -647,7 +647,7 @@ const Cases: React.FC = () => {
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg max-w-2xl w-full max-h-screen overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-neutral-200 px-6 py-4 flex justify-between items-center">
+            <div className="sticky top-0 bg-white border-b border-neutral-200 px-6 py-4 flex justify-between items-center min-h-[44px]">
               <h2 className="text-xl font-bold text-neutral-900">
                 {editMode ? 'Editar Processo' : 'Novo Processo'}
               </h2>
@@ -683,7 +683,7 @@ const Cases: React.FC = () => {
                     setFormData({ ...formData, clientId: '' });
                   }}
                   onFocus={() => setShowClientSuggestions(true)}
-                  className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                 />
                 {showClientSuggestions && filteredClients.length > 0 && (
                   <div className="absolute z-10 w-full mt-1 bg-white border border-neutral-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
@@ -691,7 +691,7 @@ const Cases: React.FC = () => {
                       <div
                         key={client.id}
                         onClick={() => handleClientSelect(client)}
-                        className="px-4 py-2 hover:bg-neutral-100 cursor-pointer"
+                        className="px-4 py-2 hover:bg-neutral-100 cursor-pointer min-h-[44px]"
                       >
                         <p className="font-medium text-sm">{client.name}</p>
                         {client.cpf && <p className="text-xs text-neutral-500">{client.cpf}</p>}
@@ -713,7 +713,7 @@ const Cases: React.FC = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, processNumber: e.target.value })
                   }
-                  className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md"
+                  className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md min-h-[44px]"
                   disabled={editMode}
                 />
                 <p className="text-xs text-neutral-500 mt-1">
@@ -729,7 +729,7 @@ const Cases: React.FC = () => {
                     required
                     value={formData.court}
                     onChange={(e) => setFormData({ ...formData, court: e.target.value })}
-                    className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md"
+                    className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md min-h-[44px]"
                   />
                 </div>
                 <div>
@@ -739,7 +739,7 @@ const Cases: React.FC = () => {
                     step="0.01"
                     value={formData.value}
                     onChange={(e) => setFormData({ ...formData, value: e.target.value })}
-                    className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md"
+                    className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md min-h-[44px]"
                   />
                 </div>
               </div>
@@ -751,7 +751,7 @@ const Cases: React.FC = () => {
                   required
                   value={formData.subject}
                   onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                  className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md"
+                  className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md min-h-[44px]"
                 />
               </div>
 
@@ -760,7 +760,7 @@ const Cases: React.FC = () => {
                 <select
                   value={formData.status}
                   onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                  className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md"
+                  className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md min-h-[44px]"
                 >
                   <option value="ACTIVE">Ativo</option>
                   <option value="ARCHIVED">Arquivado</option>
@@ -775,7 +775,7 @@ const Cases: React.FC = () => {
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                   rows={4}
                   placeholder="Observações adicionais sobre o processo..."
-                  className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md"
+                  className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md min-h-[44px]"
                 />
               </div>
 
@@ -786,7 +786,7 @@ const Cases: React.FC = () => {
                   value={formData.linkProcesso}
                   onChange={(e) => setFormData({ ...formData, linkProcesso: e.target.value })}
                   placeholder="https://www.tjrj.jus.br/..."
-                  className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md"
+                  className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md min-h-[44px]"
                 />
                 <p className="mt-1 text-xs text-neutral-500">URL do processo no site do tribunal</p>
               </div>
@@ -798,7 +798,7 @@ const Cases: React.FC = () => {
                   onChange={(e) => setFormData({ ...formData, informarCliente: e.target.value })}
                   rows={3}
                   placeholder="Digite aqui o texto explicativo do andamento que será informado ao cliente..."
-                  className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md"
+                  className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md min-h-[44px]"
                 />
                 <p className="mt-1 text-xs text-neutral-500">Este texto será exibido ao visualizar o andamento para o cliente</p>
               </div>
@@ -821,7 +821,7 @@ const Cases: React.FC = () => {
                       setShowAddPartForm(!showAddPartForm);
                       setEditingPartIndex(null);
                     }}
-                    className="flex items-center space-x-1 text-primary-600 hover:text-primary-800 text-sm font-medium"
+                    className="flex items-center gap-1 text-primary-600 hover:text-primary-800 text-sm font-medium"
                   >
                     <Plus size={16} />
                     <span>Adicionar Parte</span>
@@ -834,7 +834,7 @@ const Cases: React.FC = () => {
                     {parts.map((part, index) => (
                       <div key={index} className="flex items-start justify-between p-3 bg-neutral-50 rounded-md">
                         <div className="flex-1">
-                          <div className="flex items-center space-x-2">
+                          <div className="flex items-center gap-2">
                             <span className={`px-2 py-0.5 rounded text-xs font-medium ${
                               part.type === 'AUTOR' ? 'bg-green-100 text-primary-700' :
                               part.type === 'REU' ? 'bg-error-100 text-error-700' :
@@ -880,7 +880,7 @@ const Cases: React.FC = () => {
                       <select
                         value={partFormData.type}
                         onChange={(e) => setPartFormData({ ...partFormData, type: e.target.value as any })}
-                        className="block w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className="block w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       >
                         <option value="AUTOR">Autor</option>
                         <option value="REU">Réu</option>
@@ -895,7 +895,7 @@ const Cases: React.FC = () => {
                           type="text"
                           value={partFormData.name}
                           onChange={(e) => setPartFormData({ ...partFormData, name: e.target.value })}
-                          className="block w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                          className="block w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                         />
                       </div>
                       <div>
@@ -904,7 +904,7 @@ const Cases: React.FC = () => {
                           type="text"
                           value={partFormData.cpfCnpj}
                           onChange={(e) => setPartFormData({ ...partFormData, cpfCnpj: e.target.value })}
-                          className="block w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                          className="block w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                         />
                       </div>
                     </div>
@@ -916,7 +916,7 @@ const Cases: React.FC = () => {
                           type="text"
                           value={partFormData.phone}
                           onChange={(e) => setPartFormData({ ...partFormData, phone: e.target.value })}
-                          className="block w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                          className="block w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                         />
                       </div>
                       <div>
@@ -925,7 +925,7 @@ const Cases: React.FC = () => {
                           type="text"
                           value={partFormData.address}
                           onChange={(e) => setPartFormData({ ...partFormData, address: e.target.value })}
-                          className="block w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                          className="block w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                         />
                       </div>
                     </div>
@@ -940,7 +940,7 @@ const Cases: React.FC = () => {
                               type="email"
                               value={partFormData.email}
                               onChange={(e) => setPartFormData({ ...partFormData, email: e.target.value })}
-                              className="block w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                              className="block w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                             />
                           </div>
                           <div>
@@ -949,7 +949,7 @@ const Cases: React.FC = () => {
                               type="text"
                               value={partFormData.civilStatus}
                               onChange={(e) => setPartFormData({ ...partFormData, civilStatus: e.target.value })}
-                              className="block w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                              className="block w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                             />
                           </div>
                         </div>
@@ -960,7 +960,7 @@ const Cases: React.FC = () => {
                               type="text"
                               value={partFormData.profession}
                               onChange={(e) => setPartFormData({ ...partFormData, profession: e.target.value })}
-                              className="block w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                              className="block w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                             />
                           </div>
                           <div>
@@ -969,14 +969,14 @@ const Cases: React.FC = () => {
                               type="text"
                               value={partFormData.rg}
                               onChange={(e) => setPartFormData({ ...partFormData, rg: e.target.value })}
-                              className="block w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                              className="block w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                             />
                           </div>
                         </div>
                       </>
                     )}
 
-                    <div className="flex justify-end space-x-2">
+                    <div className="flex justify-end gap-2">
                       <button
                         type="button"
                         onClick={() => {
@@ -995,14 +995,14 @@ const Cases: React.FC = () => {
                             birthDate: '',
                           });
                         }}
-                        className="px-3 py-1.5 text-sm border border-neutral-300 rounded-md text-neutral-700 hover:bg-neutral-50"
+                        className="px-3 py-1.5 text-sm border border-neutral-300 rounded-md text-neutral-700 hover:bg-neutral-50 min-h-[44px]"
                       >
                         Cancelar
                       </button>
                       <button
                         type="button"
                         onClick={handleAddPart}
-                        className="px-3 py-1.5 text-sm bg-primary-600 text-neutral-900 rounded-md hover:bg-primary-700"
+                        className="px-3 py-1.5 text-sm bg-primary-600 text-white rounded-md hover:bg-primary-700 min-h-[44px]"
                       >
                         {editingPartIndex !== null ? 'Atualizar' : 'Adicionar'}
                       </button>
@@ -1011,7 +1011,7 @@ const Cases: React.FC = () => {
                 )}
               </div>
 
-              <div className="flex justify-end space-x-3 mt-6 pt-6 border-t border-neutral-200">
+              <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-neutral-200">
                 <button
                   type="button"
                   onClick={() => {
@@ -1020,13 +1020,13 @@ const Cases: React.FC = () => {
                     setSelectedCase(null);
                     resetForm();
                   }}
-                  className="px-6 py-2 border border-neutral-300 rounded-md text-neutral-700 hover:bg-neutral-50 transition-colors"
+                  className="px-6 py-2 border border-neutral-300 rounded-md text-neutral-700 hover:bg-neutral-50 transition-colors min-h-[44px]"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-primary-600 text-neutral-900 rounded-md hover:bg-primary-700 transition-colors"
+                  className="px-6 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors min-h-[44px]"
                 >
                   {editMode ? 'Atualizar' : 'Salvar'}
                 </button>
@@ -1048,7 +1048,7 @@ const Cases: React.FC = () => {
             ) : (
               <>
                 {/* Header */}
-                <div className="sticky top-0 bg-white border-b border-neutral-200 px-6 py-4 flex justify-between items-center">
+                <div className="sticky top-0 bg-white border-b border-neutral-200 px-6 py-4 flex justify-between items-center min-h-[44px]">
                   <div>
                     <h2 className="text-2xl font-bold text-neutral-900">
                       {selectedCase.processNumber}
@@ -1108,7 +1108,7 @@ const Cases: React.FC = () => {
                           <span className="mr-2">⚖️</span>
                           <span>Status</span>
                         </div>
-                        <span className="inline-block px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                        <span className="inline-block px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium min-h-[44px]">
                           {selectedCase.status}
                         </span>
                       </div>
@@ -1126,7 +1126,7 @@ const Cases: React.FC = () => {
                       <div className="flex gap-3 flex-wrap">
                         <button
                           onClick={() => handleSync(selectedCase.id)}
-                          className="flex items-center space-x-2 px-4 py-2 bg-primary-600 text-neutral-900 rounded-md hover:bg-primary-700 transition-colors"
+                          className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors min-h-[44px]"
                         >
                           <RefreshCw size={16} />
                           <span>Sincronizar Agora</span>
@@ -1135,7 +1135,7 @@ const Cases: React.FC = () => {
                         <button
                           onClick={() => handleGenerateSummary(selectedCase.id)}
                           disabled={generatingSummary}
-                          className="flex items-center space-x-2 px-4 py-2 bg-purple-600 text-neutral-900 rounded-md hover:bg-purple-700 disabled:bg-neutral-400 disabled:cursor-not-allowed transition-colors"
+                          className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-neutral-900 rounded-md hover:bg-purple-700 disabled:bg-neutral-400 disabled:cursor-not-allowed transition-colors min-h-[44px]"
                           title="Gerar resumo com Inteligência Artificial"
                         >
                           {generatingSummary ? (
@@ -1324,7 +1324,7 @@ const Cases: React.FC = () => {
                                 )}
 
                                 {index === 0 && (
-                                  <span className="inline-block mt-2 text-xs bg-green-100 text-primary-700 px-2 py-1 rounded-full">
+                                  <span className="inline-block mt-2 text-xs bg-green-100 text-primary-700 px-2 py-1 rounded-full min-h-[44px]">
                                     Mais recente
                                   </span>
                                 )}
@@ -1338,21 +1338,21 @@ const Cases: React.FC = () => {
                 </div>
 
                 {/* Footer */}
-                <div className="sticky bottom-0 bg-neutral-50 border-t border-neutral-200 px-6 py-4 flex justify-between">
-                  <div className="flex space-x-3">
+                <div className="sticky bottom-0 bg-neutral-50 border-t border-neutral-200 px-6 py-4 flex justify-between min-h-[44px]">
+                  <div className="flex gap-3">
                     <button
                       onClick={() => {
                         setShowDetailsModal(false);
                         handleEdit(selectedCase as Case);
                       }}
-                      className="flex items-center space-x-2 px-6 py-2 bg-primary-600 text-neutral-900 rounded-md hover:bg-primary-700 transition-colors"
+                      className="flex items-center gap-2 px-6 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors min-h-[44px]"
                     >
                       <Edit size={16} />
                       <span>Editar Processo</span>
                     </button>
                     <button
                       onClick={() => handleDelete(selectedCase as Case)}
-                      className="flex items-center space-x-2 px-6 py-2 bg-error-600 text-neutral-900 rounded-md hover:bg-error-700 transition-colors"
+                      className="flex items-center gap-2 px-6 py-2 bg-error-600 text-neutral-900 rounded-md hover:bg-error-700 transition-colors min-h-[44px]"
                     >
                       <Trash2 size={16} />
                       <span>Excluir Processo</span>
@@ -1360,7 +1360,7 @@ const Cases: React.FC = () => {
                   </div>
                   <button
                     onClick={() => setShowDetailsModal(false)}
-                    className="px-6 py-2 border border-neutral-300 rounded-md text-neutral-700 hover:bg-neutral-50 transition-colors"
+                    className="px-6 py-2 border border-neutral-300 rounded-md text-neutral-700 hover:bg-neutral-50 transition-colors min-h-[44px]"
                   >
                     Fechar
                   </button>
@@ -1375,7 +1375,7 @@ const Cases: React.FC = () => {
       {showEditPartModal && editingPart && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-neutral-200 px-6 py-4 flex justify-between items-center">
+            <div className="sticky top-0 bg-white border-b border-neutral-200 px-6 py-4 flex justify-between items-center min-h-[44px]">
               <h2 className="text-2xl font-bold text-neutral-900">Editar Parte</h2>
               <button
                 onClick={() => {
@@ -1397,7 +1397,7 @@ const Cases: React.FC = () => {
                 <select
                   value={editingPart.type}
                   onChange={(e) => setEditingPart({ ...editingPart, type: e.target.value as 'AUTOR' | 'REU' | 'REPRESENTANTE_LEGAL' })}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                 >
                   <option value="AUTOR">Autor</option>
                   <option value="REU">Réu</option>
@@ -1414,7 +1414,7 @@ const Cases: React.FC = () => {
                   type="text"
                   value={editingPart.name}
                   onChange={(e) => setEditingPart({ ...editingPart, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   required
                 />
               </div>
@@ -1428,7 +1428,7 @@ const Cases: React.FC = () => {
                   type="text"
                   value={editingPart.cpfCnpj || ''}
                   onChange={(e) => setEditingPart({ ...editingPart, cpfCnpj: e.target.value })}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                 />
               </div>
 
@@ -1441,7 +1441,7 @@ const Cases: React.FC = () => {
                   type="text"
                   value={editingPart.rg || ''}
                   onChange={(e) => setEditingPart({ ...editingPart, rg: e.target.value })}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                 />
               </div>
 
@@ -1454,7 +1454,7 @@ const Cases: React.FC = () => {
                   type="date"
                   value={editingPart.birthDate ? editingPart.birthDate.split('T')[0] : ''}
                   onChange={(e) => setEditingPart({ ...editingPart, birthDate: e.target.value })}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                 />
               </div>
 
@@ -1467,7 +1467,7 @@ const Cases: React.FC = () => {
                   type="text"
                   value={editingPart.phone || ''}
                   onChange={(e) => setEditingPart({ ...editingPart, phone: e.target.value })}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                 />
               </div>
 
@@ -1482,7 +1482,7 @@ const Cases: React.FC = () => {
                       type="email"
                       value={editingPart.email || ''}
                       onChange={(e) => setEditingPart({ ...editingPart, email: e.target.value })}
-                      className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                     />
                   </div>
 
@@ -1494,7 +1494,7 @@ const Cases: React.FC = () => {
                       type="text"
                       value={editingPart.civilStatus || ''}
                       onChange={(e) => setEditingPart({ ...editingPart, civilStatus: e.target.value })}
-                      className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                     />
                   </div>
 
@@ -1506,7 +1506,7 @@ const Cases: React.FC = () => {
                       type="text"
                       value={editingPart.profession || ''}
                       onChange={(e) => setEditingPart({ ...editingPart, profession: e.target.value })}
-                      className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                     />
                   </div>
                 </>
@@ -1520,26 +1520,26 @@ const Cases: React.FC = () => {
                 <textarea
                   value={editingPart.address || ''}
                   onChange={(e) => setEditingPart({ ...editingPart, address: e.target.value })}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   rows={2}
                 />
               </div>
             </div>
 
             {/* Footer */}
-            <div className="sticky bottom-0 bg-neutral-50 border-t border-neutral-200 px-6 py-4 flex justify-end space-x-3">
+            <div className="sticky bottom-0 bg-neutral-50 border-t border-neutral-200 px-6 py-4 flex justify-end gap-3 min-h-[44px]">
               <button
                 onClick={() => {
                   setShowEditPartModal(false);
                   setEditingPart(null);
                 }}
-                className="px-6 py-2 border border-neutral-300 rounded-md text-neutral-700 hover:bg-neutral-50 transition-colors"
+                className="px-6 py-2 border border-neutral-300 rounded-md text-neutral-700 hover:bg-neutral-50 transition-colors min-h-[44px]"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleSaveEditedPart}
-                className="px-6 py-2 bg-primary-600 text-neutral-900 rounded-md hover:bg-primary-700 transition-colors"
+                className="px-6 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors min-h-[44px]"
               >
                 Salvar Alterações
               </button>
@@ -1596,7 +1596,7 @@ const Cases: React.FC = () => {
 
               <button
                 onClick={() => setShowImportModal(false)}
-                className="w-full px-4 py-2 bg-primary-600 text-neutral-900 rounded-md hover:bg-primary-700"
+                className="w-full px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 min-h-[44px]"
               >
                 Fechar
               </button>
@@ -1674,7 +1674,7 @@ const Cases: React.FC = () => {
               <div className="mt-6 flex justify-end">
                 <button
                   onClick={() => setShowAndamentoModal(false)}
-                  className="px-4 py-2 bg-neutral-500 text-neutral-900 rounded hover:bg-neutral-600 transition-colors"
+                  className="px-4 py-2 bg-neutral-500 text-neutral-900 rounded hover:bg-neutral-600 transition-colors min-h-[44px]"
                 >
                   Fechar
                 </button>

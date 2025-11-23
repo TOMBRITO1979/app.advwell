@@ -386,7 +386,7 @@ const Financial: React.FC = () => {
             />
             <button
               onClick={handleNew}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-primary-600 hover:bg-primary-700 text-neutral-900 font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200 min-h-[44px]"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-primary-600 hover:bg-primary-700 text-white font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200 min-h-[44px]"
             >
               <Plus size={20} />
               <span>Nova Transação</span>
@@ -442,20 +442,20 @@ const Financial: React.FC = () => {
         {/* Filtros e Busca */}
         <div className="bg-white rounded-lg shadow p-4">
           <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1 flex items-center space-x-2">
+            <div className="flex-1 flex items-center gap-2">
               <Search size={20} className="text-neutral-400" />
               <input
                 type="text"
                 placeholder="Buscar por descrição ou cliente..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="flex-1 px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                className="flex-1 px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 min-h-[44px]"
               />
             </div>
 
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center space-x-2 px-4 py-2 border border-neutral-300 rounded-md hover:bg-neutral-50 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 border border-neutral-300 rounded-md hover:bg-neutral-50 transition-colors min-h-[44px]"
             >
               <Filter size={20} />
               <span>Filtros</span>
@@ -469,7 +469,7 @@ const Financial: React.FC = () => {
                 <select
                   value={filterType}
                   onChange={(e) => setFilterType(e.target.value)}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                 >
                   <option value="">Todos</option>
                   <option value="INCOME">Receitas</option>
@@ -482,7 +482,7 @@ const Financial: React.FC = () => {
                 <select
                   value={filterClientId}
                   onChange={(e) => setFilterClientId(e.target.value)}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                 >
                   <option value="">Todos</option>
                   {clients.map((client) => (
@@ -496,7 +496,7 @@ const Financial: React.FC = () => {
               <div className="flex items-end">
                 <button
                   onClick={clearFilters}
-                  className="w-full px-4 py-2 border border-neutral-300 rounded-md hover:bg-neutral-50 transition-colors"
+                  className="w-full px-4 py-2 border border-neutral-300 rounded-md hover:bg-neutral-50 transition-colors min-h-[44px]"
                 >
                   Limpar Filtros
                 </button>
@@ -551,12 +551,12 @@ const Financial: React.FC = () => {
                       </td>
                       <td className="px-4 py-3 text-sm">
                         {transaction.type === 'INCOME' ? (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 min-h-[44px]">
                             <TrendingUp size={12} className="mr-1" />
                             Receita
                           </span>
                         ) : (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-error-100 text-error-800">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-error-100 text-error-800 min-h-[44px]">
                             <TrendingDown size={12} className="mr-1" />
                             Despesa
                           </span>
@@ -586,7 +586,7 @@ const Financial: React.FC = () => {
                         </span>
                       </td>
                       <td className="px-4 py-3 text-sm text-center">
-                        <div className="flex items-center justify-center space-x-2">
+                        <div className="flex items-center justify-center gap-2">
                           <button
                             onClick={() => handleEdit(transaction)}
                             className="text-primary-600 hover:text-primary-800 transition-colors"
@@ -616,7 +616,7 @@ const Financial: React.FC = () => {
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-neutral-200 px-6 py-4 flex justify-between items-center">
+            <div className="sticky top-0 bg-white border-b border-neutral-200 px-6 py-4 flex justify-between items-center min-h-[44px]">
               <h2 className="text-xl font-bold text-neutral-900">
                 {editMode ? 'Editar Transação' : 'Nova Transação'}
               </h2>
@@ -644,7 +644,7 @@ const Financial: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setFormData({ ...formData, type: 'INCOME' })}
-                      className={`flex items-center justify-center space-x-2 px-4 py-3 rounded-md border-2 transition-colors ${
+                      className={`flex items-center justify-center gap-2 px-4 py-3 rounded-md border-2 transition-colors ${
                         formData.type === 'INCOME'
                           ? 'border-primary-500 bg-green-50 text-primary-700'
                           : 'border-neutral-300 hover:border-neutral-400'
@@ -656,7 +656,7 @@ const Financial: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setFormData({ ...formData, type: 'EXPENSE' })}
-                      className={`flex items-center justify-center space-x-2 px-4 py-3 rounded-md border-2 transition-colors ${
+                      className={`flex items-center justify-center gap-2 px-4 py-3 rounded-md border-2 transition-colors ${
                         formData.type === 'EXPENSE'
                           ? 'border-error-500 bg-error-50 text-error-700'
                           : 'border-neutral-300 hover:border-neutral-400'
@@ -685,7 +685,7 @@ const Financial: React.FC = () => {
                       setFormData({ ...formData, clientId: '' });
                     }}
                     onFocus={() => setShowClientSuggestions(true)}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   />
                   {showClientSuggestions && filteredClients.length > 0 && (
                     <div className="absolute z-10 w-full mt-1 bg-white border border-neutral-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
@@ -693,7 +693,7 @@ const Financial: React.FC = () => {
                         <div
                           key={client.id}
                           onClick={() => handleClientSelect(client)}
-                          className="px-4 py-2 hover:bg-neutral-100 cursor-pointer"
+                          className="px-4 py-2 hover:bg-neutral-100 cursor-pointer min-h-[44px]"
                         >
                           <p className="font-medium text-sm">{client.name}</p>
                           {client.cpf && <p className="text-xs text-neutral-500">{client.cpf}</p>}
@@ -719,7 +719,7 @@ const Financial: React.FC = () => {
                       setFormData({ ...formData, caseId: '' });
                     }}
                     onFocus={() => setShowCaseSuggestions(true)}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   />
                   {showCaseSuggestions && filteredCases.length > 0 && (
                     <div className="absolute z-10 w-full mt-1 bg-white border border-neutral-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
@@ -727,7 +727,7 @@ const Financial: React.FC = () => {
                         <div
                           key={caseItem.id}
                           onClick={() => handleCaseSelect(caseItem)}
-                          className="px-4 py-2 hover:bg-neutral-100 cursor-pointer"
+                          className="px-4 py-2 hover:bg-neutral-100 cursor-pointer min-h-[44px]"
                         >
                           <p className="font-medium text-sm">{caseItem.processNumber}</p>
                           <p className="text-xs text-neutral-500">{caseItem.subject}</p>
@@ -760,7 +760,7 @@ const Financial: React.FC = () => {
                     placeholder="Ex: Honorários advocatícios, Custas processuais..."
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   />
                 </div>
 
@@ -778,7 +778,7 @@ const Financial: React.FC = () => {
                       placeholder="0,00"
                       value={formData.amount}
                       onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                      className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                     />
                   </div>
 
@@ -792,13 +792,13 @@ const Financial: React.FC = () => {
                       required
                       value={formData.date}
                       onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                      className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                     />
                   </div>
                 </div>
               </div>
 
-              <div className="flex justify-end space-x-3 mt-6 pt-6 border-t border-neutral-200">
+              <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-neutral-200">
                 <button
                   type="button"
                   onClick={() => {
@@ -807,13 +807,13 @@ const Financial: React.FC = () => {
                     setSelectedTransaction(null);
                     resetForm();
                   }}
-                  className="px-6 py-2 border border-neutral-300 rounded-md text-neutral-700 hover:bg-neutral-50 transition-colors"
+                  className="px-6 py-2 border border-neutral-300 rounded-md text-neutral-700 hover:bg-neutral-50 transition-colors min-h-[44px]"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-primary-600 text-neutral-900 rounded-md hover:bg-primary-700 transition-colors"
+                  className="px-6 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors min-h-[44px]"
                 >
                   {editMode ? 'Atualizar' : 'Salvar'}
                 </button>

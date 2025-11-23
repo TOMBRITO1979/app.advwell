@@ -349,7 +349,7 @@ const Documents: React.FC = () => {
                 setSelectedClient(null);
                 setSelectedCase(null);
               }}
-              className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
             >
               <option value="client">Cliente</option>
               <option value="case">Processo</option>
@@ -371,7 +371,7 @@ const Documents: React.FC = () => {
                   ? 'Digite o nome ou CPF'
                   : 'Digite o número do processo'
               }
-              className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
             />
 
             {/* Autocomplete Dropdown */}
@@ -383,7 +383,7 @@ const Documents: React.FC = () => {
                       <div
                         key={client.id}
                         onClick={() => handleSelectClient(client)}
-                        className="px-4 py-2 hover:bg-neutral-100 cursor-pointer"
+                        className="px-4 py-2 hover:bg-neutral-100 cursor-pointer min-h-[44px]"
                       >
                         <div className="font-medium">{client.name}</div>
                         {client.cpf && (
@@ -399,7 +399,7 @@ const Documents: React.FC = () => {
                     <div
                       key={caseItem.id}
                       onClick={() => handleSelectCase(caseItem)}
-                      className="px-4 py-2 hover:bg-neutral-100 cursor-pointer"
+                      className="px-4 py-2 hover:bg-neutral-100 cursor-pointer min-h-[44px]"
                     >
                       <div className="font-medium">{caseItem.processNumber}</div>
                       <div className="text-sm text-neutral-600">{caseItem.subject}</div>
@@ -417,14 +417,14 @@ const Documents: React.FC = () => {
             <button
               onClick={handleSearch}
               disabled={loading || (!selectedClient && !selectedCase)}
-              className="flex-1 px-3 py-2 bg-info-600 text-neutral-900 rounded-md hover:bg-info-700 disabled:bg-neutral-400 disabled:cursor-not-allowed text-sm sm:text-base whitespace-nowrap"
+              className="flex-1 px-3 py-2 bg-info-600 text-neutral-900 rounded-md hover:bg-info-700 disabled:bg-neutral-400 disabled:cursor-not-allowed text-sm sm:text-base whitespace-nowrap min-h-[44px]"
             >
               {loading ? 'Buscando...' : 'Visualizar Documentos'}
             </button>
             <button
               onClick={handleAddDocument}
               disabled={!selectedClient && !selectedCase}
-              className="flex-1 px-3 py-2 bg-primary-600 text-neutral-900 rounded-md hover:bg-primary-700 disabled:bg-neutral-400 disabled:cursor-not-allowed text-sm sm:text-base whitespace-nowrap"
+              className="flex-1 px-3 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:bg-neutral-400 disabled:cursor-not-allowed text-sm sm:text-base whitespace-nowrap min-h-[44px]"
             >
               + Adicionar Documento
             </button>
@@ -519,7 +519,7 @@ const Documents: React.FC = () => {
                       <div className="flex gap-2 mt-4">
                         <button
                           onClick={() => handleOpenDocument(doc)}
-                          className="px-4 py-2 bg-info-600 text-neutral-900 rounded-md hover:bg-info-700 text-sm flex items-center gap-1"
+                          className="px-4 py-2 bg-info-600 text-neutral-900 rounded-md hover:bg-info-700 text-sm flex items-center gap-1 min-h-[44px]"
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                             <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
@@ -529,7 +529,7 @@ const Documents: React.FC = () => {
                         </button>
                         <button
                           onClick={() => handleDownloadDocument(doc)}
-                          className="px-4 py-2 bg-primary-600 text-neutral-900 rounded-md hover:bg-primary-700 text-sm flex items-center gap-1"
+                          className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 text-sm flex items-center gap-1 min-h-[44px]"
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                             <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -538,7 +538,7 @@ const Documents: React.FC = () => {
                         </button>
                         <button
                           onClick={() => handleDeleteDocument(doc.id)}
-                          className="px-4 py-2 bg-error-600 text-neutral-900 rounded-md hover:bg-error-700 text-sm"
+                          className="px-4 py-2 bg-error-600 text-neutral-900 rounded-md hover:bg-error-700 text-sm min-h-[44px]"
                         >
                           Excluir
                         </button>
@@ -552,7 +552,7 @@ const Documents: React.FC = () => {
             <div className="p-6 border-t border-neutral-200">
               <button
                 onClick={() => setShowViewModal(false)}
-                className="w-full px-4 py-2 bg-neutral-200 text-neutral-800 rounded-md hover:bg-neutral-300"
+                className="w-full px-4 py-2 bg-neutral-200 text-neutral-800 rounded-md hover:bg-neutral-300 min-h-[44px]"
               >
                 Fechar
               </button>
@@ -592,7 +592,7 @@ const Documents: React.FC = () => {
                     type="text"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                     required
                   />
                 </div>
@@ -606,7 +606,7 @@ const Documents: React.FC = () => {
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     rows={3}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   />
                 </div>
 
@@ -656,7 +656,7 @@ const Documents: React.FC = () => {
                         onChange={(e) =>
                           setFormData({ ...formData, externalUrl: e.target.value })
                         }
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                         placeholder="https://..."
                         required
                       />
@@ -674,7 +674,7 @@ const Documents: React.FC = () => {
                             externalType: e.target.value as any,
                           })
                         }
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       >
                         <option value="google_drive">Google Drive</option>
                         <option value="google_docs">Google Docs</option>
@@ -703,7 +703,7 @@ const Documents: React.FC = () => {
                           }
                         }
                       }}
-                      className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.jpg,.jpeg,.png,.gif,.webp,.zip,.rar"
                     />
                     {selectedFile && (
@@ -727,14 +727,14 @@ const Documents: React.FC = () => {
                   setShowAddModal(false);
                   resetForm();
                 }}
-                className="flex-1 px-4 py-2 bg-neutral-200 text-neutral-800 rounded-md hover:bg-neutral-300"
+                className="flex-1 px-4 py-2 bg-neutral-200 text-neutral-800 rounded-md hover:bg-neutral-300 min-h-[44px]"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleSaveDocument}
                 disabled={loading}
-                className="flex-1 px-4 py-2 bg-primary-600 text-neutral-900 rounded-md hover:bg-primary-700 disabled:bg-neutral-400 disabled:cursor-not-allowed"
+                className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:bg-neutral-400 disabled:cursor-not-allowed min-h-[44px]"
               >
                 {loading ? 'Enviando...' : 'Salvar Documento'}
               </button>

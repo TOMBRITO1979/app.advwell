@@ -101,7 +101,7 @@ const Register: React.FC = () => {
             <div className="space-y-3">
               <button
                 onClick={() => navigate('/login')}
-                className="w-full px-4 py-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-neutral-900 rounded-lg shadow-xl hover:shadow-green-500/50 transition-all duration-300 transform hover:scale-[1.02] active:scale-95 font-medium"
+                className="w-full px-4 py-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-neutral-900 rounded-lg shadow-xl hover:shadow-green-500/50 transition-all duration-300 transform hover:scale-[1.02] active:scale-95 font-medium min-h-[44px]"
               >
                 Ir para Login
               </button>
@@ -152,7 +152,7 @@ const Register: React.FC = () => {
               required
               value={formData.name}
               onChange={handleChange}
-              className="block w-full border-none rounded-md shadow-sm bg-white/30 appearance-none outline outline-1 focus:outline focus:outline-2 text-slate-900 placeholder:text-slate-500 sm:text-sm sm:leading-6 px-3 py-3 outline-green-400/60 hover:outline-green-500 focus:outline-green-500 focus:bg-white/40"
+              className="block w-full border-none rounded-md shadow-sm bg-white/30 appearance-none outline outline-1 focus:outline focus:outline-2 text-slate-900 placeholder:text-slate-500 sm:text-sm sm:leading-6 px-3 py-3 outline-green-400/60 hover:outline-green-500 focus:outline-green-500 focus:bg-white/40 min-h-[44px]"
             />
           </div>
 
@@ -167,7 +167,7 @@ const Register: React.FC = () => {
               required
               value={formData.email}
               onChange={handleChange}
-              className="block w-full border-none rounded-md shadow-sm bg-white/30 appearance-none outline outline-1 focus:outline focus:outline-2 text-slate-900 placeholder:text-slate-500 sm:text-sm sm:leading-6 px-3 py-3 outline-green-400/60 hover:outline-green-500 focus:outline-green-500 focus:bg-white/40"
+              className="block w-full border-none rounded-md shadow-sm bg-white/30 appearance-none outline outline-1 focus:outline focus:outline-2 text-slate-900 placeholder:text-slate-500 sm:text-sm sm:leading-6 px-3 py-3 outline-green-400/60 hover:outline-green-500 focus:outline-green-500 focus:bg-white/40 min-h-[44px]"
             />
           </div>
 
@@ -182,7 +182,7 @@ const Register: React.FC = () => {
               required
               value={formData.companyName}
               onChange={handleChange}
-              className="block w-full border-none rounded-md shadow-sm bg-white/30 appearance-none outline outline-1 focus:outline focus:outline-2 text-slate-900 placeholder:text-slate-500 sm:text-sm sm:leading-6 px-3 py-3 outline-green-400/60 hover:outline-green-500 focus:outline-green-500 focus:bg-white/40"
+              className="block w-full border-none rounded-md shadow-sm bg-white/30 appearance-none outline outline-1 focus:outline focus:outline-2 text-slate-900 placeholder:text-slate-500 sm:text-sm sm:leading-6 px-3 py-3 outline-green-400/60 hover:outline-green-500 focus:outline-green-500 focus:bg-white/40 min-h-[44px]"
             />
           </div>
 
@@ -196,7 +196,7 @@ const Register: React.FC = () => {
               type="text"
               value={formData.cnpj}
               onChange={handleChange}
-              className="block w-full border-none rounded-md shadow-sm bg-white/30 appearance-none outline outline-1 focus:outline focus:outline-2 text-slate-900 placeholder:text-slate-500 sm:text-sm sm:leading-6 px-3 py-3 outline-green-400/60 hover:outline-green-500 focus:outline-green-500 focus:bg-white/40"
+              className="block w-full border-none rounded-md shadow-sm bg-white/30 appearance-none outline outline-1 focus:outline focus:outline-2 text-slate-900 placeholder:text-slate-500 sm:text-sm sm:leading-6 px-3 py-3 outline-green-400/60 hover:outline-green-500 focus:outline-green-500 focus:bg-white/40 min-h-[44px]"
             />
           </div>
 
@@ -211,7 +211,7 @@ const Register: React.FC = () => {
               required
               value={formData.password}
               onChange={handleChange}
-              className="block w-full border-none rounded-md shadow-sm bg-white/30 appearance-none outline outline-1 focus:outline focus:outline-2 text-slate-900 placeholder:text-slate-500 sm:text-sm sm:leading-6 px-3 py-3 outline-green-400/60 hover:outline-green-500 focus:outline-green-500 focus:bg-white/40"
+              className="block w-full border-none rounded-md shadow-sm bg-white/30 appearance-none outline outline-1 focus:outline focus:outline-2 text-slate-900 placeholder:text-slate-500 sm:text-sm sm:leading-6 px-3 py-3 outline-green-400/60 hover:outline-green-500 focus:outline-green-500 focus:bg-white/40 min-h-[44px]"
             />
           </div>
 
@@ -226,14 +226,14 @@ const Register: React.FC = () => {
               required
               value={formData.confirmPassword}
               onChange={handleChange}
-              className="block w-full border-none rounded-md shadow-sm bg-white/30 appearance-none outline outline-1 focus:outline focus:outline-2 text-slate-900 placeholder:text-slate-500 sm:text-sm sm:leading-6 px-3 py-3 outline-green-400/60 hover:outline-green-500 focus:outline-green-500 focus:bg-white/40"
+              className="block w-full border-none rounded-md shadow-sm bg-white/30 appearance-none outline outline-1 focus:outline focus:outline-2 text-slate-900 placeholder:text-slate-500 sm:text-sm sm:leading-6 px-3 py-3 outline-green-400/60 hover:outline-green-500 focus:outline-green-500 focus:bg-white/40 min-h-[44px]"
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-xl text-sm font-medium text-neutral-900 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 hover:shadow-green-500/50 transition-all duration-300 transform hover:scale-[1.02] active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
+            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-xl text-sm font-medium text-neutral-900 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 hover:shadow-green-500/50 transition-all duration-300 transform hover:scale-[1.02] active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 min-h-[44px]"
           >
             {loading ? 'Cadastrando...' : 'Cadastrar'}
           </button>
