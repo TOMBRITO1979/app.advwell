@@ -421,6 +421,9 @@ const Schedule: React.FC = () => {
                     Tipo
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Prioridade
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Título
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -431,6 +434,9 @@ const Schedule: React.FC = () => {
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Processo
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Atribuído
                   </th>
                   <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Ações
@@ -459,6 +465,11 @@ const Schedule: React.FC = () => {
                       </span>
                     </td>
                     <td className="px-4 py-3">
+                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${priorityColors[event.priority || 'MEDIA']}`}>
+                        {priorityLabels[event.priority || 'MEDIA']}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
                       <div className={event.completed ? 'line-through text-neutral-500' : 'text-gray-900'}>
                         {event.title}
                       </div>
@@ -471,6 +482,22 @@ const Schedule: React.FC = () => {
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-600">
                       {event.case?.processNumber || '-'}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-600">
+                      {event.assignedUsers && event.assignedUsers.length > 0 ? (
+                        <div className="flex flex-wrap gap-1">
+                          {event.assignedUsers.map((assignment) => (
+                            <span
+                              key={assignment.id}
+                              className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full"
+                            >
+                              {assignment.user.name}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        '-'
+                      )}
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex justify-end gap-2">
