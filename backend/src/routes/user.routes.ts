@@ -4,12 +4,12 @@ import { Request, Response, NextFunction } from 'express';
 import userController from '../controllers/user.controller';
 import { authenticate, requireAdmin } from '../middleware/auth';
 import { validateTenant } from '../middleware/tenant';
+import multer from 'multer';
 
 const router = Router();
+const upload = multer({ storage: multer.memoryStorage() });
 
 router.use(authenticate);
-router.use(requireAdmin);
-router.use(validateTenant);
 
 // Middleware de validação genérico
 const validate = (req: Request, res: Response, next: NextFunction) => {
@@ -39,7 +39,7 @@ const createUserValidation = [
     .isLength({ min: 6, max: 100 })
     .withMessage('Senha deve ter entre 6 e 100 caracteres'),
   body('role')
-    .optional()
+    .optional({ checkFalsy: true })
     .isIn(['USER', 'ADMIN', 'SUPER_ADMIN'])
     .withMessage('Role deve ser USER, ADMIN ou SUPER_ADMIN'),
 ];
@@ -47,26 +47,35 @@ const createUserValidation = [
 // Validações para atualização de usuário
 const updateUserValidation = [
   body('name')
-    .optional()
+    .optional({ checkFalsy: true })
     .trim()
     .isLength({ min: 2, max: 200 })
     .withMessage('Nome deve ter entre 2 e 200 caracteres')
     .matches(/^[a-zA-ZÀ-ÿ0-9\s\.\-\']+$/)
     .withMessage('Nome deve conter apenas letras, números, espaços e caracteres comuns'),
   body('email')
-    .optional()
+    .optional({ checkFalsy: true })
     .isEmail()
     .normalizeEmail()
     .withMessage('Email inválido'),
   body('password')
-    .optional()
+    .optional({ checkFalsy: true })
     .isLength({ min: 6, max: 100 })
     .withMessage('Senha deve ter entre 6 e 100 caracteres'),
   body('role')
-    .optional()
+    .optional({ checkFalsy: true })
     .isIn(['USER', 'ADMIN', 'SUPER_ADMIN'])
     .withMessage('Role deve ser USER, ADMIN ou SUPER_ADMIN'),
 ];
+
+// Rotas de perfil (não requerem admin, apenas autenticação)
+router.get('/profile', userController.getProfile);
+router.put('/profile', userController.updateProfile);
+router.post('/profile/photo', upload.single('photo'), userController.uploadProfilePhoto);
+
+// Rotas administrativas (requerem admin)
+router.use(requireAdmin);
+router.use(validateTenant);
 
 router.get('/', userController.list);
 router.post('/', createUserValidation, validate, userController.create);

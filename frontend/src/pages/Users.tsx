@@ -23,11 +23,18 @@ interface User {
 }
 
 const AVAILABLE_RESOURCES = [
+  { value: 'dashboard', label: 'Dashboard' },
+  { value: 'schedule', label: 'Agenda' },
+  { value: 'todos', label: 'Tarefas' },
   { value: 'clients', label: 'Clientes' },
   { value: 'cases', label: 'Processos' },
+  { value: 'documents', label: 'Uploads' },
   { value: 'updates', label: 'Atualizações' },
   { value: 'financial', label: 'Financeiro' },
-  { value: 'documents', label: 'Documentos' },
+  { value: 'accounts-payable', label: 'Contas a Pagar' },
+  { value: 'campaigns', label: 'Campanhas' },
+  { value: 'smtp-settings', label: 'Config. SMTP' },
+  { value: 'ai-config', label: 'Config. IA' },
   { value: 'users', label: 'Usuários' },
   { value: 'settings', label: 'Configurações' },
 ];
@@ -182,10 +189,10 @@ const Users: React.FC = () => {
     <Layout>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">Usuários</h1>
+          <h1 className="text-2xl font-bold text-neutral-900">Usuários</h1>
           <button
             onClick={handleNewUser}
-            className="flex items-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
+            className="flex items-center space-x-2 bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700"
           >
             <Plus size={20} />
             <span>Novo Usuário</span>
@@ -194,62 +201,62 @@ const Users: React.FC = () => {
 
         <div className="bg-white rounded-lg shadow p-4">
           <div className="flex items-center space-x-2 mb-4">
-            <Search size={20} className="text-gray-400" />
+            <Search size={20} className="text-neutral-400" />
             <input
               type="text"
               placeholder="Buscar usuários..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-green-500 focus:border-green-500"
+              className="flex-1 px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
             />
           </div>
 
           {loading ? (
             <p className="text-center py-4">Carregando...</p>
           ) : users.length === 0 ? (
-            <p className="text-center py-4 text-gray-600">Nenhum usuário encontrado</p>
+            <p className="text-center py-4 text-neutral-600">Nenhum usuário encontrado</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50">
+                <thead className="bg-neutral-50">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
                       Usuário
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
                       Email
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
                       Permissões
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
                       Status
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
                       Ações
                     </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                   {users.map((user) => (
-                    <tr key={user.id} className="hover:bg-gray-50">
+                    <tr key={user.id} className="hover:bg-neutral-50">
                       <td className="px-4 py-3 text-sm">
                         <div>
-                          <p className="font-medium text-gray-900">{user.name}</p>
+                          <p className="font-medium text-neutral-900">{user.name}</p>
                           {user.role === 'ADMIN' && (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800 mt-1">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-primary-100 text-primary-800 mt-1">
                               <Shield size={12} className="mr-1" />
                               Administrador
                             </span>
                           )}
-                          <p className="text-xs text-gray-400">Criado em {formatDate(user.createdAt)}</p>
+                          <p className="text-xs text-neutral-400">Criado em {formatDate(user.createdAt)}</p>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-600">
+                      <td className="px-4 py-3 text-sm text-neutral-600">
                         {user.email}
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-600">
-                        <span className="text-xs bg-gray-100 px-2 py-1 rounded">
+                      <td className="px-4 py-3 text-sm text-neutral-600">
+                        <span className="text-xs bg-neutral-100 px-2 py-1 rounded">
                           {getPermissionSummary(user.permissions)}
                         </span>
                       </td>
@@ -258,7 +265,7 @@ const Users: React.FC = () => {
                           className={`px-2 py-1 rounded-full text-xs font-medium ${
                             user.active
                               ? 'bg-green-100 text-green-800'
-                              : 'bg-red-100 text-red-800'
+                              : 'bg-error-100 text-error-800'
                           }`}
                         >
                           {user.active ? 'Ativo' : 'Inativo'}
@@ -268,7 +275,7 @@ const Users: React.FC = () => {
                         <div className="flex items-center justify-center space-x-2">
                           <button
                             onClick={() => handleEdit(user)}
-                            className="text-green-600 hover:text-green-800 transition-colors"
+                            className="text-primary-600 hover:text-primary-800 transition-colors"
                             title="Editar"
                             disabled={user.role === 'ADMIN' || user.role === 'SUPER_ADMIN'}
                           >
@@ -276,7 +283,7 @@ const Users: React.FC = () => {
                           </button>
                           <button
                             onClick={() => handleDelete(user)}
-                            className="text-red-600 hover:text-red-800 transition-colors"
+                            className="text-error-600 hover:text-error-800 transition-colors"
                             title="Desativar"
                             disabled={user.role === 'ADMIN' || user.role === 'SUPER_ADMIN'}
                           >
@@ -297,8 +304,8 @@ const Users: React.FC = () => {
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
-              <h2 className="text-xl font-bold text-gray-900">
+            <div className="sticky top-0 bg-white border-b border-neutral-200 px-6 py-4 flex justify-between items-center">
+              <h2 className="text-xl font-bold text-neutral-900">
                 {editMode ? 'Editar Usuário' : 'Novo Usuário'}
               </h2>
               <button
@@ -308,7 +315,7 @@ const Users: React.FC = () => {
                   setSelectedUser(null);
                   resetForm();
                 }}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-neutral-400 hover:text-neutral-600"
               >
                 <X size={24} />
               </button>
@@ -317,40 +324,40 @@ const Users: React.FC = () => {
             <form onSubmit={editMode ? handleUpdateSubmit : handleSubmit} className="p-6 space-y-6">
               {/* Dados do Usuário */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Dados do Usuário</h3>
+                <h3 className="text-lg font-semibold text-neutral-900 mb-3">Dados do Usuário</h3>
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Nome *</label>
+                    <label className="block text-sm font-medium text-neutral-700">Nome <span className="text-error-500">*</span></label>
                     <input
                       type="text"
                       required
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                      className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Email *</label>
+                    <label className="block text-sm font-medium text-neutral-700">Email <span className="text-error-500">*</span></label>
                     <input
                       type="email"
                       required
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                      className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md"
                     />
                   </div>
 
                   {!editMode && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Senha *</label>
+                      <label className="block text-sm font-medium text-neutral-700">Senha <span className="text-error-500">*</span></label>
                       <input
                         type="password"
                         required
                         value={formData.password}
                         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                        className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md"
                       />
                     </div>
                   )}
@@ -358,13 +365,13 @@ const Users: React.FC = () => {
               </div>
 
               {/* Permissões */}
-              <div className="border-t border-gray-200 pt-6">
+              <div className="border-t border-neutral-200 pt-6">
                 <div className="flex justify-between items-center mb-3">
-                  <h3 className="text-lg font-semibold text-gray-900">Permissões</h3>
+                  <h3 className="text-lg font-semibold text-neutral-900">Permissões</h3>
                   <button
                     type="button"
                     onClick={handleAddPermission}
-                    className="flex items-center space-x-1 text-green-600 hover:text-green-800 text-sm font-medium"
+                    className="flex items-center space-x-1 text-primary-600 hover:text-primary-800 text-sm font-medium"
                   >
                     <Plus size={16} />
                     <span>Adicionar Permissão</span>
@@ -372,20 +379,20 @@ const Users: React.FC = () => {
                 </div>
 
                 {permissions.length === 0 ? (
-                  <p className="text-sm text-gray-500 text-center py-4 bg-gray-50 rounded-md">
+                  <p className="text-sm text-neutral-500 text-center py-4 bg-neutral-50 rounded-md">
                     Nenhuma permissão configurada. Clique em "Adicionar Permissão" para conceder acesso.
                   </p>
                 ) : (
                   <div className="space-y-3">
                     {permissions.map((permission, index) => (
-                      <div key={index} className="flex items-start space-x-3 p-3 bg-gray-50 rounded-md">
+                      <div key={index} className="flex items-start space-x-3 p-3 bg-neutral-50 rounded-md">
                         <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-3">
                           <div>
-                            <label className="block text-xs font-medium text-gray-700 mb-1">Recurso</label>
+                            <label className="block text-xs font-medium text-neutral-700 mb-1">Recurso</label>
                             <select
                               value={permission.resource}
                               onChange={(e) => handlePermissionChange(index, 'resource', e.target.value)}
-                              className="block w-full px-2 py-1 text-sm border border-gray-300 rounded-md"
+                              className="block w-full px-2 py-1 text-sm border border-neutral-300 rounded-md"
                             >
                               {AVAILABLE_RESOURCES.map((res) => (
                                 <option key={res.value} value={res.value}>
@@ -401,9 +408,9 @@ const Users: React.FC = () => {
                               id={`view-${index}`}
                               checked={permission.canView}
                               onChange={(e) => handlePermissionChange(index, 'canView', e.target.checked)}
-                              className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                              className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-neutral-300 rounded"
                             />
-                            <label htmlFor={`view-${index}`} className="text-sm text-gray-700 flex items-center">
+                            <label htmlFor={`view-${index}`} className="text-sm text-neutral-700 flex items-center">
                               <Eye size={14} className="mr-1" />
                               Visualizar
                             </label>
@@ -415,9 +422,9 @@ const Users: React.FC = () => {
                               id={`edit-${index}`}
                               checked={permission.canEdit}
                               onChange={(e) => handlePermissionChange(index, 'canEdit', e.target.checked)}
-                              className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                              className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-neutral-300 rounded"
                             />
-                            <label htmlFor={`edit-${index}`} className="text-sm text-gray-700 flex items-center">
+                            <label htmlFor={`edit-${index}`} className="text-sm text-neutral-700 flex items-center">
                               <EditIcon size={14} className="mr-1" />
                               Editar
                             </label>
@@ -429,9 +436,9 @@ const Users: React.FC = () => {
                               id={`delete-${index}`}
                               checked={permission.canDelete}
                               onChange={(e) => handlePermissionChange(index, 'canDelete', e.target.checked)}
-                              className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                              className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-neutral-300 rounded"
                             />
-                            <label htmlFor={`delete-${index}`} className="text-sm text-gray-700 flex items-center">
+                            <label htmlFor={`delete-${index}`} className="text-sm text-neutral-700 flex items-center">
                               <Trash size={14} className="mr-1" />
                               Excluir
                             </label>
@@ -441,7 +448,7 @@ const Users: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => handleRemovePermission(index)}
-                          className="text-red-600 hover:text-red-800 mt-5"
+                          className="text-error-600 hover:text-error-800 mt-5"
                           title="Remover permissão"
                         >
                           <X size={18} />
@@ -452,7 +459,7 @@ const Users: React.FC = () => {
                 )}
               </div>
 
-              <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
+              <div className="flex justify-end space-x-3 pt-6 border-t border-neutral-200">
                 <button
                   type="button"
                   onClick={() => {
@@ -461,13 +468,13 @@ const Users: React.FC = () => {
                     setSelectedUser(null);
                     resetForm();
                   }}
-                  className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="px-6 py-2 border border-neutral-300 rounded-md text-neutral-700 hover:bg-neutral-50 transition-colors"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+                  className="px-6 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors"
                 >
                   {editMode ? 'Atualizar' : 'Criar Usuário'}
                 </button>

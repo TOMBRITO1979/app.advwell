@@ -2,10 +2,12 @@ import React, { useEffect, useState, useRef } from 'react';
 import Layout from '../components/Layout';
 import api from '../services/api';
 import toast from 'react-hot-toast';
-import { Plus, Search, Edit, Trash2, Eye, X, Download, Upload } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Eye, X } from 'lucide-react';
+import { ExportButton } from '../components/ui';
 
 interface Client {
   id: string;
+  personType?: 'FISICA' | 'JURIDICA';
   name: string;
   cpf?: string;
   rg?: string;
@@ -18,6 +20,8 @@ interface Client {
   profession?: string;
   maritalStatus?: string;
   birthDate?: string;
+  representativeName?: string;
+  representativeCpf?: string;
   notes?: string;
   tag?: string;
   createdAt: string;
@@ -25,6 +29,7 @@ interface Client {
 }
 
 interface ClientFormData {
+  personType: 'FISICA' | 'JURIDICA';
   name: string;
   cpf: string;
   rg: string;
@@ -37,6 +42,8 @@ interface ClientFormData {
   profession: string;
   maritalStatus: string;
   birthDate: string;
+  representativeName: string;
+  representativeCpf: string;
   notes: string;
   tag: string;
 }
@@ -54,6 +61,7 @@ const Clients: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState<ClientFormData>({
+    personType: 'FISICA',
     name: '',
     cpf: '',
     rg: '',
@@ -66,6 +74,8 @@ const Clients: React.FC = () => {
     profession: '',
     maritalStatus: '',
     birthDate: '',
+    representativeName: '',
+    representativeCpf: '',
     notes: '',
     tag: '',
   });
@@ -149,6 +159,7 @@ const Clients: React.FC = () => {
 
   const resetForm = () => {
     setFormData({
+      personType: 'FISICA',
       name: '',
       cpf: '',
       rg: '',
@@ -161,6 +172,8 @@ const Clients: React.FC = () => {
       profession: '',
       maritalStatus: '',
       birthDate: '',
+      representativeName: '',
+      representativeCpf: '',
       notes: '',
       tag: '',
     });
@@ -189,6 +202,7 @@ const Clients: React.FC = () => {
   const handleEdit = (client: Client) => {
     setSelectedClient(client);
     setFormData({
+      personType: client.personType || 'FISICA',
       name: client.name || '',
       cpf: client.cpf || '',
       rg: client.rg || '',
@@ -201,6 +215,8 @@ const Clients: React.FC = () => {
       profession: client.profession || '',
       maritalStatus: client.maritalStatus || '',
       birthDate: client.birthDate ? client.birthDate.split('T')[0] : '',
+      representativeName: client.representativeName || '',
+      representativeCpf: client.representativeCpf || '',
       notes: client.notes || '',
       tag: client.tag || '',
     });
@@ -249,7 +265,7 @@ const Clients: React.FC = () => {
       <div className="space-y-4 sm:space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">Clientes</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-neutral-900 mb-3 sm:mb-4">Clientes</h1>
 
           {/* Action Buttons - Mobile: Grid 3 columns, Desktop: Flex row */}
           <input
@@ -259,106 +275,96 @@ const Clients: React.FC = () => {
             accept=".csv"
             className="hidden"
           />
-          <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:gap-3">
-            <button
+          <div className="flex flex-wrap gap-2 sm:gap-3">
+            <ExportButton
+              type="import"
               onClick={handleImportClick}
-              className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 bg-purple-600 text-white px-2 py-2 sm:px-4 sm:py-2 rounded-md hover:bg-purple-700 transition-colors text-xs sm:text-base"
-              title="Importar clientes de um arquivo CSV"
-            >
-              <Upload size={16} className="sm:w-5 sm:h-5" />
-              <span className="hidden sm:inline">Importar CSV</span>
-              <span className="sm:hidden text-[10px] leading-tight">Importar</span>
-            </button>
-            <button
+            />
+            <ExportButton
+              type="csv"
               onClick={handleExportCSV}
-              className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 bg-blue-600 text-white px-2 py-2 sm:px-4 sm:py-2 rounded-md hover:bg-blue-700 transition-colors text-xs sm:text-base"
-              title="Exportar todos os clientes para CSV"
-            >
-              <Download size={16} className="sm:w-5 sm:h-5" />
-              <span className="hidden sm:inline">Exportar CSV</span>
-              <span className="sm:hidden text-[10px] leading-tight">Exportar</span>
-            </button>
+            />
             <button
               onClick={handleNewClient}
-              className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 bg-green-600 text-white px-2 py-2 sm:px-4 sm:py-2 rounded-md hover:bg-green-700 transition-colors text-xs sm:text-base"
+              className="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 rounded-lg bg-primary-600 hover:bg-primary-700 text-white font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200 min-h-[44px]"
             >
-              <Plus size={16} className="sm:w-5 sm:h-5" />
-              <span className="hidden sm:inline">Novo Cliente</span>
-              <span className="sm:hidden text-[10px] leading-tight">Novo</span>
+              <Plus size={18} className="sm:w-5 sm:h-5" />
+              <span className="hidden xs:inline sm:inline">Novo</span>
+              <span className="hidden sm:inline">Cliente</span>
             </button>
           </div>
         </div>
 
         <div className="bg-white rounded-lg shadow p-4">
           <div className="flex items-center space-x-2 mb-4">
-            <Search size={20} className="text-gray-400" />
+            <Search size={20} className="text-neutral-400" />
             <input
               type="text"
               placeholder="Buscar por nome, CPF ou email..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              className="flex-1 px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             />
           </div>
 
           {loading ? (
-            <p className="text-center py-8 text-gray-600">Carregando...</p>
+            <p className="text-center py-8 text-neutral-600">Carregando...</p>
           ) : clients.length === 0 ? (
-            <p className="text-center py-8 text-gray-600">
+            <p className="text-center py-8 text-neutral-600">
               {search ? 'Nenhum cliente encontrado para sua busca' : 'Nenhum cliente cadastrado'}
             </p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50">
+                <thead className="bg-neutral-50">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
                       Nome
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
                       CPF
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
                       Telefone
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
                       Email
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
                       TAG
                     </th>
-                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-center text-xs font-medium text-neutral-500 uppercase tracking-wider">
                       Ações
                     </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 bg-white">
                   {clients.map((client) => (
-                    <tr key={client.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-4 py-3 text-sm font-medium text-gray-900">{client.name}</td>
-                      <td className="px-4 py-3 text-sm text-gray-600">{formatCPF(client.cpf)}</td>
-                      <td className="px-4 py-3 text-sm text-gray-600">{client.phone || '-'}</td>
-                      <td className="px-4 py-3 text-sm text-gray-600">{client.email || '-'}</td>
-                      <td className="px-4 py-3 text-sm text-gray-600">{client.tag || '-'}</td>
+                    <tr key={client.id} className="hover:bg-neutral-50 transition-colors">
+                      <td className="px-4 py-3 text-sm font-medium text-neutral-900">{client.name}</td>
+                      <td className="px-4 py-3 text-sm text-neutral-600">{formatCPF(client.cpf)}</td>
+                      <td className="px-4 py-3 text-sm text-neutral-600">{client.phone || '-'}</td>
+                      <td className="px-4 py-3 text-sm text-neutral-600">{client.email || '-'}</td>
+                      <td className="px-4 py-3 text-sm text-neutral-600">{client.tag || '-'}</td>
                       <td className="px-4 py-3 text-sm text-center">
                         <div className="flex items-center justify-center space-x-2">
                           <button
                             onClick={() => handleViewDetails(client)}
-                            className="text-blue-600 hover:text-blue-800 transition-colors"
+                            className="text-info-600 hover:text-info-800 transition-colors"
                             title="Ver detalhes"
                           >
                             <Eye size={18} />
                           </button>
                           <button
                             onClick={() => handleEdit(client)}
-                            className="text-green-600 hover:text-green-800 transition-colors"
+                            className="text-primary-600 hover:text-primary-800 transition-colors"
                             title="Editar"
                           >
                             <Edit size={18} />
                           </button>
                           <button
                             onClick={() => handleDelete(client)}
-                            className="text-red-600 hover:text-red-800 transition-colors"
+                            className="text-error-600 hover:text-error-800 transition-colors"
                             title="Excluir"
                           >
                             <Trash2 size={18} />
@@ -378,8 +384,8 @@ const Clients: React.FC = () => {
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
-              <h2 className="text-xl font-bold text-gray-900">
+            <div className="sticky top-0 bg-white border-b border-neutral-200 px-6 py-4 flex justify-between items-center">
+              <h2 className="text-xl font-bold text-neutral-900">
                 {editMode ? 'Editar Cliente' : 'Novo Cliente'}
               </h2>
               <button
@@ -389,7 +395,7 @@ const Clients: React.FC = () => {
                   setSelectedClient(null);
                   resetForm();
                 }}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-neutral-400 hover:text-neutral-600"
               >
                 <X size={24} />
               </button>
@@ -399,62 +405,81 @@ const Clients: React.FC = () => {
               <div className="space-y-6">
                 {/* Dados Pessoais */}
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Dados Pessoais</h3>
+                  <h3 className="text-lg font-semibold text-neutral-900 mb-4">Dados Pessoais</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Tipo de Pessoa */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Nome Completo *
+                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                        Tipo de Pessoa <span className="text-error-500">*</span>
+                      </label>
+                      <select
+                        required
+                        value={formData.personType}
+                        onChange={(e) => setFormData({ ...formData, personType: e.target.value as 'FISICA' | 'JURIDICA' })}
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      >
+                        <option value="FISICA">Pessoa Física</option>
+                        <option value="JURIDICA">Pessoa Jurídica</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                        Nome Completo / Razão Social <span className="text-error-500">*</span>
                       </label>
                       <input
                         type="text"
                         required
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">CPF</label>
+                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                        {formData.personType === 'FISICA' ? 'CPF' : 'CNPJ'}
+                      </label>
                       <input
                         type="text"
                         value={formData.cpf}
                         onChange={(e) => setFormData({ ...formData, cpf: e.target.value })}
-                        placeholder="000.000.000-00"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                        placeholder={formData.personType === 'FISICA' ? '000.000.000-00' : '00.000.000/0000-00'}
+                        maxLength={formData.personType === 'FISICA' ? 14 : 18}
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">RG</label>
+                      <label className="block text-sm font-medium text-neutral-700 mb-1">RG</label>
                       <input
                         type="text"
                         value={formData.rg}
                         onChange={(e) => setFormData({ ...formData, rg: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-neutral-700 mb-1">
                         Data de Nascimento
                       </label>
                       <input
                         type="date"
                         value={formData.birthDate}
                         onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-neutral-700 mb-1">
                         Estado Civil
                       </label>
                       <select
                         value={formData.maritalStatus}
                         onChange={(e) => setFormData({ ...formData, maritalStatus: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                       >
                         <option value="">Selecione...</option>
                         <option value="Solteiro(a)">Solteiro(a)</option>
@@ -466,35 +491,67 @@ const Clients: React.FC = () => {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-neutral-700 mb-1">
                         Profissão
                       </label>
                       <input
                         type="text"
                         value={formData.profession}
                         onChange={(e) => setFormData({ ...formData, profession: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                       />
                     </div>
+
+                    {/* Campos de Representante Legal - apenas para Pessoa Jurídica */}
+                    {formData.personType === 'JURIDICA' && (
+                      <>
+                        <div>
+                          <label className="block text-sm font-medium text-neutral-700 mb-1">
+                            Nome do Representante Legal
+                          </label>
+                          <input
+                            type="text"
+                            value={formData.representativeName}
+                            onChange={(e) => setFormData({ ...formData, representativeName: e.target.value })}
+                            placeholder="Nome completo do representante"
+                            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-neutral-700 mb-1">
+                            CPF do Representante Legal
+                          </label>
+                          <input
+                            type="text"
+                            value={formData.representativeCpf}
+                            onChange={(e) => setFormData({ ...formData, representativeCpf: e.target.value })}
+                            placeholder="000.000.000-00"
+                            maxLength={14}
+                            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                          />
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
 
                 {/* Contato */}
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Contato</h3>
+                  <h3 className="text-lg font-semibold text-neutral-900 mb-4">Contato</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                      <label className="block text-sm font-medium text-neutral-700 mb-1">Email</label>
                       <input
                         type="email"
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-neutral-700 mb-1">
                         Celular
                       </label>
                       <input
@@ -502,7 +559,7 @@ const Clients: React.FC = () => {
                         value={formData.phone}
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                         placeholder="(00) 00000-0000"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                       />
                     </div>
                   </div>
@@ -510,10 +567,10 @@ const Clients: React.FC = () => {
 
                 {/* Endereço */}
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Endereço</h3>
+                  <h3 className="text-lg font-semibold text-neutral-900 mb-4">Endereço</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-neutral-700 mb-1">
                         Endereço
                       </label>
                       <input
@@ -521,26 +578,26 @@ const Clients: React.FC = () => {
                         value={formData.address}
                         onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                         placeholder="Rua, número, complemento"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Cidade</label>
+                      <label className="block text-sm font-medium text-neutral-700 mb-1">Cidade</label>
                       <input
                         type="text"
                         value={formData.city}
                         onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+                      <label className="block text-sm font-medium text-neutral-700 mb-1">Estado</label>
                       <select
                         value={formData.state}
                         onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                       >
                         <option value="">Selecione...</option>
                         <option value="AC">AC</option>
@@ -574,13 +631,13 @@ const Clients: React.FC = () => {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">CEP</label>
+                      <label className="block text-sm font-medium text-neutral-700 mb-1">CEP</label>
                       <input
                         type="text"
                         value={formData.zipCode}
                         onChange={(e) => setFormData({ ...formData, zipCode: e.target.value })}
                         placeholder="00000-000"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                       />
                     </div>
                   </div>
@@ -588,19 +645,19 @@ const Clients: React.FC = () => {
 
                 {/* Observações */}
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Observações</h3>
+                  <h3 className="text-lg font-semibold text-neutral-900 mb-4">Observações</h3>
                   <textarea
                     value={formData.notes}
                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                     rows={4}
                     placeholder="Informações adicionais sobre o cliente..."
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                 </div>
 
                 {/* Tag */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">
                     Tag/Categoria
                   </label>
                   <input
@@ -608,12 +665,12 @@ const Clients: React.FC = () => {
                     value={formData.tag}
                     onChange={(e) => setFormData({ ...formData, tag: e.target.value })}
                     placeholder="Ex: VIP, Bronze, Prata, Ouro..."
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                 </div>
               </div>
 
-              <div className="flex justify-end space-x-3 mt-6 pt-6 border-t border-gray-200">
+              <div className="flex justify-end space-x-3 mt-6 pt-6 border-t border-neutral-200">
                 <button
                   type="button"
                   onClick={() => {
@@ -622,13 +679,13 @@ const Clients: React.FC = () => {
                     setSelectedClient(null);
                     resetForm();
                   }}
-                  className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="px-6 py-2 border border-neutral-300 rounded-md text-neutral-700 hover:bg-neutral-50 transition-colors"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+                  className="px-6 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors"
                 >
                   {editMode ? 'Atualizar' : 'Salvar'}
                 </button>
@@ -642,14 +699,14 @@ const Clients: React.FC = () => {
       {showDetailsModal && selectedClient && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
-              <h2 className="text-xl font-bold text-gray-900">Detalhes do Cliente</h2>
+            <div className="sticky top-0 bg-white border-b border-neutral-200 px-6 py-4 flex justify-between items-center">
+              <h2 className="text-xl font-bold text-neutral-900">Detalhes do Cliente</h2>
               <button
                 onClick={() => {
                   setShowDetailsModal(false);
                   setSelectedClient(null);
                 }}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-neutral-400 hover:text-neutral-600"
               >
                 <X size={24} />
               </button>
@@ -658,69 +715,83 @@ const Clients: React.FC = () => {
             <div className="p-6 space-y-6">
               {/* Dados Pessoais */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Dados Pessoais</h3>
-                <div className="bg-gray-50 rounded-lg p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <h3 className="text-lg font-semibold text-neutral-900 mb-3">Dados Pessoais</h3>
+                <div className="bg-neutral-50 rounded-lg p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm font-medium text-gray-500">Nome</p>
-                    <p className="text-sm text-gray-900 mt-1">{selectedClient.name}</p>
+                    <p className="text-sm font-medium text-neutral-500">Nome</p>
+                    <p className="text-sm text-neutral-900 mt-1">{selectedClient.name}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-500">CPF</p>
-                    <p className="text-sm text-gray-900 mt-1">{formatCPF(selectedClient.cpf)}</p>
+                    <p className="text-sm font-medium text-neutral-500">CPF</p>
+                    <p className="text-sm text-neutral-900 mt-1">{formatCPF(selectedClient.cpf)}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-500">RG</p>
-                    <p className="text-sm text-gray-900 mt-1">{selectedClient.rg || '-'}</p>
+                    <p className="text-sm font-medium text-neutral-500">RG</p>
+                    <p className="text-sm text-neutral-900 mt-1">{selectedClient.rg || '-'}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-500">Data de Nascimento</p>
-                    <p className="text-sm text-gray-900 mt-1">{formatDate(selectedClient.birthDate)}</p>
+                    <p className="text-sm font-medium text-neutral-500">Data de Nascimento</p>
+                    <p className="text-sm text-neutral-900 mt-1">{formatDate(selectedClient.birthDate)}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-500">Estado Civil</p>
-                    <p className="text-sm text-gray-900 mt-1">{selectedClient.maritalStatus || '-'}</p>
+                    <p className="text-sm font-medium text-neutral-500">Estado Civil</p>
+                    <p className="text-sm text-neutral-900 mt-1">{selectedClient.maritalStatus || '-'}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-500">Profissão</p>
-                    <p className="text-sm text-gray-900 mt-1">{selectedClient.profession || '-'}</p>
+                    <p className="text-sm font-medium text-neutral-500">Profissão</p>
+                    <p className="text-sm text-neutral-900 mt-1">{selectedClient.profession || '-'}</p>
                   </div>
+
+                  {/* Campos de Representante Legal - apenas para Pessoa Jurídica */}
+                  {selectedClient.personType === 'JURIDICA' && (
+                    <>
+                      <div>
+                        <p className="text-sm font-medium text-neutral-500">Representante Legal</p>
+                        <p className="text-sm text-neutral-900 mt-1">{selectedClient.representativeName || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-neutral-500">CPF do Representante</p>
+                        <p className="text-sm text-neutral-900 mt-1">{formatCPF(selectedClient.representativeCpf)}</p>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
 
               {/* Contato */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Contato</h3>
-                <div className="bg-gray-50 rounded-lg p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <h3 className="text-lg font-semibold text-neutral-900 mb-3">Contato</h3>
+                <div className="bg-neutral-50 rounded-lg p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm font-medium text-gray-500">Email</p>
-                    <p className="text-sm text-gray-900 mt-1">{selectedClient.email || '-'}</p>
+                    <p className="text-sm font-medium text-neutral-500">Email</p>
+                    <p className="text-sm text-neutral-900 mt-1">{selectedClient.email || '-'}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-500">Celular</p>
-                    <p className="text-sm text-gray-900 mt-1">{selectedClient.phone || '-'}</p>
+                    <p className="text-sm font-medium text-neutral-500">Celular</p>
+                    <p className="text-sm text-neutral-900 mt-1">{selectedClient.phone || '-'}</p>
                   </div>
                 </div>
               </div>
 
               {/* Endereço */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Endereço</h3>
-                <div className="bg-gray-50 rounded-lg p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <h3 className="text-lg font-semibold text-neutral-900 mb-3">Endereço</h3>
+                <div className="bg-neutral-50 rounded-lg p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="md:col-span-2">
-                    <p className="text-sm font-medium text-gray-500">Endereço</p>
-                    <p className="text-sm text-gray-900 mt-1">{selectedClient.address || '-'}</p>
+                    <p className="text-sm font-medium text-neutral-500">Endereço</p>
+                    <p className="text-sm text-neutral-900 mt-1">{selectedClient.address || '-'}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-500">Cidade</p>
-                    <p className="text-sm text-gray-900 mt-1">{selectedClient.city || '-'}</p>
+                    <p className="text-sm font-medium text-neutral-500">Cidade</p>
+                    <p className="text-sm text-neutral-900 mt-1">{selectedClient.city || '-'}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-500">Estado</p>
-                    <p className="text-sm text-gray-900 mt-1">{selectedClient.state || '-'}</p>
+                    <p className="text-sm font-medium text-neutral-500">Estado</p>
+                    <p className="text-sm text-neutral-900 mt-1">{selectedClient.state || '-'}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-500">CEP</p>
-                    <p className="text-sm text-gray-900 mt-1">{selectedClient.zipCode || '-'}</p>
+                    <p className="text-sm font-medium text-neutral-500">CEP</p>
+                    <p className="text-sm text-neutral-900 mt-1">{selectedClient.zipCode || '-'}</p>
                   </div>
                 </div>
               </div>
@@ -728,36 +799,36 @@ const Clients: React.FC = () => {
               {/* Observações */}
               {selectedClient.notes && (
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Observações</h3>
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <p className="text-sm text-gray-900 whitespace-pre-wrap">{selectedClient.notes}</p>
+                  <h3 className="text-lg font-semibold text-neutral-900 mb-3">Observações</h3>
+                  <div className="bg-neutral-50 rounded-lg p-4">
+                    <p className="text-sm text-neutral-900 whitespace-pre-wrap">{selectedClient.notes}</p>
                   </div>
                 </div>
               )}
 
               {/* Datas */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Informações do Sistema</h3>
-                <div className="bg-gray-50 rounded-lg p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <h3 className="text-lg font-semibold text-neutral-900 mb-3">Informações do Sistema</h3>
+                <div className="bg-neutral-50 rounded-lg p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm font-medium text-gray-500">Data de Cadastro</p>
-                    <p className="text-sm text-gray-900 mt-1">{formatDate(selectedClient.createdAt)}</p>
+                    <p className="text-sm font-medium text-neutral-500">Data de Cadastro</p>
+                    <p className="text-sm text-neutral-900 mt-1">{formatDate(selectedClient.createdAt)}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-500">Última Atualização</p>
-                    <p className="text-sm text-gray-900 mt-1">{formatDate(selectedClient.updatedAt)}</p>
+                    <p className="text-sm font-medium text-neutral-500">Última Atualização</p>
+                    <p className="text-sm text-neutral-900 mt-1">{formatDate(selectedClient.updatedAt)}</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="sticky bottom-0 bg-white border-t border-gray-200 px-6 py-4 flex justify-end space-x-3">
+            <div className="sticky bottom-0 bg-white border-t border-neutral-200 px-6 py-4 flex justify-end space-x-3">
               <button
                 onClick={() => {
                   setShowDetailsModal(false);
                   handleEdit(selectedClient);
                 }}
-                className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+                className="px-6 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors"
               >
                 Editar Cliente
               </button>
@@ -766,7 +837,7 @@ const Clients: React.FC = () => {
                   setShowDetailsModal(false);
                   setSelectedClient(null);
                 }}
-                className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+                className="px-6 py-2 border border-neutral-300 rounded-md text-neutral-700 hover:bg-neutral-50 transition-colors"
               >
                 Fechar
               </button>
@@ -780,10 +851,10 @@ const Clients: React.FC = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-900">Resultados da Importação</h2>
+              <h2 className="text-xl font-bold text-neutral-900">Resultados da Importação</h2>
               <button
                 onClick={() => setShowImportModal(false)}
-                className="text-gray-500 hover:text-gray-700"
+                className="text-neutral-500 hover:text-neutral-700"
               >
                 <X size={24} />
               </button>
@@ -792,29 +863,29 @@ const Clients: React.FC = () => {
             <div className="space-y-4">
               <div className="grid grid-cols-3 gap-4">
                 <div className="bg-green-50 p-4 rounded-lg text-center">
-                  <p className="text-2xl font-bold text-green-600">{importResults.total}</p>
-                  <p className="text-sm text-gray-600">Total de linhas</p>
+                  <p className="text-2xl font-bold text-primary-600">{importResults.total}</p>
+                  <p className="text-sm text-neutral-600">Total de linhas</p>
                 </div>
                 <div className="bg-green-50 p-4 rounded-lg text-center">
-                  <p className="text-2xl font-bold text-green-600">{importResults.success}</p>
-                  <p className="text-sm text-gray-600">Importados</p>
+                  <p className="text-2xl font-bold text-primary-600">{importResults.success}</p>
+                  <p className="text-sm text-neutral-600">Importados</p>
                 </div>
-                <div className="bg-red-50 p-4 rounded-lg text-center">
-                  <p className="text-2xl font-bold text-red-600">{importResults.errors.length}</p>
-                  <p className="text-sm text-gray-600">Erros</p>
+                <div className="bg-error-50 p-4 rounded-lg text-center">
+                  <p className="text-2xl font-bold text-error-600">{importResults.errors.length}</p>
+                  <p className="text-sm text-neutral-600">Erros</p>
                 </div>
               </div>
 
               {importResults.errors.length > 0 && (
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Erros encontrados:</h3>
-                  <div className="bg-red-50 rounded-lg p-4 max-h-60 overflow-y-auto">
+                  <h3 className="font-semibold text-neutral-900 mb-2">Erros encontrados:</h3>
+                  <div className="bg-error-50 rounded-lg p-4 max-h-60 overflow-y-auto">
                     {importResults.errors.map((error: any, index: number) => (
-                      <div key={index} className="mb-2 pb-2 border-b border-red-200 last:border-0">
-                        <p className="text-sm font-medium text-red-800">
+                      <div key={index} className="mb-2 pb-2 border-b border-error-200 last:border-0">
+                        <p className="text-sm font-medium text-error-800">
                           Linha {error.line}: {error.name}
                         </p>
-                        <p className="text-sm text-red-600">{error.error}</p>
+                        <p className="text-sm text-error-600">{error.error}</p>
                       </div>
                     ))}
                   </div>
@@ -823,7 +894,7 @@ const Clients: React.FC = () => {
 
               <button
                 onClick={() => setShowImportModal(false)}
-                className="w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                className="w-full px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700"
               >
                 Fechar
               </button>

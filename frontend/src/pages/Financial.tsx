@@ -2,7 +2,8 @@ import React, { useEffect, useState, useRef } from 'react';
 import Layout from '../components/Layout';
 import api from '../services/api';
 import toast from 'react-hot-toast';
-import { Plus, Search, Edit, Trash2, DollarSign, TrendingUp, TrendingDown, X, Filter, Download, FileText } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, DollarSign, TrendingUp, TrendingDown, X, Filter } from 'lucide-react';
+import { ExportButton } from '../components/ui';
 
 interface Client {
   id: string;
@@ -70,6 +71,7 @@ const Financial: React.FC = () => {
 
   const clientInputRef = useRef<HTMLInputElement>(null);
   const caseInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState<FormData>({
     clientId: '',
@@ -294,6 +296,55 @@ const Financial: React.FC = () => {
     }
   };
 
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.name.endsWith('.csv')) {
+      toast.error('Por favor, selecione um arquivo CSV');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await api.post('/financial/import/csv', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      const { total, success, errors } = response.data;
+
+      if (errors.length > 0) {
+        let message = `${success} de ${total} transações importadas com sucesso.\n\n`;
+        message += 'Erros encontrados:\n';
+        errors.slice(0, 5).forEach((err: any) => {
+          message += `Linha ${err.line}: ${err.error}\n`;
+        });
+        if (errors.length > 5) {
+          message += `... e mais ${errors.length - 5} erros.`;
+        }
+        toast.error(message, { duration: 8000 });
+      } else {
+        toast.success(`${success} transações importadas com sucesso!`);
+      }
+
+      loadTransactions();
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Erro ao importar CSV');
+    } finally {
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -310,33 +361,35 @@ const Financial: React.FC = () => {
       <div className="space-y-4 sm:space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">Financeiro</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-neutral-900 mb-3 sm:mb-4">Financeiro</h1>
 
-          {/* Action Buttons - Mobile: Grid 3 columns, Desktop: Flex row */}
-          <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:gap-3">
-            <button
+          {/* Action Buttons - Mobile: Grid 4 columns, Desktop: Flex row */}
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            accept=".csv"
+            className="hidden"
+          />
+          <div className="flex flex-wrap gap-3">
+            <ExportButton
+              type="import"
+              onClick={handleImportClick}
+            />
+            <ExportButton
+              type="pdf"
               onClick={handleExportPDF}
-              className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 bg-red-600 text-white px-2 py-2 sm:px-4 sm:py-2 rounded-md hover:bg-red-700 transition-colors text-xs sm:text-base"
-              title="Exportar PDF"
-            >
-              <FileText size={16} className="sm:w-5 sm:h-5" />
-              <span className="text-[10px] sm:text-base leading-tight">PDF</span>
-            </button>
-            <button
+            />
+            <ExportButton
+              type="csv"
               onClick={handleExportCSV}
-              className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 bg-blue-600 text-white px-2 py-2 sm:px-4 sm:py-2 rounded-md hover:bg-blue-700 transition-colors text-xs sm:text-base"
-              title="Exportar CSV"
-            >
-              <Download size={16} className="sm:w-5 sm:h-5" />
-              <span className="text-[10px] sm:text-base leading-tight">CSV</span>
-            </button>
+            />
             <button
               onClick={handleNew}
-              className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 bg-green-600 text-white px-2 py-2 sm:px-4 sm:py-2 rounded-md hover:bg-green-700 transition-colors text-xs sm:text-base"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-primary-600 hover:bg-primary-700 text-white font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200 min-h-[44px]"
             >
-              <Plus size={16} className="sm:w-5 sm:h-5" />
-              <span className="hidden sm:inline">Nova Transação</span>
-              <span className="sm:hidden text-[10px] leading-tight">Nova</span>
+              <Plus size={20} />
+              <span>Nova Transação</span>
             </button>
           </div>
         </div>
@@ -346,13 +399,13 @@ const Financial: React.FC = () => {
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total Receitas</p>
-                <p className="text-2xl font-bold text-green-600 mt-2">
+                <p className="text-sm font-medium text-neutral-600">Total Receitas</p>
+                <p className="text-2xl font-bold text-primary-600 mt-2">
                   {formatCurrency(summary.totalIncome)}
                 </p>
               </div>
               <div className="p-3 bg-green-100 rounded-full">
-                <TrendingUp className="text-green-600" size={24} />
+                <TrendingUp className="text-primary-600" size={24} />
               </div>
             </div>
           </div>
@@ -360,13 +413,13 @@ const Financial: React.FC = () => {
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total Despesas</p>
-                <p className="text-2xl font-bold text-red-600 mt-2">
+                <p className="text-sm font-medium text-neutral-600">Total Despesas</p>
+                <p className="text-2xl font-bold text-error-600 mt-2">
                   {formatCurrency(summary.totalExpense)}
                 </p>
               </div>
-              <div className="p-3 bg-red-100 rounded-full">
-                <TrendingDown className="text-red-600" size={24} />
+              <div className="p-3 bg-error-100 rounded-full">
+                <TrendingDown className="text-error-600" size={24} />
               </div>
             </div>
           </div>
@@ -374,13 +427,13 @@ const Financial: React.FC = () => {
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Saldo</p>
-                <p className={`text-2xl font-bold mt-2 ${summary.balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                <p className="text-sm font-medium text-neutral-600">Saldo</p>
+                <p className={`text-2xl font-bold mt-2 ${summary.balance >= 0 ? 'text-primary-600' : 'text-error-600'}`}>
                   {formatCurrency(summary.balance)}
                 </p>
               </div>
-              <div className={`p-3 rounded-full ${summary.balance >= 0 ? 'bg-green-100' : 'bg-red-100'}`}>
-                <DollarSign className={summary.balance >= 0 ? 'text-green-600' : 'text-red-600'} size={24} />
+              <div className={`p-3 rounded-full ${summary.balance >= 0 ? 'bg-green-100' : 'bg-error-100'}`}>
+                <DollarSign className={summary.balance >= 0 ? 'text-primary-600' : 'text-error-600'} size={24} />
               </div>
             </div>
           </div>
@@ -390,19 +443,19 @@ const Financial: React.FC = () => {
         <div className="bg-white rounded-lg shadow p-4">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 flex items-center space-x-2">
-              <Search size={20} className="text-gray-400" />
+              <Search size={20} className="text-neutral-400" />
               <input
                 type="text"
                 placeholder="Buscar por descrição ou cliente..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="flex-1 px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               />
             </div>
 
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+              className="flex items-center space-x-2 px-4 py-2 border border-neutral-300 rounded-md hover:bg-neutral-50 transition-colors"
             >
               <Filter size={20} />
               <span>Filtros</span>
@@ -410,13 +463,13 @@ const Financial: React.FC = () => {
           </div>
 
           {showFilters && (
-            <div className="mt-4 pt-4 border-t border-gray-200 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="mt-4 pt-4 border-t border-neutral-200 grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
+                <label className="block text-sm font-medium text-neutral-700 mb-1">Tipo</label>
                 <select
                   value={filterType}
                   onChange={(e) => setFilterType(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
                   <option value="">Todos</option>
                   <option value="INCOME">Receitas</option>
@@ -425,11 +478,11 @@ const Financial: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Cliente</label>
+                <label className="block text-sm font-medium text-neutral-700 mb-1">Cliente</label>
                 <select
                   value={filterClientId}
                   onChange={(e) => setFilterClientId(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
                   <option value="">Todos</option>
                   {clients.map((client) => (
@@ -443,7 +496,7 @@ const Financial: React.FC = () => {
               <div className="flex items-end">
                 <button
                   onClick={clearFilters}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                  className="w-full px-4 py-2 border border-neutral-300 rounded-md hover:bg-neutral-50 transition-colors"
                 >
                   Limpar Filtros
                 </button>
@@ -455,9 +508,9 @@ const Financial: React.FC = () => {
         {/* Tabela de Transações */}
         <div className="bg-white rounded-lg shadow">
           {loading ? (
-            <p className="text-center py-8 text-gray-600">Carregando...</p>
+            <p className="text-center py-8 text-neutral-600">Carregando...</p>
           ) : transactions.length === 0 ? (
-            <p className="text-center py-8 text-gray-600">
+            <p className="text-center py-8 text-neutral-600">
               {search || filterType || filterClientId
                 ? 'Nenhuma transação encontrada para os filtros aplicados'
                 : 'Nenhuma transação cadastrada'}
@@ -465,35 +518,35 @@ const Financial: React.FC = () => {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50">
+                <thead className="bg-neutral-50">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
                       Data
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
                       Tipo
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
                       Cliente
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
                       Descrição
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
                       Processo
                     </th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-right text-xs font-medium text-neutral-500 uppercase tracking-wider">
                       Valor
                     </th>
-                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-center text-xs font-medium text-neutral-500 uppercase tracking-wider">
                       Ações
                     </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 bg-white">
                   {transactions.map((transaction) => (
-                    <tr key={transaction.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-4 py-3 text-sm text-gray-900">
+                    <tr key={transaction.id} className="hover:bg-neutral-50 transition-colors">
+                      <td className="px-4 py-3 text-sm text-neutral-900">
                         {formatDate(transaction.date)}
                       </td>
                       <td className="px-4 py-3 text-sm">
@@ -503,32 +556,32 @@ const Financial: React.FC = () => {
                             Receita
                           </span>
                         ) : (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-error-100 text-error-800">
                             <TrendingDown size={12} className="mr-1" />
                             Despesa
                           </span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-900">
+                      <td className="px-4 py-3 text-sm text-neutral-900">
                         <div>
                           <p className="font-medium">{transaction.client.name}</p>
                           {transaction.client.cpf && (
-                            <p className="text-xs text-gray-500">{transaction.client.cpf}</p>
+                            <p className="text-xs text-neutral-500">{transaction.client.cpf}</p>
                           )}
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-600">
+                      <td className="px-4 py-3 text-sm text-neutral-600">
                         {transaction.description}
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-600">
+                      <td className="px-4 py-3 text-sm text-neutral-600">
                         {transaction.case ? (
                           <span className="text-xs">{transaction.case.processNumber}</span>
                         ) : (
-                          <span className="text-xs text-gray-400">-</span>
+                          <span className="text-xs text-neutral-400">-</span>
                         )}
                       </td>
                       <td className="px-4 py-3 text-sm text-right">
-                        <span className={`font-semibold ${transaction.type === 'INCOME' ? 'text-green-600' : 'text-red-600'}`}>
+                        <span className={`font-semibold ${transaction.type === 'INCOME' ? 'text-primary-600' : 'text-error-600'}`}>
                           {transaction.type === 'INCOME' ? '+' : '-'} {formatCurrency(transaction.amount)}
                         </span>
                       </td>
@@ -536,14 +589,14 @@ const Financial: React.FC = () => {
                         <div className="flex items-center justify-center space-x-2">
                           <button
                             onClick={() => handleEdit(transaction)}
-                            className="text-green-600 hover:text-green-800 transition-colors"
+                            className="text-primary-600 hover:text-primary-800 transition-colors"
                             title="Editar"
                           >
                             <Edit size={18} />
                           </button>
                           <button
                             onClick={() => handleDelete(transaction)}
-                            className="text-red-600 hover:text-red-800 transition-colors"
+                            className="text-error-600 hover:text-error-800 transition-colors"
                             title="Excluir"
                           >
                             <Trash2 size={18} />
@@ -563,8 +616,8 @@ const Financial: React.FC = () => {
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
-              <h2 className="text-xl font-bold text-gray-900">
+            <div className="sticky top-0 bg-white border-b border-neutral-200 px-6 py-4 flex justify-between items-center">
+              <h2 className="text-xl font-bold text-neutral-900">
                 {editMode ? 'Editar Transação' : 'Nova Transação'}
               </h2>
               <button
@@ -574,7 +627,7 @@ const Financial: React.FC = () => {
                   setSelectedTransaction(null);
                   resetForm();
                 }}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-neutral-400 hover:text-neutral-600"
               >
                 <X size={24} />
               </button>
@@ -584,7 +637,7 @@ const Financial: React.FC = () => {
               <div className="space-y-4">
                 {/* Tipo de Transação */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">
                     Tipo de Transação *
                   </label>
                   <div className="grid grid-cols-2 gap-4">
@@ -593,8 +646,8 @@ const Financial: React.FC = () => {
                       onClick={() => setFormData({ ...formData, type: 'INCOME' })}
                       className={`flex items-center justify-center space-x-2 px-4 py-3 rounded-md border-2 transition-colors ${
                         formData.type === 'INCOME'
-                          ? 'border-green-500 bg-green-50 text-green-700'
-                          : 'border-gray-300 hover:border-gray-400'
+                          ? 'border-primary-500 bg-green-50 text-primary-700'
+                          : 'border-neutral-300 hover:border-neutral-400'
                       }`}
                     >
                       <TrendingUp size={20} />
@@ -605,8 +658,8 @@ const Financial: React.FC = () => {
                       onClick={() => setFormData({ ...formData, type: 'EXPENSE' })}
                       className={`flex items-center justify-center space-x-2 px-4 py-3 rounded-md border-2 transition-colors ${
                         formData.type === 'EXPENSE'
-                          ? 'border-red-500 bg-red-50 text-red-700'
-                          : 'border-gray-300 hover:border-gray-400'
+                          ? 'border-error-500 bg-error-50 text-error-700'
+                          : 'border-neutral-300 hover:border-neutral-400'
                       }`}
                     >
                       <TrendingDown size={20} />
@@ -617,8 +670,8 @@ const Financial: React.FC = () => {
 
                 {/* Cliente - Autocomplete */}
                 <div className="relative">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Cliente *
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    Cliente <span className="text-error-500">*</span>
                   </label>
                   <input
                     ref={clientInputRef}
@@ -632,18 +685,18 @@ const Financial: React.FC = () => {
                       setFormData({ ...formData, clientId: '' });
                     }}
                     onFocus={() => setShowClientSuggestions(true)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                   {showClientSuggestions && filteredClients.length > 0 && (
-                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-neutral-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
                       {filteredClients.map((client) => (
                         <div
                           key={client.id}
                           onClick={() => handleClientSelect(client)}
-                          className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                          className="px-4 py-2 hover:bg-neutral-100 cursor-pointer"
                         >
                           <p className="font-medium text-sm">{client.name}</p>
-                          {client.cpf && <p className="text-xs text-gray-500">{client.cpf}</p>}
+                          {client.cpf && <p className="text-xs text-neutral-500">{client.cpf}</p>}
                         </div>
                       ))}
                     </div>
@@ -652,7 +705,7 @@ const Financial: React.FC = () => {
 
                 {/* Processo (Opcional) - Autocomplete */}
                 <div className="relative">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">
                     Processo (Opcional)
                   </label>
                   <input
@@ -666,18 +719,18 @@ const Financial: React.FC = () => {
                       setFormData({ ...formData, caseId: '' });
                     }}
                     onFocus={() => setShowCaseSuggestions(true)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                   {showCaseSuggestions && filteredCases.length > 0 && (
-                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-neutral-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
                       {filteredCases.map((caseItem) => (
                         <div
                           key={caseItem.id}
                           onClick={() => handleCaseSelect(caseItem)}
-                          className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                          className="px-4 py-2 hover:bg-neutral-100 cursor-pointer"
                         >
                           <p className="font-medium text-sm">{caseItem.processNumber}</p>
-                          <p className="text-xs text-gray-500">{caseItem.subject}</p>
+                          <p className="text-xs text-neutral-500">{caseItem.subject}</p>
                         </div>
                       ))}
                     </div>
@@ -689,7 +742,7 @@ const Financial: React.FC = () => {
                         setCaseSearchText('');
                         setFormData({ ...formData, caseId: '' });
                       }}
-                      className="absolute right-3 top-9 text-gray-400 hover:text-gray-600"
+                      className="absolute right-3 top-9 text-neutral-400 hover:text-neutral-600"
                     >
                       <X size={16} />
                     </button>
@@ -698,8 +751,8 @@ const Financial: React.FC = () => {
 
                 {/* Descrição */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Descrição *
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    Descrição <span className="text-error-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -707,15 +760,15 @@ const Financial: React.FC = () => {
                     placeholder="Ex: Honorários advocatícios, Custas processuais..."
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   {/* Valor */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Valor *
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">
+                      Valor <span className="text-error-500">*</span>
                     </label>
                     <input
                       type="number"
@@ -725,27 +778,27 @@ const Financial: React.FC = () => {
                       placeholder="0,00"
                       value={formData.amount}
                       onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                      className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                     />
                   </div>
 
                   {/* Data */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Data *
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">
+                      Data <span className="text-error-500">*</span>
                     </label>
                     <input
                       type="date"
                       required
                       value={formData.date}
                       onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                      className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                     />
                   </div>
                 </div>
               </div>
 
-              <div className="flex justify-end space-x-3 mt-6 pt-6 border-t border-gray-200">
+              <div className="flex justify-end space-x-3 mt-6 pt-6 border-t border-neutral-200">
                 <button
                   type="button"
                   onClick={() => {
@@ -754,13 +807,13 @@ const Financial: React.FC = () => {
                     setSelectedTransaction(null);
                     resetForm();
                   }}
-                  className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="px-6 py-2 border border-neutral-300 rounded-md text-neutral-700 hover:bg-neutral-50 transition-colors"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+                  className="px-6 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors"
                 >
                   {editMode ? 'Atualizar' : 'Salvar'}
                 </button>

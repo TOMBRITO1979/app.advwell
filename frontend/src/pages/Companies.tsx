@@ -190,10 +190,10 @@ const Companies: React.FC = () => {
     <Layout>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">Empresas</h1>
+          <h1 className="text-2xl font-bold text-neutral-900">Empresas</h1>
           <button
             onClick={handleNewCompany}
-            className="flex items-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
+            className="flex items-center space-x-2 bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700"
           >
             <Plus size={20} />
             <span>Nova Empresa</span>
@@ -202,70 +202,70 @@ const Companies: React.FC = () => {
 
         <div className="bg-white rounded-lg shadow p-4">
           <div className="flex items-center space-x-2 mb-4">
-            <Search size={20} className="text-gray-400" />
+            <Search size={20} className="text-neutral-400" />
             <input
               type="text"
               placeholder="Buscar empresas..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-green-500 focus:border-green-500"
+              className="flex-1 px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
             />
           </div>
 
           {loading ? (
             <p className="text-center py-4">Carregando...</p>
           ) : companies.length === 0 ? (
-            <p className="text-center py-4 text-gray-600">Nenhuma empresa encontrada</p>
+            <p className="text-center py-4 text-neutral-600">Nenhuma empresa encontrada</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50">
+                <thead className="bg-neutral-50">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
                       Empresa
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
                       Contato
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
                       Estatísticas
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
                       Status
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
                       Ações
                     </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                   {companies.map((company) => (
-                    <tr key={company.id} className="hover:bg-gray-50">
+                    <tr key={company.id} className="hover:bg-neutral-50">
                       <td className="px-4 py-3 text-sm">
                         <div>
-                          <p className="font-medium text-gray-900">{company.name}</p>
-                          {company.cnpj && <p className="text-xs text-gray-500">CNPJ: {company.cnpj}</p>}
-                          <p className="text-xs text-gray-400">Criada em {formatDate(company.createdAt)}</p>
+                          <p className="font-medium text-neutral-900">{company.name}</p>
+                          {company.cnpj && <p className="text-xs text-neutral-500">CNPJ: {company.cnpj}</p>}
+                          <p className="text-xs text-neutral-400">Criada em {formatDate(company.createdAt)}</p>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-600">
+                      <td className="px-4 py-3 text-sm text-neutral-600">
                         <div>
                           <p>{company.email}</p>
-                          {company.phone && <p className="text-xs text-gray-500">{company.phone}</p>}
+                          {company.phone && <p className="text-xs text-neutral-500">{company.phone}</p>}
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-600">
+                      <td className="px-4 py-3 text-sm text-neutral-600">
                         <div className="flex items-center space-x-4">
                           <div className="flex items-center space-x-1" title="Usuários">
-                            <Users size={14} className="text-gray-400" />
+                            <Users size={14} className="text-neutral-400" />
                             <span>{company._count.users}</span>
                           </div>
                           <div className="flex items-center space-x-1" title="Clientes">
-                            <Building2 size={14} className="text-gray-400" />
+                            <Building2 size={14} className="text-neutral-400" />
                             <span>{company._count.clients}</span>
                           </div>
                           <div className="flex items-center space-x-1" title="Processos">
-                            <FileText size={14} className="text-gray-400" />
+                            <FileText size={14} className="text-neutral-400" />
                             <span>{company._count.cases}</span>
                           </div>
                         </div>
@@ -275,7 +275,7 @@ const Companies: React.FC = () => {
                           className={`px-2 py-1 rounded-full text-xs font-medium ${
                             company.active
                               ? 'bg-green-100 text-green-800'
-                              : 'bg-red-100 text-red-800'
+                              : 'bg-error-100 text-error-800'
                           }`}
                         >
                           {company.active ? 'Ativa' : 'Inativa'}
@@ -285,21 +285,21 @@ const Companies: React.FC = () => {
                         <div className="flex items-center justify-center space-x-2">
                           <button
                             onClick={() => handleToggleActive(company)}
-                            className={`${company.active ? 'text-red-600 hover:text-red-800' : 'text-green-600 hover:text-green-800'} transition-colors`}
+                            className={`${company.active ? 'text-error-600 hover:text-error-800' : 'text-primary-600 hover:text-primary-800'} transition-colors`}
                             title={company.active ? 'Desativar' : 'Ativar'}
                           >
                             {company.active ? <ToggleRight size={18} /> : <ToggleLeft size={18} />}
                           </button>
                           <button
                             onClick={() => handleEdit(company)}
-                            className="text-green-600 hover:text-green-800 transition-colors"
+                            className="text-primary-600 hover:text-primary-800 transition-colors"
                             title="Editar"
                           >
                             <Edit size={18} />
                           </button>
                           <button
                             onClick={() => handleDeleteClick(company)}
-                            className="text-red-600 hover:text-red-800 transition-colors"
+                            className="text-error-600 hover:text-error-800 transition-colors"
                             title="Deletar"
                           >
                             <Trash2 size={18} />
@@ -319,8 +319,8 @@ const Companies: React.FC = () => {
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
-              <h2 className="text-xl font-bold text-gray-900">
+            <div className="sticky top-0 bg-white border-b border-neutral-200 px-6 py-4 flex justify-between items-center">
+              <h2 className="text-xl font-bold text-neutral-900">
                 {editMode ? 'Editar Empresa' : 'Nova Empresa'}
               </h2>
               <button
@@ -330,7 +330,7 @@ const Companies: React.FC = () => {
                   setSelectedCompany(null);
                   resetForm();
                 }}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-neutral-400 hover:text-neutral-600"
               >
                 <X size={24} />
               </button>
@@ -340,77 +340,77 @@ const Companies: React.FC = () => {
               {!editMode ? (
                 <>
                   {/* Formulário de Criação */}
-                  <div className="border-b border-gray-200 pb-4">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-3">Dados da Empresa</h3>
+                  <div className="border-b border-neutral-200 pb-4">
+                    <h3 className="text-lg font-semibold text-neutral-900 mb-3">Dados da Empresa</h3>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700">Nome da Empresa *</label>
+                        <label className="block text-sm font-medium text-neutral-700">Nome da Empresa *</label>
                         <input
                           type="text"
                           required
                           value={formData.companyName}
                           onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-                          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                          className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700">CNPJ</label>
+                        <label className="block text-sm font-medium text-neutral-700">CNPJ</label>
                         <input
                           type="text"
                           value={formData.cnpj}
                           onChange={(e) => setFormData({ ...formData, cnpj: e.target.value })}
-                          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                          className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md"
                         />
                       </div>
                     </div>
 
                     <div className="mt-4">
-                      <label className="block text-sm font-medium text-gray-700">Email da Empresa *</label>
+                      <label className="block text-sm font-medium text-neutral-700">Email da Empresa *</label>
                       <input
                         type="email"
                         required
                         value={formData.companyEmail}
                         onChange={(e) => setFormData({ ...formData, companyEmail: e.target.value })}
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                        className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-3">Administrador da Empresa</h3>
+                    <h3 className="text-lg font-semibold text-neutral-900 mb-3">Administrador da Empresa</h3>
 
                     <div className="space-y-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700">Nome do Admin *</label>
+                        <label className="block text-sm font-medium text-neutral-700">Nome do Admin *</label>
                         <input
                           type="text"
                           required
                           value={formData.adminName}
                           onChange={(e) => setFormData({ ...formData, adminName: e.target.value })}
-                          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                          className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700">Email do Admin *</label>
+                        <label className="block text-sm font-medium text-neutral-700">Email do Admin *</label>
                         <input
                           type="email"
                           required
                           value={formData.adminEmail}
                           onChange={(e) => setFormData({ ...formData, adminEmail: e.target.value })}
-                          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                          className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700">Senha do Admin *</label>
+                        <label className="block text-sm font-medium text-neutral-700">Senha do Admin *</label>
                         <input
                           type="password"
                           required
                           value={formData.adminPassword}
                           onChange={(e) => setFormData({ ...formData, adminPassword: e.target.value })}
-                          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                          className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md"
                         />
                       </div>
                     </div>
@@ -421,84 +421,84 @@ const Companies: React.FC = () => {
                   {/* Formulário de Edição */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Nome da Empresa *</label>
+                      <label className="block text-sm font-medium text-neutral-700">Nome da Empresa *</label>
                       <input
                         type="text"
                         required
                         value={editFormData.name}
                         onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                        className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">CNPJ</label>
+                      <label className="block text-sm font-medium text-neutral-700">CNPJ</label>
                       <input
                         type="text"
                         value={editFormData.cnpj}
                         onChange={(e) => setEditFormData({ ...editFormData, cnpj: e.target.value })}
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                        className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md"
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Email *</label>
+                      <label className="block text-sm font-medium text-neutral-700">Email *</label>
                       <input
                         type="email"
                         required
                         value={editFormData.email}
                         onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                        className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Telefone</label>
+                      <label className="block text-sm font-medium text-neutral-700">Telefone</label>
                       <input
                         type="text"
                         value={editFormData.phone}
                         onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value })}
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                        className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Endereço</label>
+                    <label className="block text-sm font-medium text-neutral-700">Endereço</label>
                     <input
                       type="text"
                       value={editFormData.address}
                       onChange={(e) => setEditFormData({ ...editFormData, address: e.target.value })}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                      className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md"
                     />
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Cidade</label>
+                      <label className="block text-sm font-medium text-neutral-700">Cidade</label>
                       <input
                         type="text"
                         value={editFormData.city}
                         onChange={(e) => setEditFormData({ ...editFormData, city: e.target.value })}
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                        className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Estado</label>
+                      <label className="block text-sm font-medium text-neutral-700">Estado</label>
                       <input
                         type="text"
                         value={editFormData.state}
                         onChange={(e) => setEditFormData({ ...editFormData, state: e.target.value })}
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                        className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">CEP</label>
+                      <label className="block text-sm font-medium text-neutral-700">CEP</label>
                       <input
                         type="text"
                         value={editFormData.zipCode}
                         onChange={(e) => setEditFormData({ ...editFormData, zipCode: e.target.value })}
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                        className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md"
                       />
                     </div>
                   </div>
@@ -509,16 +509,16 @@ const Companies: React.FC = () => {
                       id="active"
                       checked={editFormData.active}
                       onChange={(e) => setEditFormData({ ...editFormData, active: e.target.checked })}
-                      className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-neutral-300 rounded"
                     />
-                    <label htmlFor="active" className="text-sm font-medium text-gray-700">
+                    <label htmlFor="active" className="text-sm font-medium text-neutral-700">
                       Empresa Ativa
                     </label>
                   </div>
                 </>
               )}
 
-              <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
+              <div className="flex justify-end space-x-3 pt-6 border-t border-neutral-200">
                 <button
                   type="button"
                   onClick={() => {
@@ -527,13 +527,13 @@ const Companies: React.FC = () => {
                     setSelectedCompany(null);
                     resetForm();
                   }}
-                  className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="px-6 py-2 border border-neutral-300 rounded-md text-neutral-700 hover:bg-neutral-50 transition-colors"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+                  className="px-6 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors"
                 >
                   {editMode ? 'Atualizar' : 'Criar Empresa'}
                 </button>
@@ -547,15 +547,15 @@ const Companies: React.FC = () => {
       {showDeleteModal && selectedCompany && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg max-w-md w-full p-6">
-            <div className="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full mb-4">
-              <Trash2 className="text-red-600" size={24} />
+            <div className="flex items-center justify-center w-12 h-12 mx-auto bg-error-100 rounded-full mb-4">
+              <Trash2 className="text-error-600" size={24} />
             </div>
 
-            <h3 className="text-lg font-semibold text-gray-900 text-center mb-2">
+            <h3 className="text-lg font-semibold text-neutral-900 text-center mb-2">
               Deletar Empresa?
             </h3>
 
-            <p className="text-sm text-gray-600 text-center mb-4">
+            <p className="text-sm text-neutral-600 text-center mb-4">
               Você está prestes a deletar a empresa <strong>{selectedCompany.name}</strong>.
             </p>
 
@@ -578,13 +578,13 @@ const Companies: React.FC = () => {
                   setShowDeleteModal(false);
                   setSelectedCompany(null);
                 }}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+                className="flex-1 px-4 py-2 border border-neutral-300 rounded-md text-neutral-700 hover:bg-neutral-50 transition-colors"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleDeleteConfirm}
-                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+                className="flex-1 px-4 py-2 bg-error-600 text-white rounded-md hover:bg-error-700 transition-colors"
               >
                 Sim, Deletar
               </button>

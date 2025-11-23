@@ -33,6 +33,7 @@ model Company {
   accountsPayable       AccountPayable[]
   smtpConfig            SMTPConfig?
   emailCampaigns        EmailCampaign[]
+  aiConfig              AIConfig?
 
   @@map("companies")
 }
@@ -61,6 +62,14 @@ model User {
   failedLoginAttempts       Int       @default(0)
   lastFailedLoginAt         DateTime?
   accountLockedUntil        DateTime?
+
+  // Campos de perfil
+  phone                     String?   // Telefone fixo
+  mobile                    String?   // Celular
+  birthDate                 DateTime? // Data de nascimento
+  profilePhoto              String?   // Chave S3 da foto de perfil
+  profilePhotoUrl           String?   // URL da foto de perfil
+
   createdAt                 DateTime  @default(now())
   updatedAt                 DateTime  @updatedAt
 
@@ -93,10 +102,11 @@ model Permission {
 
 // Tabela de clientes
 model Client {
-  id            String    @id @default(uuid())
+  id            String     @id @default(uuid())
   companyId     String
+  personType    PersonType @default(FISICA) // Tipo de pessoa: Física ou Jurídica
   name          String
-  cpf           String?
+  cpf           String? // CPF para Pessoa Física ou CNPJ para Pessoa Jurídica
   rg            String?
   email         String?
   phone         String?
@@ -107,6 +117,8 @@ model Client {
   profession    String?   // Profissão
   maritalStatus String?   // Estado civil
   birthDate     DateTime? // Data de nascimento
+  representativeName String? // Nome do representante legal (para Pessoa Jurídica)
+  representativeCpf  String? // CPF do representante legal (para Pessoa Jurídica)
   notes         String?
   tag           String?   // Tag/Categoria do cliente
   active        Boolean   @default(true)
@@ -120,6 +132,12 @@ model Client {
   scheduleEvents        ScheduleEvent[]
 
   @@map("clients")
+}
+
+// Enum para tipo de pessoa
+enum PersonType {
+  FISICA
+  JURIDICA
 }
 
 // Enum para status do processo
@@ -143,6 +161,7 @@ model Case {
   ultimoAndamento   String?    // Último movimento do processo (atualizado via API)
   informarCliente   String?    // Texto explicativo do andamento para informar ao cliente
   linkProcesso      String?    // Link/URL do processo no tribunal
+  aiSummary         String?    // Resumo gerado por IA dos movimentos do processo
   createdAt         DateTime   @default(now())
   updatedAt         DateTime   @updatedAt
   lastSyncedAt      DateTime?  // Última sincronização com DataJud
@@ -408,6 +427,36 @@ model AccountPayable {
   user        User?                @relation(fields: [createdBy], references: [id], onDelete: SetNull)
 
   @@map("accounts_payable")
+}
+
+// ============================================================================
+// AI INTEGRATION SYSTEM
+// ============================================================================
+
+// Enum para providers de IA
+enum AIProvider {
+  openai      // OpenAI (GPT-4, GPT-4o, GPT-4o-mini)
+  gemini      // Google Gemini (Gemini 1.5 Pro/Flash)
+  anthropic   // Anthropic Claude (Claude 3.5 Sonnet)
+  groq        // Groq (Llama, Mixtral)
+}
+
+// Tabela de configuração de IA por empresa
+model AIConfig {
+  id              String     @id @default(uuid())
+  companyId       String     @unique
+  provider        AIProvider
+  apiKey          String     // Criptografado com AES-256
+  model           String     // Nome do modelo específico (ex: gpt-4o-mini, gemini-1.5-flash)
+  enabled         Boolean    @default(true)
+  autoSummarize   Boolean    @default(true)  // Gerar resumo automaticamente após sync
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  // Relations
+  company         Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@map("ai_configs")
 }
 
 // ============================================================================

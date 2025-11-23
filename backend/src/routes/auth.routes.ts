@@ -38,7 +38,7 @@ const registerValidation = [
     .isLength({ min: 2, max: 200 })
     .withMessage('Nome da empresa deve ter entre 2 e 200 caracteres'),
   body('cnpj')
-    .optional()
+    .optional({ checkFalsy: true })
     .matches(/^\d{14}$/)
     .withMessage('CNPJ deve ter exatamente 14 dígitos numéricos'),
 ];

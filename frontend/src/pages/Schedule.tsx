@@ -291,11 +291,11 @@ const Schedule: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <Calendar className="text-blue-600" />
+          <h1 className="text-3xl font-bold text-neutral-900 flex items-center gap-2">
+            <Calendar className="text-primary-600" />
             Agenda
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
+          <p className="text-neutral-600 mt-1">
             Gerencie seus compromissos, tarefas e prazos
           </p>
         </div>
@@ -304,10 +304,11 @@ const Schedule: React.FC = () => {
             resetForm();
             setShowModal(true);
           }}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors min-h-[44px]"
         >
-          <Plus size={20} />
-          Novo Evento
+          <Plus size={18} className="sm:w-5 sm:h-5" />
+          <span className="hidden sm:inline">Novo Evento</span>
+          <span className="sm:hidden">Novo</span>
         </button>
       </div>
 

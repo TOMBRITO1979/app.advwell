@@ -1,6 +1,9 @@
 import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import prisma from '../utils/prisma';
+import PDFDocument from 'pdfkit';
+import { parse } from 'csv-parse/sync';
+import { sanitizeString } from '../utils/sanitize';
 
 export class AccountsPayableController {
   // Criar nova conta a pagar
@@ -254,6 +257,256 @@ export class AccountsPayableController {
     } catch (error) {
       console.error('Erro ao marcar conta como paga:', error);
       res.status(500).json({ error: 'Erro ao marcar conta como paga' });
+    }
+  }
+
+  // Exportar para PDF
+  async exportPDF(req: AuthRequest, res: Response) {
+    try {
+      const companyId = req.user!.companyId;
+      const { search, status } = req.query;
+
+      const where: any = { companyId };
+
+      if (search) {
+        where.OR = [
+          { supplier: { contains: String(search), mode: 'insensitive' as const } },
+          { description: { contains: String(search), mode: 'insensitive' as const } },
+        ];
+      }
+
+      if (status) {
+        where.status = status;
+      }
+
+      const accounts = await prisma.accountPayable.findMany({
+        where,
+        orderBy: { dueDate: 'asc' },
+      });
+
+      const doc = new PDFDocument({ margin: 50 });
+
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', 'attachment; filename=contas_a_pagar.pdf');
+
+      doc.pipe(res);
+
+      // Header
+      doc.fontSize(20).text('Relatório de Contas a Pagar', { align: 'center' });
+      doc.moveDown();
+      doc.fontSize(10).text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, { align: 'center' });
+      doc.moveDown(2);
+
+      // Calculate totals
+      const totalPending = accounts.filter(a => a.status === 'PENDING').reduce((sum, a) => sum + Number(a.amount), 0);
+      const totalPaid = accounts.filter(a => a.status === 'PAID').reduce((sum, a) => sum + Number(a.amount), 0);
+      const totalOverdue = accounts.filter(a => a.status === 'OVERDUE').reduce((sum, a) => sum + Number(a.amount), 0);
+
+      // Summary
+      doc.fontSize(12).text('Resumo:', { underline: true });
+      doc.fontSize(10);
+      doc.text(`Total Pendente: R$ ${totalPending.toFixed(2)}`);
+      doc.text(`Total Pago: R$ ${totalPaid.toFixed(2)}`);
+      doc.text(`Total Vencido: R$ ${totalOverdue.toFixed(2)}`);
+      doc.text(`Total Geral: R$ ${(totalPending + totalPaid + totalOverdue).toFixed(2)}`);
+      doc.moveDown(2);
+
+      // Table header
+      doc.fontSize(12).text('Detalhamento:', { underline: true });
+      doc.moveDown();
+
+      // Accounts list
+      accounts.forEach((account, index) => {
+        if ((index + 1) % 15 === 0) doc.addPage();
+
+        doc.fontSize(10);
+        doc.text(`${index + 1}. ${account.supplier}`, { continued: false });
+        doc.fontSize(9);
+        doc.text(`   Descrição: ${account.description}`);
+        doc.text(`   Valor: R$ ${Number(account.amount).toFixed(2)}`);
+        doc.text(`   Vencimento: ${new Date(account.dueDate).toLocaleDateString('pt-BR')}`);
+        doc.text(`   Status: ${account.status === 'PAID' ? 'Pago' : account.status === 'PENDING' ? 'Pendente' : 'Vencido'}`);
+        if (account.notes) doc.text(`   Observações: ${account.notes}`);
+        doc.moveDown();
+      });
+
+      doc.end();
+    } catch (error) {
+      console.error('Erro ao gerar PDF:', error);
+      res.status(500).json({ error: 'Erro ao gerar PDF' });
+    }
+  }
+
+  // Exportar para CSV
+  async exportCSV(req: AuthRequest, res: Response) {
+    try {
+      const companyId = req.user!.companyId;
+      const { search, status } = req.query;
+
+      const where: any = { companyId };
+
+      if (search) {
+        where.OR = [
+          { supplier: { contains: String(search), mode: 'insensitive' as const } },
+          { description: { contains: String(search), mode: 'insensitive' as const } },
+        ];
+      }
+
+      if (status) {
+        where.status = status;
+      }
+
+      const accounts = await prisma.accountPayable.findMany({
+        where,
+        orderBy: { dueDate: 'asc' },
+      });
+
+      const csvHeader = 'Fornecedor,Descrição,Valor,Vencimento,Status,Categoria,Observações\n';
+      const csvRows = accounts.map(account => {
+        const supplier = `"${account.supplier.replace(/"/g, '""')}"`;
+        const description = `"${account.description.replace(/"/g, '""')}"`;
+        const amount = Number(account.amount).toFixed(2);
+        const dueDate = new Date(account.dueDate).toLocaleDateString('pt-BR');
+        const status = account.status === 'PAID' ? 'Pago' : account.status === 'PENDING' ? 'Pendente' : 'Vencido';
+        const category = account.category || '';
+        const notes = account.notes ? `"${account.notes.replace(/"/g, '""')}"` : '';
+
+        return `${supplier},${description},${amount},${dueDate},${status},${category},${notes}`;
+      }).join('\n');
+
+      const csv = csvHeader + csvRows;
+
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader('Content-Disposition', 'attachment; filename=contas_a_pagar.csv');
+      res.send('\ufeff' + csv);
+    } catch (error) {
+      console.error('Erro ao gerar CSV:', error);
+      res.status(500).json({ error: 'Erro ao gerar CSV' });
+    }
+  }
+
+  // Importar via CSV
+  async importCSV(req: AuthRequest, res: Response) {
+    try {
+      const companyId = req.user!.companyId;
+      const createdBy = req.user!.userId;
+
+      if (!companyId) {
+        return res.status(403).json({ error: 'Usuário não possui empresa associada' });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({ error: 'Nenhum arquivo enviado' });
+      }
+
+      const csvContent = req.file.buffer.toString('utf-8').replace(/^\ufeff/, '');
+
+      const records = parse(csvContent, {
+        columns: true,
+        skip_empty_lines: true,
+        trim: true,
+        bom: true,
+      });
+
+      const results = {
+        total: records.length,
+        success: 0,
+        errors: [] as { line: number; supplier: string; error: string }[],
+      };
+
+      for (let i = 0; i < records.length; i++) {
+        const record = records[i] as any;
+        const lineNumber = i + 2;
+
+        try {
+          // Validar campos obrigatórios
+          if (!record.Fornecedor || record.Fornecedor.trim() === '') {
+            results.errors.push({
+              line: lineNumber,
+              supplier: record.Fornecedor || '(vazio)',
+              error: 'Fornecedor é obrigatório',
+            });
+            continue;
+          }
+
+          if (!record['Descrição'] || record['Descrição'].trim() === '') {
+            results.errors.push({
+              line: lineNumber,
+              supplier: record.Fornecedor || '(vazio)',
+              error: 'Descrição é obrigatória',
+            });
+            continue;
+          }
+
+          if (!record.Valor || isNaN(parseFloat(record.Valor.replace(',', '.')))) {
+            results.errors.push({
+              line: lineNumber,
+              supplier: record.Fornecedor || '(vazio)',
+              error: 'Valor deve ser um número válido',
+            });
+            continue;
+          }
+
+          if (!record.Vencimento) {
+            results.errors.push({
+              line: lineNumber,
+              supplier: record.Fornecedor || '(vazio)',
+              error: 'Vencimento é obrigatório',
+            });
+            continue;
+          }
+
+          // Converter valor
+          const amount = parseFloat(record.Valor.replace(',', '.'));
+
+          // Converter data
+          let dueDate: Date;
+          const dateStr = record.Vencimento.trim();
+          if (dateStr.includes('/')) {
+            const [day, month, year] = dateStr.split('/');
+            dueDate = new Date(`${year}-${month}-${day}`);
+          } else {
+            dueDate = new Date(dateStr);
+          }
+
+          if (isNaN(dueDate.getTime())) {
+            results.errors.push({
+              line: lineNumber,
+              supplier: record.Fornecedor || '(vazio)',
+              error: 'Data de vencimento inválida (use DD/MM/YYYY ou YYYY-MM-DD)',
+            });
+            continue;
+          }
+
+          // Criar conta a pagar
+          await prisma.accountPayable.create({
+            data: {
+              companyId,
+              supplier: sanitizeString(record.Fornecedor.trim()) || record.Fornecedor.trim(),
+              description: sanitizeString(record['Descrição'].trim()) || record['Descrição'].trim(),
+              amount,
+              dueDate,
+              category: record.Categoria?.trim() || null,
+              notes: record['Observações'] ? (sanitizeString(record['Observações'].trim()) || record['Observações'].trim()) : null,
+              createdBy,
+              status: 'PENDING',
+            },
+          });
+
+          results.success++;
+        } catch (error: any) {
+          results.errors.push({
+            line: lineNumber,
+            supplier: record.Fornecedor || '(vazio)',
+            error: error.message || 'Erro ao processar linha',
+          });
+        }
+      }
+
+      res.json(results);
+    } catch (error: any) {
+      console.error('Erro ao importar CSV:', error);
+      res.status(500).json({ error: 'Erro ao importar arquivo CSV' });
     }
   }
 

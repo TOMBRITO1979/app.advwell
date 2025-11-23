@@ -80,7 +80,7 @@ const Settings: React.FC = () => {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
-          <div className="text-gray-500">Carregando...</div>
+          <div className="text-neutral-500">Carregando...</div>
         </div>
       </Layout>
     );
@@ -91,11 +91,11 @@ const Settings: React.FC = () => {
       <div className="p-6">
         <div className="max-w-4xl mx-auto">
           <div className="mb-6">
-            <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+            <h1 className="text-2xl font-bold text-neutral-800 flex items-center gap-2">
               <Building2 className="h-7 w-7" />
               Configurações da Empresa
             </h1>
-            <p className="text-gray-600 mt-2">
+            <p className="text-neutral-600 mt-2">
               Configure os dados da sua empresa. Essas informações serão incluídas nos relatórios em PDF.
             </p>
           </div>
@@ -103,13 +103,13 @@ const Settings: React.FC = () => {
           <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md p-6">
             {/* Informações Básicas */}
             <div className="mb-6">
-              <h2 className="text-lg font-semibold text-gray-700 mb-4 flex items-center gap-2">
+              <h2 className="text-lg font-semibold text-neutral-700 mb-4 flex items-center gap-2">
                 <Building2 className="h-5 w-5" />
                 Informações Básicas
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-neutral-700 mb-2">
                     Nome da Empresa *
                   </label>
                   <input
@@ -118,12 +118,12 @@ const Settings: React.FC = () => {
                     value={settings.name}
                     onChange={handleChange}
                     required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-neutral-700 mb-2">
                     Email *
                   </label>
                   <input
@@ -132,12 +132,12 @@ const Settings: React.FC = () => {
                     value={settings.email}
                     onChange={handleChange}
                     required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-neutral-700 mb-2">
                     Telefone
                   </label>
                   <input
@@ -146,12 +146,12 @@ const Settings: React.FC = () => {
                     value={settings.phone || ''}
                     onChange={handleChange}
                     placeholder="(00) 0000-0000"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-neutral-700 mb-2">
                     URL do Logo
                   </label>
                   <input
@@ -160,7 +160,7 @@ const Settings: React.FC = () => {
                     value={settings.logo || ''}
                     onChange={handleChange}
                     placeholder="https://exemplo.com/logo.png"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                 </div>
               </div>
@@ -168,13 +168,13 @@ const Settings: React.FC = () => {
 
             {/* Endereço */}
             <div className="mb-6">
-              <h2 className="text-lg font-semibold text-gray-700 mb-4 flex items-center gap-2">
+              <h2 className="text-lg font-semibold text-neutral-700 mb-4 flex items-center gap-2">
                 <MapPin className="h-5 w-5" />
                 Endereço
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-neutral-700 mb-2">
                     Logradouro
                   </label>
                   <input
@@ -183,12 +183,12 @@ const Settings: React.FC = () => {
                     value={settings.address || ''}
                     onChange={handleChange}
                     placeholder="Rua, Avenida, número"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-neutral-700 mb-2">
                     Cidade
                   </label>
                   <input
@@ -197,12 +197,12 @@ const Settings: React.FC = () => {
                     value={settings.city || ''}
                     onChange={handleChange}
                     placeholder="Ex: São Paulo"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-neutral-700 mb-2">
                     Estado (UF)
                   </label>
                   <input
@@ -212,13 +212,13 @@ const Settings: React.FC = () => {
                     onChange={handleChange}
                     placeholder="Ex: SP"
                     maxLength={2}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 uppercase"
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 uppercase"
                     style={{ textTransform: 'uppercase' }}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-neutral-700 mb-2">
                     CEP
                   </label>
                   <input
@@ -227,7 +227,7 @@ const Settings: React.FC = () => {
                     value={settings.zipCode || ''}
                     onChange={handleChange}
                     placeholder="00000-000"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                 </div>
               </div>
@@ -238,7 +238,7 @@ const Settings: React.FC = () => {
               <button
                 type="submit"
                 disabled={saving}
-                className="flex items-center gap-2 bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                className="flex items-center gap-2 bg-primary-600 text-white px-6 py-2 rounded-md hover:bg-primary-700 disabled:bg-neutral-400 disabled:cursor-not-allowed transition-colors"
               >
                 <Save className="h-4 w-4" />
                 {saving ? 'Salvando...' : 'Salvar Configurações'}
@@ -247,7 +247,7 @@ const Settings: React.FC = () => {
           </form>
 
           {/* Informações Adicionais */}
-          <div className="mt-6 bg-green-50 border border-green-200 rounded-lg p-4">
+          <div className="mt-6 bg-green-50 border border-primary-200 rounded-lg p-4">
             <h3 className="font-semibold text-green-900 mb-2">ℹ️ Informação</h3>
             <p className="text-sm text-green-800">
               Os dados configurados aqui serão automaticamente incluídos no cabeçalho dos relatórios

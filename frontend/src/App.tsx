@@ -15,9 +15,12 @@ import Updates from './pages/Updates';
 import Financial from './pages/Financial';
 import Documents from './pages/Documents';
 import Schedule from './pages/Schedule';
+import ToDo from './pages/ToDo';
 import AccountsPayable from './pages/AccountsPayable';
 import Settings from './pages/Settings';
+import Profile from './pages/Profile';
 import SMTPSettings from './pages/SMTPSettings';
+import AIConfig from './pages/AIConfig';
 import Campaigns from './pages/Campaigns';
 import Users from './pages/Users';
 import Companies from './pages/Companies';
@@ -113,6 +116,14 @@ function App() {
           }
         />
         <Route
+          path="/todos"
+          element={
+            <PrivateRoute>
+              <ToDo />
+            </PrivateRoute>
+          }
+        />
+        <Route
           path="/accounts-payable"
           element={
             <PrivateRoute>
@@ -129,10 +140,26 @@ function App() {
           }
         />
         <Route
+          path="/profile"
+          element={
+            <PrivateRoute>
+              <Profile />
+            </PrivateRoute>
+          }
+        />
+        <Route
           path="/smtp-settings"
           element={
             <PrivateRoute>
               <SMTPSettings />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/ai-config"
+          element={
+            <PrivateRoute>
+              <AIConfig />
             </PrivateRoute>
           }
         />

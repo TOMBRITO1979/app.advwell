@@ -9,6 +9,7 @@ const router = Router();
 router.use(authenticate, validateTenant);
 
 // Rotas
+router.get('/stats', controller.getStats);
 router.get('/recent-activities', controller.getRecentActivities);
 
 export default router;

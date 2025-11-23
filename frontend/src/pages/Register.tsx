@@ -76,7 +76,7 @@ const Register: React.FC = () => {
           <div className="absolute -bottom-3 -right-3 w-28 h-28 bg-gradient-to-tl from-white/20 to-transparent rounded-br-3xl blur-xl"></div>
           <div className="text-center relative">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-300/20 mb-4">
-              <CheckCircle className="w-10 h-10 text-green-500 dark:text-green-300" />
+              <CheckCircle className="w-10 h-10 text-primary-500 dark:text-green-300" />
             </div>
             <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white mb-3 drop-shadow-2xl">
               Cadastro Realizado!
@@ -85,7 +85,7 @@ const Register: React.FC = () => {
               Enviamos um email de verificação para:
             </p>
             <div className="bg-green-50 dark:bg-green-900/30 border border-white/40 rounded-lg p-4 mb-6 backdrop-blur-sm">
-              <Mail className="w-5 h-5 text-green-500 dark:text-green-300 inline mr-2" />
+              <Mail className="w-5 h-5 text-primary-500 dark:text-green-300 inline mr-2" />
               <span className="font-semibold text-slate-700 dark:text-white">{userEmail}</span>
             </div>
             <div className="bg-amber-50 dark:bg-amber-900/30 border border-amber-300 dark:border-amber-400/40 rounded-lg p-4 mb-6 text-left backdrop-blur-sm">
@@ -107,7 +107,7 @@ const Register: React.FC = () => {
               </button>
               <button
                 onClick={() => navigate('/resend-verification')}
-                className="w-full px-4 py-2 text-green-500 dark:text-green-300 hover:text-white transition-colors text-sm font-medium"
+                className="w-full px-4 py-2 text-primary-500 dark:text-green-300 hover:text-white transition-colors text-sm font-medium"
               >
                 Não recebeu o email? Reenviar
               </button>
@@ -233,7 +233,7 @@ const Register: React.FC = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-xl text-sm font-medium text-white bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 hover:shadow-green-500/50 transition-all duration-300 transform hover:scale-[1.02] active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
+            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-xl text-sm font-medium text-white bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 hover:shadow-green-500/50 transition-all duration-300 transform hover:scale-[1.02] active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
           >
             {loading ? 'Cadastrando...' : 'Cadastrar'}
           </button>
@@ -242,7 +242,7 @@ const Register: React.FC = () => {
         <div className="mt-6 text-center relative">
           <p className="text-sm text-slate-700 dark:text-white/90">
             Já tem uma conta?{' '}
-            <Link to="/login" className="text-green-600 dark:text-green-200 hover:text-green-700 dark:hover:text-green-100 transition-colors duration-200 font-bold">
+            <Link to="/login" className="text-primary-600 dark:text-green-200 hover:text-primary-700 dark:hover:text-primary-100 transition-colors duration-200 font-bold">
               Faça login
             </Link>
           </p>

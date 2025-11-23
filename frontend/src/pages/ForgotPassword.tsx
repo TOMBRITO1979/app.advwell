@@ -46,11 +46,11 @@ const ForgotPassword: React.FC = () => {
             <p className="text-slate-700 dark:text-white/90 text-lg font-medium">Verifique sua caixa de entrada</p>
           </div>
 
-          <div className="bg-green-50/80 dark:bg-green-900/30 border border-green-200/50 dark:border-green-400/30 rounded-xl p-4 mb-6 backdrop-blur-sm relative">
+          <div className="bg-green-50/80 dark:bg-green-900/30 border border-primary-200/50 dark:border-primary-400/30 rounded-xl p-4 mb-6 backdrop-blur-sm relative">
             <p className="text-green-800 dark:text-green-100 text-sm">
               Enviamos um email para <strong className="font-bold">{email}</strong> com instruções para redefinir sua senha.
             </p>
-            <p className="text-green-700 dark:text-green-200 text-sm mt-2">
+            <p className="text-primary-700 dark:text-green-200 text-sm mt-2">
               O link expira em 1 hora.
             </p>
           </div>
@@ -58,7 +58,7 @@ const ForgotPassword: React.FC = () => {
           <div className="text-center relative">
             <Link
               to="/login"
-              className="text-green-600 dark:text-green-200 hover:text-green-700 dark:hover:text-green-100 font-semibold transition-colors duration-200"
+              className="text-primary-600 dark:text-green-200 hover:text-primary-700 dark:hover:text-primary-100 font-semibold transition-colors duration-200"
             >
               Voltar para o login
             </Link>
@@ -109,7 +109,7 @@ const ForgotPassword: React.FC = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-xl text-sm font-medium text-white bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 hover:shadow-green-500/50 transition-all duration-300 transform hover:scale-[1.02] active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
+            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-xl text-sm font-medium text-white bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 hover:shadow-green-500/50 transition-all duration-300 transform hover:scale-[1.02] active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
           >
             {loading ? 'Enviando...' : 'Enviar email de recuperação'}
           </button>
@@ -118,7 +118,7 @@ const ForgotPassword: React.FC = () => {
         <div className="mt-6 text-center relative">
           <Link
             to="/login"
-            className="text-sm text-green-600 dark:text-green-200 hover:text-green-700 dark:hover:text-green-100 font-semibold transition-colors duration-200"
+            className="text-sm text-primary-600 dark:text-green-200 hover:text-primary-700 dark:hover:text-primary-100 font-semibold transition-colors duration-200"
           >
             Voltar para o login
           </Link>

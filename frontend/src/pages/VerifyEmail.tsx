@@ -50,12 +50,12 @@ const VerifyEmail: React.FC = () => {
           {/* Header */}
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 mb-4">
-              <Mail className="w-8 h-8 text-green-600" />
+              <Mail className="w-8 h-8 text-primary-600" />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            <h1 className="text-2xl font-bold text-neutral-900 mb-2">
               Verificação de Email
             </h1>
-            <p className="text-gray-600">
+            <p className="text-neutral-600">
               {status === 'loading' && 'Verificando seu email...'}
               {status === 'success' && 'Email verificado com sucesso!'}
               {status === 'error' && 'Erro na verificação'}
@@ -66,8 +66,8 @@ const VerifyEmail: React.FC = () => {
           <div className="text-center mb-6">
             {status === 'loading' && (
               <div className="flex flex-col items-center">
-                <Loader className="w-16 h-16 text-green-600 animate-spin mb-4" />
-                <p className="text-gray-600">
+                <Loader className="w-16 h-16 text-primary-600 animate-spin mb-4" />
+                <p className="text-neutral-600">
                   Aguarde enquanto verificamos seu email...
                 </p>
               </div>
@@ -75,9 +75,9 @@ const VerifyEmail: React.FC = () => {
 
             {status === 'success' && (
               <div className="flex flex-col items-center">
-                <CheckCircle className="w-16 h-16 text-green-600 mb-4" />
-                <p className="text-gray-800 font-medium mb-2">{message}</p>
-                <p className="text-sm text-gray-600">
+                <CheckCircle className="w-16 h-16 text-primary-600 mb-4" />
+                <p className="text-neutral-800 font-medium mb-2">{message}</p>
+                <p className="text-sm text-neutral-600">
                   Redirecionando para a página de login...
                 </p>
               </div>
@@ -85,18 +85,18 @@ const VerifyEmail: React.FC = () => {
 
             {status === 'error' && (
               <div className="flex flex-col items-center">
-                <XCircle className="w-16 h-16 text-red-600 mb-4" />
-                <p className="text-gray-800 font-medium mb-4">{message}</p>
+                <XCircle className="w-16 h-16 text-error-600 mb-4" />
+                <p className="text-neutral-800 font-medium mb-4">{message}</p>
                 <div className="space-y-3 w-full">
                   <button
                     onClick={() => navigate('/resend-verification')}
-                    className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                    className="w-full px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
                   >
                     Solicitar Novo Link
                   </button>
                   <button
                     onClick={() => navigate('/login')}
-                    className="w-full px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors"
+                    className="w-full px-4 py-2 bg-neutral-200 text-neutral-800 rounded-lg hover:bg-neutral-300 transition-colors"
                   >
                     Voltar para Login
                   </button>
@@ -107,9 +107,9 @@ const VerifyEmail: React.FC = () => {
 
           {/* Footer */}
           {status === 'success' && (
-            <div className="mt-8 pt-6 border-t border-gray-200">
-              <p className="text-center text-sm text-gray-600">
-                Bem-vindo ao <span className="font-semibold text-green-600">AdvWell</span>
+            <div className="mt-8 pt-6 border-t border-neutral-200">
+              <p className="text-center text-sm text-neutral-600">
+                Bem-vindo ao <span className="font-semibold text-primary-600">AdvWell</span>
               </p>
             </div>
           )}

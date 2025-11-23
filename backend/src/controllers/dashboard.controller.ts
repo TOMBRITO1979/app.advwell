@@ -2,6 +2,63 @@ import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import prisma from '../utils/prisma';
 
+// Obter estatísticas do dashboard
+export const getStats = async (req: AuthRequest, res: Response) => {
+  try {
+    const companyId = req.user!.companyId;
+
+    // Obter data de hoje (início e fim do dia)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    // Buscar todas as estatísticas em paralelo
+    const [
+      totalClients,
+      totalCases,
+      todayHearings
+    ] = await Promise.all([
+      // Total de clientes ativos
+      prisma.client.count({
+        where: {
+          companyId,
+          active: true
+        }
+      }),
+
+      // Total de processos ativos
+      prisma.case.count({
+        where: {
+          companyId,
+          status: 'ACTIVE'
+        }
+      }),
+
+      // Audiências de hoje
+      prisma.scheduleEvent.count({
+        where: {
+          companyId,
+          type: 'AUDIENCIA',
+          date: {
+            gte: today,
+            lt: tomorrow
+          }
+        }
+      })
+    ]);
+
+    res.json({
+      clients: totalClients,
+      cases: totalCases,
+      todayHearings: todayHearings
+    });
+  } catch (error: any) {
+    console.error('Erro ao buscar estatísticas:', error);
+    res.status(500).json({ error: 'Erro ao buscar estatísticas' });
+  }
+};
+
 // Obter atividades recentes do dashboard
 export const getRecentActivities = async (req: AuthRequest, res: Response) => {
   try {
