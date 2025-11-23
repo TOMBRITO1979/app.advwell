@@ -352,12 +352,12 @@ const AIConfigPage: React.FC = () => {
             </div>
 
             {/* Buttons */}
-            <div className="flex gap-3 flex-wrap">
+            <div className="flex flex-col sm:flex-row gap-3">
               <button
                 type="button"
                 onClick={handleTestConnection}
                 disabled={testing || saving}
-                className="flex items-center gap-2 px-4 py-2 bg-info-600 text-neutral-900 rounded-md hover:bg-info-700 disabled:bg-neutral-400 disabled:cursor-not-allowed transition-colors min-h-[44px]"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-info-600 text-neutral-900 rounded-md hover:bg-info-700 disabled:bg-neutral-400 disabled:cursor-not-allowed transition-colors min-h-[44px]"
               >
                 {testing ? (
                   <>
@@ -375,7 +375,7 @@ const AIConfigPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={saving || testing}
-                className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:bg-neutral-400 disabled:cursor-not-allowed transition-colors min-h-[44px]"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:bg-neutral-400 disabled:cursor-not-allowed transition-colors min-h-[44px]"
               >
                 {saving ? (
                   <>
@@ -395,7 +395,7 @@ const AIConfigPage: React.FC = () => {
                   type="button"
                   onClick={handleDelete}
                   disabled={saving || testing}
-                  className="flex items-center gap-2 px-4 py-2 bg-error-600 text-neutral-900 rounded-md hover:bg-error-700 disabled:bg-neutral-400 disabled:cursor-not-allowed transition-colors min-h-[44px]"
+                  className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-error-600 text-neutral-900 rounded-md hover:bg-error-700 disabled:bg-neutral-400 disabled:cursor-not-allowed transition-colors min-h-[44px]"
                 >
                   Remover Configuração
                 </button>

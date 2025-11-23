@@ -524,7 +524,7 @@ const Cases: React.FC = () => {
             accept=".csv"
             className="hidden"
           />
-          <div className="flex flex-wrap gap-3">
+          <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:gap-3">
             <ExportButton
               type="import"
               onClick={handleImportClick}
@@ -535,10 +535,11 @@ const Cases: React.FC = () => {
             />
             <button
               onClick={handleNewCase}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-primary-600 hover:bg-primary-700 text-white font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200 min-h-[44px]"
+              className="inline-flex items-center justify-center gap-2 px-2 sm:px-4 py-2 rounded-lg bg-primary-600 hover:bg-primary-700 text-white font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200 min-h-[44px]"
             >
-              <Plus size={20} />
-              <span>Novo Processo</span>
+              <Plus size={18} className="sm:w-5 sm:h-5" />
+              <span className="hidden sm:inline">Novo Processo</span>
+              <span className="sm:hidden">Novo</span>
             </button>
           </div>
         </div>

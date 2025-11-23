@@ -363,7 +363,7 @@ const Financial: React.FC = () => {
         <div>
           <h1 className="text-xl sm:text-2xl font-bold text-neutral-900 mb-3 sm:mb-4">Financeiro</h1>
 
-          {/* Action Buttons - Mobile: Grid 4 columns, Desktop: Flex row */}
+          {/* Action Buttons - Mobile: 2 rows, Desktop: Single row */}
           <input
             type="file"
             ref={fileInputRef}
@@ -371,24 +371,28 @@ const Financial: React.FC = () => {
             accept=".csv"
             className="hidden"
           />
-          <div className="flex flex-wrap gap-3">
-            <ExportButton
-              type="import"
-              onClick={handleImportClick}
-            />
-            <ExportButton
-              type="pdf"
-              onClick={handleExportPDF}
-            />
-            <ExportButton
-              type="csv"
-              onClick={handleExportCSV}
-            />
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+            {/* Linha 1 no mobile: 3 botões de exportação */}
+            <div className="grid grid-cols-3 gap-2 sm:contents">
+              <ExportButton
+                type="import"
+                onClick={handleImportClick}
+              />
+              <ExportButton
+                type="pdf"
+                onClick={handleExportPDF}
+              />
+              <ExportButton
+                type="csv"
+                onClick={handleExportCSV}
+              />
+            </div>
+            {/* Linha 2 no mobile: Botão Nova Transação em largura total */}
             <button
               onClick={handleNew}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-primary-600 hover:bg-primary-700 text-white font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200 min-h-[44px]"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 rounded-lg bg-primary-600 hover:bg-primary-700 text-white font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200 min-h-[44px]"
             >
-              <Plus size={20} />
+              <Plus size={18} className="sm:w-5 sm:h-5" />
               <span>Nova Transação</span>
             </button>
           </div>

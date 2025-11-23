@@ -221,12 +221,12 @@ const SMTPSettings: React.FC = () => {
             </div>
 
             {/* Botões */}
-            <div className="flex gap-3 pt-4 border-t border-gray-200">
+            <div className="grid grid-cols-2 gap-3 pt-4 border-t border-gray-200">
               <button
                 type="button"
                 onClick={handleTest}
                 disabled={testing}
-                className="flex items-center gap-2 px-6 py-2 border border-blue-600 text-blue-600 rounded-md hover:bg-blue-50 transition-colors disabled:opacity-50 min-h-[44px]"
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 min-h-[44px]"
               >
                 <RefreshCw size={18} className={testing ? 'animate-spin' : ''} />
                 {testing ? 'Testando...' : 'Testar Conexão'}
@@ -234,7 +234,7 @@ const SMTPSettings: React.FC = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="flex items-center gap-2 px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors disabled:opacity-50 min-h-[44px]"
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors disabled:opacity-50 min-h-[44px]"
               >
                 <Save size={18} />
                 {loading ? 'Salvando...' : 'Salvar Configuração'}

@@ -304,11 +304,10 @@ const Schedule: React.FC = () => {
             resetForm();
             setShowModal(true);
           }}
-          className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors min-h-[44px]"
+          className="w-full sm:w-auto flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors min-h-[44px]"
         >
           <Plus size={18} className="sm:w-5 sm:h-5" />
-          <span className="hidden sm:inline">Novo Evento</span>
-          <span className="sm:hidden">Novo</span>
+          <span>Novo Evento</span>
         </button>
       </div>
 
