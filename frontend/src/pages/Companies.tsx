@@ -193,7 +193,7 @@ const Companies: React.FC = () => {
           <h1 className="text-2xl font-bold text-neutral-900">Empresas</h1>
           <button
             onClick={handleNewCompany}
-            className="flex items-center space-x-2 bg-primary-600 text-neutral-900 px-4 py-2 rounded-md hover:bg-primary-700"
+            className="flex items-center gap-2 bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 min-h-[44px]"
           >
             <Plus size={20} />
             <span>Nova Empresa</span>
@@ -201,14 +201,14 @@ const Companies: React.FC = () => {
         </div>
 
         <div className="bg-white rounded-lg shadow p-4">
-          <div className="flex items-center space-x-2 mb-4">
+          <div className="flex items-center gap-2 mb-4">
             <Search size={20} className="text-neutral-400" />
             <input
               type="text"
               placeholder="Buscar empresas..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="flex-1 px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+              className="flex-1 px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 min-h-[44px]"
             />
           </div>
 
@@ -255,16 +255,16 @@ const Companies: React.FC = () => {
                         </div>
                       </td>
                       <td className="px-4 py-3 text-sm text-neutral-600">
-                        <div className="flex items-center space-x-4">
-                          <div className="flex items-center space-x-1" title="Usuários">
+                        <div className="flex items-center gap-4">
+                          <div className="flex items-center gap-1" title="Usuários">
                             <Users size={14} className="text-neutral-400" />
                             <span>{company._count.users}</span>
                           </div>
-                          <div className="flex items-center space-x-1" title="Clientes">
+                          <div className="flex items-center gap-1" title="Clientes">
                             <Building2 size={14} className="text-neutral-400" />
                             <span>{company._count.clients}</span>
                           </div>
-                          <div className="flex items-center space-x-1" title="Processos">
+                          <div className="flex items-center gap-1" title="Processos">
                             <FileText size={14} className="text-neutral-400" />
                             <span>{company._count.cases}</span>
                           </div>
@@ -282,7 +282,7 @@ const Companies: React.FC = () => {
                         </span>
                       </td>
                       <td className="px-4 py-3 text-sm">
-                        <div className="flex items-center justify-center space-x-2">
+                        <div className="flex items-center justify-center gap-2">
                           <button
                             onClick={() => handleToggleActive(company)}
                             className={`${company.active ? 'text-error-600 hover:text-error-800' : 'text-primary-600 hover:text-primary-800'} transition-colors`}
@@ -319,7 +319,7 @@ const Companies: React.FC = () => {
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-neutral-200 px-6 py-4 flex justify-between items-center">
+            <div className="sticky top-0 bg-white border-b border-neutral-200 px-6 py-4 flex justify-between items-center min-h-[44px]">
               <h2 className="text-xl font-bold text-neutral-900">
                 {editMode ? 'Editar Empresa' : 'Nova Empresa'}
               </h2>
@@ -351,7 +351,7 @@ const Companies: React.FC = () => {
                           required
                           value={formData.companyName}
                           onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-                          className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md"
+                          className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md min-h-[44px]"
                         />
                       </div>
                       <div>
@@ -360,7 +360,7 @@ const Companies: React.FC = () => {
                           type="text"
                           value={formData.cnpj}
                           onChange={(e) => setFormData({ ...formData, cnpj: e.target.value })}
-                          className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md"
+                          className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md min-h-[44px]"
                         />
                       </div>
                     </div>
@@ -372,7 +372,7 @@ const Companies: React.FC = () => {
                         required
                         value={formData.companyEmail}
                         onChange={(e) => setFormData({ ...formData, companyEmail: e.target.value })}
-                        className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md"
+                        className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md min-h-[44px]"
                       />
                     </div>
                   </div>
@@ -388,7 +388,7 @@ const Companies: React.FC = () => {
                           required
                           value={formData.adminName}
                           onChange={(e) => setFormData({ ...formData, adminName: e.target.value })}
-                          className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md"
+                          className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md min-h-[44px]"
                         />
                       </div>
 
@@ -399,7 +399,7 @@ const Companies: React.FC = () => {
                           required
                           value={formData.adminEmail}
                           onChange={(e) => setFormData({ ...formData, adminEmail: e.target.value })}
-                          className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md"
+                          className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md min-h-[44px]"
                         />
                       </div>
 
@@ -410,7 +410,7 @@ const Companies: React.FC = () => {
                           required
                           value={formData.adminPassword}
                           onChange={(e) => setFormData({ ...formData, adminPassword: e.target.value })}
-                          className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md"
+                          className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md min-h-[44px]"
                         />
                       </div>
                     </div>
@@ -427,7 +427,7 @@ const Companies: React.FC = () => {
                         required
                         value={editFormData.name}
                         onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
-                        className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md"
+                        className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md min-h-[44px]"
                       />
                     </div>
                     <div>
@@ -436,7 +436,7 @@ const Companies: React.FC = () => {
                         type="text"
                         value={editFormData.cnpj}
                         onChange={(e) => setEditFormData({ ...editFormData, cnpj: e.target.value })}
-                        className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md"
+                        className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md min-h-[44px]"
                       />
                     </div>
                   </div>
@@ -449,7 +449,7 @@ const Companies: React.FC = () => {
                         required
                         value={editFormData.email}
                         onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
-                        className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md"
+                        className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md min-h-[44px]"
                       />
                     </div>
                     <div>
@@ -458,7 +458,7 @@ const Companies: React.FC = () => {
                         type="text"
                         value={editFormData.phone}
                         onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value })}
-                        className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md"
+                        className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md min-h-[44px]"
                       />
                     </div>
                   </div>
@@ -469,7 +469,7 @@ const Companies: React.FC = () => {
                       type="text"
                       value={editFormData.address}
                       onChange={(e) => setEditFormData({ ...editFormData, address: e.target.value })}
-                      className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md"
+                      className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md min-h-[44px]"
                     />
                   </div>
 
@@ -480,7 +480,7 @@ const Companies: React.FC = () => {
                         type="text"
                         value={editFormData.city}
                         onChange={(e) => setEditFormData({ ...editFormData, city: e.target.value })}
-                        className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md"
+                        className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md min-h-[44px]"
                       />
                     </div>
                     <div>
@@ -489,7 +489,7 @@ const Companies: React.FC = () => {
                         type="text"
                         value={editFormData.state}
                         onChange={(e) => setEditFormData({ ...editFormData, state: e.target.value })}
-                        className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md"
+                        className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md min-h-[44px]"
                       />
                     </div>
                     <div>
@@ -498,12 +498,12 @@ const Companies: React.FC = () => {
                         type="text"
                         value={editFormData.zipCode}
                         onChange={(e) => setEditFormData({ ...editFormData, zipCode: e.target.value })}
-                        className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md"
+                        className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md min-h-[44px]"
                       />
                     </div>
                   </div>
 
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center gap-2">
                     <input
                       type="checkbox"
                       id="active"
@@ -518,7 +518,7 @@ const Companies: React.FC = () => {
                 </>
               )}
 
-              <div className="flex justify-end space-x-3 pt-6 border-t border-neutral-200">
+              <div className="flex justify-end gap-3 pt-6 border-t border-neutral-200">
                 <button
                   type="button"
                   onClick={() => {
@@ -527,13 +527,13 @@ const Companies: React.FC = () => {
                     setSelectedCompany(null);
                     resetForm();
                   }}
-                  className="px-6 py-2 border border-neutral-300 rounded-md text-neutral-700 hover:bg-neutral-50 transition-colors"
+                  className="px-6 py-2 border border-neutral-300 rounded-md text-neutral-700 hover:bg-neutral-50 transition-colors min-h-[44px]"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-primary-600 text-neutral-900 rounded-md hover:bg-primary-700 transition-colors"
+                  className="px-6 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors min-h-[44px]"
                 >
                   {editMode ? 'Atualizar' : 'Criar Empresa'}
                 </button>
@@ -572,19 +572,19 @@ const Companies: React.FC = () => {
               </ul>
             </div>
 
-            <div className="flex space-x-3">
+            <div className="flex gap-3">
               <button
                 onClick={() => {
                   setShowDeleteModal(false);
                   setSelectedCompany(null);
                 }}
-                className="flex-1 px-4 py-2 border border-neutral-300 rounded-md text-neutral-700 hover:bg-neutral-50 transition-colors"
+                className="flex-1 px-4 py-2 border border-neutral-300 rounded-md text-neutral-700 hover:bg-neutral-50 transition-colors min-h-[44px]"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleDeleteConfirm}
-                className="flex-1 px-4 py-2 bg-error-600 text-neutral-900 rounded-md hover:bg-error-700 transition-colors"
+                className="flex-1 px-4 py-2 bg-error-600 text-neutral-900 rounded-md hover:bg-error-700 transition-colors min-h-[44px]"
               >
                 Sim, Deletar
               </button>

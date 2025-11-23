@@ -90,13 +90,13 @@ const VerifyEmail: React.FC = () => {
                 <div className="space-y-3 w-full">
                   <button
                     onClick={() => navigate('/resend-verification')}
-                    className="w-full px-4 py-2 bg-primary-600 text-neutral-900 rounded-lg hover:bg-primary-700 transition-colors"
+                    className="w-full px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors min-h-[44px]"
                   >
                     Solicitar Novo Link
                   </button>
                   <button
                     onClick={() => navigate('/login')}
-                    className="w-full px-4 py-2 bg-neutral-200 text-neutral-800 rounded-lg hover:bg-neutral-300 transition-colors"
+                    className="w-full px-4 py-2 bg-neutral-200 text-neutral-800 rounded-lg hover:bg-neutral-300 transition-colors min-h-[44px]"
                   >
                     Voltar para Login
                   </button>

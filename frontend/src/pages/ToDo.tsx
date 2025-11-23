@@ -186,7 +186,7 @@ const ToDo: React.FC = () => {
               resetForm();
               setShowModal(true);
             }}
-            className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-primary-600 text-neutral-900 rounded-lg hover:bg-primary-700 transition-colors min-h-[44px]"
+            className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors min-h-[44px]"
           >
             <Plus size={18} className="sm:w-5 sm:h-5" />
             <span className="hidden sm:inline">Nova Tarefa</span>
@@ -211,7 +211,7 @@ const ToDo: React.FC = () => {
             <select
               value={filterCompleted}
               onChange={(e) => setFilterCompleted(e.target.value)}
-              className="px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
             >
               <option value="">Todos os status</option>
               <option value="false">Pendentes</option>
@@ -308,7 +308,7 @@ const ToDo: React.FC = () => {
                       required
                       value={formData.title}
                       onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                      className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                     />
                   </div>
 
@@ -318,7 +318,7 @@ const ToDo: React.FC = () => {
                       rows={3}
                       value={formData.description}
                       onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                     />
                   </div>
 
@@ -329,7 +329,7 @@ const ToDo: React.FC = () => {
                         type="date"
                         value={formData.dueDate}
                         onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
 
@@ -338,7 +338,7 @@ const ToDo: React.FC = () => {
                       <select
                         value={formData.priority}
                         onChange={(e) => setFormData({ ...formData, priority: e.target.value as any })}
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       >
                         <option value="LOW">Baixa</option>
                         <option value="MEDIUM">Média</option>
@@ -354,13 +354,13 @@ const ToDo: React.FC = () => {
                         setShowModal(false);
                         resetForm();
                       }}
-                      className="px-4 py-2 border border-neutral-300 rounded-md hover:bg-neutral-50"
+                      className="px-4 py-2 border border-neutral-300 rounded-md hover:bg-neutral-50 min-h-[44px]"
                     >
                       Cancelar
                     </button>
                     <button
                       type="submit"
-                      className="px-4 py-2 bg-primary-600 text-neutral-900 rounded-md hover:bg-primary-700"
+                      className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 min-h-[44px]"
                     >
                       {editMode ? 'Salvar' : 'Criar'}
                     </button>

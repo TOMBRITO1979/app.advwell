@@ -118,7 +118,7 @@ const Settings: React.FC = () => {
                     value={settings.name}
                     onChange={handleChange}
                     required
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   />
                 </div>
 
@@ -132,7 +132,7 @@ const Settings: React.FC = () => {
                     value={settings.email}
                     onChange={handleChange}
                     required
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   />
                 </div>
 
@@ -146,7 +146,7 @@ const Settings: React.FC = () => {
                     value={settings.phone || ''}
                     onChange={handleChange}
                     placeholder="(00) 0000-0000"
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   />
                 </div>
 
@@ -160,7 +160,7 @@ const Settings: React.FC = () => {
                     value={settings.logo || ''}
                     onChange={handleChange}
                     placeholder="https://exemplo.com/logo.png"
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   />
                 </div>
               </div>
@@ -183,7 +183,7 @@ const Settings: React.FC = () => {
                     value={settings.address || ''}
                     onChange={handleChange}
                     placeholder="Rua, Avenida, número"
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   />
                 </div>
 
@@ -197,7 +197,7 @@ const Settings: React.FC = () => {
                     value={settings.city || ''}
                     onChange={handleChange}
                     placeholder="Ex: São Paulo"
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   />
                 </div>
 
@@ -212,7 +212,7 @@ const Settings: React.FC = () => {
                     onChange={handleChange}
                     placeholder="Ex: SP"
                     maxLength={2}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 uppercase"
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 uppercase min-h-[44px]"
                     style={{ textTransform: 'uppercase' }}
                   />
                 </div>
@@ -227,7 +227,7 @@ const Settings: React.FC = () => {
                     value={settings.zipCode || ''}
                     onChange={handleChange}
                     placeholder="00000-000"
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   />
                 </div>
               </div>
@@ -238,7 +238,7 @@ const Settings: React.FC = () => {
               <button
                 type="submit"
                 disabled={saving}
-                className="flex items-center gap-2 bg-primary-600 text-neutral-900 px-6 py-2 rounded-md hover:bg-primary-700 disabled:bg-neutral-400 disabled:cursor-not-allowed transition-colors"
+                className="flex items-center gap-2 bg-primary-600 text-white px-6 py-2 rounded-md hover:bg-primary-700 disabled:bg-neutral-400 disabled:cursor-not-allowed transition-colors min-h-[44px]"
               >
                 <Save className="h-4 w-4" />
                 {saving ? 'Salvando...' : 'Salvar Configurações'}

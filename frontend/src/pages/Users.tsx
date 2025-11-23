@@ -192,7 +192,7 @@ const Users: React.FC = () => {
           <h1 className="text-2xl font-bold text-neutral-900">Usuários</h1>
           <button
             onClick={handleNewUser}
-            className="flex items-center space-x-2 bg-primary-600 text-neutral-900 px-4 py-2 rounded-md hover:bg-primary-700"
+            className="flex items-center gap-2 bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 min-h-[44px]"
           >
             <Plus size={20} />
             <span>Novo Usuário</span>
@@ -200,14 +200,14 @@ const Users: React.FC = () => {
         </div>
 
         <div className="bg-white rounded-lg shadow p-4">
-          <div className="flex items-center space-x-2 mb-4">
+          <div className="flex items-center gap-2 mb-4">
             <Search size={20} className="text-neutral-400" />
             <input
               type="text"
               placeholder="Buscar usuários..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="flex-1 px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+              className="flex-1 px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 min-h-[44px]"
             />
           </div>
 
@@ -244,7 +244,7 @@ const Users: React.FC = () => {
                         <div>
                           <p className="font-medium text-neutral-900">{user.name}</p>
                           {user.role === 'ADMIN' && (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-primary-100 text-primary-800 mt-1">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-primary-100 text-primary-800 mt-1 min-h-[44px]">
                               <Shield size={12} className="mr-1" />
                               Administrador
                             </span>
@@ -256,7 +256,7 @@ const Users: React.FC = () => {
                         {user.email}
                       </td>
                       <td className="px-4 py-3 text-sm text-neutral-600">
-                        <span className="text-xs bg-neutral-100 px-2 py-1 rounded">
+                        <span className="text-xs bg-neutral-100 px-2 py-1 rounded min-h-[44px]">
                           {getPermissionSummary(user.permissions)}
                         </span>
                       </td>
@@ -272,7 +272,7 @@ const Users: React.FC = () => {
                         </span>
                       </td>
                       <td className="px-4 py-3 text-sm">
-                        <div className="flex items-center justify-center space-x-2">
+                        <div className="flex items-center justify-center gap-2">
                           <button
                             onClick={() => handleEdit(user)}
                             className="text-primary-600 hover:text-primary-800 transition-colors"
@@ -304,7 +304,7 @@ const Users: React.FC = () => {
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-neutral-200 px-6 py-4 flex justify-between items-center">
+            <div className="sticky top-0 bg-white border-b border-neutral-200 px-6 py-4 flex justify-between items-center min-h-[44px]">
               <h2 className="text-xl font-bold text-neutral-900">
                 {editMode ? 'Editar Usuário' : 'Novo Usuário'}
               </h2>
@@ -334,7 +334,7 @@ const Users: React.FC = () => {
                       required
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md"
+                      className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md min-h-[44px]"
                     />
                   </div>
 
@@ -345,7 +345,7 @@ const Users: React.FC = () => {
                       required
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md"
+                      className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md min-h-[44px]"
                     />
                   </div>
 
@@ -357,7 +357,7 @@ const Users: React.FC = () => {
                         required
                         value={formData.password}
                         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                        className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md"
+                        className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md min-h-[44px]"
                       />
                     </div>
                   )}
@@ -371,7 +371,7 @@ const Users: React.FC = () => {
                   <button
                     type="button"
                     onClick={handleAddPermission}
-                    className="flex items-center space-x-1 text-primary-600 hover:text-primary-800 text-sm font-medium"
+                    className="flex items-center gap-1 text-primary-600 hover:text-primary-800 text-sm font-medium"
                   >
                     <Plus size={16} />
                     <span>Adicionar Permissão</span>
@@ -385,14 +385,14 @@ const Users: React.FC = () => {
                 ) : (
                   <div className="space-y-3">
                     {permissions.map((permission, index) => (
-                      <div key={index} className="flex items-start space-x-3 p-3 bg-neutral-50 rounded-md">
+                      <div key={index} className="flex items-start gap-3 p-3 bg-neutral-50 rounded-md">
                         <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-3">
                           <div>
                             <label className="block text-xs font-medium text-neutral-700 mb-1">Recurso</label>
                             <select
                               value={permission.resource}
                               onChange={(e) => handlePermissionChange(index, 'resource', e.target.value)}
-                              className="block w-full px-2 py-1 text-sm border border-neutral-300 rounded-md"
+                              className="block w-full px-2 py-1 text-sm border border-neutral-300 rounded-md min-h-[44px]"
                             >
                               {AVAILABLE_RESOURCES.map((res) => (
                                 <option key={res.value} value={res.value}>
@@ -402,7 +402,7 @@ const Users: React.FC = () => {
                             </select>
                           </div>
 
-                          <div className="flex items-center space-x-2">
+                          <div className="flex items-center gap-2">
                             <input
                               type="checkbox"
                               id={`view-${index}`}
@@ -416,7 +416,7 @@ const Users: React.FC = () => {
                             </label>
                           </div>
 
-                          <div className="flex items-center space-x-2">
+                          <div className="flex items-center gap-2">
                             <input
                               type="checkbox"
                               id={`edit-${index}`}
@@ -430,7 +430,7 @@ const Users: React.FC = () => {
                             </label>
                           </div>
 
-                          <div className="flex items-center space-x-2">
+                          <div className="flex items-center gap-2">
                             <input
                               type="checkbox"
                               id={`delete-${index}`}
@@ -459,7 +459,7 @@ const Users: React.FC = () => {
                 )}
               </div>
 
-              <div className="flex justify-end space-x-3 pt-6 border-t border-neutral-200">
+              <div className="flex justify-end gap-3 pt-6 border-t border-neutral-200">
                 <button
                   type="button"
                   onClick={() => {
@@ -468,13 +468,13 @@ const Users: React.FC = () => {
                     setSelectedUser(null);
                     resetForm();
                   }}
-                  className="px-6 py-2 border border-neutral-300 rounded-md text-neutral-700 hover:bg-neutral-50 transition-colors"
+                  className="px-6 py-2 border border-neutral-300 rounded-md text-neutral-700 hover:bg-neutral-50 transition-colors min-h-[44px]"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-primary-600 text-neutral-900 rounded-md hover:bg-primary-700 transition-colors"
+                  className="px-6 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors min-h-[44px]"
                 >
                   {editMode ? 'Atualizar' : 'Criar Usuário'}
                 </button>

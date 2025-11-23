@@ -286,24 +286,24 @@ const Clients: React.FC = () => {
             />
             <button
               onClick={handleNewClient}
-              className="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 rounded-lg bg-primary-600 hover:bg-primary-700 text-neutral-900 font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200 min-h-[44px]"
+              className="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 rounded-lg bg-primary-600 hover:bg-primary-700 text-white font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200 min-h-[44px]"
             >
               <Plus size={18} className="sm:w-5 sm:h-5" />
-              <span className="hidden xs:inline sm:inline">Novo</span>
-              <span className="hidden sm:inline">Cliente</span>
+              <span className="hidden sm:inline">Novo Cliente</span>
+              <span className="sm:hidden">Novo</span>
             </button>
           </div>
         </div>
 
         <div className="bg-white rounded-lg shadow p-4">
-          <div className="flex items-center space-x-2 mb-4">
+          <div className="flex items-center gap-2 mb-4">
             <Search size={20} className="text-neutral-400" />
             <input
               type="text"
               placeholder="Buscar por nome, CPF ou email..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="flex-1 px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="flex-1 px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 min-h-[44px]"
             />
           </div>
 
@@ -347,7 +347,7 @@ const Clients: React.FC = () => {
                       <td className="px-4 py-3 text-sm text-neutral-600">{client.email || '-'}</td>
                       <td className="px-4 py-3 text-sm text-neutral-600">{client.tag || '-'}</td>
                       <td className="px-4 py-3 text-sm text-center">
-                        <div className="flex items-center justify-center space-x-2">
+                        <div className="flex items-center justify-center gap-2">
                           <button
                             onClick={() => handleViewDetails(client)}
                             className="text-info-600 hover:text-info-800 transition-colors"
@@ -384,7 +384,7 @@ const Clients: React.FC = () => {
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-neutral-200 px-6 py-4 flex justify-between items-center">
+            <div className="sticky top-0 bg-white border-b border-neutral-200 px-6 py-4 flex justify-between items-center min-h-[44px]">
               <h2 className="text-xl font-bold text-neutral-900">
                 {editMode ? 'Editar Cliente' : 'Novo Cliente'}
               </h2>
@@ -416,7 +416,7 @@ const Clients: React.FC = () => {
                         required
                         value={formData.personType}
                         onChange={(e) => setFormData({ ...formData, personType: e.target.value as 'FISICA' | 'JURIDICA' })}
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       >
                         <option value="FISICA">Pessoa Física</option>
                         <option value="JURIDICA">Pessoa Jurídica</option>
@@ -432,7 +432,7 @@ const Clients: React.FC = () => {
                         required
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
 
@@ -446,7 +446,7 @@ const Clients: React.FC = () => {
                         onChange={(e) => setFormData({ ...formData, cpf: e.target.value })}
                         placeholder={formData.personType === 'FISICA' ? '000.000.000-00' : '00.000.000/0000-00'}
                         maxLength={formData.personType === 'FISICA' ? 14 : 18}
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
 
@@ -456,7 +456,7 @@ const Clients: React.FC = () => {
                         type="text"
                         value={formData.rg}
                         onChange={(e) => setFormData({ ...formData, rg: e.target.value })}
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
 
@@ -468,7 +468,7 @@ const Clients: React.FC = () => {
                         type="date"
                         value={formData.birthDate}
                         onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
 
@@ -479,7 +479,7 @@ const Clients: React.FC = () => {
                       <select
                         value={formData.maritalStatus}
                         onChange={(e) => setFormData({ ...formData, maritalStatus: e.target.value })}
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       >
                         <option value="">Selecione...</option>
                         <option value="Solteiro(a)">Solteiro(a)</option>
@@ -498,7 +498,7 @@ const Clients: React.FC = () => {
                         type="text"
                         value={formData.profession}
                         onChange={(e) => setFormData({ ...formData, profession: e.target.value })}
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
 
@@ -514,7 +514,7 @@ const Clients: React.FC = () => {
                             value={formData.representativeName}
                             onChange={(e) => setFormData({ ...formData, representativeName: e.target.value })}
                             placeholder="Nome completo do representante"
-                            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                           />
                         </div>
 
@@ -528,7 +528,7 @@ const Clients: React.FC = () => {
                             onChange={(e) => setFormData({ ...formData, representativeCpf: e.target.value })}
                             placeholder="000.000.000-00"
                             maxLength={14}
-                            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                           />
                         </div>
                       </>
@@ -546,7 +546,7 @@ const Clients: React.FC = () => {
                         type="email"
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
 
@@ -559,7 +559,7 @@ const Clients: React.FC = () => {
                         value={formData.phone}
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                         placeholder="(00) 00000-0000"
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
                   </div>
@@ -578,7 +578,7 @@ const Clients: React.FC = () => {
                         value={formData.address}
                         onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                         placeholder="Rua, número, complemento"
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
 
@@ -588,7 +588,7 @@ const Clients: React.FC = () => {
                         type="text"
                         value={formData.city}
                         onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
 
@@ -597,7 +597,7 @@ const Clients: React.FC = () => {
                       <select
                         value={formData.state}
                         onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       >
                         <option value="">Selecione...</option>
                         <option value="AC">AC</option>
@@ -637,7 +637,7 @@ const Clients: React.FC = () => {
                         value={formData.zipCode}
                         onChange={(e) => setFormData({ ...formData, zipCode: e.target.value })}
                         placeholder="00000-000"
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
                   </div>
@@ -651,7 +651,7 @@ const Clients: React.FC = () => {
                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                     rows={4}
                     placeholder="Informações adicionais sobre o cliente..."
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   />
                 </div>
 
@@ -665,12 +665,12 @@ const Clients: React.FC = () => {
                     value={formData.tag}
                     onChange={(e) => setFormData({ ...formData, tag: e.target.value })}
                     placeholder="Ex: VIP, Bronze, Prata, Ouro..."
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   />
                 </div>
               </div>
 
-              <div className="flex justify-end space-x-3 mt-6 pt-6 border-t border-neutral-200">
+              <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-neutral-200">
                 <button
                   type="button"
                   onClick={() => {
@@ -679,13 +679,13 @@ const Clients: React.FC = () => {
                     setSelectedClient(null);
                     resetForm();
                   }}
-                  className="px-6 py-2 border border-neutral-300 rounded-md text-neutral-700 hover:bg-neutral-50 transition-colors"
+                  className="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-white border border-neutral-300 hover:bg-neutral-50 text-neutral-700 rounded-lg font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200 min-h-[44px]"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-primary-600 text-neutral-900 rounded-md hover:bg-primary-700 transition-colors"
+                  className="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200 min-h-[44px]"
                 >
                   {editMode ? 'Atualizar' : 'Salvar'}
                 </button>
@@ -699,7 +699,7 @@ const Clients: React.FC = () => {
       {showDetailsModal && selectedClient && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-neutral-200 px-6 py-4 flex justify-between items-center">
+            <div className="sticky top-0 bg-white border-b border-neutral-200 px-6 py-4 flex justify-between items-center min-h-[44px]">
               <h2 className="text-xl font-bold text-neutral-900">Detalhes do Cliente</h2>
               <button
                 onClick={() => {
@@ -822,22 +822,24 @@ const Clients: React.FC = () => {
               </div>
             </div>
 
-            <div className="sticky bottom-0 bg-white border-t border-neutral-200 px-6 py-4 flex justify-end space-x-3">
+            <div className="sticky bottom-0 bg-white border-t border-neutral-200 px-6 py-4 flex justify-end gap-3 min-h-[44px]">
               <button
                 onClick={() => {
                   setShowDetailsModal(false);
                   handleEdit(selectedClient);
                 }}
-                className="px-6 py-2 bg-primary-600 text-neutral-900 rounded-md hover:bg-primary-700 transition-colors"
+                className="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200 min-h-[44px]"
               >
-                Editar Cliente
+                <Edit size={18} className="sm:w-5 sm:h-5" />
+                <span className="hidden sm:inline">Editar Cliente</span>
+                <span className="sm:hidden">Editar</span>
               </button>
               <button
                 onClick={() => {
                   setShowDetailsModal(false);
                   setSelectedClient(null);
                 }}
-                className="px-6 py-2 border border-neutral-300 rounded-md text-neutral-700 hover:bg-neutral-50 transition-colors"
+                className="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-white border border-neutral-300 hover:bg-neutral-50 text-neutral-700 rounded-lg font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200 min-h-[44px]"
               >
                 Fechar
               </button>
@@ -894,7 +896,7 @@ const Clients: React.FC = () => {
 
               <button
                 onClick={() => setShowImportModal(false)}
-                className="w-full px-4 py-2 bg-primary-600 text-neutral-900 rounded-md hover:bg-primary-700"
+                className="w-full inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-white border border-neutral-300 hover:bg-neutral-50 text-neutral-700 rounded-lg font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200 min-h-[44px]"
               >
                 Fechar
               </button>

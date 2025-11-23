@@ -143,7 +143,7 @@ const SMTPSettings: React.FC = () => {
                   value={formData.host}
                   onChange={(e) => setFormData({ ...formData, host: e.target.value })}
                   placeholder="smtp.gmail.com"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 min-h-[44px]"
                 />
               </div>
               <div>
@@ -156,7 +156,7 @@ const SMTPSettings: React.FC = () => {
                   value={formData.port}
                   onChange={(e) => setFormData({ ...formData, port: parseInt(e.target.value) })}
                   placeholder="587"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 min-h-[44px]"
                 />
               </div>
             </div>
@@ -173,7 +173,7 @@ const SMTPSettings: React.FC = () => {
                   value={formData.user}
                   onChange={(e) => setFormData({ ...formData, user: e.target.value })}
                   placeholder="seu-email@gmail.com"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 min-h-[44px]"
                 />
               </div>
               <div>
@@ -186,7 +186,7 @@ const SMTPSettings: React.FC = () => {
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   placeholder={hasConfig ? 'Deixe em branco para manter a atual' : 'Senha do SMTP'}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 min-h-[44px]"
                 />
               </div>
             </div>
@@ -203,7 +203,7 @@ const SMTPSettings: React.FC = () => {
                   value={formData.fromEmail}
                   onChange={(e) => setFormData({ ...formData, fromEmail: e.target.value })}
                   placeholder="noreply@suaempresa.com"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 min-h-[44px]"
                 />
               </div>
               <div>
@@ -215,7 +215,7 @@ const SMTPSettings: React.FC = () => {
                   value={formData.fromName}
                   onChange={(e) => setFormData({ ...formData, fromName: e.target.value })}
                   placeholder="Minha Empresa"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 min-h-[44px]"
                 />
               </div>
             </div>
@@ -226,7 +226,7 @@ const SMTPSettings: React.FC = () => {
                 type="button"
                 onClick={handleTest}
                 disabled={testing}
-                className="flex items-center gap-2 px-6 py-2 border border-blue-600 text-blue-600 rounded-md hover:bg-blue-50 transition-colors disabled:opacity-50"
+                className="flex items-center gap-2 px-6 py-2 border border-blue-600 text-blue-600 rounded-md hover:bg-blue-50 transition-colors disabled:opacity-50 min-h-[44px]"
               >
                 <RefreshCw size={18} className={testing ? 'animate-spin' : ''} />
                 {testing ? 'Testando...' : 'Testar Conexão'}
@@ -234,7 +234,7 @@ const SMTPSettings: React.FC = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="flex items-center gap-2 px-6 py-2 bg-green-600 text-neutral-900 rounded-md hover:bg-green-700 transition-colors disabled:opacity-50"
+                className="flex items-center gap-2 px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors disabled:opacity-50 min-h-[44px]"
               >
                 <Save size={18} />
                 {loading ? 'Salvando...' : 'Salvar Configuração'}

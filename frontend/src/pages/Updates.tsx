@@ -107,7 +107,7 @@ const Updates: React.FC = () => {
           </div>
         </div>
         {updates.length > 0 && (
-          <div className="bg-green-100 text-green-800 px-4 py-2 rounded-full font-semibold">
+          <div className="bg-green-100 text-green-800 px-4 py-2 rounded-full font-semibold min-h-[44px]">
             {updates.length} {updates.length === 1 ? 'atualização' : 'atualizações'}
           </div>
         )}
@@ -217,7 +217,7 @@ const Updates: React.FC = () => {
                       <button
                         onClick={() => handleAcknowledge(update.id, update.processNumber)}
                         disabled={acknowledging === update.id}
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 text-neutral-900 text-sm font-medium rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:bg-neutral-400 disabled:cursor-not-allowed transition-colors"
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:bg-neutral-400 disabled:cursor-not-allowed transition-colors min-h-[44px]"
                       >
                         {acknowledging === update.id ? (
                           <>
