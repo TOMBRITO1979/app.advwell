@@ -726,6 +726,49 @@ const Schedule: React.FC = () => {
                   </div>
                 </div>
 
+                {/* Assigned Users */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Atribuir a usuários (opcional)
+                  </label>
+                  <div className="border border-gray-300 rounded-md p-3 max-h-48 overflow-y-auto">
+                    {companyUsers.length === 0 ? (
+                      <p className="text-sm text-gray-500 italic">Nenhum usuário disponível</p>
+                    ) : (
+                      <div className="space-y-2">
+                        {companyUsers.map((user) => (
+                          <label
+                            key={user.id}
+                            className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={selectedUserIds.includes(user.id)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setSelectedUserIds([...selectedUserIds, user.id]);
+                                } else {
+                                  setSelectedUserIds(selectedUserIds.filter(id => id !== user.id));
+                                }
+                              }}
+                              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                            />
+                            <span className="text-sm text-gray-700">
+                              {user.name}
+                              <span className="text-gray-500 text-xs ml-1">({user.email})</span>
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  {selectedUserIds.length > 0 && (
+                    <p className="text-sm text-gray-600 mt-2">
+                      {selectedUserIds.length} usuário(s) selecionado(s)
+                    </p>
+                  )}
+                </div>
+
                 {/* Description */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
