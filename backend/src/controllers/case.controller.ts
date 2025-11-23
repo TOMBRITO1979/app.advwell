@@ -24,12 +24,14 @@ export class CaseController {
 
   async create(req: AuthRequest, res: Response) {
     try {
-      const { clientId, processNumber, court, subject, value, notes, informarCliente, linkProcesso } = req.body;
+      const { clientId, processNumber, court, subject, value, notes, status, deadline, informarCliente, linkProcesso } = req.body;
       const companyId = req.user!.companyId;
 
       // Converter strings vazias em null/undefined
       const cleanValue = value === '' || value === null || value === undefined ? undefined : parseFloat(value);
       const cleanLinkProcesso = linkProcesso === '' ? null : linkProcesso;
+      const cleanDeadline = deadline && deadline !== '' ? new Date(deadline) : undefined;
+      const cleanStatus = status || 'ACTIVE';
 
       if (!companyId) {
         return res.status(403).json({ error: 'Usuário não possui empresa associada' });
@@ -77,6 +79,8 @@ export class CaseController {
           processNumber,
           court: court || datajudData?.tribunal || '',
           subject: sanitizeString(subject || datajudData?.assuntos?.[0]?.nome) || '',
+          status: cleanStatus,
+          deadline: cleanDeadline,
           value: cleanValue,
           notes: sanitizeString(notes),
           ultimoAndamento,
@@ -237,7 +241,7 @@ export class CaseController {
     try {
       const { id } = req.params;
       const companyId = req.user!.companyId;
-      const { court, subject, value, status, notes, informarCliente, linkProcesso } = req.body;
+      const { court, subject, value, status, deadline, notes, informarCliente, linkProcesso } = req.body;
 
       const caseData = await prisma.case.findFirst({
         where: {
@@ -250,6 +254,9 @@ export class CaseController {
         return res.status(404).json({ error: 'Processo não encontrado' });
       }
 
+      // Converter deadline se fornecido
+      const cleanDeadline = deadline && deadline !== '' ? new Date(deadline) : undefined;
+
       const updatedCase = await prisma.case.update({
         where: { id },
         data: {
@@ -257,6 +264,7 @@ export class CaseController {
           ...(subject !== undefined && { subject: sanitizeString(subject) || '' }),
           value,
           status,
+          ...(deadline !== undefined && { deadline: cleanDeadline }),
           notes: sanitizeString(notes),
           ...(informarCliente !== undefined && { informarCliente: sanitizeString(informarCliente) }),
           ...(linkProcesso !== undefined && { linkProcesso }),
