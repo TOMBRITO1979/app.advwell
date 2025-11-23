@@ -386,7 +386,7 @@ const Financial: React.FC = () => {
             />
             <button
               onClick={handleNew}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-primary-600 hover:bg-primary-700 text-white font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200 min-h-[44px]"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-primary-600 hover:bg-primary-700 text-neutral-900 font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200 min-h-[44px]"
             >
               <Plus size={20} />
               <span>Nova Transação</span>
@@ -813,7 +813,7 @@ const Financial: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors"
+                  className="px-6 py-2 bg-primary-600 text-neutral-900 rounded-md hover:bg-primary-700 transition-colors"
                 >
                   {editMode ? 'Atualizar' : 'Salvar'}
                 </button>

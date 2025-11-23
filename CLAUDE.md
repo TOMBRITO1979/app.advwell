@@ -11,8 +11,8 @@ AdvWell is a multitenant SaaS for Brazilian law firms with DataJud CNJ integrati
 - Backend API: https://api.advwell.pro
 
 **Current Versions:**
-- Backend: v51-templates - Email campaigns with templates
-- Frontend: v41-menu-reorder - Menu reordering (Dashboard, Agenda, Clientes, Processos, Uploads)
+- Backend: v52-user-profile - User profile management with photo upload
+- Frontend: v62-all-pages-light - Fixed all pages to use light theme (white backgrounds, dark text)
 - Database: PostgreSQL 16
 
 **Key Features:**

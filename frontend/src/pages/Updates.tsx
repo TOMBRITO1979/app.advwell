@@ -217,7 +217,7 @@ const Updates: React.FC = () => {
                       <button
                         onClick={() => handleAcknowledge(update.id, update.processNumber)}
                         disabled={acknowledging === update.id}
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:bg-neutral-400 disabled:cursor-not-allowed transition-colors"
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 text-neutral-900 text-sm font-medium rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:bg-neutral-400 disabled:cursor-not-allowed transition-colors"
                       >
                         {acknowledging === update.id ? (
                           <>
