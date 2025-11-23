@@ -193,7 +193,7 @@ const Companies: React.FC = () => {
           <h1 className="text-2xl font-bold text-neutral-900">Empresas</h1>
           <button
             onClick={handleNewCompany}
-            className="flex items-center space-x-2 bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700"
+            className="flex items-center space-x-2 bg-primary-600 text-neutral-900 px-4 py-2 rounded-md hover:bg-primary-700"
           >
             <Plus size={20} />
             <span>Nova Empresa</span>
@@ -533,7 +533,7 @@ const Companies: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors"
+                  className="px-6 py-2 bg-primary-600 text-neutral-900 rounded-md hover:bg-primary-700 transition-colors"
                 >
                   {editMode ? 'Atualizar' : 'Criar Empresa'}
                 </button>
@@ -584,7 +584,7 @@ const Companies: React.FC = () => {
               </button>
               <button
                 onClick={handleDeleteConfirm}
-                className="flex-1 px-4 py-2 bg-error-600 text-white rounded-md hover:bg-error-700 transition-colors"
+                className="flex-1 px-4 py-2 bg-error-600 text-neutral-900 rounded-md hover:bg-error-700 transition-colors"
               >
                 Sim, Deletar
               </button>

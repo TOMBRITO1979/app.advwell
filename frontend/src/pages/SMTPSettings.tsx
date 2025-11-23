@@ -105,10 +105,10 @@ const SMTPSettings: React.FC = () => {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-3xl font-bold text-gray-900">
               Configuração SMTP
             </h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-gray-600 mt-1">
               Configure o servidor SMTP para envio de campanhas de email
             </p>
           </div>
@@ -116,11 +116,11 @@ const SMTPSettings: React.FC = () => {
         </div>
 
         {/* Info Box */}
-        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-          <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <h3 className="font-semibold text-blue-900 mb-2">
             ℹ️ Informações Importantes
           </h3>
-          <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
+          <ul className="text-sm text-blue-800 space-y-1">
             <li>• Esta configuração será usada apenas para campanhas de email em massa</li>
             <li>• Emails do sistema (redefinição de senha) continuam usando o SMTP global</li>
             <li>• A senha é criptografada com AES-256 e nunca é exposta</li>
@@ -129,12 +129,12 @@ const SMTPSettings: React.FC = () => {
         </div>
 
         {/* Formulário */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div className="bg-white rounded-lg shadow p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Host e Porta */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Host SMTP *
                 </label>
                 <input
@@ -143,11 +143,11 @@ const SMTPSettings: React.FC = () => {
                   value={formData.host}
                   onChange={(e) => setFormData({ ...formData, host: e.target.value })}
                   placeholder="smtp.gmail.com"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Porta *
                 </label>
                 <input
@@ -156,7 +156,7 @@ const SMTPSettings: React.FC = () => {
                   value={formData.port}
                   onChange={(e) => setFormData({ ...formData, port: parseInt(e.target.value) })}
                   placeholder="587"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500"
                 />
               </div>
             </div>
@@ -164,7 +164,7 @@ const SMTPSettings: React.FC = () => {
             {/* Usuário e Senha */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Usuário *
                 </label>
                 <input
@@ -173,11 +173,11 @@ const SMTPSettings: React.FC = () => {
                   value={formData.user}
                   onChange={(e) => setFormData({ ...formData, user: e.target.value })}
                   placeholder="seu-email@gmail.com"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Senha {hasConfig ? '' : '*'}
                 </label>
                 <input
@@ -186,7 +186,7 @@ const SMTPSettings: React.FC = () => {
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   placeholder={hasConfig ? 'Deixe em branco para manter a atual' : 'Senha do SMTP'}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500"
                 />
               </div>
             </div>
@@ -194,7 +194,7 @@ const SMTPSettings: React.FC = () => {
             {/* Email Remetente */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Email Remetente *
                 </label>
                 <input
@@ -203,11 +203,11 @@ const SMTPSettings: React.FC = () => {
                   value={formData.fromEmail}
                   onChange={(e) => setFormData({ ...formData, fromEmail: e.target.value })}
                   placeholder="noreply@suaempresa.com"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Nome Remetente
                 </label>
                 <input
@@ -215,18 +215,18 @@ const SMTPSettings: React.FC = () => {
                   value={formData.fromName}
                   onChange={(e) => setFormData({ ...formData, fromName: e.target.value })}
                   placeholder="Minha Empresa"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500"
                 />
               </div>
             </div>
 
             {/* Botões */}
-            <div className="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex gap-3 pt-4 border-t border-gray-200">
               <button
                 type="button"
                 onClick={handleTest}
                 disabled={testing}
-                className="flex items-center gap-2 px-6 py-2 border border-blue-600 text-blue-600 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors disabled:opacity-50"
+                className="flex items-center gap-2 px-6 py-2 border border-blue-600 text-blue-600 rounded-md hover:bg-blue-50 transition-colors disabled:opacity-50"
               >
                 <RefreshCw size={18} className={testing ? 'animate-spin' : ''} />
                 {testing ? 'Testando...' : 'Testar Conexão'}
@@ -234,7 +234,7 @@ const SMTPSettings: React.FC = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="flex items-center gap-2 px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors disabled:opacity-50"
+                className="flex items-center gap-2 px-6 py-2 bg-green-600 text-neutral-900 rounded-md hover:bg-green-700 transition-colors disabled:opacity-50"
               >
                 <Save size={18} />
                 {loading ? 'Salvando...' : 'Salvar Configuração'}
@@ -244,22 +244,22 @@ const SMTPSettings: React.FC = () => {
         </div>
 
         {/* Portas Comuns */}
-        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-          <h3 className="font-semibold text-gray-900 dark:text-white mb-3">
+        <div className="bg-gray-50 rounded-lg p-4">
+          <h3 className="font-semibold text-gray-900 mb-3">
             📌 Portas SMTP Comuns
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
-            <div className="bg-white dark:bg-gray-700 p-3 rounded">
-              <div className="font-medium text-gray-900 dark:text-white">Porta 587</div>
-              <div className="text-gray-600 dark:text-gray-400">STARTTLS (Recomendado)</div>
+            <div className="bg-white p-3 rounded">
+              <div className="font-medium text-gray-900">Porta 587</div>
+              <div className="text-gray-600">STARTTLS (Recomendado)</div>
             </div>
-            <div className="bg-white dark:bg-gray-700 p-3 rounded">
-              <div className="font-medium text-gray-900 dark:text-white">Porta 465</div>
-              <div className="text-gray-600 dark:text-gray-400">SSL/TLS</div>
+            <div className="bg-white p-3 rounded">
+              <div className="font-medium text-gray-900">Porta 465</div>
+              <div className="text-gray-600">SSL/TLS</div>
             </div>
-            <div className="bg-white dark:bg-gray-700 p-3 rounded">
-              <div className="font-medium text-gray-900 dark:text-white">Porta 25</div>
-              <div className="text-gray-600 dark:text-gray-400">Sem criptografia (não recomendado)</div>
+            <div className="bg-white p-3 rounded">
+              <div className="font-medium text-gray-900">Porta 25</div>
+              <div className="text-gray-600">Sem criptografia (não recomendado)</div>
             </div>
           </div>
         </div>

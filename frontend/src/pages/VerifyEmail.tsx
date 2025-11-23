@@ -90,7 +90,7 @@ const VerifyEmail: React.FC = () => {
                 <div className="space-y-3 w-full">
                   <button
                     onClick={() => navigate('/resend-verification')}
-                    className="w-full px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+                    className="w-full px-4 py-2 bg-primary-600 text-neutral-900 rounded-lg hover:bg-primary-700 transition-colors"
                   >
                     Solicitar Novo Link
                   </button>

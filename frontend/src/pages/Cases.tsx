@@ -535,7 +535,7 @@ const Cases: React.FC = () => {
             />
             <button
               onClick={handleNewCase}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-primary-600 hover:bg-primary-700 text-white font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200 min-h-[44px]"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-primary-600 hover:bg-primary-700 text-neutral-900 font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200 min-h-[44px]"
             >
               <Plus size={20} />
               <span>Novo Processo</span>
@@ -1002,7 +1002,7 @@ const Cases: React.FC = () => {
                       <button
                         type="button"
                         onClick={handleAddPart}
-                        className="px-3 py-1.5 text-sm bg-primary-600 text-white rounded-md hover:bg-primary-700"
+                        className="px-3 py-1.5 text-sm bg-primary-600 text-neutral-900 rounded-md hover:bg-primary-700"
                       >
                         {editingPartIndex !== null ? 'Atualizar' : 'Adicionar'}
                       </button>
@@ -1026,7 +1026,7 @@ const Cases: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors"
+                  className="px-6 py-2 bg-primary-600 text-neutral-900 rounded-md hover:bg-primary-700 transition-colors"
                 >
                   {editMode ? 'Atualizar' : 'Salvar'}
                 </button>
@@ -1126,7 +1126,7 @@ const Cases: React.FC = () => {
                       <div className="flex gap-3 flex-wrap">
                         <button
                           onClick={() => handleSync(selectedCase.id)}
-                          className="flex items-center space-x-2 px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors"
+                          className="flex items-center space-x-2 px-4 py-2 bg-primary-600 text-neutral-900 rounded-md hover:bg-primary-700 transition-colors"
                         >
                           <RefreshCw size={16} />
                           <span>Sincronizar Agora</span>
@@ -1135,7 +1135,7 @@ const Cases: React.FC = () => {
                         <button
                           onClick={() => handleGenerateSummary(selectedCase.id)}
                           disabled={generatingSummary}
-                          className="flex items-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:bg-neutral-400 disabled:cursor-not-allowed transition-colors"
+                          className="flex items-center space-x-2 px-4 py-2 bg-purple-600 text-neutral-900 rounded-md hover:bg-purple-700 disabled:bg-neutral-400 disabled:cursor-not-allowed transition-colors"
                           title="Gerar resumo com Inteligência Artificial"
                         >
                           {generatingSummary ? (
@@ -1345,14 +1345,14 @@ const Cases: React.FC = () => {
                         setShowDetailsModal(false);
                         handleEdit(selectedCase as Case);
                       }}
-                      className="flex items-center space-x-2 px-6 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors"
+                      className="flex items-center space-x-2 px-6 py-2 bg-primary-600 text-neutral-900 rounded-md hover:bg-primary-700 transition-colors"
                     >
                       <Edit size={16} />
                       <span>Editar Processo</span>
                     </button>
                     <button
                       onClick={() => handleDelete(selectedCase as Case)}
-                      className="flex items-center space-x-2 px-6 py-2 bg-error-600 text-white rounded-md hover:bg-error-700 transition-colors"
+                      className="flex items-center space-x-2 px-6 py-2 bg-error-600 text-neutral-900 rounded-md hover:bg-error-700 transition-colors"
                     >
                       <Trash2 size={16} />
                       <span>Excluir Processo</span>
@@ -1539,7 +1539,7 @@ const Cases: React.FC = () => {
               </button>
               <button
                 onClick={handleSaveEditedPart}
-                className="px-6 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors"
+                className="px-6 py-2 bg-primary-600 text-neutral-900 rounded-md hover:bg-primary-700 transition-colors"
               >
                 Salvar Alterações
               </button>
@@ -1596,7 +1596,7 @@ const Cases: React.FC = () => {
 
               <button
                 onClick={() => setShowImportModal(false)}
-                className="w-full px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700"
+                className="w-full px-4 py-2 bg-primary-600 text-neutral-900 rounded-md hover:bg-primary-700"
               >
                 Fechar
               </button>
@@ -1674,7 +1674,7 @@ const Cases: React.FC = () => {
               <div className="mt-6 flex justify-end">
                 <button
                   onClick={() => setShowAndamentoModal(false)}
-                  className="px-4 py-2 bg-neutral-500 text-white rounded hover:bg-neutral-600 transition-colors"
+                  className="px-4 py-2 bg-neutral-500 text-neutral-900 rounded hover:bg-neutral-600 transition-colors"
                 >
                   Fechar
                 </button>

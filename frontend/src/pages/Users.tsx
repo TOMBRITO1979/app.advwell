@@ -192,7 +192,7 @@ const Users: React.FC = () => {
           <h1 className="text-2xl font-bold text-neutral-900">Usuários</h1>
           <button
             onClick={handleNewUser}
-            className="flex items-center space-x-2 bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700"
+            className="flex items-center space-x-2 bg-primary-600 text-neutral-900 px-4 py-2 rounded-md hover:bg-primary-700"
           >
             <Plus size={20} />
             <span>Novo Usuário</span>
@@ -474,7 +474,7 @@ const Users: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors"
+                  className="px-6 py-2 bg-primary-600 text-neutral-900 rounded-md hover:bg-primary-700 transition-colors"
                 >
                   {editMode ? 'Atualizar' : 'Criar Usuário'}
                 </button>

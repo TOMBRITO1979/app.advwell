@@ -304,7 +304,7 @@ const Schedule: React.FC = () => {
             resetForm();
             setShowModal(true);
           }}
-          className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors min-h-[44px]"
+          className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-primary-600 text-neutral-900 rounded-lg hover:bg-primary-700 transition-colors min-h-[44px]"
         >
           <Plus size={18} className="sm:w-5 sm:h-5" />
           <span className="hidden sm:inline">Novo Evento</span>
@@ -313,17 +313,17 @@ const Schedule: React.FC = () => {
       </div>
 
       {/* Filters */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+      <div className="bg-white rounded-lg shadow p-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Search */}
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-500" size={20} />
             <input
               type="text"
               placeholder="Buscar eventos..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
@@ -331,7 +331,7 @@ const Schedule: React.FC = () => {
           <select
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="">Todos os tipos</option>
             <option value="COMPROMISSO">Compromisso</option>
@@ -344,7 +344,7 @@ const Schedule: React.FC = () => {
           <select
             value={filterCompleted}
             onChange={(e) => setFilterCompleted(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="">Todos os status</option>
             <option value="false">Pendentes</option>
@@ -354,7 +354,7 @@ const Schedule: React.FC = () => {
       </div>
 
       {/* Events List */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+      <div className="bg-white rounded-lg shadow overflow-hidden">
         {loading ? (
           <div className="p-8 text-center text-gray-500">Carregando...</div>
         ) : events.length === 0 ? (
@@ -363,39 +363,39 @@ const Schedule: React.FC = () => {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead className="bg-gray-50 dark:bg-gray-700">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Tipo
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Título
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Data
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Cliente
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Processo
                   </th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Ações
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody className="bg-white divide-y divide-gray-200">
                 {events.map((event) => (
-                  <tr key={event.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                  <tr key={event.id} className="hover:bg-gray-50">
                     <td className="px-4 py-3">
                       <button
                         onClick={() => handleToggleComplete(event)}
-                        className="text-gray-600 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 transition-colors"
+                        className="text-gray-600 hover:text-blue-600 transition-colors"
                         title={event.completed ? 'Marcar como pendente' : 'Marcar como concluído'}
                       >
                         {event.completed ? (
@@ -411,17 +411,17 @@ const Schedule: React.FC = () => {
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <div className={event.completed ? 'line-through text-gray-400' : 'text-gray-900 dark:text-white'}>
+                      <div className={event.completed ? 'line-through text-neutral-500' : 'text-gray-900'}>
                         {event.title}
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
+                    <td className="px-4 py-3 text-sm text-gray-600">
                       {formatDateTime(event.date)}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
+                    <td className="px-4 py-3 text-sm text-gray-600">
                       {event.client?.name || '-'}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
+                    <td className="px-4 py-3 text-sm text-gray-600">
                       {event.case?.processNumber || '-'}
                     </td>
                     <td className="px-4 py-3">
@@ -433,7 +433,7 @@ const Schedule: React.FC = () => {
                                 navigator.clipboard.writeText(event.googleMeetLink!);
                                 toast.success('Link do Google Meet copiado!');
                               }}
-                              className="text-orange-600 hover:text-orange-800 dark:text-orange-400 dark:hover:text-orange-300 transition-colors"
+                              className="text-orange-600 hover:text-orange-800 transition-colors"
                               title="Copiar link do Google Meet"
                             >
                               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -443,7 +443,7 @@ const Schedule: React.FC = () => {
                             </button>
                             <button
                               onClick={() => window.open(event.googleMeetLink, '_blank')}
-                              className="text-purple-600 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300 transition-colors"
+                              className="text-purple-600 hover:text-purple-800 transition-colors"
                               title="Abrir no Google Calendar"
                             >
                               <Calendar size={18} />
@@ -452,21 +452,21 @@ const Schedule: React.FC = () => {
                         )}
                         <button
                           onClick={() => handleView(event)}
-                          className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+                          className="text-blue-600 hover:text-blue-800 transition-colors"
                           title="Ver detalhes"
                         >
                           <Eye size={18} />
                         </button>
                         <button
                           onClick={() => handleEdit(event)}
-                          className="text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 transition-colors"
+                          className="text-green-600 hover:text-green-800 transition-colors"
                           title="Editar"
                         >
                           <Edit2 size={18} />
                         </button>
                         <button
                           onClick={() => handleDelete(event.id)}
-                          className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 transition-colors"
+                          className="text-red-600 hover:text-red-800 transition-colors"
                           title="Excluir"
                         >
                           <Trash2 size={18} />
@@ -484,16 +484,16 @@ const Schedule: React.FC = () => {
       {/* Create/Edit Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="p-6">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
                 {editingEvent ? 'Editar Evento' : 'Novo Evento'}
               </h2>
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Title */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Título *
                   </label>
                   <input
@@ -501,21 +501,21 @@ const Schedule: React.FC = () => {
                     required
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Ex: Reunião com cliente"
                   />
                 </div>
 
                 {/* Type */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Tipo *
                   </label>
                   <select
                     required
                     value={formData.type}
                     onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="COMPROMISSO">Compromisso</option>
                     <option value="TAREFA">Tarefa</option>
@@ -528,7 +528,7 @@ const Schedule: React.FC = () => {
                 {/* Date and Time */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
                       Data e Hora *
                     </label>
                     <input
@@ -536,18 +536,18 @@ const Schedule: React.FC = () => {
                       required
                       value={formData.date}
                       onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
                       Data/Hora Término (opcional)
                     </label>
                     <input
                       type="datetime-local"
                       value={formData.endDate}
                       onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
                 </div>
@@ -556,7 +556,7 @@ const Schedule: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Client Autocomplete */}
                   <div className="relative">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
                       Cliente (opcional)
                     </label>
                     <input
@@ -565,11 +565,11 @@ const Schedule: React.FC = () => {
                       onChange={(e) => setClientSearchTerm(e.target.value)}
                       onFocus={() => setShowClientSuggestions(true)}
                       onBlur={() => setTimeout(() => setShowClientSuggestions(false), 200)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="Digite o nome ou CPF do cliente..."
                     />
                     {showClientSuggestions && clientSuggestions.length > 0 && (
-                      <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                      <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
                         {clientSuggestions.map((client) => (
                           <div
                             key={client.id}
@@ -578,16 +578,16 @@ const Schedule: React.FC = () => {
                               setClientSearchTerm(client.name);
                               setShowClientSuggestions(false);
                             }}
-                            className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer"
+                            className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
                           >
-                            <div className="font-medium text-gray-900 dark:text-white">{client.name}</div>
-                            {client.cpf && <div className="text-sm text-gray-500 dark:text-gray-400">CPF: {client.cpf}</div>}
+                            <div className="font-medium text-gray-900">{client.name}</div>
+                            {client.cpf && <div className="text-sm text-gray-500">CPF: {client.cpf}</div>}
                           </div>
                         ))}
                       </div>
                     )}
                     {selectedClient && (
-                      <div className="mt-1 text-sm text-green-600 dark:text-green-400">
+                      <div className="mt-1 text-sm text-green-600">
                         ✓ {selectedClient.name} selecionado
                       </div>
                     )}
@@ -595,7 +595,7 @@ const Schedule: React.FC = () => {
 
                   {/* Case Autocomplete */}
                   <div className="relative">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
                       Processo (opcional)
                     </label>
                     <input
@@ -604,11 +604,11 @@ const Schedule: React.FC = () => {
                       onChange={(e) => setCaseSearchTerm(e.target.value)}
                       onFocus={() => setShowCaseSuggestions(true)}
                       onBlur={() => setTimeout(() => setShowCaseSuggestions(false), 200)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="Digite o número ou assunto do processo..."
                     />
                     {showCaseSuggestions && caseSuggestions.length > 0 && (
-                      <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                      <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
                         {caseSuggestions.map((caseItem) => (
                           <div
                             key={caseItem.id}
@@ -617,16 +617,16 @@ const Schedule: React.FC = () => {
                               setCaseSearchTerm(caseItem.processNumber);
                               setShowCaseSuggestions(false);
                             }}
-                            className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer"
+                            className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
                           >
-                            <div className="font-medium text-gray-900 dark:text-white">{caseItem.processNumber}</div>
-                            <div className="text-sm text-gray-500 dark:text-gray-400">{caseItem.subject}</div>
+                            <div className="font-medium text-gray-900">{caseItem.processNumber}</div>
+                            <div className="text-sm text-gray-500">{caseItem.subject}</div>
                           </div>
                         ))}
                       </div>
                     )}
                     {selectedCase && (
-                      <div className="mt-1 text-sm text-green-600 dark:text-green-400">
+                      <div className="mt-1 text-sm text-green-600">
                         ✓ {selectedCase.processNumber} selecionado
                       </div>
                     )}
@@ -635,14 +635,14 @@ const Schedule: React.FC = () => {
 
                 {/* Description */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Descrição
                   </label>
                   <textarea
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Detalhes adicionais..."
                   />
                 </div>
@@ -652,7 +652,7 @@ const Schedule: React.FC = () => {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                    className="flex-1 px-4 py-2 bg-blue-600 text-neutral-900 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
                   >
                     {loading ? 'Salvando...' : editingEvent ? 'Atualizar' : 'Criar'}
                   </button>
@@ -676,20 +676,20 @@ const Schedule: React.FC = () => {
       {/* View Modal */}
       {showViewModal && viewingEvent && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl">
             <div className="p-6">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
                 Detalhes do Evento
               </h2>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-500 dark:text-gray-400">Título</label>
-                  <p className="text-gray-900 dark:text-white text-lg">{viewingEvent.title}</p>
+                  <label className="block text-sm font-medium text-gray-500">Título</label>
+                  <p className="text-gray-900 text-lg">{viewingEvent.title}</p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-500 dark:text-gray-400">Tipo</label>
+                  <label className="block text-sm font-medium text-gray-500">Tipo</label>
                   <span className={`inline-block px-3 py-1 text-sm font-medium rounded-full ${eventTypeColors[viewingEvent.type]}`}>
                     {eventTypeLabels[viewingEvent.type]}
                   </span>
@@ -697,45 +697,45 @@ const Schedule: React.FC = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-500 dark:text-gray-400">Data/Hora Início</label>
-                    <p className="text-gray-900 dark:text-white">{formatDateTime(viewingEvent.date)}</p>
+                    <label className="block text-sm font-medium text-gray-500">Data/Hora Início</label>
+                    <p className="text-gray-900">{formatDateTime(viewingEvent.date)}</p>
                   </div>
                   {viewingEvent.endDate && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-500 dark:text-gray-400">Data/Hora Término</label>
-                      <p className="text-gray-900 dark:text-white">{formatDateTime(viewingEvent.endDate)}</p>
+                      <label className="block text-sm font-medium text-gray-500">Data/Hora Término</label>
+                      <p className="text-gray-900">{formatDateTime(viewingEvent.endDate)}</p>
                     </div>
                   )}
                 </div>
 
                 {viewingEvent.client && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-500 dark:text-gray-400">Cliente</label>
-                    <p className="text-gray-900 dark:text-white">{viewingEvent.client.name}</p>
+                    <label className="block text-sm font-medium text-gray-500">Cliente</label>
+                    <p className="text-gray-900">{viewingEvent.client.name}</p>
                     {viewingEvent.client.cpf && (
-                      <p className="text-sm text-gray-600 dark:text-gray-400">CPF: {viewingEvent.client.cpf}</p>
+                      <p className="text-sm text-gray-600">CPF: {viewingEvent.client.cpf}</p>
                     )}
                   </div>
                 )}
 
                 {viewingEvent.case && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-500 dark:text-gray-400">Processo</label>
-                    <p className="text-gray-900 dark:text-white">{viewingEvent.case.processNumber}</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">{viewingEvent.case.subject}</p>
+                    <label className="block text-sm font-medium text-gray-500">Processo</label>
+                    <p className="text-gray-900">{viewingEvent.case.processNumber}</p>
+                    <p className="text-sm text-gray-600">{viewingEvent.case.subject}</p>
                   </div>
                 )}
 
                 {viewingEvent.description && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-500 dark:text-gray-400">Descrição</label>
-                    <p className="text-gray-900 dark:text-white whitespace-pre-wrap">{viewingEvent.description}</p>
+                    <label className="block text-sm font-medium text-gray-500">Descrição</label>
+                    <p className="text-gray-900 whitespace-pre-wrap">{viewingEvent.description}</p>
                   </div>
                 )}
 
                 {viewingEvent.type === 'GOOGLE_MEET' && viewingEvent.googleMeetLink && (
-                  <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-700 rounded-lg p-4">
-                    <label className="block text-sm font-medium text-orange-800 dark:text-orange-300 mb-2">
+                  <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                    <label className="block text-sm font-medium text-orange-800 mb-2">
                       🎥 Link do Google Meet
                     </label>
                     <div className="flex gap-2">
@@ -743,33 +743,33 @@ const Schedule: React.FC = () => {
                         type="text"
                         readOnly
                         value={viewingEvent.googleMeetLink}
-                        className="flex-1 px-3 py-2 border border-orange-300 dark:border-orange-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                        className="flex-1 px-3 py-2 border border-orange-300 rounded-md bg-white text-gray-900 text-sm"
                       />
                       <button
                         onClick={() => {
                           navigator.clipboard.writeText(viewingEvent.googleMeetLink!);
                           toast.success('Link copiado!');
                         }}
-                        className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-md transition-colors"
+                        className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-neutral-900 rounded-md transition-colors"
                       >
                         Copiar
                       </button>
                       <button
                         onClick={() => window.open(viewingEvent.googleMeetLink, '_blank')}
-                        className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md transition-colors"
+                        className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-neutral-900 rounded-md transition-colors"
                       >
                         Abrir
                       </button>
                     </div>
-                    <p className="text-xs text-orange-600 dark:text-orange-400 mt-2">
+                    <p className="text-xs text-orange-600 mt-2">
                       Clique em "Abrir" para criar o evento no Google Calendar. Após criar, clique em "Adicionar Google Meet" para gerar o link da reunião.
                     </p>
                   </div>
                 )}
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-500 dark:text-gray-400">Status</label>
-                  <p className="text-gray-900 dark:text-white">
+                  <label className="block text-sm font-medium text-gray-500">Status</label>
+                  <p className="text-gray-900">
                     {viewingEvent.completed ? (
                       <span className="text-green-600 flex items-center gap-1">
                         <CheckCircle size={16} /> Concluído
@@ -784,8 +784,8 @@ const Schedule: React.FC = () => {
 
                 {viewingEvent.user && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-500 dark:text-gray-400">Criado por</label>
-                    <p className="text-gray-900 dark:text-white">{viewingEvent.user.name}</p>
+                    <label className="block text-sm font-medium text-gray-500">Criado por</label>
+                    <p className="text-gray-900">{viewingEvent.user.name}</p>
                   </div>
                 )}
               </div>
@@ -796,7 +796,7 @@ const Schedule: React.FC = () => {
                     setShowViewModal(false);
                     handleEdit(viewingEvent);
                   }}
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  className="flex-1 px-4 py-2 bg-blue-600 text-neutral-900 rounded-lg hover:bg-blue-700 transition-colors"
                 >
                   Editar
                 </button>

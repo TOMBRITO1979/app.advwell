@@ -238,7 +238,7 @@ const Settings: React.FC = () => {
               <button
                 type="submit"
                 disabled={saving}
-                className="flex items-center gap-2 bg-primary-600 text-white px-6 py-2 rounded-md hover:bg-primary-700 disabled:bg-neutral-400 disabled:cursor-not-allowed transition-colors"
+                className="flex items-center gap-2 bg-primary-600 text-neutral-900 px-6 py-2 rounded-md hover:bg-primary-700 disabled:bg-neutral-400 disabled:cursor-not-allowed transition-colors"
               >
                 <Save className="h-4 w-4" />
                 {saving ? 'Salvando...' : 'Salvar Configurações'}

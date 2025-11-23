@@ -138,22 +138,22 @@ const Profile: React.FC = () => {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+          <h1 className="text-3xl font-bold text-neutral-900 flex items-center gap-2">
             <User className="text-primary-600" />
             Meu Perfil
           </h1>
-          <p className="text-neutral-600 dark:text-neutral-400 mt-1">
+          <p className="text-neutral-600 mt-1">
             Gerencie suas informações pessoais
           </p>
         </div>
 
         {/* Profile Card */}
-        <div className="bg-white dark:bg-neutral-800 rounded-lg shadow p-6">
+        <div className="bg-white rounded-lg shadow p-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Photo Section */}
             <div className="flex flex-col items-center space-y-4">
               <div className="relative">
-                <div className="w-32 h-32 rounded-full overflow-hidden bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center">
+                <div className="w-32 h-32 rounded-full overflow-hidden bg-neutral-200 flex items-center justify-center">
                   {profile?.profilePhotoUrl ? (
                     <img
                       src={profile.profilePhotoUrl}
@@ -166,7 +166,7 @@ const Profile: React.FC = () => {
                 </div>
                 <label
                   htmlFor="photo-upload"
-                  className="absolute bottom-0 right-0 bg-primary-600 hover:bg-primary-700 text-white p-2 rounded-full cursor-pointer shadow-lg transition-colors"
+                  className="absolute bottom-0 right-0 bg-primary-600 hover:bg-primary-700 text-neutral-900 p-2 rounded-full cursor-pointer shadow-lg transition-colors"
                 >
                   <Camera size={20} />
                   <input
@@ -183,14 +183,14 @@ const Profile: React.FC = () => {
                 <p className="text-sm text-neutral-600">Enviando foto...</p>
               )}
               <div className="text-center">
-                <h2 className="text-xl font-semibold text-neutral-900 dark:text-white">
+                <h2 className="text-xl font-semibold text-neutral-900">
                   {profile?.name}
                 </h2>
-                <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                <p className="text-sm text-neutral-600">
                   {getRoleName(profile?.role || '')}
                 </p>
                 {profile?.company && (
-                  <p className="text-sm text-primary-600 dark:text-primary-400 mt-1">
+                  <p className="text-sm text-primary-600 mt-1">
                     {profile.company.name}
                   </p>
                 )}
@@ -202,7 +202,7 @@ const Profile: React.FC = () => {
               <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Name */}
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">
                     Nome Completo *
                   </label>
                   <div className="relative">
@@ -212,7 +212,7 @@ const Profile: React.FC = () => {
                       required
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full pl-10 pr-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-neutral-700 dark:border-neutral-600 dark:text-white"
+                      className="w-full pl-10 pr-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                       placeholder="Seu nome completo"
                     />
                   </div>
@@ -220,7 +220,7 @@ const Profile: React.FC = () => {
 
                 {/* Email (read-only) */}
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">
                     Email
                   </label>
                   <div className="relative">
@@ -229,7 +229,7 @@ const Profile: React.FC = () => {
                       type="email"
                       value={profile?.email}
                       disabled
-                      className="w-full pl-10 pr-4 py-2 border border-neutral-300 rounded-lg bg-neutral-100 dark:bg-neutral-700 dark:border-neutral-600 dark:text-white cursor-not-allowed"
+                      className="w-full pl-10 pr-4 py-2 border border-neutral-300 rounded-lg bg-neutral-100 cursor-not-allowed"
                     />
                   </div>
                   <p className="text-xs text-neutral-500 mt-1">
@@ -240,7 +240,7 @@ const Profile: React.FC = () => {
                 {/* Phone and Mobile */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">
                       Telefone Fixo
                     </label>
                     <div className="relative">
@@ -249,14 +249,14 @@ const Profile: React.FC = () => {
                         type="tel"
                         value={formData.phone}
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                        className="w-full pl-10 pr-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-neutral-700 dark:border-neutral-600 dark:text-white"
+                        className="w-full pl-10 pr-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                         placeholder="(00) 0000-0000"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">
                       Celular
                     </label>
                     <div className="relative">
@@ -265,7 +265,7 @@ const Profile: React.FC = () => {
                         type="tel"
                         value={formData.mobile}
                         onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
-                        className="w-full pl-10 pr-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-neutral-700 dark:border-neutral-600 dark:text-white"
+                        className="w-full pl-10 pr-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                         placeholder="(00) 00000-0000"
                       />
                     </div>
@@ -274,7 +274,7 @@ const Profile: React.FC = () => {
 
                 {/* Birth Date */}
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">
                     Data de Nascimento
                   </label>
                   <div className="relative">
@@ -283,7 +283,7 @@ const Profile: React.FC = () => {
                       type="date"
                       value={formData.birthDate}
                       onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
-                      className="w-full pl-10 pr-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-neutral-700 dark:border-neutral-600 dark:text-white"
+                      className="w-full pl-10 pr-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                     />
                   </div>
                 </div>
@@ -293,7 +293,7 @@ const Profile: React.FC = () => {
                   <button
                     type="submit"
                     disabled={saving}
-                    className="inline-flex items-center justify-center gap-2 px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50 min-h-[44px]"
+                    className="inline-flex items-center justify-center gap-2 px-6 py-2 bg-primary-600 text-neutral-900 rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50 min-h-[44px]"
                   >
                     <Save size={20} />
                     {saving ? 'Salvando...' : 'Salvar Alterações'}

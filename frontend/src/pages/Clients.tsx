@@ -286,7 +286,7 @@ const Clients: React.FC = () => {
             />
             <button
               onClick={handleNewClient}
-              className="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 rounded-lg bg-primary-600 hover:bg-primary-700 text-white font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200 min-h-[44px]"
+              className="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 rounded-lg bg-primary-600 hover:bg-primary-700 text-neutral-900 font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200 min-h-[44px]"
             >
               <Plus size={18} className="sm:w-5 sm:h-5" />
               <span className="hidden xs:inline sm:inline">Novo</span>
@@ -685,7 +685,7 @@ const Clients: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors"
+                  className="px-6 py-2 bg-primary-600 text-neutral-900 rounded-md hover:bg-primary-700 transition-colors"
                 >
                   {editMode ? 'Atualizar' : 'Salvar'}
                 </button>
@@ -828,7 +828,7 @@ const Clients: React.FC = () => {
                   setShowDetailsModal(false);
                   handleEdit(selectedClient);
                 }}
-                className="px-6 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors"
+                className="px-6 py-2 bg-primary-600 text-neutral-900 rounded-md hover:bg-primary-700 transition-colors"
               >
                 Editar Cliente
               </button>
@@ -894,7 +894,7 @@ const Clients: React.FC = () => {
 
               <button
                 onClick={() => setShowImportModal(false)}
-                className="w-full px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700"
+                className="w-full px-4 py-2 bg-primary-600 text-neutral-900 rounded-md hover:bg-primary-700"
               >
                 Fechar
               </button>
