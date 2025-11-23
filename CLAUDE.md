@@ -12,7 +12,7 @@ AdvWell is a multitenant SaaS for Brazilian law firms with DataJud CNJ integrati
 
 **Current Versions:**
 - Backend: v58-deadlines - Added /deadlines endpoint for tracking case deadlines
-- Frontend: v82-white-icon - White balance scale icon on login page
+- Frontend: v83-show-password - White icon on login + show/hide password toggle
 - Database: PostgreSQL 16 (with deadline field, status PENDENTE, and stateRegistration)
 
 **Production Configuration (100+ Companies Ready):**
