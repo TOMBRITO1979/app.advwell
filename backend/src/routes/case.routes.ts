@@ -48,8 +48,12 @@ const createCaseValidation = [
     .withMessage('Valor deve ser um número positivo'),
   body('status')
     .optional({ checkFalsy: true })
-    .isIn(['ACTIVE', 'ARCHIVED', 'FINISHED'])
-    .withMessage('Status deve ser ACTIVE, ARCHIVED ou FINISHED'),
+    .isIn(['PENDENTE', 'ACTIVE', 'ARCHIVED', 'FINISHED'])
+    .withMessage('Status deve ser PENDENTE, ACTIVE, ARCHIVED ou FINISHED'),
+  body('deadline')
+    .optional({ checkFalsy: true })
+    .isISO8601()
+    .withMessage('Deadline deve ser uma data válida no formato ISO8601'),
   body('notes')
     .optional({ checkFalsy: true })
     .isString()
@@ -93,8 +97,12 @@ const updateCaseValidation = [
     .withMessage('Valor deve ser um número positivo'),
   body('status')
     .optional({ checkFalsy: true })
-    .isIn(['ACTIVE', 'ARCHIVED', 'FINISHED'])
-    .withMessage('Status deve ser ACTIVE, ARCHIVED ou FINISHED'),
+    .isIn(['PENDENTE', 'ACTIVE', 'ARCHIVED', 'FINISHED'])
+    .withMessage('Status deve ser PENDENTE, ACTIVE, ARCHIVED ou FINISHED'),
+  body('deadline')
+    .optional({ checkFalsy: true })
+    .isISO8601()
+    .withMessage('Deadline deve ser uma data válida no formato ISO8601'),
   body('notes')
     .optional({ checkFalsy: true })
     .isString()
