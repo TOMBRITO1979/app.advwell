@@ -167,7 +167,7 @@ const AccountsPayable: React.FC = () => {
   return (
     <Layout>
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <h1 className="text-3xl font-bold text-gray-900">
             Contas a Pagar
           </h1>
@@ -176,7 +176,7 @@ const AccountsPayable: React.FC = () => {
               resetForm();
               setShowModal(true);
             }}
-            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors min-h-[44px]"
+            className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors min-h-[44px]"
           >
             <Plus size={20} />
             Nova Conta
