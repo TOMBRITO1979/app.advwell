@@ -120,7 +120,7 @@ services:
         - "traefik.docker.network=network_public"
 
   frontend:
-    image: tomautomations/advwell-frontend:v67-buttons-mobile
+    image: tomautomations/advwell-frontend:v68-movements-display
     environment:
       - VITE_API_URL=${VITE_API_URL}
     networks:
