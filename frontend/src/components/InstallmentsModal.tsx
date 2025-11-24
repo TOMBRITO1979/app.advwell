@@ -1,0 +1,355 @@
+import React, { useEffect, useState } from 'react';
+import { X, Download, Calendar, Check } from 'lucide-react';
+import api from '../services/api';
+import toast from 'react-hot-toast';
+
+interface Installment {
+  id: string;
+  installmentNumber: number;
+  amount: number;
+  dueDate: string;
+  paidDate?: string;
+  paidAmount?: number;
+  status: 'PENDING' | 'PAID' | 'OVERDUE' | 'CANCELLED';
+  notes?: string;
+}
+
+interface InstallmentsModalProps {
+  transactionId: string;
+  transactionDescription: string;
+  onClose: () => void;
+}
+
+const InstallmentsModal: React.FC<InstallmentsModalProps> = ({ transactionId, transactionDescription, onClose }) => {
+  const [installments, setInstallments] = useState<Installment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedInstallment, setSelectedInstallment] = useState<Installment | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editForm, setEditForm] = useState({
+    paidDate: '',
+    paidAmount: '',
+    status: 'PENDING' as 'PENDING' | 'PAID' | 'OVERDUE' | 'CANCELLED',
+    notes: '',
+  });
+
+  useEffect(() => {
+    loadInstallments();
+  }, [transactionId]);
+
+  const loadInstallments = async () => {
+    try {
+      const response = await api.get(`/financial/${transactionId}/installments`);
+      setInstallments(response.data);
+    } catch (error) {
+      toast.error('Erro ao carregar parcelas');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEdit = (installment: Installment) => {
+    setSelectedInstallment(installment);
+    setEditForm({
+      paidDate: installment.paidDate ? new Date(installment.paidDate).toISOString().split('T')[0] : '',
+      paidAmount: installment.paidAmount?.toString() || '',
+      status: installment.status,
+      notes: installment.notes || '',
+    });
+    setShowEditModal(true);
+  };
+
+  const handleMarkAsPaid = (installment: Installment) => {
+    setSelectedInstallment(installment);
+    setEditForm({
+      paidDate: new Date().toISOString().split('T')[0],
+      paidAmount: installment.amount.toString(),
+      status: 'PAID',
+      notes: '',
+    });
+    handleSaveEdit();
+  };
+
+  const handleSaveEdit = async () => {
+    if (!selectedInstallment) return;
+
+    try {
+      const payload: any = {
+        status: editForm.status,
+        notes: editForm.notes || undefined,
+      };
+
+      if (editForm.paidDate) {
+        payload.paidDate = editForm.paidDate;
+      }
+
+      if (editForm.paidAmount) {
+        payload.paidAmount = parseFloat(editForm.paidAmount);
+      }
+
+      await api.put(`/financial/installments/${selectedInstallment.id}`, payload);
+      toast.success('Parcela atualizada com sucesso!');
+      setShowEditModal(false);
+      setSelectedInstallment(null);
+      loadInstallments();
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Erro ao atualizar parcela');
+    }
+  };
+
+  const handleDownloadReceipt = async (installmentId: string, installmentNumber: number) => {
+    try {
+      const response = await api.get(`/financial/installments/${installmentId}/receipt`, {
+        responseType: 'blob',
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `recibo_parcela_${installmentNumber}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      toast.success('PDF gerado com sucesso!');
+    } catch (error) {
+      toast.error('Erro ao gerar PDF');
+    }
+  };
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    }).format(value);
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('pt-BR');
+  };
+
+  const getStatusBadge = (status: string) => {
+    const badges = {
+      PENDING: 'bg-yellow-100 text-yellow-800',
+      PAID: 'bg-green-100 text-green-800',
+      OVERDUE: 'bg-red-100 text-red-800',
+      CANCELLED: 'bg-gray-100 text-gray-800',
+    };
+    const labels = {
+      PENDING: 'Pendente',
+      PAID: 'Pago',
+      OVERDUE: 'Atrasado',
+      CANCELLED: 'Cancelado',
+    };
+    return (
+      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${badges[status as keyof typeof badges]}`}>
+        {labels[status as keyof typeof labels]}
+      </span>
+    );
+  };
+
+  if (loading) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+          <p>Carregando parcelas...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <h2 className="text-2xl font-bold text-neutral-800">Parcelas</h2>
+              <p className="text-sm text-neutral-600 mt-1">{transactionDescription}</p>
+            </div>
+            <button
+              onClick={onClose}
+              className="text-neutral-400 hover:text-neutral-600 transition-colors"
+            >
+              <X size={24} />
+            </button>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-neutral-200">
+              <thead className="bg-neutral-50">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                    Parcela
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                    Vencimento
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                    Valor
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                    Pago em
+                  </th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                    Ações
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-neutral-200">
+                {installments.map((installment) => (
+                  <tr key={installment.id} className="hover:bg-neutral-50">
+                    <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-neutral-900">
+                      {installment.installmentNumber}
+                    </td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm text-neutral-600">
+                      {formatDate(installment.dueDate)}
+                    </td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm font-semibold text-neutral-900">
+                      {formatCurrency(installment.amount)}
+                    </td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm">
+                      {getStatusBadge(installment.status)}
+                    </td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm text-neutral-600">
+                      {installment.paidDate ? (
+                        <div>
+                          <div>{formatDate(installment.paidDate)}</div>
+                          {installment.paidAmount && (
+                            <div className="text-xs text-green-600">
+                              {formatCurrency(installment.paidAmount)}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        '-'
+                      )}
+                    </td>
+                    <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex justify-end gap-2">
+                        {installment.status !== 'PAID' && (
+                          <button
+                            onClick={() => handleMarkAsPaid(installment)}
+                            className="text-green-600 hover:text-green-800 p-1 rounded hover:bg-green-50 transition-colors"
+                            title="Marcar como pago"
+                          >
+                            <Check size={18} />
+                          </button>
+                        )}
+                        <button
+                          onClick={() => handleEdit(installment)}
+                          className="text-primary-600 hover:text-primary-800 p-1 rounded hover:bg-primary-50 transition-colors"
+                          title="Editar parcela"
+                        >
+                          <Calendar size={18} />
+                        </button>
+                        <button
+                          onClick={() => handleDownloadReceipt(installment.id, installment.installmentNumber)}
+                          className="text-neutral-600 hover:text-neutral-800 p-1 rounded hover:bg-neutral-100 transition-colors"
+                          title="Baixar recibo"
+                        >
+                          <Download size={18} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {installments.length === 0 && (
+            <p className="text-center text-neutral-500 py-8">Nenhuma parcela encontrada</p>
+          )}
+        </div>
+      </div>
+
+      {/* Modal de Edição */}
+      {showEditModal && selectedInstallment && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-bold text-neutral-800">
+                Editar Parcela {selectedInstallment.installmentNumber}
+              </h3>
+              <button
+                onClick={() => setShowEditModal(false)}
+                className="text-neutral-400 hover:text-neutral-600"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-1">Status</label>
+                <select
+                  value={editForm.status}
+                  onChange={(e) => setEditForm({ ...editForm, status: e.target.value as any })}
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                >
+                  <option value="PENDING">Pendente</option>
+                  <option value="PAID">Pago</option>
+                  <option value="OVERDUE">Atrasado</option>
+                  <option value="CANCELLED">Cancelado</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-1">Data de Pagamento</label>
+                <input
+                  type="date"
+                  value={editForm.paidDate}
+                  onChange={(e) => setEditForm({ ...editForm, paidDate: e.target.value })}
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-1">Valor Pago</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={editForm.paidAmount}
+                  onChange={(e) => setEditForm({ ...editForm, paidAmount: e.target.value })}
+                  placeholder="Digite o valor pago"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-1">Observações</label>
+                <textarea
+                  value={editForm.notes}
+                  onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
+                  rows={3}
+                  placeholder="Adicione observações sobre o pagamento..."
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 mt-6">
+                <button
+                  onClick={() => setShowEditModal(false)}
+                  className="px-4 py-2 border border-neutral-300 rounded-md text-neutral-700 hover:bg-neutral-50 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleSaveEdit}
+                  className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors"
+                >
+                  Salvar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+};
+
+export default InstallmentsModal;

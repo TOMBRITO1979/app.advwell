@@ -134,7 +134,7 @@ export const getTransaction = async (req: AuthRequest, res: Response) => {
 // Criar nova transação
 export const createTransaction = async (req: AuthRequest, res: Response) => {
   try {
-    const { clientId, caseId, type, description, amount, date } = req.body;
+    const { clientId, caseId, type, description, amount, date, isInstallment, installmentCount, installmentInterval } = req.body;
     const companyId = req.user!.companyId;
 
     if (!companyId) {
@@ -152,6 +152,16 @@ export const createTransaction = async (req: AuthRequest, res: Response) => {
 
     if (isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
       return res.status(400).json({ error: 'Valor deve ser um número positivo' });
+    }
+
+    // Validações de parcelamento
+    if (isInstallment) {
+      if (!installmentCount || installmentCount < 2) {
+        return res.status(400).json({ error: 'Número de parcelas deve ser no mínimo 2' });
+      }
+      if (installmentInterval && installmentInterval < 1) {
+        return res.status(400).json({ error: 'Intervalo entre parcelas deve ser pelo menos 1 dia' });
+      }
     }
 
     // Verificar se o cliente existe e pertence à empresa
@@ -183,6 +193,9 @@ export const createTransaction = async (req: AuthRequest, res: Response) => {
         description: sanitizeString(description) || '',
         amount: parseFloat(amount),
         date: date ? new Date(date) : new Date(),
+        isInstallment: isInstallment || false,
+        installmentCount: isInstallment ? parseInt(installmentCount) : null,
+        installmentInterval: isInstallment ? (installmentInterval ? parseInt(installmentInterval) : 30) : null,
       },
       include: {
         client: {
@@ -201,6 +214,34 @@ export const createTransaction = async (req: AuthRequest, res: Response) => {
         },
       },
     });
+
+    // Se for parcelado, criar as parcelas automaticamente
+    if (isInstallment && installmentCount) {
+      const installmentAmount = parseFloat(amount) / parseInt(installmentCount);
+      const interval = installmentInterval ? parseInt(installmentInterval) : 30;
+      const startDate = date ? new Date(date) : new Date();
+
+      const installments = [];
+      for (let i = 1; i <= parseInt(installmentCount); i++) {
+        const dueDate = new Date(startDate);
+        dueDate.setDate(dueDate.getDate() + (i - 1) * interval);
+
+        installments.push({
+          id: require('crypto').randomUUID(),
+          financialTransactionId: transaction.id,
+          installmentNumber: i,
+          amount: installmentAmount,
+          dueDate,
+          status: 'PENDING' as const,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+      }
+
+      await prisma.installmentPayment.createMany({
+        data: installments,
+      });
+    }
 
     res.status(201).json(transaction);
   } catch (error) {
@@ -745,5 +786,272 @@ export const importCSV = async (req: AuthRequest, res: Response) => {
   } catch (error: any) {
     console.error('Erro ao importar CSV:', error);
     res.status(500).json({ error: 'Erro ao importar arquivo CSV' });
+  }
+};
+
+// ==================== FUNÇÕES DE PARCELAMENTO ====================
+
+// Listar parcelas de uma transação
+export const listInstallments = async (req: AuthRequest, res: Response) => {
+  try {
+    const { transactionId } = req.params;
+    const companyId = req.user!.companyId;
+
+    // Verificar se a transação existe e pertence à empresa
+    const transaction = await prisma.financialTransaction.findFirst({
+      where: { id: transactionId, companyId },
+    });
+
+    if (!transaction) {
+      return res.status(404).json({ error: 'Transação não encontrada' });
+    }
+
+    const installments = await prisma.installmentPayment.findMany({
+      where: { financialTransactionId: transactionId },
+      orderBy: { installmentNumber: 'asc' },
+    });
+
+    res.json(installments);
+  } catch (error) {
+    console.error('Erro ao listar parcelas:', error);
+    res.status(500).json({ error: 'Erro ao listar parcelas' });
+  }
+};
+
+// Atualizar uma parcela específica (marcar como paga, adicionar notas, etc.)
+export const updateInstallment = async (req: AuthRequest, res: Response) => {
+  try {
+    const { installmentId } = req.params;
+    const { paidDate, paidAmount, status, notes, receiptUrl } = req.body;
+    const companyId = req.user!.companyId;
+
+    // Verificar se a parcela existe e pertence à empresa
+    const installment = await prisma.installmentPayment.findFirst({
+      where: {
+        id: installmentId,
+        financialTransaction: { companyId },
+      },
+      include: {
+        financialTransaction: true,
+      },
+    });
+
+    if (!installment) {
+      return res.status(404).json({ error: 'Parcela não encontrada' });
+    }
+
+    // Validações
+    if (status && !['PENDING', 'PAID', 'OVERDUE', 'CANCELLED'].includes(status)) {
+      return res.status(400).json({ error: 'Status inválido' });
+    }
+
+    const updatedInstallment = await prisma.installmentPayment.update({
+      where: { id: installmentId },
+      data: {
+        ...(paidDate !== undefined && { paidDate: paidDate ? new Date(paidDate) : null }),
+        ...(paidAmount !== undefined && { paidAmount: paidAmount ? parseFloat(paidAmount) : null }),
+        ...(status && { status }),
+        ...(notes !== undefined && { notes }),
+        ...(receiptUrl !== undefined && { receiptUrl }),
+      },
+    });
+
+    res.json(updatedInstallment);
+  } catch (error) {
+    console.error('Erro ao atualizar parcela:', error);
+    res.status(500).json({ error: 'Erro ao atualizar parcela' });
+  }
+};
+
+// Gerar PDF de recibo para uma parcela específica
+export const generateInstallmentReceipt = async (req: AuthRequest, res: Response) => {
+  try {
+    const { installmentId } = req.params;
+    const companyId = req.user!.companyId;
+
+    // Buscar parcela com todos os dados relacionados
+    const installment = await prisma.installmentPayment.findFirst({
+      where: {
+        id: installmentId,
+        financialTransaction: { companyId },
+      },
+      include: {
+        financialTransaction: {
+          include: {
+            client: true,
+            case: {
+              select: {
+                processNumber: true,
+                subject: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!installment) {
+      return res.status(404).json({ error: 'Parcela não encontrada' });
+    }
+
+    // Buscar todas as parcelas da transação para calcular o valor devido total
+    const allInstallments = await prisma.installmentPayment.findMany({
+      where: {
+        financialTransactionId: installment.financialTransactionId,
+      },
+      select: {
+        paidAmount: true,
+      },
+    });
+
+    // Calcular total já pago (soma de todos os paidAmount)
+    const totalPaid = allInstallments.reduce((sum, inst) => {
+      return sum + (inst.paidAmount || 0);
+    }, 0);
+
+    // Valor Devido = Valor Total Contratado - Total Já Pago
+    const valorDevido = installment.financialTransaction.amount - totalPaid;
+
+    // Buscar dados da empresa
+    const company = await prisma.company.findUnique({
+      where: { id: companyId },
+      select: {
+        name: true,
+        email: true,
+        phone: true,
+        address: true,
+        city: true,
+        state: true,
+        zipCode: true,
+        logo: true,
+      },
+    });
+
+    // Gerar PDF usando PDFKit
+    const PDFDocument = require('pdfkit');
+    const doc = new PDFDocument({ margin: 50 });
+
+    const filename = `recibo_parcela_${installment.installmentNumber}_${installment.financialTransaction.id.substring(0, 8)}.pdf`;
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
+
+    doc.pipe(res);
+
+    // Header com dados da empresa
+    if (company) {
+      doc.fontSize(16).text(company.name, { align: 'center', bold: true });
+      doc.moveDown(0.3);
+      doc.fontSize(9);
+
+      if (company.address || company.city || company.state) {
+        const addressParts = [];
+        if (company.address) addressParts.push(company.address);
+        if (company.city) addressParts.push(company.city);
+        if (company.state) addressParts.push(company.state);
+        if (company.zipCode) addressParts.push(`CEP: ${company.zipCode}`);
+        doc.text(addressParts.join(' - '), { align: 'center' });
+      }
+
+      const contactParts = [];
+      if (company.phone) contactParts.push(`Tel: ${company.phone}`);
+      if (company.email) contactParts.push(company.email);
+      if (contactParts.length > 0) {
+        doc.text(contactParts.join(' | '), { align: 'center' });
+      }
+
+      doc.moveDown(1);
+      doc.moveTo(50, doc.y).lineTo(545, doc.y).stroke();
+      doc.moveDown(1);
+    }
+
+    // Título do recibo
+    doc.fontSize(20).text('Recibo de Pagamento', { align: 'center' });
+    doc.moveDown(2);
+
+    // Informações da parcela
+    doc.fontSize(12).text('Informações da Parcela:', { underline: true });
+    doc.moveDown(0.5);
+    doc.fontSize(10);
+
+    // Cliente
+    doc.text(`Cliente: ${installment.financialTransaction.client.name}`);
+    if (installment.financialTransaction.client.cpf) {
+      doc.text(`CPF/CNPJ: ${installment.financialTransaction.client.cpf}`);
+    }
+    doc.moveDown(0.5);
+
+    // Dados da transação
+    doc.text(`Descrição: ${installment.financialTransaction.description}`);
+    if (installment.financialTransaction.case) {
+      doc.text(`Processo: ${installment.financialTransaction.case.processNumber}`);
+      if (installment.financialTransaction.case.subject) {
+        doc.text(`Assunto: ${installment.financialTransaction.case.subject}`);
+      }
+    }
+    doc.moveDown(0.5);
+
+    // Informações da parcela
+    const dueDate = new Date(installment.dueDate).toLocaleDateString('pt-BR');
+    doc.text(`Parcela: ${installment.installmentNumber} de ${installment.financialTransaction.installmentCount}.`);
+    doc.text(`Valor Total Contratado: R$ ${installment.financialTransaction.amount.toFixed(2)}`);
+    doc.text(`Valor da Parcela: R$ ${installment.amount.toFixed(2)}`);
+    doc.text(`Data de Vencimento: ${dueDate}`);
+
+    // Status e pagamento
+    doc.moveDown(0.5);
+
+    // Determinar status real da parcela
+    let statusText = '';
+    if (installment.status === 'CANCELLED') {
+      statusText = 'Cancelado';
+    } else if (installment.paidAmount) {
+      if (installment.paidAmount >= installment.amount) {
+        statusText = 'Pago';
+      } else {
+        statusText = 'Pago Parcialmente';
+      }
+    } else {
+      const statusLabels = {
+        PENDING: 'Pendente',
+        PAID: 'Pago',
+        OVERDUE: 'Atrasado',
+        CANCELLED: 'Cancelado',
+      };
+      statusText = statusLabels[installment.status as keyof typeof statusLabels] || 'Pendente';
+    }
+
+    doc.text(`Status: ${statusText}`);
+
+    if (installment.paidDate) {
+      const paidDate = new Date(installment.paidDate).toLocaleDateString('pt-BR');
+      doc.text(`Data de Pagamento: ${paidDate}`);
+    }
+
+    if (installment.paidAmount) {
+      doc.text(`Valor Pago: R$ ${installment.paidAmount.toFixed(2)}`);
+    }
+
+    if (installment.notes) {
+      doc.moveDown(0.5);
+      doc.text(`Observações: ${installment.notes}`);
+    }
+
+    // Valor devido
+    doc.moveDown(1);
+    doc.moveTo(50, doc.y).lineTo(545, doc.y).stroke();
+    doc.moveDown(1);
+    doc.fontSize(12);
+    doc.text(`Valor Devido: R$ ${valorDevido.toFixed(2)}`);
+
+    // Rodapé
+    doc.moveDown(3);
+    doc.fontSize(9);
+    doc.text(`Documento gerado em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}`, { align: 'center' });
+
+    doc.end();
+  } catch (error) {
+    console.error('Erro ao gerar recibo:', error);
+    res.status(500).json({ error: 'Erro ao gerar recibo da parcela' });
   }
 };

@@ -14,6 +14,9 @@ import {
   exportPDF,
   exportCSV,
   importCSV,
+  listInstallments,
+  updateInstallment,
+  generateInstallmentReceipt,
 } from '../controllers/financial.controller';
 
 const router = Router();
@@ -99,5 +102,10 @@ router.get('/:id', getTransaction);                   // Buscar transação por 
 router.post('/', createTransactionValidation, validate, createTransaction);  // Criar nova transação
 router.put('/:id', updateTransactionValidation, validate, updateTransaction); // Atualizar transação
 router.delete('/:id', deleteTransaction);             // Excluir transação
+
+// Rotas de parcelamento
+router.get('/:transactionId/installments', listInstallments);           // Listar parcelas de uma transação
+router.put('/installments/:installmentId', updateInstallment);          // Atualizar parcela
+router.get('/installments/:installmentId/receipt', generateInstallmentReceipt); // Gerar PDF de recibo
 
 export default router;

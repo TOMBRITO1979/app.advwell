@@ -2,8 +2,9 @@ import React, { useEffect, useState, useRef } from 'react';
 import Layout from '../components/Layout';
 import api from '../services/api';
 import toast from 'react-hot-toast';
-import { Plus, Search, Edit, Trash2, DollarSign, TrendingUp, TrendingDown, X, Filter } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, DollarSign, TrendingUp, TrendingDown, X, Filter, List } from 'lucide-react';
 import { ExportButton } from '../components/ui';
+import InstallmentsModal from '../components/InstallmentsModal';
 
 interface Client {
   id: string;
@@ -26,6 +27,9 @@ interface Transaction {
   client: Client;
   case?: Case;
   createdAt: string;
+  isInstallment?: boolean;
+  installmentCount?: number;
+  installmentInterval?: number;
 }
 
 interface FormData {
@@ -35,6 +39,9 @@ interface FormData {
   description: string;
   amount: string;
   date: string;
+  isInstallment: boolean;
+  installmentCount: string;
+  installmentInterval: string;
 }
 
 interface Summary {
@@ -80,7 +87,14 @@ const Financial: React.FC = () => {
     description: '',
     amount: '',
     date: new Date().toISOString().split('T')[0],
+    isInstallment: false,
+    installmentCount: '2',
+    installmentInterval: '30',
   });
+
+  // State for installments modal
+  const [showInstallmentsModal, setShowInstallmentsModal] = useState(false);
+  const [selectedTransactionForInstallments, setSelectedTransactionForInstallments] = useState<Transaction | null>(null);
 
   useEffect(() => {
     loadTransactions();
@@ -157,6 +171,9 @@ const Financial: React.FC = () => {
       description: '',
       amount: '',
       date: new Date().toISOString().split('T')[0],
+      isInstallment: false,
+      installmentCount: '2',
+      installmentInterval: '30',
     });
     setClientSearchText('');
     setCaseSearchText('');
@@ -165,11 +182,17 @@ const Financial: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const payload = {
+      const payload: any = {
         ...formData,
         amount: parseFloat(formData.amount),
         caseId: formData.caseId || undefined,
       };
+
+      // Include installment data if enabled
+      if (formData.isInstallment) {
+        payload.installmentCount = parseInt(formData.installmentCount);
+        payload.installmentInterval = parseInt(formData.installmentInterval);
+      }
 
       if (editMode && selectedTransaction) {
         await api.put(`/financial/${selectedTransaction.id}`, payload);
@@ -198,11 +221,19 @@ const Financial: React.FC = () => {
       description: transaction.description,
       amount: transaction.amount.toString(),
       date: transaction.date.split('T')[0],
+      isInstallment: transaction.isInstallment || false,
+      installmentCount: transaction.installmentCount?.toString() || '2',
+      installmentInterval: transaction.installmentInterval?.toString() || '30',
     });
     setClientSearchText(transaction.client.name);
     setCaseSearchText(transaction.case ? transaction.case.processNumber : '');
     setEditMode(true);
     setShowModal(true);
+  };
+
+  const handleViewInstallments = (transaction: Transaction) => {
+    setSelectedTransactionForInstallments(transaction);
+    setShowInstallmentsModal(true);
   };
 
   const handleDelete = async (transaction: Transaction) => {
@@ -591,6 +622,15 @@ const Financial: React.FC = () => {
                       </td>
                       <td className="px-4 py-3 text-sm text-center">
                         <div className="flex items-center justify-center gap-2">
+                          {transaction.isInstallment && (
+                            <button
+                              onClick={() => handleViewInstallments(transaction)}
+                              className="text-blue-600 hover:text-blue-800 transition-colors"
+                              title="Ver Parcelas"
+                            >
+                              <List size={18} />
+                            </button>
+                          )}
                           <button
                             onClick={() => handleEdit(transaction)}
                             className="text-primary-600 hover:text-primary-800 transition-colors"
@@ -800,6 +840,66 @@ const Financial: React.FC = () => {
                     />
                   </div>
                 </div>
+
+                {/* Parcelamento */}
+                <div className="border-t border-neutral-200 pt-4">
+                  <div className="flex items-center gap-2 mb-4">
+                    <input
+                      type="checkbox"
+                      id="isInstallment"
+                      checked={formData.isInstallment}
+                      onChange={(e) => setFormData({ ...formData, isInstallment: e.target.checked })}
+                      className="w-4 h-4 text-primary-600 border-neutral-300 rounded focus:ring-primary-500"
+                    />
+                    <label htmlFor="isInstallment" className="text-sm font-medium text-neutral-700">
+                      Parcelar esta transação
+                    </label>
+                  </div>
+
+                  {formData.isInstallment && (
+                    <div className="grid grid-cols-2 gap-4 pl-6">
+                      <div>
+                        <label className="block text-sm font-medium text-neutral-700 mb-1">
+                          Número de Parcelas <span className="text-error-500">*</span>
+                        </label>
+                        <input
+                          type="number"
+                          required={formData.isInstallment}
+                          min="2"
+                          placeholder="Ex: 12"
+                          value={formData.installmentCount}
+                          onChange={(e) => setFormData({ ...formData, installmentCount: e.target.value })}
+                          className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        />
+                        <p className="text-xs text-neutral-500 mt-1">Mínimo: 2 parcelas</p>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-neutral-700 mb-1">
+                          Intervalo (dias)
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          placeholder="Ex: 30"
+                          value={formData.installmentInterval}
+                          onChange={(e) => setFormData({ ...formData, installmentInterval: e.target.value })}
+                          className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        />
+                        <p className="text-xs text-neutral-500 mt-1">Padrão: 30 dias (mensal)</p>
+                      </div>
+
+                      {formData.amount && formData.installmentCount && (
+                        <div className="col-span-2 p-3 bg-blue-50 rounded-md border border-blue-200">
+                          <p className="text-sm text-blue-800">
+                            <span className="font-semibold">Valor por parcela:</span>{' '}
+                            {formatCurrency(parseFloat(formData.amount) / parseInt(formData.installmentCount) || 0)}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-neutral-200">
@@ -825,6 +925,19 @@ const Financial: React.FC = () => {
             </form>
           </div>
         </div>
+      )}
+
+      {/* Modal de Parcelas */}
+      {showInstallmentsModal && selectedTransactionForInstallments && (
+        <InstallmentsModal
+          transactionId={selectedTransactionForInstallments.id}
+          transactionDescription={selectedTransactionForInstallments.description}
+          onClose={() => {
+            setShowInstallmentsModal(false);
+            setSelectedTransactionForInstallments(null);
+            loadTransactions();
+          }}
+        />
       )}
     </Layout>
   );
