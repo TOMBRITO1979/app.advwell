@@ -47,10 +47,10 @@ services:
         max_attempts: 3
 
   backend:
-    image: tomautomations/advwell-backend:v67-deadline-clear-fix
+    image: tomautomations/advwell-backend:v69-enhanced-health
     environment:
-      # Database
-      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      # Database with connection pooling
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?connection_limit=10&pool_timeout=10
 
       # JWT
       - JWT_SECRET=${JWT_SECRET}
