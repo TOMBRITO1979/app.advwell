@@ -288,8 +288,8 @@ export class CaseController {
         return res.status(404).json({ error: 'Processo não encontrado' });
       }
 
-      // Converter deadline se fornecido
-      const cleanDeadline = deadline && deadline !== '' ? new Date(deadline) : undefined;
+      // Converter deadline se fornecido (null para limpar o campo)
+      const cleanDeadline = deadline && deadline !== '' ? new Date(deadline) : null;
 
       // Sanitiza informarCliente se fornecido
       const sanitizedInformarCliente = informarCliente !== undefined ? sanitizeString(informarCliente) : undefined;
