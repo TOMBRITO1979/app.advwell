@@ -6,6 +6,7 @@ import { parse } from 'csv-parse/sync';
 import { sanitizeString } from '../utils/sanitize';
 import { AIService } from '../services/ai/ai.service';
 import { sendCaseUpdateNotification } from '../utils/email';
+import AuditService from '../services/audit.service';
 
 // Função utilitária para formatar o último movimento
 function getUltimoAndamento(movimentos: any[]): string | null {
@@ -25,7 +26,7 @@ export class CaseController {
 
   async create(req: AuthRequest, res: Response) {
     try {
-      const { clientId, processNumber, court, subject, value, notes, status, deadline, informarCliente, linkProcesso } = req.body;
+      const { clientId, processNumber, court, subject, value, notes, status, deadline, deadlineResponsibleId, informarCliente, linkProcesso } = req.body;
       const companyId = req.user!.companyId;
 
       // Converter strings vazias em null/undefined
@@ -82,6 +83,7 @@ export class CaseController {
           subject: sanitizeString(subject || datajudData?.assuntos?.[0]?.nome) || '',
           status: cleanStatus,
           deadline: cleanDeadline,
+          ...(deadlineResponsibleId && { deadlineResponsibleId }),
           value: cleanValue,
           notes: sanitizeString(notes),
           ultimoAndamento,
@@ -133,6 +135,13 @@ export class CaseController {
           // Não impede a criação, apenas loga o erro
         }
       }
+
+      // Log de auditoria: processo criado
+      await AuditService.logCaseCreated(
+        caseData.id,
+        req.user!.userId,
+        processNumber
+      );
 
       // Retorna o processo com as movimentações
       const caseWithMovements = await prisma.case.findUnique({
@@ -188,6 +197,13 @@ export class CaseController {
               cpf: true,
             },
           },
+          deadlineResponsible: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
           _count: {
             select: {
               movements: true,
@@ -215,6 +231,13 @@ export class CaseController {
         },
         include: {
           client: true,
+          deadlineResponsible: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
           movements: {
             orderBy: { movementDate: 'desc' },
           },
@@ -242,7 +265,7 @@ export class CaseController {
     try {
       const { id } = req.params;
       const companyId = req.user!.companyId;
-      const { court, subject, value, status, deadline, notes, informarCliente, linkProcesso } = req.body;
+      const { court, subject, value, status, deadline, deadlineResponsibleId, notes, informarCliente, linkProcesso } = req.body;
 
       const caseData = await prisma.case.findFirst({
         where: {
@@ -252,6 +275,12 @@ export class CaseController {
         include: {
           client: true,
           company: true,
+          deadlineResponsible: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
         },
       });
 
@@ -273,11 +302,62 @@ export class CaseController {
           value,
           status,
           ...(deadline !== undefined && { deadline: cleanDeadline }),
+          ...(deadlineResponsibleId !== undefined && { deadlineResponsibleId: deadlineResponsibleId || null }),
           notes: sanitizeString(notes),
           ...(sanitizedInformarCliente !== undefined && { informarCliente: sanitizedInformarCliente }),
           ...(linkProcesso !== undefined && { linkProcesso }),
         },
       });
+
+      // Logs de auditoria para campos alterados
+      if (status && status !== caseData.status) {
+        await AuditService.logStatusChanged(
+          id,
+          req.user!.userId,
+          caseData.status,
+          status
+        );
+      }
+
+      if (deadline !== undefined) {
+        const oldDeadline = caseData.deadline;
+        const newDeadline = cleanDeadline || null;
+        const oldTime = oldDeadline ? new Date(oldDeadline).getTime() : null;
+        const newTime = newDeadline ? new Date(newDeadline).getTime() : null;
+
+        if (oldTime !== newTime) {
+          await AuditService.logDeadlineChanged(
+            id,
+            req.user!.userId,
+            oldDeadline,
+            newDeadline
+          );
+        }
+      }
+
+      if (deadlineResponsibleId !== undefined) {
+        const oldResponsibleId = caseData.deadlineResponsibleId;
+        const newResponsibleId = deadlineResponsibleId || null;
+
+        if (oldResponsibleId !== newResponsibleId) {
+          // Buscar nome do novo responsável se houver
+          let newResponsibleName: string | null = null;
+          if (newResponsibleId) {
+            const newResponsible = await prisma.user.findUnique({
+              where: { id: newResponsibleId },
+              select: { name: true },
+            });
+            newResponsibleName = newResponsible?.name || null;
+          }
+
+          await AuditService.logDeadlineResponsibleChanged(
+            id,
+            req.user!.userId,
+            caseData.deadlineResponsible?.name || null,
+            newResponsibleName
+          );
+        }
+      }
 
       // Enviar email ao cliente se informarCliente foi atualizado e não está vazio
       if (sanitizedInformarCliente !== undefined &&
@@ -370,6 +450,14 @@ export class CaseController {
           ultimoAndamento,
         },
       });
+
+      // Log de auditoria: sincronização com DataJud
+      const movementsCount = datajudData.movimentos?.length || 0;
+      await AuditService.logDataJudSync(
+        id,
+        req.user!.userId,
+        movementsCount
+      );
 
       // Hook: Gerar resumo automático se configurado
       try {
@@ -834,6 +922,13 @@ export class CaseController {
               cpf: true,
             },
           },
+          deadlineResponsible: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
         },
       });
 
@@ -841,6 +936,34 @@ export class CaseController {
     } catch (error) {
       console.error('Erro ao buscar prazos:', error);
       res.status(500).json({ error: 'Erro ao buscar prazos' });
+    }
+  }
+
+  // Buscar logs de auditoria de um processo
+  async getAuditLogs(req: AuthRequest, res: Response) {
+    try {
+      const { id } = req.params;
+      const companyId = req.user!.companyId;
+
+      // Verificar se o processo pertence à empresa
+      const caseData = await prisma.case.findFirst({
+        where: {
+          id,
+          companyId: companyId!,
+        },
+      });
+
+      if (!caseData) {
+        return res.status(404).json({ error: 'Processo não encontrado' });
+      }
+
+      // Buscar logs de auditoria
+      const auditLogs = await AuditService.getCaseAuditLogs(id);
+
+      res.json(auditLogs);
+    } catch (error) {
+      console.error('Erro ao buscar logs de auditoria:', error);
+      res.status(500).json({ error: 'Erro ao buscar logs de auditoria' });
     }
   }
 }

@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import prisma from '../utils/prisma';
+import AuditService from '../services/audit.service';
 
 export class CasePartController {
   // Listar partes de um processo
@@ -70,6 +71,14 @@ export class CasePartController {
         },
       });
 
+      // Log de auditoria: parte adicionada
+      await AuditService.logPartAdded(
+        caseId,
+        req.user!.userId,
+        type,
+        name
+      );
+
       res.status(201).json(part);
     } catch (error) {
       console.error('Erro ao criar parte do processo:', error);
@@ -121,6 +130,14 @@ export class CasePartController {
         },
       });
 
+      // Log de auditoria: parte atualizada
+      await AuditService.logPartUpdated(
+        caseId,
+        req.user!.userId,
+        part.type,
+        part.name
+      );
+
       res.json(part);
     } catch (error) {
       console.error('Erro ao atualizar parte do processo:', error);
@@ -151,6 +168,14 @@ export class CasePartController {
       if (!partExists) {
         return res.status(404).json({ error: 'Parte não encontrada' });
       }
+
+      // Log de auditoria: parte removida (antes de deletar)
+      await AuditService.logPartDeleted(
+        caseId,
+        req.user!.userId,
+        partExists.type,
+        partExists.name
+      );
 
       await prisma.casePart.delete({
         where: { id: partId },

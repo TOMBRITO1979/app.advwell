@@ -4,6 +4,7 @@ import api from '../services/api';
 import toast from 'react-hot-toast';
 import { Plus, Search, RefreshCw, X, Calendar, User, FileText, Clock, Edit, Edit2, Trash2, Eye, Sparkles } from 'lucide-react';
 import { ExportButton } from '../components/ui';
+import CaseTimeline from '../components/CaseTimeline';
 
 interface Case {
   id: string;
@@ -12,6 +13,12 @@ interface Case {
   subject: string;
   status: string;
   deadline?: string;
+  deadlineResponsibleId?: string;
+  deadlineResponsible?: {
+    id: string;
+    name: string;
+    email: string;
+  };
   value?: number;
   notes?: string;
   ultimoAndamento?: string;
@@ -57,11 +64,13 @@ interface CasePart {
 const Cases: React.FC = () => {
   const [cases, setCases] = useState<Case[]>([]);
   const [clients, setClients] = useState<any[]>([]);
+  const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [detailsTab, setDetailsTab] = useState<'info' | 'timeline'>('info');
   const [showAndamentoModal, setShowAndamentoModal] = useState(false);
   const [selectedCase, setSelectedCase] = useState<CaseDetail | null>(null);
   const [loadingDetails, setLoadingDetails] = useState(false);
@@ -111,6 +120,7 @@ const Cases: React.FC = () => {
     notes: '',
     status: 'ACTIVE',
     deadline: '',
+    deadlineResponsibleId: '',
     informarCliente: '',
     linkProcesso: '',
   });
@@ -118,6 +128,7 @@ const Cases: React.FC = () => {
   useEffect(() => {
     loadCases();
     loadClients();
+    loadUsers();
   }, [search, statusFilter]);
 
   // Filter clients based on search text
@@ -215,6 +226,15 @@ const Cases: React.FC = () => {
     }
   };
 
+  const loadUsers = async () => {
+    try {
+      const response = await api.get('/users', { params: { limit: 1000 } });
+      setUsers(response.data.data);
+    } catch (error) {
+      console.error('Erro ao carregar usuários');
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       clientId: '',
@@ -225,6 +245,7 @@ const Cases: React.FC = () => {
       notes: '',
       status: 'ACTIVE',
       deadline: '',
+      deadlineResponsibleId: '',
       informarCliente: '',
       linkProcesso: '',
     });
@@ -444,6 +465,7 @@ const Cases: React.FC = () => {
         notes: caseDetail.notes || '',
         status: caseDetail.status || 'ACTIVE',
         deadline: caseDetail.deadline ? caseDetail.deadline.split('T')[0] : '',
+        deadlineResponsibleId: caseDetail.deadlineResponsibleId || '',
         informarCliente: caseDetail.informarCliente || '',
         linkProcesso: caseDetail.linkProcesso || '',
       });
@@ -892,6 +914,22 @@ const Cases: React.FC = () => {
                     className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   />
                 </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">Responsável pelo Prazo</label>
+                  <select
+                    value={formData.deadlineResponsibleId}
+                    onChange={(e) => setFormData({ ...formData, deadlineResponsibleId: e.target.value })}
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                  >
+                    <option value="">Nenhum</option>
+                    {users.map((user) => (
+                      <option key={user.id} value={user.id}>
+                        {user.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               <div>
@@ -1191,7 +1229,35 @@ const Cases: React.FC = () => {
                   </button>
                 </div>
 
-                {/* Conteúdo */}
+                {/* Tabs */}
+                <div className="border-b border-neutral-200">
+                  <div className="flex px-6">
+                    <button
+                      onClick={() => setDetailsTab('info')}
+                      className={`py-3 px-4 border-b-2 font-medium text-sm transition-colors ${
+                        detailsTab === 'info'
+                          ? 'border-primary-600 text-primary-600'
+                          : 'border-transparent text-neutral-500 hover:text-neutral-700'
+                      }`}
+                    >
+                      Informações
+                    </button>
+                    <button
+                      onClick={() => setDetailsTab('timeline')}
+                      className={`py-3 px-4 border-b-2 font-medium text-sm transition-colors ${
+                        detailsTab === 'timeline'
+                          ? 'border-primary-600 text-primary-600'
+                          : 'border-transparent text-neutral-500 hover:text-neutral-700'
+                      }`}
+                    >
+                      Linha do Tempo
+                    </button>
+                  </div>
+                </div>
+
+                {/* Tab: Informações */}
+                {detailsTab === 'info' && (
+                <>
                 <div className="p-6 space-y-6">
                   {/* Informações Principais */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1600,6 +1666,13 @@ const Cases: React.FC = () => {
                     Fechar
                   </button>
                 </div>
+                </>
+                )}
+
+                {/* Tab: Linha do Tempo */}
+                {detailsTab === 'timeline' && (
+                  <CaseTimeline caseId={selectedCase.id} />
+                )}
               </>
             )}
           </div>

@@ -73,13 +73,15 @@ model User {
   createdAt                 DateTime  @default(now())
   updatedAt                 DateTime  @updatedAt
 
-  company           Company?  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  permissions       Permission[]
-  documents         Document[]
-  scheduleEvents    ScheduleEvent[]
-  accountsPayable   AccountPayable[]
-  emailCampaigns    EmailCampaign[]
-  assignedEvents    EventAssignment[]
+  company                 Company?  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  permissions             Permission[]
+  documents               Document[]
+  scheduleEvents          ScheduleEvent[]
+  accountsPayable         AccountPayable[]
+  emailCampaigns          EmailCampaign[]
+  assignedEvents          EventAssignment[]
+  casesAsDeadlineResponsible Case[]  @relation("CaseDeadlineResponsible")
+  caseAuditLogs           CaseAuditLog[]
 
   @@map("users")
 }
@@ -152,33 +154,36 @@ enum CaseStatus {
 
 // Tabela de processos
 model Case {
-  id                String     @id @default(uuid())
-  companyId         String
-  clientId          String
-  processNumber     String     @unique
-  court             String     // Tribunal
-  subject           String     // Assunto
-  value             Float?     // Valor da causa
-  status            CaseStatus @default(ACTIVE)
-  deadline          DateTime?  // Prazo do processo
-  notes             String?
-  ultimoAndamento   String?    // Último movimento do processo (atualizado via API)
-  informarCliente   String?    // Texto explicativo do andamento para informar ao cliente
-  linkProcesso      String?    // Link/URL do processo no tribunal
-  aiSummary         String?    // Resumo gerado por IA dos movimentos do processo
-  createdAt         DateTime   @default(now())
-  updatedAt         DateTime   @updatedAt
-  lastSyncedAt      DateTime?  // Última sincronização com DataJud
-  lastAcknowledgedAt DateTime? // Última vez que o advogado marcou como "ciente" das atualizações
+  id                    String     @id @default(uuid())
+  companyId             String
+  clientId              String
+  processNumber         String     @unique
+  court                 String     // Tribunal
+  subject               String     // Assunto
+  value                 Float?     // Valor da causa
+  status                CaseStatus @default(ACTIVE)
+  deadline              DateTime?  // Prazo do processo
+  deadlineResponsibleId String?    // ID do usuário responsável pelo prazo
+  notes                 String?
+  ultimoAndamento       String?    // Último movimento do processo (atualizado via API)
+  informarCliente       String?    // Texto explicativo do andamento para informar ao cliente
+  linkProcesso          String?    // Link/URL do processo no tribunal
+  aiSummary             String?    // Resumo gerado por IA dos movimentos do processo
+  createdAt             DateTime   @default(now())
+  updatedAt             DateTime   @updatedAt
+  lastSyncedAt          DateTime?  // Última sincronização com DataJud
+  lastAcknowledgedAt    DateTime?  // Última vez que o advogado marcou como "ciente" das atualizações
 
   company               Company               @relation(fields: [companyId], references: [id], onDelete: Cascade)
   client                Client                @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  deadlineResponsible   User?                 @relation("CaseDeadlineResponsible", fields: [deadlineResponsibleId], references: [id], onDelete: SetNull)
   movements             CaseMovement[]
   caseDocuments         CaseDocument[]        @relation("CaseDocuments")
   parts                 CasePart[]
   financialTransactions FinancialTransaction[]
   documents             Document[]
   scheduleEvents        ScheduleEvent[]
+  auditLogs             CaseAuditLog[]
 
   @@map("cases")
 }
@@ -246,6 +251,23 @@ model CasePart {
   case            Case         @relation(fields: [caseId], references: [id], onDelete: Cascade)
 
   @@map("case_parts")
+}
+
+// Tabela de auditoria de processos (histórico de ações)
+model CaseAuditLog {
+  id          String   @id @default(uuid())
+  caseId      String
+  userId      String
+  action      String   // CREATED, STATUS_CHANGED, PART_ADDED, PART_UPDATED, PART_DELETED, DOCUMENT_ADDED, DEADLINE_SET, DEADLINE_RESPONSIBLE_SET, etc.
+  description String   // Descrição legível da ação
+  metadata    Json?    // Dados adicionais (valores antigos/novos, etc.)
+  createdAt   DateTime @default(now())
+
+  case        Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("case_audit_logs")
+  @@index([caseId])
 }
 
 // Tabela de configurações do sistema
