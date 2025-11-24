@@ -47,9 +47,58 @@ app.use(express.urlencoded({ extended: true }));
 // Rotas
 app.use('/api', routes);
 
-// Health check
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+// Enhanced health check with database and system metrics
+app.get('/health', async (req, res) => {
+  const startTime = Date.now();
+
+  // Initialize health status
+  const health: any = {
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    checks: {}
+  };
+
+  // 1. Database connectivity check
+  try {
+    const dbStartTime = Date.now();
+    await prisma.$queryRaw`SELECT 1`;
+    const dbResponseTime = Date.now() - dbStartTime;
+
+    health.checks.database = {
+      status: 'connected',
+      responseTime: `${dbResponseTime}ms`
+    };
+  } catch (error) {
+    health.status = 'unhealthy';
+    health.checks.database = {
+      status: 'disconnected',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    };
+  }
+
+  // 2. Memory usage
+  const memUsage = process.memoryUsage();
+  health.checks.memory = {
+    heapUsed: `${Math.round(memUsage.heapUsed / 1024 / 1024)}MB`,
+    heapTotal: `${Math.round(memUsage.heapTotal / 1024 / 1024)}MB`,
+    rss: `${Math.round(memUsage.rss / 1024 / 1024)}MB`
+  };
+
+  // 3. System info
+  health.system = {
+    nodeVersion: process.version,
+    platform: process.platform,
+    environment: process.env.NODE_ENV || 'development'
+  };
+
+  // Total response time
+  health.responseTime = `${Date.now() - startTime}ms`;
+
+  // Set appropriate HTTP status
+  const httpStatus = health.status === 'healthy' ? 200 : 503;
+
+  res.status(httpStatus).json(health);
 });
 
 // Rota raiz
