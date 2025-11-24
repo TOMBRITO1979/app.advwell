@@ -47,7 +47,7 @@ services:
         max_attempts: 3
 
   backend:
-    image: tomautomations/advwell-backend:v66-audit-logs
+    image: tomautomations/advwell-backend:v67-deadline-clear-fix
     environment:
       # Database
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
