@@ -13,6 +13,8 @@ router.put('/own', requireAdmin, companyController.updateOwn);
 // Rotas do Super Admin
 router.get('/', requireSuperAdmin, companyController.list);
 router.post('/', requireSuperAdmin, companyController.create);
+router.get('/:id/users', requireSuperAdmin, companyController.getUsers);
+router.put('/:companyId/users/:userId/toggle-active', requireSuperAdmin, companyController.toggleUserActive);
 router.put('/:id', requireSuperAdmin, companyController.update);
 router.delete('/:id', requireSuperAdmin, companyController.delete);
 
