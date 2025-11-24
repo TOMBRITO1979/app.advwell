@@ -126,6 +126,7 @@ router.get('/deadlines', caseController.getDeadlines); // Lista processos com pr
 router.get('/export/csv', caseController.exportCSV);
 router.post('/import/csv', upload.single('file'), caseController.importCSV);
 router.get('/updates', caseController.getPendingUpdates); // Lista atualizações pendentes
+router.get('/:id/audit-logs', caseController.getAuditLogs); // Busca logs de auditoria
 router.get('/:id', caseController.get);
 router.put('/:id', updateCaseValidation, validate, caseController.update);
 router.post('/:id/sync', caseController.syncMovements);

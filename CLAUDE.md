@@ -11,9 +11,9 @@ AdvWell is a multitenant SaaS for Brazilian law firms with DataJud CNJ integrati
 - Backend API: https://api.advwell.pro
 
 **Current Versions:**
-- Backend: v58-deadlines - Added /deadlines endpoint for tracking case deadlines
-- Frontend: v83-show-password - White icon on login + show/hide password toggle
-- Database: PostgreSQL 16 (with deadline field, status PENDENTE, and stateRegistration)
+- Backend: v66-audit-logs - Case audit logging system with comprehensive action tracking
+- Frontend: v87-audit-logs - Timeline view for case audit history with tabbed interface
+- Database: PostgreSQL 16 (with CaseAuditLog table for complete audit trail)
 
 **Production Configuration (100+ Companies Ready):**
 - **Horizontal Scaling:** Backend 3 replicas, Frontend 2 replicas (Docker Swarm)

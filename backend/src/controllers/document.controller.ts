@@ -2,6 +2,7 @@ import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import prisma from '../utils/prisma';
 import { uploadToS3 } from '../utils/s3';
+import AuditService from '../services/audit.service';
 
 // Listar documentos com filtros e paginação
 export const listDocuments = async (req: AuthRequest, res: Response) => {
@@ -247,6 +248,16 @@ export const createDocument = async (req: AuthRequest, res: Response) => {
       },
     });
 
+    // Log de auditoria: documento adicionado (apenas se vinculado a um processo)
+    if (caseId) {
+      await AuditService.logDocumentAdded(
+        caseId,
+        req.user!.userId,
+        name,
+        storageType
+      );
+    }
+
     res.status(201).json(document);
   } catch (error: any) {
     console.error('Erro ao criar documento:', error);
@@ -330,6 +341,15 @@ export const deleteDocument = async (req: AuthRequest, res: Response) => {
 
     if (!document) {
       return res.status(404).json({ error: 'Documento não encontrado' });
+    }
+
+    // Log de auditoria: documento removido (apenas se vinculado a um processo)
+    if (document.caseId) {
+      await AuditService.logDocumentDeleted(
+        document.caseId,
+        req.user!.userId,
+        document.name
+      );
     }
 
     // TODO: Se for upload, excluir arquivo do S3

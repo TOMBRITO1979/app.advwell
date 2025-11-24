@@ -47,7 +47,7 @@ services:
         max_attempts: 3
 
   backend:
-    image: tomautomations/advwell-backend:v58-deadlines
+    image: tomautomations/advwell-backend:v66-audit-logs
     environment:
       # Database
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
@@ -120,7 +120,7 @@ services:
         - "traefik.docker.network=network_public"
 
   frontend:
-    image: tomautomations/advwell-frontend:v83-show-password
+    image: tomautomations/advwell-frontend:v87-audit-logs
     environment:
       - VITE_API_URL=${VITE_API_URL}
     networks:
