@@ -106,7 +106,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               </button>
               <div className="flex items-center gap-2">
                 <Scale className="text-primary-600" size={28} />
-                <h1 className="text-lg sm:text-2xl font-bold text-primary-600">AdvWell</h1>
+                <h1 className="text-lg sm:text-2xl font-bold text-primary-600">{user?.companyName || 'AdvWell'}</h1>
               </div>
             </div>
             <div className="flex items-center gap-2 sm:gap-4">

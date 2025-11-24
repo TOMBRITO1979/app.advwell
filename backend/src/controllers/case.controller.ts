@@ -5,6 +5,7 @@ import datajudService from '../services/datajud.service';
 import { parse } from 'csv-parse/sync';
 import { sanitizeString } from '../utils/sanitize';
 import { AIService } from '../services/ai/ai.service';
+import { sendCaseUpdateNotification } from '../utils/email';
 
 // Função utilitária para formatar o último movimento
 function getUltimoAndamento(movimentos: any[]): string | null {
@@ -248,6 +249,10 @@ export class CaseController {
           id,
           companyId: companyId!,
         },
+        include: {
+          client: true,
+          company: true,
+        },
       });
 
       if (!caseData) {
@@ -256,6 +261,9 @@ export class CaseController {
 
       // Converter deadline se fornecido
       const cleanDeadline = deadline && deadline !== '' ? new Date(deadline) : undefined;
+
+      // Sanitiza informarCliente se fornecido
+      const sanitizedInformarCliente = informarCliente !== undefined ? sanitizeString(informarCliente) : undefined;
 
       const updatedCase = await prisma.case.update({
         where: { id },
@@ -266,10 +274,36 @@ export class CaseController {
           status,
           ...(deadline !== undefined && { deadline: cleanDeadline }),
           notes: sanitizeString(notes),
-          ...(informarCliente !== undefined && { informarCliente: sanitizeString(informarCliente) }),
+          ...(sanitizedInformarCliente !== undefined && { informarCliente: sanitizedInformarCliente }),
           ...(linkProcesso !== undefined && { linkProcesso }),
         },
       });
+
+      // Enviar email ao cliente se informarCliente foi atualizado e não está vazio
+      if (sanitizedInformarCliente !== undefined &&
+          sanitizedInformarCliente &&
+          sanitizedInformarCliente.trim() !== '' &&
+          sanitizedInformarCliente !== caseData.informarCliente) {
+
+        // Verificar se o cliente tem email
+        if (caseData.client.email) {
+          try {
+            await sendCaseUpdateNotification(
+              caseData.client.email,
+              caseData.client.name,
+              caseData.processNumber,
+              sanitizedInformarCliente,
+              caseData.company.name
+            );
+            console.log(`Email de atualização enviado para ${caseData.client.email} sobre processo ${caseData.processNumber}`);
+          } catch (emailError) {
+            console.error('Erro ao enviar email de notificação:', emailError);
+            // Não bloqueia a atualização se o email falhar
+          }
+        } else {
+          console.log(`Cliente ${caseData.client.name} não possui email cadastrado. Notificação não enviada.`);
+        }
+      }
 
       res.json(updatedCase);
     } catch (error) {

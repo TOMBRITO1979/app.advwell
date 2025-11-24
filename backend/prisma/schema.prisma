@@ -273,16 +273,51 @@ model FinancialTransaction {
   caseId      String?         // Opcional - pode não estar vinculado a um processo
   type        TransactionType
   description String
-  amount      Float
+  amount      Float           // Valor total da transação
   date        DateTime        @default(now())
+
+  // Campos de parcelamento
+  isInstallment       Boolean  @default(false)  // Se é uma transação parcelada
+  installmentCount    Int?                      // Número total de parcelas
+  installmentInterval Int?     @default(30)     // Intervalo em dias entre parcelas (padrão 30 = mensal)
+
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
 
-  company     Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  client      Client          @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  case        Case?           @relation(fields: [caseId], references: [id], onDelete: SetNull)
+  company      Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  client       Client          @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  case         Case?           @relation(fields: [caseId], references: [id], onDelete: SetNull)
+  installments InstallmentPayment[]  // Relação com parcelas
 
   @@map("financial_transactions")
+}
+
+// Enum para status de parcelas
+enum InstallmentStatus {
+  PENDING    // Pendente
+  PAID       // Pago
+  OVERDUE    // Atrasado
+  CANCELLED  // Cancelado
+}
+
+// Tabela de parcelas de pagamento/recebimento
+model InstallmentPayment {
+  id                      String             @id @default(uuid())
+  financialTransactionId  String
+  installmentNumber       Int                // Número da parcela (1, 2, 3...)
+  amount                  Float              // Valor da parcela
+  dueDate                 DateTime           // Data de vencimento
+  paidDate                DateTime?          // Data de pagamento (quando pago)
+  paidAmount              Float?             // Valor efetivamente pago (pode diferir do valor da parcela)
+  status                  InstallmentStatus  @default(PENDING)
+  notes                   String?            // Observações sobre a parcela
+  receiptUrl              String?            // URL do recibo/comprovante em PDF
+  createdAt               DateTime           @default(now())
+  updatedAt               DateTime           @updatedAt
+
+  financialTransaction    FinancialTransaction @relation(fields: [financialTransactionId], references: [id], onDelete: Cascade)
+
+  @@map("installment_payments")
 }
 
 // Enum para tipo de armazenamento de documentos
