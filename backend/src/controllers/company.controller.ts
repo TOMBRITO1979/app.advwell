@@ -229,6 +229,99 @@ export class CompanyController {
       res.status(500).json({ error: 'Erro ao deletar empresa' });
     }
   }
+
+  // Super Admin - Listar usuários de uma empresa com breakdown por role
+  async getUsers(req: AuthRequest, res: Response) {
+    try {
+      const { id } = req.params;
+
+      // Verifica se a empresa existe
+      const company = await prisma.company.findUnique({
+        where: { id },
+      });
+
+      if (!company) {
+        return res.status(404).json({ error: 'Empresa não encontrada' });
+      }
+
+      // Busca todos os usuários da empresa
+      const users = await prisma.user.findMany({
+        where: { companyId: id },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          active: true,
+          createdAt: true,
+        },
+        orderBy: [
+          { role: 'desc' }, // ADMIN primeiro
+          { name: 'asc' },
+        ],
+      });
+
+      // Calcula breakdown por role
+      const adminCount = users.filter(u => u.role === 'ADMIN').length;
+      const userCount = users.filter(u => u.role === 'USER').length;
+      const superAdminCount = users.filter(u => u.role === 'SUPER_ADMIN').length;
+
+      res.json({
+        users,
+        breakdown: {
+          total: users.length,
+          admin: adminCount,
+          user: userCount,
+          superAdmin: superAdminCount,
+        },
+      });
+    } catch (error) {
+      console.error('Erro ao listar usuários da empresa:', error);
+      res.status(500).json({ error: 'Erro ao listar usuários da empresa' });
+    }
+  }
+
+  // Super Admin - Toggle status ativo/inativo de um usuário
+  async toggleUserActive(req: AuthRequest, res: Response) {
+    try {
+      const { companyId, userId } = req.params;
+
+      // Verifica se o usuário existe e pertence à empresa
+      const user = await prisma.user.findFirst({
+        where: {
+          id: userId,
+          companyId: companyId,
+        },
+      });
+
+      if (!user) {
+        return res.status(404).json({ error: 'Usuário não encontrado' });
+      }
+
+      // Impede desativação de SUPER_ADMIN
+      if (user.role === 'SUPER_ADMIN') {
+        return res.status(403).json({ error: 'Não é possível desativar usuários SUPER_ADMIN' });
+      }
+
+      // Toggle do status active
+      const updatedUser = await prisma.user.update({
+        where: { id: userId },
+        data: { active: !user.active },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          active: true,
+        },
+      });
+
+      res.json(updatedUser);
+    } catch (error) {
+      console.error('Erro ao alterar status do usuário:', error);
+      res.status(500).json({ error: 'Erro ao alterar status do usuário' });
+    }
+  }
 }
 
 export default new CompanyController();

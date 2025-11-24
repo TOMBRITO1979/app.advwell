@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
 import api from '../services/api';
 import toast from 'react-hot-toast';
-import { Plus, Search, Edit, X, Building2, Users, FileText, ToggleLeft, ToggleRight, Trash2 } from 'lucide-react';
+import { Plus, Search, Edit, X, Building2, Users, FileText, ToggleLeft, ToggleRight, Trash2, UserCog } from 'lucide-react';
 
 interface Company {
   id: string;
@@ -23,14 +23,36 @@ interface Company {
   };
 }
 
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: 'USER' | 'ADMIN' | 'SUPER_ADMIN';
+  active: boolean;
+  createdAt: string;
+}
+
+interface UsersData {
+  users: User[];
+  breakdown: {
+    total: number;
+    admin: number;
+    user: number;
+    superAdmin: number;
+  };
+}
+
 const Companies: React.FC = () => {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showUsersModal, setShowUsersModal] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
+  const [usersData, setUsersData] = useState<UsersData | null>(null);
+  const [loadingUsers, setLoadingUsers] = useState(false);
 
   const [formData, setFormData] = useState({
     companyName: '',
@@ -182,6 +204,52 @@ const Companies: React.FC = () => {
     setShowModal(true);
   };
 
+  const handleViewUsers = async (company: Company) => {
+    setSelectedCompany(company);
+    setShowUsersModal(true);
+    setLoadingUsers(true);
+    try {
+      const response = await api.get(`/companies/${company.id}/users`);
+      setUsersData(response.data);
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Erro ao carregar usuários');
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
+
+  const handleToggleUserActive = async (userId: string) => {
+    if (!selectedCompany) return;
+
+    try {
+      await api.put(`/companies/${selectedCompany.id}/users/${userId}/toggle-active`);
+      toast.success('Status do usuário atualizado!');
+      // Recarregar lista de usuários
+      const response = await api.get(`/companies/${selectedCompany.id}/users`);
+      setUsersData(response.data);
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Erro ao alterar status do usuário');
+    }
+  };
+
+  const getRoleBadge = (role: string) => {
+    const badges = {
+      ADMIN: 'bg-primary-100 text-primary-800',
+      USER: 'bg-neutral-100 text-neutral-800',
+      SUPER_ADMIN: 'bg-purple-100 text-purple-800',
+    };
+    const labels = {
+      ADMIN: 'Admin',
+      USER: 'Usuário',
+      SUPER_ADMIN: 'Super Admin',
+    };
+    return (
+      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${badges[role as keyof typeof badges]}`}>
+        {labels[role as keyof typeof labels]}
+      </span>
+    );
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('pt-BR');
   };
@@ -283,6 +351,13 @@ const Companies: React.FC = () => {
                       </td>
                       <td className="px-4 py-3 text-sm">
                         <div className="flex items-center justify-center gap-2">
+                          <button
+                            onClick={() => handleViewUsers(company)}
+                            className="text-blue-600 hover:text-blue-800 transition-colors"
+                            title="Ver Usuários"
+                          >
+                            <UserCog size={18} />
+                          </button>
                           <button
                             onClick={() => handleToggleActive(company)}
                             className={`${company.active ? 'text-error-600 hover:text-error-800' : 'text-primary-600 hover:text-primary-800'} transition-colors`}
@@ -588,6 +663,117 @@ const Companies: React.FC = () => {
               >
                 Sim, Deletar
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Gerenciamento de Usuários */}
+      {showUsersModal && selectedCompany && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b border-neutral-200 px-6 py-4 flex justify-between items-center">
+              <div>
+                <h2 className="text-xl font-bold text-neutral-900">Usuários da Empresa</h2>
+                <p className="text-sm text-neutral-600 mt-1">{selectedCompany.name}</p>
+                {usersData && (
+                  <div className="flex gap-4 mt-2">
+                    <span className="text-xs text-neutral-600">
+                      <strong>{usersData.breakdown.admin}</strong> Admin(s)
+                    </span>
+                    <span className="text-xs text-neutral-600">
+                      <strong>{usersData.breakdown.user}</strong> Usuário(s)
+                    </span>
+                    {usersData.breakdown.superAdmin > 0 && (
+                      <span className="text-xs text-neutral-600">
+                        <strong>{usersData.breakdown.superAdmin}</strong> Super Admin(s)
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+              <button
+                onClick={() => {
+                  setShowUsersModal(false);
+                  setSelectedCompany(null);
+                  setUsersData(null);
+                }}
+                className="text-neutral-400 hover:text-neutral-600"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className="p-6">
+              {loadingUsers ? (
+                <p className="text-center py-8 text-neutral-600">Carregando usuários...</p>
+              ) : usersData && usersData.users.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-neutral-50">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                          Nome
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                          Email
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                          Função
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                          Status
+                        </th>
+                        <th className="px-4 py-3 text-center text-xs font-medium text-neutral-500 uppercase">
+                          Ações
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-neutral-200">
+                      {usersData.users.map((user) => (
+                        <tr key={user.id} className="hover:bg-neutral-50">
+                          <td className="px-4 py-3 text-sm font-medium text-neutral-900">
+                            {user.name}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-neutral-600">
+                            {user.email}
+                          </td>
+                          <td className="px-4 py-3 text-sm">
+                            {getRoleBadge(user.role)}
+                          </td>
+                          <td className="px-4 py-3 text-sm">
+                            <span
+                              className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                user.active
+                                  ? 'bg-green-100 text-green-800'
+                                  : 'bg-error-100 text-error-800'
+                              }`}
+                            >
+                              {user.active ? 'Ativo' : 'Inativo'}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-sm text-center">
+                            {user.role !== 'SUPER_ADMIN' && (
+                              <button
+                                onClick={() => handleToggleUserActive(user.id)}
+                                className={`${user.active ? 'text-error-600 hover:text-error-800' : 'text-green-600 hover:text-green-800'} transition-colors`}
+                                title={user.active ? 'Desativar usuário' : 'Ativar usuário'}
+                              >
+                                {user.active ? <ToggleRight size={20} /> : <ToggleLeft size={20} />}
+                              </button>
+                            )}
+                            {user.role === 'SUPER_ADMIN' && (
+                              <span className="text-xs text-neutral-400 italic">Protegido</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <p className="text-center py-8 text-neutral-600">Nenhum usuário encontrado</p>
+              )}
             </div>
           </div>
         </div>
