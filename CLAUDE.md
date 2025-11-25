@@ -12,7 +12,7 @@ AdvWell is a multitenant SaaS for Brazilian law firms with DataJud CNJ integrati
 
 **Current Versions:**
 - Backend: v66-audit-logs - Case audit logging system with comprehensive action tracking
-- Frontend: v87-audit-logs - Timeline view for case audit history with tabbed interface
+- Frontend: v91-chatwoot-typography - Improved typography with Inter font and Chatwoot color scheme
 - Database: PostgreSQL 16 (with CaseAuditLog table for complete audit trail)
 
 **Production Configuration (100+ Companies Ready):**
