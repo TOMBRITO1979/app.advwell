@@ -31,8 +31,10 @@ const registerValidation = [
     .normalizeEmail()
     .withMessage('Email inválido'),
   body('password')
-    .isLength({ min: 6, max: 100 })
-    .withMessage('Senha deve ter entre 6 e 100 caracteres'),
+    .isLength({ min: 10, max: 100 })
+    .withMessage('Senha deve ter entre 10 e 100 caracteres')
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
+    .withMessage('Senha deve conter pelo menos uma letra maiúscula, uma minúscula e um número'),
   body('companyName')
     .trim()
     .isLength({ min: 2, max: 200 })
@@ -70,8 +72,10 @@ const resetPasswordValidation = [
     .isLength({ min: 10 })
     .withMessage('Token inválido'),
   body('newPassword')
-    .isLength({ min: 6, max: 100 })
-    .withMessage('Senha deve ter entre 6 e 100 caracteres'),
+    .isLength({ min: 10, max: 100 })
+    .withMessage('Senha deve ter entre 10 e 100 caracteres')
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
+    .withMessage('Senha deve conter pelo menos uma letra maiúscula, uma minúscula e um número'),
 ];
 
 // Validações para verificação de email
@@ -91,9 +95,18 @@ const resendVerificationValidation = [
     .withMessage('Email inválido'),
 ];
 
+// Validações para refresh token
+const refreshTokenValidation = [
+  body('refreshToken')
+    .notEmpty()
+    .isString()
+    .withMessage('Refresh token é obrigatório'),
+];
+
 // Aplicar validações nas rotas
 router.post('/register', registerValidation, validate, authController.register);
 router.post('/login', loginValidation, validate, authController.login);
+router.post('/refresh', refreshTokenValidation, validate, authController.refreshToken);
 router.post('/forgot-password', forgotPasswordValidation, validate, authController.forgotPassword);
 router.post('/reset-password', resetPasswordValidation, validate, authController.resetPassword);
 router.post('/verify-email', verifyEmailValidation, validate, authController.verifyEmail);

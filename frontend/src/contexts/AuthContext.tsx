@@ -34,9 +34,10 @@ export const useAuth = create<AuthState>((set) => ({
 
   login: async (email, password) => {
     const response = await api.post('/auth/login', { email, password });
-    const { token, user } = response.data;
+    const { token, refreshToken, user } = response.data;
 
     localStorage.setItem('token', token);
+    localStorage.setItem('refreshToken', refreshToken);
     localStorage.setItem('user', JSON.stringify(user));
 
     set({ user, token });
@@ -54,6 +55,7 @@ export const useAuth = create<AuthState>((set) => ({
 
   logout: () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('refreshToken');
     localStorage.removeItem('user');
     set({ user: null, token: null });
   },
@@ -71,6 +73,7 @@ export const useAuth = create<AuthState>((set) => ({
       set({ user: response.data, token, isLoading: false });
     } catch (error) {
       localStorage.removeItem('token');
+      localStorage.removeItem('refreshToken');
       localStorage.removeItem('user');
       set({ user: null, token: null, isLoading: false });
     }

@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import prisma from '../utils/prisma';
-import { generateToken, generateResetToken } from '../utils/jwt';
+import { generateToken, generateResetToken, generateTokenPair, verifyRefreshToken } from '../utils/jwt';
 import { sendPasswordResetEmail, sendWelcomeEmail, sendEmailVerification } from '../utils/email';
 import { AuthRequest } from '../middleware/auth';
 import { securityLogger, appLogger } from '../utils/logger';
@@ -168,7 +168,7 @@ export class AuthController {
         });
       }
 
-      const token = generateToken({
+      const tokens = generateTokenPair({
         userId: user.id,
         email: user.email,
         role: user.role,
@@ -178,7 +178,8 @@ export class AuthController {
       securityLogger.loginSuccess(email, user.id, req.ip);
 
       res.json({
-        token,
+        token: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
         user: {
           id: user.id,
           name: user.name,
@@ -385,6 +386,61 @@ export class AuthController {
     } catch (error) {
       appLogger.error('Erro ao reenviar email:', error as Error);
       res.status(500).json({ error: 'Erro ao processar solicitação' });
+    }
+  }
+  async refreshToken(req: Request, res: Response) {
+    try {
+      const { refreshToken } = req.body;
+
+      if (!refreshToken) {
+        return res.status(400).json({ error: 'Refresh token é obrigatório' });
+      }
+
+      // Verifica o refresh token
+      let decoded;
+      try {
+        decoded = verifyRefreshToken(refreshToken);
+      } catch (error) {
+        return res.status(401).json({ error: 'Refresh token inválido ou expirado' });
+      }
+
+      // Busca o usuário
+      const user = await prisma.user.findUnique({
+        where: { id: decoded.userId },
+        include: { company: true },
+      });
+
+      if (!user || !user.active) {
+        return res.status(401).json({ error: 'Usuário não encontrado ou inativo' });
+      }
+
+      if (user.company && !user.company.active) {
+        return res.status(401).json({ error: 'Empresa inativa' });
+      }
+
+      // Gera novos tokens
+      const tokens = generateTokenPair({
+        userId: user.id,
+        email: user.email,
+        role: user.role,
+        companyId: user.companyId || undefined,
+      });
+
+      res.json({
+        token: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          companyId: user.companyId,
+          companyName: user.company?.name,
+        },
+      });
+    } catch (error) {
+      appLogger.error('Erro ao renovar token:', error as Error);
+      res.status(500).json({ error: 'Erro ao renovar token' });
     }
   }
 }
