@@ -41,6 +41,7 @@ export class UserController {
             email: true,
             role: true,
             active: true,
+            hideSidebar: true,
             createdAt: true,
             permissions: true,
           },
@@ -57,7 +58,7 @@ export class UserController {
   async create(req: AuthRequest, res: Response) {
     try {
       const companyId = req.user!.companyId;
-      const { name, email, password, permissions } = req.body;
+      const { name, email, password, permissions, hideSidebar } = req.body;
 
       if (!companyId) {
         return res.status(403).json({ error: 'Usuário não possui empresa associada' });
@@ -81,6 +82,7 @@ export class UserController {
           password: hashedPassword,
           role: 'USER',
           companyId,
+          hideSidebar: hideSidebar || false,
         },
         select: {
           id: true,
@@ -88,6 +90,7 @@ export class UserController {
           email: true,
           role: true,
           active: true,
+          hideSidebar: true,
           createdAt: true,
         },
       });
@@ -113,6 +116,7 @@ export class UserController {
           email: true,
           role: true,
           active: true,
+          hideSidebar: true,
           createdAt: true,
           permissions: true,
         },
@@ -130,7 +134,7 @@ export class UserController {
     try {
       const { id } = req.params;
       const companyId = req.user!.companyId;
-      const { name, email, active, permissions } = req.body;
+      const { name, email, active, permissions, hideSidebar } = req.body;
 
       // Verifica se o usuário pertence à mesma empresa
       const user = await prisma.user.findFirst({
@@ -155,6 +159,7 @@ export class UserController {
           name,
           email,
           active,
+          hideSidebar: hideSidebar !== undefined ? hideSidebar : undefined,
         },
         select: {
           id: true,
@@ -162,6 +167,7 @@ export class UserController {
           email: true,
           role: true,
           active: true,
+          hideSidebar: true,
         },
       });
 
@@ -192,6 +198,7 @@ export class UserController {
           email: true,
           role: true,
           active: true,
+          hideSidebar: true,
           permissions: true,
         },
       });

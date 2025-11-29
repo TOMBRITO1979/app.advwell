@@ -2,13 +2,20 @@ import React, { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
 import api from '../services/api';
 import toast from 'react-hot-toast';
-import { Search, Clock, Calendar, Eye, AlertCircle } from 'lucide-react';
+import { Search, Clock, Calendar, Eye, AlertCircle, Edit, CheckCircle, X } from 'lucide-react';
 
 interface Case {
   id: string;
   processNumber: string;
   subject: string;
   deadline: string;
+  deadlineCompleted: boolean;
+  deadlineCompletedAt?: string;
+  deadlineResponsible?: {
+    id: string;
+    name: string;
+    email: string;
+  };
   status: string;
   client: {
     id: string;
@@ -31,7 +38,10 @@ const Deadlines: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [selectedCase, setSelectedCase] = useState<Case | null>(null);
+  const [editDeadline, setEditDeadline] = useState('');
+  const [savingDeadline, setSavingDeadline] = useState(false);
 
   useEffect(() => {
     loadDeadlines();
@@ -75,9 +85,9 @@ const Deadlines: React.FC = () => {
   };
 
   const getDeadlineIcon = (daysRemaining: number) => {
-    if (daysRemaining < 0) return <AlertCircle size={16} className="text-red-600" />;
-    if (daysRemaining <= 7) return <Clock size={16} className="text-orange-600" />;
-    return <Calendar size={16} className="text-green-600" />;
+    if (daysRemaining < 0) return <AlertCircle size={18} className="text-red-600" />;
+    if (daysRemaining <= 7) return <Clock size={18} className="text-orange-600" />;
+    return <Calendar size={18} className="text-green-600" />;
   };
 
   const handleCaseClick = async (caseId: string) => {
@@ -87,6 +97,46 @@ const Deadlines: React.FC = () => {
       setShowDetailsModal(true);
     } catch (error: any) {
       toast.error(error.response?.data?.error || 'Erro ao carregar detalhes do processo');
+    }
+  };
+
+  const handleEditClick = (caseItem: Case) => {
+    setSelectedCase(caseItem);
+    // Format date for input (YYYY-MM-DD)
+    const deadlineDate = new Date(caseItem.deadline);
+    setEditDeadline(deadlineDate.toISOString().split('T')[0]);
+    setShowEditModal(true);
+  };
+
+  const handleSaveDeadline = async () => {
+    if (!selectedCase) return;
+
+    setSavingDeadline(true);
+    try {
+      await api.put(`/cases/${selectedCase.id}/deadline`, {
+        deadline: editDeadline,
+      });
+      toast.success('Prazo atualizado com sucesso!');
+      setShowEditModal(false);
+      setSelectedCase(null);
+      loadDeadlines();
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Erro ao atualizar prazo');
+    } finally {
+      setSavingDeadline(false);
+    }
+  };
+
+  const handleToggleCompleted = async (caseItem: Case) => {
+    const newStatus = !caseItem.deadlineCompleted;
+    try {
+      await api.post(`/cases/${caseItem.id}/deadline/toggle`, {
+        completed: newStatus,
+      });
+      toast.success(newStatus ? 'Prazo marcado como cumprido!' : 'Prazo reaberto!');
+      loadDeadlines();
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Erro ao atualizar status do prazo');
     }
   };
 
@@ -190,16 +240,20 @@ const Deadlines: React.FC = () => {
                     const deadlineColor = getDeadlineColor(daysRemaining);
 
                     return (
-                      <tr key={caseItem.id} className="hover:bg-neutral-50">
+                      <tr key={caseItem.id} className={`hover:bg-neutral-50 ${caseItem.deadlineCompleted ? 'bg-green-50' : ''}`}>
                         <td className="px-4 py-3 text-sm">
                           <div className="flex items-center justify-center">
-                            {getDeadlineIcon(daysRemaining)}
+                            {caseItem.deadlineCompleted ? (
+                              <CheckCircle size={18} className="text-green-600" />
+                            ) : (
+                              getDeadlineIcon(daysRemaining)
+                            )}
                           </div>
                         </td>
                         <td className="px-4 py-3 text-sm">
                           <button
                             onClick={() => handleCaseClick(caseItem.id)}
-                            className="text-primary-600 hover:text-primary-800 hover:underline font-medium"
+                            className={`hover:underline font-medium transition-colors ${caseItem.deadlineCompleted ? 'text-green-600 hover:text-green-800' : 'text-primary-600 hover:text-primary-800'}`}
                             title="Ver detalhes do processo"
                           >
                             {caseItem.processNumber}
@@ -217,9 +271,15 @@ const Deadlines: React.FC = () => {
                           {new Date(caseItem.deadline).toLocaleDateString('pt-BR')}
                         </td>
                         <td className="px-4 py-3 text-sm">
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${deadlineColor}`}>
-                            {getDeadlineLabel(daysRemaining)}
-                          </span>
+                          {caseItem.deadlineCompleted ? (
+                            <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                              Cumprido
+                            </span>
+                          ) : (
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${deadlineColor}`}>
+                              {getDeadlineLabel(daysRemaining)}
+                            </span>
+                          )}
                         </td>
                         <td className="px-4 py-3 text-sm">
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[caseItem.status as keyof typeof statusColors] || 'bg-gray-100 text-gray-800'}`}>
@@ -227,13 +287,31 @@ const Deadlines: React.FC = () => {
                           </span>
                         </td>
                         <td className="px-4 py-3 text-sm">
-                          <div className="flex items-center justify-center">
+                          <div className="flex items-center justify-center gap-1">
                             <button
                               onClick={() => handleCaseClick(caseItem.id)}
-                              className="text-primary-600 hover:text-primary-800 transition-colors"
+                              className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-info-600 hover:text-info-700 hover:bg-info-50 rounded-md transition-all duration-200"
                               title="Ver detalhes"
                             >
-                              <Eye size={16} />
+                              <Eye size={18} />
+                            </button>
+                            <button
+                              onClick={() => handleEditClick(caseItem)}
+                              className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-md transition-all duration-200"
+                              title="Editar prazo"
+                            >
+                              <Edit size={18} />
+                            </button>
+                            <button
+                              onClick={() => handleToggleCompleted(caseItem)}
+                              className={`inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] rounded-md transition-all duration-200 ${
+                                caseItem.deadlineCompleted
+                                  ? 'text-orange-600 hover:text-orange-700 hover:bg-orange-50'
+                                  : 'text-green-600 hover:text-green-700 hover:bg-green-50'
+                              }`}
+                              title={caseItem.deadlineCompleted ? 'Reabrir prazo' : 'Marcar como cumprido'}
+                            >
+                              <CheckCircle size={18} />
                             </button>
                           </div>
                         </td>
@@ -388,9 +466,82 @@ const Deadlines: React.FC = () => {
             <div className="sticky bottom-0 bg-neutral-50 border-t border-neutral-200 px-6 py-4 flex justify-end min-h-[44px]">
               <button
                 onClick={() => setShowDetailsModal(false)}
-                className="px-6 py-2 border border-neutral-300 rounded-md text-neutral-700 hover:bg-neutral-50 transition-colors min-h-[44px]"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 bg-white hover:bg-neutral-50 text-neutral-700 font-medium rounded-lg transition-all duration-200"
               >
                 Fechar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Edição do Prazo */}
+      {showEditModal && selectedCase && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-md w-full">
+            {/* Header */}
+            <div className="border-b border-neutral-200 px-6 py-4 flex justify-between items-center">
+              <div>
+                <h2 className="text-xl font-bold text-neutral-900">Editar Prazo</h2>
+                <p className="text-sm text-neutral-500 mt-1">{selectedCase.processNumber}</p>
+              </div>
+              <button
+                onClick={() => {
+                  setShowEditModal(false);
+                  setSelectedCase(null);
+                }}
+                className="text-neutral-400 hover:text-neutral-600"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            {/* Conteúdo */}
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                  Cliente
+                </label>
+                <p className="text-neutral-600">{selectedCase.client.name}</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                  Assunto
+                </label>
+                <p className="text-neutral-600">{selectedCase.subject}</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                  Nova Data do Prazo <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="date"
+                  value={editDeadline}
+                  onChange={(e) => setEditDeadline(e.target.value)}
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 min-h-[44px]"
+                />
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="border-t border-neutral-200 px-6 py-4 flex justify-end gap-3">
+              <button
+                onClick={() => {
+                  setShowEditModal(false);
+                  setSelectedCase(null);
+                }}
+                className="px-4 py-2 border border-neutral-300 bg-white hover:bg-neutral-50 text-neutral-700 font-medium rounded-lg transition-all duration-200 min-h-[44px]"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleSaveDeadline}
+                disabled={savingDeadline || !editDeadline}
+                className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg transition-all duration-200 min-h-[44px] disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {savingDeadline ? 'Salvando...' : 'Salvar'}
               </button>
             </div>
           </div>

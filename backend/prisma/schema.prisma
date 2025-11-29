@@ -34,6 +34,7 @@ model Company {
   smtpConfig            SMTPConfig?
   emailCampaigns        EmailCampaign[]
   aiConfig              AIConfig?
+  legalDocuments        LegalDocument[]
 
   @@map("companies")
 }
@@ -70,6 +71,9 @@ model User {
   profilePhoto              String?   // Chave S3 da foto de perfil
   profilePhotoUrl           String?   // URL da foto de perfil
 
+  // Configurações de interface
+  hideSidebar               Boolean   @default(false) // Esconder sidebar para este usuário
+
   createdAt                 DateTime  @default(now())
   updatedAt                 DateTime  @updatedAt
 
@@ -82,6 +86,8 @@ model User {
   assignedEvents          EventAssignment[]
   casesAsDeadlineResponsible Case[]  @relation("CaseDeadlineResponsible")
   caseAuditLogs           CaseAuditLog[]
+  legalDocumentsSigned    LegalDocument[] @relation("LegalDocumentSigner")
+  legalDocumentsCreated   LegalDocument[] @relation("LegalDocumentCreator")
 
   @@map("users")
 }
@@ -134,6 +140,7 @@ model Client {
   financialTransactions FinancialTransaction[]
   documents             Document[]
   scheduleEvents        ScheduleEvent[]
+  legalDocuments        LegalDocument[]       @relation("LegalDocumentClient")
 
   @@map("clients")
 }
@@ -157,18 +164,20 @@ model Case {
   id                    String     @id @default(uuid())
   companyId             String
   clientId              String
-  processNumber         String     @unique
+  processNumber         String     // Número do processo (único por empresa)
   court                 String     // Tribunal
   subject               String     // Assunto
   value                 Float?     // Valor da causa
   status                CaseStatus @default(ACTIVE)
   deadline              DateTime?  // Prazo do processo
   deadlineResponsibleId String?    // ID do usuário responsável pelo prazo
+  deadlineCompleted     Boolean    @default(false) // Prazo foi cumprido
+  deadlineCompletedAt   DateTime?  // Data/hora que o prazo foi marcado como cumprido
   notes                 String?
   ultimoAndamento       String?    // Último movimento do processo (atualizado via API)
-  informarCliente       String?    // Texto explicativo do andamento para informar ao cliente
+  informarCliente       String?    @db.Text // Texto explicativo do andamento para informar ao cliente
   linkProcesso          String?    // Link/URL do processo no tribunal
-  aiSummary             String?    // Resumo gerado por IA dos movimentos do processo
+  aiSummary             String?    @db.Text // Resumo gerado por IA dos movimentos do processo
   createdAt             DateTime   @default(now())
   updatedAt             DateTime   @updatedAt
   lastSyncedAt          DateTime?  // Última sincronização com DataJud
@@ -185,6 +194,10 @@ model Case {
   scheduleEvents        ScheduleEvent[]
   auditLogs             CaseAuditLog[]
 
+  @@unique([companyId, processNumber]) // Único por empresa
+  @@index([companyId])
+  @@index([companyId, status])
+  @@index([clientId])
   @@map("cases")
 }
 
@@ -624,4 +637,36 @@ model CampaignRecipient {
   campaign       EmailCampaign   @relation(fields: [campaignId], references: [id], onDelete: Cascade)
 
   @@map("campaign_recipients")
+}
+
+// ============================================================================
+// LEGAL DOCUMENTS SYSTEM
+// ============================================================================
+
+// Tabela de documentos jurídicos (recibos, contratos, procurações, etc.)
+model LegalDocument {
+  id          String   @id @default(uuid())
+  companyId   String
+
+  // Dados do documento
+  title       String                    // Título do documento (ex: "Recibo de Honorários")
+  content     String   @db.Text         // Conteúdo/texto do documento
+  documentDate DateTime @default(now()) // Data do documento
+
+  // Relacionamentos
+  clientId    String?                   // Cliente relacionado (parte)
+  signerId    String?                   // Profissional que assina
+
+  // Metadados
+  createdBy   String?                   // Quem criou
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  client      Client?  @relation("LegalDocumentClient", fields: [clientId], references: [id], onDelete: SetNull)
+  signer      User?    @relation("LegalDocumentSigner", fields: [signerId], references: [id], onDelete: SetNull)
+  creator     User?    @relation("LegalDocumentCreator", fields: [createdBy], references: [id], onDelete: SetNull)
+
+  @@map("legal_documents")
 }
