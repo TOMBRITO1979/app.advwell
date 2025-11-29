@@ -6,6 +6,7 @@ import { s3Client, getSignedS3Url } from '../utils/s3';
 import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { config } from '../config';
 import crypto from 'crypto';
+import { securityAudit } from '../services/security-audit.service';
 
 export class UserController {
   // Admin - Listar usuários da sua empresa
@@ -122,6 +123,16 @@ export class UserController {
         },
       });
 
+      // Log de auditoria: usuário criado
+      await securityAudit.logUserCreated(
+        user.id,
+        req.user!.userId,
+        companyId,
+        email,
+        'USER',
+        req.ip
+      );
+
       res.status(201).json(userWithPermissions);
     } catch (error) {
       console.error('Erro ao criar usuário:', error);
@@ -203,6 +214,18 @@ export class UserController {
         },
       });
 
+      // Log de auditoria: usuário atualizado
+      const changes: string[] = [];
+      if (name !== user.name) changes.push('name');
+      if (email !== user.email) changes.push('email');
+      if (active !== user.active) changes.push('active');
+      if (hideSidebar !== user.hideSidebar) changes.push('hideSidebar');
+      if (permissions) changes.push('permissions');
+
+      if (changes.length > 0) {
+        await securityAudit.logUserUpdated(id, req.user!.userId, companyId!, changes, req.ip);
+      }
+
       res.json(userWithPermissions);
     } catch (error) {
       console.error('Erro ao atualizar usuário:', error);
@@ -235,6 +258,9 @@ export class UserController {
         where: { id },
         data: { active: false },
       });
+
+      // Log de auditoria: usuário desativado
+      await securityAudit.logUserDeleted(id, req.user!.userId, companyId!, user.email, req.ip);
 
       res.json({ message: 'Usuário desativado com sucesso' });
     } catch (error) {

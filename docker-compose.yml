@@ -102,7 +102,7 @@ services:
       retries: 5
 
   backend:
-    image: tomautomations/advwell-backend:v98-deadline-sync
+    image: tomautomations/advwell-backend:v99-security-upgrade
     environment:
       # Database direct connection (PgBouncer optional)
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?connection_limit=10&pool_timeout=10
@@ -180,7 +180,7 @@ services:
         - "traefik.docker.network=network_public"
 
   frontend:
-    image: tomautomations/advwell-frontend:v97-deadline-actions
+    image: tomautomations/advwell-frontend:v99-security-upgrade
     environment:
       - VITE_API_URL=${VITE_API_URL}
     networks:
