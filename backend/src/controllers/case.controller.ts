@@ -51,13 +51,16 @@ export class CaseController {
         return res.status(404).json({ error: 'Cliente não encontrado' });
       }
 
-      // Verifica se o processo já existe
-      const existingCase = await prisma.case.findUnique({
-        where: { processNumber },
+      // Verifica se o processo já existe na mesma empresa
+      const existingCase = await prisma.case.findFirst({
+        where: {
+          companyId,
+          processNumber
+        },
       });
 
       if (existingCase) {
-        return res.status(400).json({ error: 'Número de processo já cadastrado' });
+        return res.status(400).json({ error: 'Número de processo já cadastrado nesta empresa' });
       }
 
       // Tenta buscar dados do processo no DataJud
@@ -294,6 +297,13 @@ export class CaseController {
       // Sanitiza informarCliente se fornecido
       const sanitizedInformarCliente = informarCliente !== undefined ? sanitizeString(informarCliente) : undefined;
 
+      // Verificar se o prazo mudou para resetar o status de cumprido
+      const deadlineChanged = deadline !== undefined && (
+        (cleanDeadline === null && caseData.deadline !== null) ||
+        (cleanDeadline !== null && caseData.deadline === null) ||
+        (cleanDeadline !== null && caseData.deadline !== null && cleanDeadline.getTime() !== new Date(caseData.deadline).getTime())
+      );
+
       const updatedCase = await prisma.case.update({
         where: { id },
         data: {
@@ -306,6 +316,8 @@ export class CaseController {
           notes: sanitizeString(notes),
           ...(sanitizedInformarCliente !== undefined && { informarCliente: sanitizedInformarCliente }),
           ...(linkProcesso !== undefined && { linkProcesso }),
+          // Se o prazo mudou, resetar o status de cumprido (sincroniza com aba Prazos)
+          ...(deadlineChanged && { deadlineCompleted: false, deadlineCompletedAt: null }),
         },
       });
 
@@ -687,16 +699,19 @@ export class CaseController {
             continue;
           }
 
-          // Verificar se processo já existe
-          const existingCase = await prisma.case.findUnique({
-            where: { processNumber: record['Número do Processo'].trim() },
+          // Verificar se processo já existe na empresa
+          const existingCase = await prisma.case.findFirst({
+            where: {
+              companyId,
+              processNumber: record['Número do Processo'].trim()
+            },
           });
 
           if (existingCase) {
             results.errors.push({
               line: lineNumber,
               processNumber: record['Número do Processo'],
-              error: 'Número de processo já cadastrado',
+              error: 'Número de processo já cadastrado nesta empresa',
             });
             continue;
           }
@@ -899,21 +914,39 @@ export class CaseController {
         return res.status(403).json({ error: 'Usuário não possui empresa associada' });
       }
 
+      // Calcular data limite para prazos cumpridos (24 horas atrás)
+      const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
       const where: any = {
         companyId,
         deadline: { not: null }, // Apenas processos com prazo definido
+        // Excluir prazos cumpridos há mais de 24 horas
+        OR: [
+          { deadlineCompleted: false }, // Não cumpridos
+          {
+            deadlineCompleted: true,
+            deadlineCompletedAt: { gte: twentyFourHoursAgo } // Cumpridos nas últimas 24h
+          },
+        ],
         ...(search && {
-          OR: [
-            { processNumber: { contains: String(search) } },
-            { subject: { contains: String(search), mode: 'insensitive' } },
-            { client: { name: { contains: String(search), mode: 'insensitive' } } },
+          AND: [
+            {
+              OR: [
+                { processNumber: { contains: String(search) } },
+                { subject: { contains: String(search), mode: 'insensitive' } },
+                { client: { name: { contains: String(search), mode: 'insensitive' } } },
+              ],
+            },
           ],
         }),
       };
 
       const cases = await prisma.case.findMany({
         where,
-        orderBy: { deadline: 'asc' }, // Ordenar por prazo mais próximo primeiro
+        orderBy: [
+          { deadlineCompleted: 'asc' }, // Não cumpridos primeiro
+          { deadline: 'asc' }, // Ordenar por prazo mais próximo
+        ],
         include: {
           client: {
             select: {
@@ -936,6 +969,112 @@ export class CaseController {
     } catch (error) {
       console.error('Erro ao buscar prazos:', error);
       res.status(500).json({ error: 'Erro ao buscar prazos' });
+    }
+  }
+
+  // Marcar prazo como cumprido/não cumprido
+  async toggleDeadlineCompleted(req: AuthRequest, res: Response) {
+    try {
+      const { id } = req.params;
+      const companyId = req.user!.companyId;
+      const { completed } = req.body;
+
+      if (!companyId) {
+        return res.status(403).json({ error: 'Usuário não possui empresa associada' });
+      }
+
+      // Verificar se o processo pertence à empresa
+      const caseData = await prisma.case.findFirst({
+        where: {
+          id,
+          companyId,
+        },
+      });
+
+      if (!caseData) {
+        return res.status(404).json({ error: 'Processo não encontrado' });
+      }
+
+      // Atualizar status do prazo
+      const updatedCase = await prisma.case.update({
+        where: { id },
+        data: {
+          deadlineCompleted: completed,
+          deadlineCompletedAt: completed ? new Date() : null,
+        },
+        include: {
+          client: {
+            select: {
+              id: true,
+              name: true,
+              cpf: true,
+            },
+          },
+        },
+      });
+
+      res.json(updatedCase);
+    } catch (error) {
+      console.error('Erro ao atualizar status do prazo:', error);
+      res.status(500).json({ error: 'Erro ao atualizar status do prazo' });
+    }
+  }
+
+  // Atualizar prazo do processo
+  async updateDeadline(req: AuthRequest, res: Response) {
+    try {
+      const { id } = req.params;
+      const companyId = req.user!.companyId;
+      const { deadline, deadlineResponsibleId } = req.body;
+
+      if (!companyId) {
+        return res.status(403).json({ error: 'Usuário não possui empresa associada' });
+      }
+
+      // Verificar se o processo pertence à empresa
+      const caseData = await prisma.case.findFirst({
+        where: {
+          id,
+          companyId,
+        },
+      });
+
+      if (!caseData) {
+        return res.status(404).json({ error: 'Processo não encontrado' });
+      }
+
+      // Atualizar prazo
+      const updatedCase = await prisma.case.update({
+        where: { id },
+        data: {
+          deadline: deadline ? new Date(deadline) : null,
+          deadlineResponsibleId: deadlineResponsibleId || null,
+          // Se o prazo mudou, resetar o status de cumprido
+          deadlineCompleted: false,
+          deadlineCompletedAt: null,
+        },
+        include: {
+          client: {
+            select: {
+              id: true,
+              name: true,
+              cpf: true,
+            },
+          },
+          deadlineResponsible: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+        },
+      });
+
+      res.json(updatedCase);
+    } catch (error) {
+      console.error('Erro ao atualizar prazo:', error);
+      res.status(500).json({ error: 'Erro ao atualizar prazo' });
     }
   }
 

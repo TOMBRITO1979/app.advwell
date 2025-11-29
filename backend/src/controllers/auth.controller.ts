@@ -275,6 +275,7 @@ export class AuthController {
           email: true,
           role: true,
           companyId: true,
+          hideSidebar: true,
           company: {
             select: {
               id: true,

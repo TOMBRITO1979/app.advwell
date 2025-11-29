@@ -1,6 +1,56 @@
 version: '3.8'
 
 services:
+  # Redis for caching and job queues
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    networks:
+      - network_public
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # PgBouncer commented out - can be enabled when needed for higher connection counts
+  # pgbouncer:
+  #   image: bitnami/pgbouncer:1.21.0
+  #   environment:
+  #     - POSTGRESQL_HOST=postgres
+  #     - POSTGRESQL_PORT=5432
+  #     - POSTGRESQL_USERNAME=${POSTGRES_USER:-postgres}
+  #     - POSTGRESQL_PASSWORD=${POSTGRES_PASSWORD}
+  #     - POSTGRESQL_DATABASE=${POSTGRES_DB:-advtom}
+  #     - PGBOUNCER_POOL_MODE=transaction
+  #     - PGBOUNCER_MAX_CLIENT_CONN=500
+  #     - PGBOUNCER_DEFAULT_POOL_SIZE=20
+  #   networks:
+  #     - network_public
+  #   depends_on:
+  #     - postgres
+  #   deploy:
+  #     replicas: 1
+  #   # To enable: change DATABASE_URL to use pgbouncer:6432
+
   postgres:
     image: postgres:16-alpine
     volumes:
@@ -45,12 +95,21 @@ services:
         condition: on-failure
         delay: 5s
         max_attempts: 3
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-advtom}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   backend:
-    image: tomautomations/advwell-backend:v69-enhanced-health
+    image: tomautomations/advwell-backend:v98-deadline-sync
     environment:
-      # Database with connection pooling
+      # Database direct connection (PgBouncer optional)
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?connection_limit=10&pool_timeout=10
+
+      # Redis for caching and queues
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
 
       # JWT
       - JWT_SECRET=${JWT_SECRET}
@@ -88,6 +147,7 @@ services:
       - network_public
     depends_on:
       - postgres
+      - redis
     deploy:
       replicas: 3
       update_config:
@@ -120,7 +180,7 @@ services:
         - "traefik.docker.network=network_public"
 
   frontend:
-    image: tomautomations/advwell-frontend:v87-audit-logs
+    image: tomautomations/advwell-frontend:v97-deadline-actions
     environment:
       - VITE_API_URL=${VITE_API_URL}
     networks:
@@ -157,3 +217,4 @@ networks:
 
 volumes:
   postgres_data:
+  redis_data:

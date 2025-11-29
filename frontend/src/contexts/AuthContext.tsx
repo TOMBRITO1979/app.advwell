@@ -8,6 +8,7 @@ interface User {
   role: 'SUPER_ADMIN' | 'ADMIN' | 'USER';
   companyId?: string;
   companyName?: string;
+  hideSidebar?: boolean;
 }
 
 interface AuthState {

@@ -123,6 +123,8 @@ router.post('/', createCaseValidation, validate, caseController.create);
 router.get('/', caseController.list);
 router.get('/search', caseController.search); // Busca rápida para autocomplete
 router.get('/deadlines', caseController.getDeadlines); // Lista processos com prazo
+router.put('/:id/deadline', caseController.updateDeadline); // Atualiza prazo do processo
+router.post('/:id/deadline/toggle', caseController.toggleDeadlineCompleted); // Marca prazo como cumprido/não cumprido
 router.get('/export/csv', caseController.exportCSV);
 router.post('/import/csv', upload.single('file'), caseController.importCSV);
 router.get('/updates', caseController.getPendingUpdates); // Lista atualizações pendentes
