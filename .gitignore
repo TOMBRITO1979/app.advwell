@@ -78,3 +78,10 @@ EMAIL_VERIFICATION_IMPLEMENTATION.md
 test_production_complete.sh
 populate_demo_data.js
 insert_templates.sql
+reset_admin_password.js
+reset_and_populate.js
+backend/reset_and_populate.js
+backend/reset_and_populate.ts
+backend/populate_all_tables.js
+backend/populate_all_tables.ts
+backend/reset_super_admin_password.js
