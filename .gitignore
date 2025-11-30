@@ -53,3 +53,23 @@ create_admin_user.js
 fix_master_user.js
 update_master_password.js
 update_password.js
+create_superadmin.js
+create_superadmin.sql
+create_superadmin_appadvwell.js
+backend/create_superadmin_appadvwell.js
+reset_passwords.js
+reset_passwords.sql
+verify_superadmin.sql
+
+# Arquivos de teste com credenciais
+test_both_logins.sh
+test_final_logins.sh
+test_superadmin_login.sh
+test_login.sh
+test_login.html
+test_frontend_login.html
+
+# Documentação com credenciais sensíveis
+CREDENCIAIS_E_TESTES.md
+SOLUCAO_EMAIL_DELIVERABILITY.md
+EMAIL_VERIFICATION_IMPLEMENTATION.md
