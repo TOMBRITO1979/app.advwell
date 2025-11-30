@@ -209,7 +209,7 @@ const ToDo: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold text-neutral-900 flex items-center gap-2">
-              <Calendar className="text-primary-600" />
+              <Calendar className="text-primary-600" size={24} />
               Tarefas
             </h1>
             <p className="text-neutral-600 mt-1">Gerencie suas tarefas e afazeres</p>
@@ -220,9 +220,9 @@ const ToDo: React.FC = () => {
               resetForm();
               setShowModal(true);
             }}
-            className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors min-h-[44px]"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-green-100 text-green-700 border border-green-200 hover:bg-green-200 font-medium rounded-lg transition-all duration-200"
           >
-            <Plus size={18} className="sm:w-5 sm:h-5" />
+            <Plus size={20} />
             <span className="hidden sm:inline">Nova Tarefa</span>
             <span className="sm:hidden">Nova</span>
           </button>
@@ -238,7 +238,7 @@ const ToDo: React.FC = () => {
                 placeholder="Buscar tarefas..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full pl-10 pr-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
               />
             </div>
 
@@ -280,9 +280,9 @@ const ToDo: React.FC = () => {
                       <td className="px-6 py-4">
                         <button
                           onClick={() => handleToggleComplete(todo)}
-                          className="text-primary-600 hover:text-primary-700"
+                          className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-md transition-all duration-200"
                         >
-                          {todo.completed ? <CheckCircle size={24} /> : <Circle size={24} />}
+                          {todo.completed ? <CheckCircle size={18} /> : <Circle size={18} />}
                         </button>
                       </td>
                       <td className="px-6 py-4">
@@ -305,14 +305,14 @@ const ToDo: React.FC = () => {
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => handleEdit(todo)}
-                            className="text-blue-600 hover:text-blue-700"
+                            className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-md transition-all duration-200"
                             title="Editar"
                           >
                             <Edit2 size={18} />
                           </button>
                           <button
                             onClick={() => handleDelete(todo.id)}
-                            className="text-red-600 hover:text-red-700"
+                            className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-error-600 hover:text-error-700 hover:bg-error-50 rounded-md transition-all duration-200"
                             title="Excluir"
                           >
                             <Trash2 size={18} />
@@ -407,7 +407,7 @@ const ToDo: React.FC = () => {
                                     setSelectedUserIds(selectedUserIds.filter(id => id !== user.id));
                                   }
                                 }}
-                                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
                               />
                               <span className="text-sm text-gray-700">
                                 {user.name}
@@ -432,13 +432,13 @@ const ToDo: React.FC = () => {
                         setShowModal(false);
                         resetForm();
                       }}
-                      className="px-4 py-2 border border-neutral-300 rounded-md hover:bg-neutral-50 min-h-[44px]"
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 text-neutral-700 bg-white hover:bg-neutral-50 font-medium rounded-lg transition-all duration-200"
                     >
                       Cancelar
                     </button>
                     <button
                       type="submit"
-                      className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 min-h-[44px]"
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-purple-100 text-purple-700 border border-purple-200 hover:bg-purple-200 font-medium rounded-lg transition-all duration-200"
                     >
                       {editMode ? 'Salvar' : 'Criar'}
                     </button>

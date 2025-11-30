@@ -67,9 +67,9 @@ const Schedule: React.FC = () => {
   const [filterType, setFilterType] = useState<string>('');
   const [filterCompleted, setFilterCompleted] = useState<string>('');
 
-  // Estados para multi-seleção de usuários
+  // Estado para seleção única de usuário responsável
   const [companyUsers, setCompanyUsers] = useState<User[]>([]);
-  const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
+  const [selectedUserId, setSelectedUserId] = useState<string>('');
 
   // Autocomplete states
   const [clientSearchTerm, setClientSearchTerm] = useState('');
@@ -203,6 +203,19 @@ const Schedule: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validação: Cliente e Processo obrigatórios para AUDIENCIA
+    if (formData.type === 'AUDIENCIA') {
+      if (!selectedClient) {
+        toast.error('Para audiências, é obrigatório selecionar um cliente');
+        return;
+      }
+      if (!selectedCase) {
+        toast.error('Para audiências, é obrigatório selecionar um processo');
+        return;
+      }
+    }
+
     setLoading(true);
 
     try {
@@ -211,7 +224,7 @@ const Schedule: React.FC = () => {
         clientId: selectedClient?.id || null,
         caseId: selectedCase?.id || null,
         endDate: formData.endDate || null,
-        assignedUserIds: selectedUserIds.length > 0 ? selectedUserIds : undefined,
+        assignedUserIds: selectedUserId ? [selectedUserId] : undefined,
       };
 
       if (editingEvent) {
@@ -255,9 +268,9 @@ const Schedule: React.FC = () => {
       setSelectedCase(event.case);
       setCaseSearchTerm(event.case.processNumber);
     }
-    // Set selected users
+    // Set selected user (pega apenas o primeiro se houver múltiplos)
     if (event.assignedUsers && event.assignedUsers.length > 0) {
-      setSelectedUserIds(event.assignedUsers.map(a => a.user.id));
+      setSelectedUserId(event.assignedUsers[0].user.id);
     }
     setShowModal(true);
   };
@@ -320,7 +333,7 @@ const Schedule: React.FC = () => {
     setCaseSuggestions([]);
     setShowClientSuggestions(false);
     setShowCaseSuggestions(false);
-    setSelectedUserIds([]);
+    setSelectedUserId('');
   };
 
   const formatDateTime = (dateString: string) => {
@@ -341,7 +354,7 @@ const Schedule: React.FC = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold text-neutral-900 flex items-center gap-2">
-            <Calendar className="text-primary-600" />
+            <Calendar className="text-primary-600" size={24} />
             Agenda
           </h1>
           <p className="text-neutral-600 mt-1">
@@ -353,9 +366,9 @@ const Schedule: React.FC = () => {
             resetForm();
             setShowModal(true);
           }}
-          className="w-full sm:w-auto flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors min-h-[44px]"
+          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-green-100 text-green-700 border border-green-200 hover:bg-green-200 font-medium rounded-lg transition-all duration-200"
         >
-          <Plus size={18} className="sm:w-5 sm:h-5" />
+          <Plus size={20} />
           <span>Novo Evento</span>
         </button>
       </div>
@@ -371,7 +384,7 @@ const Schedule: React.FC = () => {
               placeholder="Buscar eventos..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
             />
           </div>
 
@@ -379,7 +392,7 @@ const Schedule: React.FC = () => {
           <select
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px]"
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
           >
             <option value="">Todos os tipos</option>
             <option value="COMPROMISSO">Compromisso</option>
@@ -392,7 +405,7 @@ const Schedule: React.FC = () => {
           <select
             value={filterCompleted}
             onChange={(e) => setFilterCompleted(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px]"
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
           >
             <option value="">Todos os status</option>
             <option value="false">Pendentes</option>
@@ -449,13 +462,13 @@ const Schedule: React.FC = () => {
                     <td className="px-4 py-3">
                       <button
                         onClick={() => handleToggleComplete(event)}
-                        className="text-gray-600 hover:text-blue-600 transition-colors"
+                        className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-neutral-600 hover:text-success-600 hover:bg-success-50 rounded-md transition-all duration-200"
                         title={event.completed ? 'Marcar como pendente' : 'Marcar como concluído'}
                       >
                         {event.completed ? (
-                          <CheckCircle size={20} className="text-green-600" />
+                          <CheckCircle size={18} className="text-success-600" />
                         ) : (
-                          <Circle size={20} />
+                          <Circle size={18} />
                         )}
                       </button>
                     </td>
@@ -527,21 +540,21 @@ const Schedule: React.FC = () => {
                         )}
                         <button
                           onClick={() => handleView(event)}
-                          className="text-blue-600 hover:text-blue-800 transition-colors"
+                          className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-info-600 hover:text-info-700 hover:bg-info-50 rounded-md transition-all duration-200"
                           title="Ver detalhes"
                         >
                           <Eye size={18} />
                         </button>
                         <button
                           onClick={() => handleEdit(event)}
-                          className="text-green-600 hover:text-green-800 transition-colors"
+                          className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-md transition-all duration-200"
                           title="Editar"
                         >
                           <Edit2 size={18} />
                         </button>
                         <button
                           onClick={() => handleDelete(event.id)}
-                          className="text-red-600 hover:text-red-800 transition-colors"
+                          className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-error-600 hover:text-error-700 hover:bg-error-50 rounded-md transition-all duration-200"
                           title="Excluir"
                         >
                           <Trash2 size={18} />
@@ -576,7 +589,7 @@ const Schedule: React.FC = () => {
                     required
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px]"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                     placeholder="Ex: Reunião com cliente"
                   />
                 </div>
@@ -590,7 +603,7 @@ const Schedule: React.FC = () => {
                     required
                     value={formData.type}
                     onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px]"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   >
                     <option value="COMPROMISSO">Compromisso</option>
                     <option value="TAREFA">Tarefa</option>
@@ -609,7 +622,7 @@ const Schedule: React.FC = () => {
                     required
                     value={formData.priority}
                     onChange={(e) => setFormData({ ...formData, priority: e.target.value as any })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px]"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   >
                     <option value="BAIXA">🟢 Baixa</option>
                     <option value="MEDIA">🟡 Média</option>
@@ -629,7 +642,7 @@ const Schedule: React.FC = () => {
                       required
                       value={formData.date}
                       onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px]"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                     />
                   </div>
                   <div>
@@ -640,7 +653,7 @@ const Schedule: React.FC = () => {
                       type="datetime-local"
                       value={formData.endDate}
                       onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px]"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                     />
                   </div>
                 </div>
@@ -650,7 +663,7 @@ const Schedule: React.FC = () => {
                   {/* Client Autocomplete */}
                   <div className="relative">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Cliente (opcional)
+                      Cliente {formData.type === 'AUDIENCIA' ? '*' : '(opcional)'}
                     </label>
                     <input
                       type="text"
@@ -658,7 +671,11 @@ const Schedule: React.FC = () => {
                       onChange={(e) => setClientSearchTerm(e.target.value)}
                       onFocus={() => setShowClientSuggestions(true)}
                       onBlur={() => setTimeout(() => setShowClientSuggestions(false), 200)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px]"
+                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] ${
+                        formData.type === 'AUDIENCIA' && !selectedClient
+                          ? 'border-red-300 bg-red-50'
+                          : 'border-gray-300'
+                      }`}
                       placeholder="Digite o nome ou CPF do cliente..."
                     />
                     {showClientSuggestions && clientSuggestions.length > 0 && (
@@ -689,7 +706,7 @@ const Schedule: React.FC = () => {
                   {/* Case Autocomplete */}
                   <div className="relative">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Processo (opcional)
+                      Processo {formData.type === 'AUDIENCIA' ? '*' : '(opcional)'}
                     </label>
                     <input
                       type="text"
@@ -697,7 +714,11 @@ const Schedule: React.FC = () => {
                       onChange={(e) => setCaseSearchTerm(e.target.value)}
                       onFocus={() => setShowCaseSuggestions(true)}
                       onBlur={() => setTimeout(() => setShowCaseSuggestions(false), 200)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px]"
+                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] ${
+                        formData.type === 'AUDIENCIA' && !selectedCase
+                          ? 'border-red-300 bg-red-50'
+                          : 'border-gray-300'
+                      }`}
                       placeholder="Digite o número ou assunto do processo..."
                     />
                     {showCaseSuggestions && caseSuggestions.length > 0 && (
@@ -726,47 +747,23 @@ const Schedule: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Assigned Users */}
+                {/* Assigned User - Select único */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Atribuir a usuários (opcional)
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Responsável (opcional)
                   </label>
-                  <div className="border border-gray-300 rounded-md p-3 max-h-48 overflow-y-auto">
-                    {companyUsers.length === 0 ? (
-                      <p className="text-sm text-gray-500 italic">Nenhum usuário disponível</p>
-                    ) : (
-                      <div className="space-y-2">
-                        {companyUsers.map((user) => (
-                          <label
-                            key={user.id}
-                            className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded"
-                          >
-                            <input
-                              type="checkbox"
-                              checked={selectedUserIds.includes(user.id)}
-                              onChange={(e) => {
-                                if (e.target.checked) {
-                                  setSelectedUserIds([...selectedUserIds, user.id]);
-                                } else {
-                                  setSelectedUserIds(selectedUserIds.filter(id => id !== user.id));
-                                }
-                              }}
-                              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                            />
-                            <span className="text-sm text-gray-700">
-                              {user.name}
-                              <span className="text-gray-500 text-xs ml-1">({user.email})</span>
-                            </span>
-                          </label>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  {selectedUserIds.length > 0 && (
-                    <p className="text-sm text-gray-600 mt-2">
-                      {selectedUserIds.length} usuário(s) selecionado(s)
-                    </p>
-                  )}
+                  <select
+                    value={selectedUserId}
+                    onChange={(e) => setSelectedUserId(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                  >
+                    <option value="">Selecione um responsável...</option>
+                    {companyUsers.map((user) => (
+                      <option key={user.id} value={user.id}>
+                        {user.name} ({user.email})
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 {/* Description */}
@@ -778,7 +775,7 @@ const Schedule: React.FC = () => {
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px]"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                     placeholder="Detalhes adicionais..."
                   />
                 </div>
@@ -788,7 +785,7 @@ const Schedule: React.FC = () => {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 min-h-[44px]"
+                    className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-purple-100 text-purple-700 border border-purple-200 hover:bg-purple-200 font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {loading ? 'Salvando...' : editingEvent ? 'Atualizar' : 'Criar'}
                   </button>
@@ -798,7 +795,7 @@ const Schedule: React.FC = () => {
                       setShowModal(false);
                       resetForm();
                     }}
-                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors min-h-[44px]"
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 text-neutral-700 bg-white hover:bg-neutral-50 font-medium rounded-lg transition-all duration-200"
                   >
                     Cancelar
                   </button>
@@ -886,13 +883,13 @@ const Schedule: React.FC = () => {
                           navigator.clipboard.writeText(viewingEvent.googleMeetLink!);
                           toast.success('Link copiado!');
                         }}
-                        className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-neutral-900 rounded-md transition-colors min-h-[44px]"
+                        className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-md shadow-sm transition-all duration-200"
                       >
                         Copiar
                       </button>
                       <button
                         onClick={() => window.open(viewingEvent.googleMeetLink, '_blank')}
-                        className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-neutral-900 rounded-md transition-colors min-h-[44px]"
+                        className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-purple-100 text-purple-700 border border-purple-200 hover:bg-purple-200 font-medium rounded-md transition-all duration-200"
                       >
                         Abrir
                       </button>
@@ -932,13 +929,13 @@ const Schedule: React.FC = () => {
                     setShowViewModal(false);
                     handleEdit(viewingEvent);
                   }}
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors min-h-[44px]"
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-blue-100 text-blue-700 border border-blue-200 hover:bg-blue-200 font-medium rounded-lg transition-all duration-200"
                 >
                   Editar
                 </button>
                 <button
                   onClick={() => setShowViewModal(false)}
-                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors min-h-[44px]"
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 text-neutral-700 bg-white hover:bg-neutral-50 font-medium rounded-lg transition-all duration-200"
                 >
                   Fechar
                 </button>

@@ -36,10 +36,10 @@ const createUserValidation = [
     .normalizeEmail()
     .withMessage('Email inválido'),
   body('password')
-    .isLength({ min: 10, max: 100 })
-    .withMessage('Senha deve ter entre 10 e 100 caracteres')
-    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
-    .withMessage('Senha deve conter pelo menos uma letra maiúscula, uma minúscula e um número'),
+    .isLength({ min: 12, max: 100 })
+    .withMessage('Senha deve ter entre 12 e 100 caracteres')
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>\-_=+\[\]\\;'`~])/)
+    .withMessage('Senha deve conter pelo menos uma letra maiúscula, uma minúscula, um número e um caractere especial (!@#$%^&*...)'),
   body('role')
     .optional({ checkFalsy: true })
     .isIn(['USER', 'ADMIN', 'SUPER_ADMIN'])
@@ -62,10 +62,10 @@ const updateUserValidation = [
     .withMessage('Email inválido'),
   body('password')
     .optional({ checkFalsy: true })
-    .isLength({ min: 10, max: 100 })
-    .withMessage('Senha deve ter entre 10 e 100 caracteres')
-    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
-    .withMessage('Senha deve conter pelo menos uma letra maiúscula, uma minúscula e um número'),
+    .isLength({ min: 12, max: 100 })
+    .withMessage('Senha deve ter entre 12 e 100 caracteres')
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>\-_=+\[\]\\;'`~])/)
+    .withMessage('Senha deve conter pelo menos uma letra maiúscula, uma minúscula, um número e um caractere especial (!@#$%^&*...)'),
   body('role')
     .optional({ checkFalsy: true })
     .isIn(['USER', 'ADMIN', 'SUPER_ADMIN'])

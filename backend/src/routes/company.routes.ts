@@ -10,6 +10,10 @@ router.use(authenticate);
 router.get('/own', requireAdmin, companyController.getOwn);
 router.put('/own', requireAdmin, companyController.updateOwn);
 
+// API Key Management (Para integrações WhatsApp, N8N, etc)
+router.get('/own/api-key', requireAdmin, companyController.getApiKey);
+router.post('/own/api-key/regenerate', requireAdmin, companyController.regenerateApiKey);
+
 // Rotas do Super Admin
 router.get('/', requireSuperAdmin, companyController.list);
 router.post('/', requireSuperAdmin, companyController.create);

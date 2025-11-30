@@ -322,6 +322,82 @@ export class CompanyController {
       res.status(500).json({ error: 'Erro ao alterar status do usuário' });
     }
   }
+
+  // ============================================
+  // API KEY MANAGEMENT (Para integrações WhatsApp, N8N, etc)
+  // ============================================
+
+  /**
+   * Admin - Ver API Key da empresa
+   * GET /api/companies/own/api-key
+   */
+  async getApiKey(req: AuthRequest, res: Response) {
+    try {
+      const companyId = req.user!.companyId;
+
+      if (!companyId) {
+        return res.status(404).json({ error: 'Empresa não encontrada' });
+      }
+
+      const company = await prisma.company.findUnique({
+        where: { id: companyId },
+        select: {
+          id: true,
+          name: true,
+          apiKey: true,
+        },
+      });
+
+      if (!company) {
+        return res.status(404).json({ error: 'Empresa não encontrada' });
+      }
+
+      res.json({
+        companyName: company.name,
+        apiKey: company.apiKey,
+        hasApiKey: !!company.apiKey,
+      });
+    } catch (error) {
+      console.error('Erro ao buscar API Key:', error);
+      res.status(500).json({ error: 'Erro ao buscar API Key' });
+    }
+  }
+
+  /**
+   * Admin - Gerar/Regenerar API Key da empresa
+   * POST /api/companies/own/api-key/regenerate
+   */
+  async regenerateApiKey(req: AuthRequest, res: Response) {
+    try {
+      const companyId = req.user!.companyId;
+
+      if (!companyId) {
+        return res.status(404).json({ error: 'Empresa não encontrada' });
+      }
+
+      // Gera nova API Key usando UUID
+      const newApiKey = crypto.randomUUID();
+
+      const company = await prisma.company.update({
+        where: { id: companyId },
+        data: { apiKey: newApiKey },
+        select: {
+          id: true,
+          name: true,
+          apiKey: true,
+        },
+      });
+
+      res.json({
+        message: 'API Key gerada com sucesso',
+        companyName: company.name,
+        apiKey: company.apiKey,
+      });
+    } catch (error) {
+      console.error('Erro ao regenerar API Key:', error);
+      res.status(500).json({ error: 'Erro ao regenerar API Key' });
+    }
+  }
 }
 
 export default new CompanyController();

@@ -73,3 +73,8 @@ test_frontend_login.html
 CREDENCIAIS_E_TESTES.md
 SOLUCAO_EMAIL_DELIVERABILITY.md
 EMAIL_VERIFICATION_IMPLEMENTATION.md
+
+# Scripts de teste com credenciais
+test_production_complete.sh
+populate_demo_data.js
+insert_templates.sql

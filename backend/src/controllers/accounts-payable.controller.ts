@@ -510,6 +510,208 @@ export class AccountsPayableController {
     }
   }
 
+  // Obter categorias únicas
+  async getCategories(req: AuthRequest, res: Response) {
+    try {
+      const companyId = req.user!.companyId;
+
+      const accounts = await prisma.accountPayable.findMany({
+        where: {
+          companyId: companyId!,
+          category: { not: null },
+        },
+        select: {
+          category: true,
+        },
+        distinct: ['category'],
+      });
+
+      const categories = accounts.map(a => a.category).filter(Boolean);
+
+      res.json(categories);
+    } catch (error) {
+      console.error('Erro ao buscar categorias:', error);
+      res.status(500).json({ error: 'Erro ao buscar categorias' });
+    }
+  }
+
+  // Gerar extrato com filtros
+  async generateStatement(req: AuthRequest, res: Response) {
+    try {
+      const companyId = req.user!.companyId;
+      const { startDate, endDate, category } = req.query;
+
+      const where: any = { companyId, status: 'PAID' };
+
+      // Filtro por data (data de pagamento)
+      if (startDate && endDate) {
+        where.paidDate = {
+          gte: new Date(String(startDate)),
+          lte: new Date(String(endDate)),
+        };
+      }
+
+      // Filtro por categoria
+      if (category) {
+        where.category = String(category);
+      }
+
+      const accounts = await prisma.accountPayable.findMany({
+        where,
+        orderBy: { paidDate: 'asc' },
+      });
+
+      // Calcular total
+      const total = accounts.reduce((sum, account) => sum + Number(account.amount), 0);
+
+      res.json({
+        accounts,
+        total,
+        count: accounts.length,
+        period: { startDate, endDate },
+        category: category || 'Todas',
+      });
+    } catch (error) {
+      console.error('Erro ao gerar extrato:', error);
+      res.status(500).json({ error: 'Erro ao gerar extrato' });
+    }
+  }
+
+  // Exportar extrato para PDF
+  async exportStatementPDF(req: AuthRequest, res: Response) {
+    try {
+      const companyId = req.user!.companyId;
+      const { startDate, endDate, category } = req.query;
+
+      const where: any = { companyId, status: 'PAID' };
+
+      if (startDate && endDate) {
+        where.paidDate = {
+          gte: new Date(String(startDate)),
+          lte: new Date(String(endDate)),
+        };
+      }
+
+      if (category) {
+        where.category = String(category);
+      }
+
+      const accounts = await prisma.accountPayable.findMany({
+        where,
+        orderBy: { paidDate: 'asc' },
+      });
+
+      const total = accounts.reduce((sum, account) => sum + Number(account.amount), 0);
+
+      const doc = new PDFDocument({ margin: 50 });
+
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename=extrato_${new Date().toISOString().split('T')[0]}.pdf`);
+
+      doc.pipe(res);
+
+      // Header
+      doc.fontSize(20).text('Extrato de Pagamentos', { align: 'center' });
+      doc.moveDown();
+      doc.fontSize(10).text(`Gerado em: ${new Date().toLocaleDateString('pt-BR')}`, { align: 'center' });
+      doc.moveDown(2);
+
+      // Período
+      if (startDate && endDate) {
+        doc.fontSize(12).text('Período:', { underline: true });
+        doc.fontSize(10);
+        doc.text(`De: ${new Date(String(startDate)).toLocaleDateString('pt-BR')}`);
+        doc.text(`Até: ${new Date(String(endDate)).toLocaleDateString('pt-BR')}`);
+        doc.moveDown();
+      }
+
+      // Categoria
+      if (category) {
+        doc.fontSize(12).text('Categoria:', { underline: true });
+        doc.fontSize(10).text(String(category));
+        doc.moveDown();
+      }
+
+      // Resumo
+      doc.fontSize(14).text('Resumo:', { underline: true });
+      doc.fontSize(12);
+      doc.text(`Total de Pagamentos: ${accounts.length}`);
+      doc.text(`Valor Total Pago: R$ ${total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
+      doc.moveDown(2);
+
+      // Detalhamento
+      doc.fontSize(12).text('Detalhamento:', { underline: true });
+      doc.moveDown();
+
+      accounts.forEach((account, index) => {
+        if ((index + 1) % 12 === 0) doc.addPage();
+
+        doc.fontSize(10);
+        doc.text(`${index + 1}. ${account.supplier}`, { continued: false });
+        doc.fontSize(9);
+        doc.text(`   Descrição: ${account.description}`);
+        doc.text(`   Valor: R$ ${Number(account.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
+        doc.text(`   Data de Pagamento: ${new Date(account.paidDate || account.dueDate).toLocaleDateString('pt-BR')}`);
+        if (account.category) doc.text(`   Categoria: ${account.category}`);
+        doc.moveDown();
+      });
+
+      doc.end();
+    } catch (error) {
+      console.error('Erro ao gerar PDF do extrato:', error);
+      res.status(500).json({ error: 'Erro ao gerar PDF do extrato' });
+    }
+  }
+
+  // Exportar extrato para CSV
+  async exportStatementCSV(req: AuthRequest, res: Response) {
+    try {
+      const companyId = req.user!.companyId;
+      const { startDate, endDate, category } = req.query;
+
+      const where: any = { companyId, status: 'PAID' };
+
+      if (startDate && endDate) {
+        where.paidDate = {
+          gte: new Date(String(startDate)),
+          lte: new Date(String(endDate)),
+        };
+      }
+
+      if (category) {
+        where.category = String(category);
+      }
+
+      const accounts = await prisma.accountPayable.findMany({
+        where,
+        orderBy: { paidDate: 'asc' },
+      });
+
+      const total = accounts.reduce((sum, account) => sum + Number(account.amount), 0);
+
+      const csvHeader = 'Fornecedor,Descrição,Valor,Data de Pagamento,Categoria\n';
+      const csvRows = accounts.map(account => {
+        const supplier = `"${account.supplier.replace(/"/g, '""')}"`;
+        const description = `"${account.description.replace(/"/g, '""')}"`;
+        const amount = Number(account.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const paidDate = new Date(account.paidDate || account.dueDate).toLocaleDateString('pt-BR');
+        const cat = account.category || '';
+
+        return `${supplier},${description},${amount},${paidDate},${cat}`;
+      }).join('\n');
+
+      const csvFooter = `\n\n"TOTAL","",${total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })},"",""`;
+      const csv = csvHeader + csvRows + csvFooter;
+
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader('Content-Disposition', `attachment; filename=extrato_${new Date().toISOString().split('T')[0]}.csv`);
+      res.send('\ufeff' + csv);
+    } catch (error) {
+      console.error('Erro ao gerar CSV do extrato:', error);
+      res.status(500).json({ error: 'Erro ao gerar CSV do extrato' });
+    }
+  }
+
   // Calcular próxima data de vencimento
   private calculateNextDueDate(currentDueDate: Date, period: string): Date {
     const nextDate = new Date(currentDueDate);

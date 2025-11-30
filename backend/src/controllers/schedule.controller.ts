@@ -27,6 +27,86 @@ export class ScheduleController {
         return res.status(400).json({ error: 'Prioridade inválida. Use: BAIXA, MEDIA, ALTA ou URGENTE' });
       }
 
+      // Verificar conflito de horário para os usuários atribuídos
+      if (assignedUserIds && Array.isArray(assignedUserIds) && assignedUserIds.length > 0) {
+        const eventStart = new Date(date);
+        const eventEnd = endDate ? new Date(endDate) : new Date(eventStart.getTime() + 60 * 60 * 1000); // +1 hora padrão
+
+        // Buscar eventos que conflitam com o novo horário para qualquer usuário atribuído
+        const conflictingEvents = await prisma.scheduleEvent.findMany({
+          where: {
+            companyId,
+            completed: false, // Apenas eventos não concluídos
+            assignedUsers: {
+              some: {
+                userId: { in: assignedUserIds }
+              }
+            },
+            // Verificar sobreposição de horários
+            OR: [
+              // Evento existente começa durante o novo evento
+              {
+                date: { gte: eventStart, lt: eventEnd }
+              },
+              // Evento existente termina durante o novo evento
+              {
+                endDate: { gt: eventStart, lte: eventEnd }
+              },
+              // Evento existente engloba o novo evento
+              {
+                AND: [
+                  { date: { lte: eventStart } },
+                  { endDate: { gte: eventEnd } }
+                ]
+              },
+              // Novo evento engloba evento existente (evento sem endDate)
+              {
+                AND: [
+                  { date: { gte: eventStart, lt: eventEnd } },
+                  { endDate: null }
+                ]
+              }
+            ]
+          },
+          include: {
+            assignedUsers: {
+              include: {
+                user: { select: { id: true, name: true } }
+              }
+            }
+          }
+        });
+
+        if (conflictingEvents.length > 0) {
+          // Encontrar quais usuários têm conflito
+          const conflictingUserNames: string[] = [];
+          for (const event of conflictingEvents) {
+            for (const assignment of event.assignedUsers) {
+              if (assignedUserIds.includes(assignment.userId) && !conflictingUserNames.includes(assignment.user.name)) {
+                conflictingUserNames.push(assignment.user.name);
+              }
+            }
+          }
+
+          const conflictEvent = conflictingEvents[0];
+          const conflictTime = new Date(conflictEvent.date).toLocaleString('pt-BR', {
+            dateStyle: 'short',
+            timeStyle: 'short'
+          });
+
+          return res.status(409).json({
+            error: 'Conflito de horário',
+            message: `${conflictingUserNames.join(', ')} já possui compromisso marcado: "${conflictEvent.title}" em ${conflictTime}`,
+            conflictingEvent: {
+              id: conflictEvent.id,
+              title: conflictEvent.title,
+              date: conflictEvent.date,
+              endDate: conflictEvent.endDate
+            }
+          });
+        }
+      }
+
       // Gerar link do Google Meet se o tipo for GOOGLE_MEET
       let googleMeetLink: string | null = null;
       if (type === 'GOOGLE_MEET') {
@@ -254,6 +334,97 @@ export class ScheduleController {
       const validPriorities = ['BAIXA', 'MEDIA', 'ALTA', 'URGENTE'];
       if (priority && !validPriorities.includes(priority)) {
         return res.status(400).json({ error: 'Prioridade inválida. Use: BAIXA, MEDIA, ALTA ou URGENTE' });
+      }
+
+      // Verificar conflito de horário se está alterando data/horário ou usuários atribuídos
+      const usersToCheck = assignedUserIds !== undefined && Array.isArray(assignedUserIds)
+        ? assignedUserIds
+        : null; // null significa que não está alterando usuários
+
+      // Se está alterando data ou usuários, verificar conflitos
+      if (date || usersToCheck) {
+        const eventStart = date ? new Date(date) : event.date;
+        const eventEnd = endDate
+          ? new Date(endDate)
+          : (event.endDate || new Date(eventStart.getTime() + 60 * 60 * 1000));
+
+        // Buscar usuários atuais do evento se não foi passado novo array
+        let userIdsToCheck: string[] = [];
+        if (usersToCheck) {
+          userIdsToCheck = usersToCheck;
+        } else {
+          const currentAssignments = await prisma.eventAssignment.findMany({
+            where: { eventId: id },
+            select: { userId: true }
+          });
+          userIdsToCheck = currentAssignments.map(a => a.userId);
+        }
+
+        if (userIdsToCheck.length > 0) {
+          const conflictingEvents = await prisma.scheduleEvent.findMany({
+            where: {
+              companyId,
+              id: { not: id }, // Excluir o próprio evento sendo editado
+              completed: false,
+              assignedUsers: {
+                some: {
+                  userId: { in: userIdsToCheck }
+                }
+              },
+              OR: [
+                { date: { gte: eventStart, lt: eventEnd } },
+                { endDate: { gt: eventStart, lte: eventEnd } },
+                {
+                  AND: [
+                    { date: { lte: eventStart } },
+                    { endDate: { gte: eventEnd } }
+                  ]
+                },
+                {
+                  AND: [
+                    { date: { gte: eventStart, lt: eventEnd } },
+                    { endDate: null }
+                  ]
+                }
+              ]
+            },
+            include: {
+              assignedUsers: {
+                include: {
+                  user: { select: { id: true, name: true } }
+                }
+              }
+            }
+          });
+
+          if (conflictingEvents.length > 0) {
+            const conflictingUserNames: string[] = [];
+            for (const evt of conflictingEvents) {
+              for (const assignment of evt.assignedUsers) {
+                if (userIdsToCheck.includes(assignment.userId) && !conflictingUserNames.includes(assignment.user.name)) {
+                  conflictingUserNames.push(assignment.user.name);
+                }
+              }
+            }
+
+            const conflictEvent = conflictingEvents[0];
+            const conflictTime = new Date(conflictEvent.date).toLocaleString('pt-BR', {
+              dateStyle: 'short',
+              timeStyle: 'short'
+            });
+
+            return res.status(409).json({
+              error: 'Conflito de horário',
+              message: `${conflictingUserNames.join(', ')} já possui compromisso marcado: "${conflictEvent.title}" em ${conflictTime}`,
+              conflictingEvent: {
+                id: conflictEvent.id,
+                title: conflictEvent.title,
+                date: conflictEvent.date,
+                endDate: conflictEvent.endDate
+              }
+            });
+          }
+        }
       }
 
       // Gerar/atualizar link do Google Meet se o tipo for GOOGLE_MEET

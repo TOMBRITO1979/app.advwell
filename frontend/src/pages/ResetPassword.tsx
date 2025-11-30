@@ -111,7 +111,7 @@ const ResetPassword: React.FC = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-neutral-900 bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 min-h-[44px]"
+            className="w-full flex justify-center py-2 px-4 border border-purple-200 rounded-md text-sm font-medium text-purple-700 bg-purple-100 hover:bg-purple-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 min-h-[44px]"
           >
             {loading ? 'Redefinindo...' : 'Redefinir Senha'}
           </button>

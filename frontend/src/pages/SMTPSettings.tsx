@@ -112,7 +112,7 @@ const SMTPSettings: React.FC = () => {
               Configure o servidor SMTP para envio de campanhas de email
             </p>
           </div>
-          <Mail size={32} className="text-green-600" />
+          <Mail size={32} className="text-success-600" />
         </div>
 
         {/* Info Box */}
@@ -226,17 +226,17 @@ const SMTPSettings: React.FC = () => {
                 type="button"
                 onClick={handleTest}
                 disabled={testing}
-                className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 min-h-[44px]"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-blue-100 text-blue-700 border border-blue-200 hover:bg-blue-200 font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <RefreshCw size={18} className={testing ? 'animate-spin' : ''} />
+                <RefreshCw size={20} className={testing ? 'animate-spin' : ''} />
                 {testing ? 'Testando...' : 'Testar Conexão'}
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors disabled:opacity-50 min-h-[44px]"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-purple-100 text-purple-700 border border-purple-200 hover:bg-purple-200 font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Save size={18} />
+                <Save size={20} />
                 {loading ? 'Salvando...' : 'Salvar Configuração'}
               </button>
             </div>

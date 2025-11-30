@@ -1,11 +1,26 @@
 import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import prisma from '../utils/prisma';
+import { cache } from '../utils/redis';
 
-// Obter estatísticas do dashboard
+// Cache TTL constants (in seconds)
+const CACHE_TTL = {
+  STATS: 60,           // 1 minute for main stats
+  ACTIVITIES: 120,     // 2 minutes for activities
+  CHARTS: 300,         // 5 minutes for chart data
+};
+
+// Obter estatísticas do dashboard (com cache)
 export const getStats = async (req: AuthRequest, res: Response) => {
   try {
     const companyId = req.user!.companyId;
+    const cacheKey = `dashboard:stats:${companyId}`;
+
+    // Try cache first
+    const cachedStats = await cache.get<any>(cacheKey);
+    if (cachedStats) {
+      return res.json(cachedStats);
+    }
 
     // Obter data de hoje (início e fim do dia)
     const today = new Date();
@@ -48,94 +63,87 @@ export const getStats = async (req: AuthRequest, res: Response) => {
       })
     ]);
 
-    res.json({
+    const stats = {
       clients: totalClients,
       cases: totalCases,
       todayHearings: todayHearings
-    });
+    };
+
+    // Cache the result
+    await cache.set(cacheKey, stats, CACHE_TTL.STATS);
+
+    res.json(stats);
   } catch (error: any) {
     console.error('Erro ao buscar estatísticas:', error);
     res.status(500).json({ error: 'Erro ao buscar estatísticas' });
   }
 };
 
-// Obter atividades recentes do dashboard
+// Obter atividades recentes do dashboard (com cache)
 export const getRecentActivities = async (req: AuthRequest, res: Response) => {
   try {
     const companyId = req.user!.companyId;
     const limit = Number(req.query.limit) || 10;
+    const cacheKey = `dashboard:activities:${companyId}:${limit}`;
 
-    // Buscar últimos casos criados
-    const recentCases = await prisma.case.findMany({
-      where: { companyId },
-      include: {
-        client: {
-          select: { name: true }
-        }
-      },
-      orderBy: { createdAt: 'desc' },
-      take: limit,
-    });
+    // Try cache first
+    const cachedActivities = await cache.get<any>(cacheKey);
+    if (cachedActivities) {
+      return res.json(cachedActivities);
+    }
 
-    // Buscar últimos documentos adicionados
-    const recentDocuments = await prisma.document.findMany({
-      where: { companyId },
-      include: {
-        client: {
-          select: { name: true }
+    // Buscar em paralelo com limite otimizado
+    const [recentCases, recentDocuments, recentTransactions, recentClients, recentMovements] = await Promise.all([
+      prisma.case.findMany({
+        where: { companyId },
+        include: {
+          client: { select: { name: true } }
         },
-        case: {
-          select: { processNumber: true }
-        }
-      },
-      orderBy: { createdAt: 'desc' },
-      take: limit,
-    });
-
-    // Buscar últimas transações financeiras
-    const recentTransactions = await prisma.financialTransaction.findMany({
-      where: { companyId },
-      include: {
-        client: {
-          select: { name: true }
-        }
-      },
-      orderBy: { createdAt: 'desc' },
-      take: limit,
-    });
-
-    // Buscar últimos clientes cadastrados
-    const recentClients = await prisma.client.findMany({
-      where: { companyId },
-      orderBy: { createdAt: 'desc' },
-      take: limit,
-    });
-
-    // Buscar últimas movimentações de processos (DataJud sync)
-    const recentMovements = await prisma.caseMovement.findMany({
-      where: {
-        case: {
-          companyId
-        }
-      },
-      include: {
-        case: {
-          select: {
-            processNumber: true,
-            client: {
-              select: { name: true }
+        orderBy: { createdAt: 'desc' },
+        take: limit,
+      }),
+      prisma.document.findMany({
+        where: { companyId },
+        include: {
+          client: { select: { name: true } },
+          case: { select: { processNumber: true } }
+        },
+        orderBy: { createdAt: 'desc' },
+        take: limit,
+      }),
+      prisma.financialTransaction.findMany({
+        where: { companyId },
+        include: {
+          client: { select: { name: true } }
+        },
+        orderBy: { createdAt: 'desc' },
+        take: limit,
+      }),
+      prisma.client.findMany({
+        where: { companyId },
+        orderBy: { createdAt: 'desc' },
+        take: limit,
+      }),
+      prisma.caseMovement.findMany({
+        where: {
+          case: { companyId }
+        },
+        include: {
+          case: {
+            select: {
+              processNumber: true,
+              client: { select: { name: true } }
             }
           }
-        }
-      },
-      orderBy: { createdAt: 'desc' },
-      take: limit,
-    });
+        },
+        orderBy: { createdAt: 'desc' },
+        take: limit,
+      })
+    ]);
 
-    // Combinar todas as atividades e ordenar por data
+    // Combinar todas as atividades
     const allActivities: any[] = [];
 
-    // Adicionar casos
     recentCases.forEach(item => {
       allActivities.push({
         id: item.id,
@@ -152,7 +160,6 @@ export const getRecentActivities = async (req: AuthRequest, res: Response) => {
       });
     });
 
-    // Adicionar documentos
     recentDocuments.forEach(item => {
       allActivities.push({
         id: item.id,
@@ -170,7 +177,6 @@ export const getRecentActivities = async (req: AuthRequest, res: Response) => {
       });
     });
 
-    // Adicionar transações
     recentTransactions.forEach(item => {
       allActivities.push({
         id: item.id,
@@ -188,7 +194,6 @@ export const getRecentActivities = async (req: AuthRequest, res: Response) => {
       });
     });
 
-    // Adicionar clientes
     recentClients.forEach(item => {
       allActivities.push({
         id: item.id,
@@ -205,7 +210,6 @@ export const getRecentActivities = async (req: AuthRequest, res: Response) => {
       });
     });
 
-    // Adicionar movimentações
     recentMovements.forEach(item => {
       allActivities.push({
         id: item.id,
@@ -223,20 +227,322 @@ export const getRecentActivities = async (req: AuthRequest, res: Response) => {
       });
     });
 
-    // Ordenar todas as atividades por timestamp (mais recentes primeiro)
-    allActivities.sort((a, b) => {
-      return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
-    });
-
-    // Limitar ao número solicitado
+    // Ordenar e limitar
+    allActivities.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
     const limitedActivities = allActivities.slice(0, limit);
 
-    res.json({
+    const result = {
       activities: limitedActivities,
       total: limitedActivities.length,
-    });
+    };
+
+    // Cache the result
+    await cache.set(cacheKey, result, CACHE_TTL.ACTIVITIES);
+
+    res.json(result);
   } catch (error: any) {
     console.error('Erro ao buscar atividades recentes:', error);
     res.status(500).json({ error: 'Erro ao buscar atividades recentes' });
+  }
+};
+
+// Obter eventos por dia da semana (com cache)
+export const getEventsPerWeekday = async (req: AuthRequest, res: Response) => {
+  try {
+    const companyId = req.user!.companyId;
+    const cacheKey = `dashboard:events-weekday:${companyId}`;
+
+    const cachedData = await cache.get<any>(cacheKey);
+    if (cachedData) {
+      return res.json(cachedData);
+    }
+
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    sevenDaysAgo.setHours(0, 0, 0, 0);
+
+    const events = await prisma.scheduleEvent.findMany({
+      where: {
+        companyId,
+        date: { gte: sevenDaysAgo }
+      },
+      select: { date: true, type: true }
+    });
+
+    const weekdayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+    const weekdayData: any = {};
+
+    weekdayNames.forEach((day, index) => {
+      weekdayData[index] = { name: day, eventos: 0, audiencias: 0 };
+    });
+
+    events.forEach(event => {
+      const dayOfWeek = new Date(event.date).getDay();
+      weekdayData[dayOfWeek].eventos++;
+      if (event.type === 'AUDIENCIA') {
+        weekdayData[dayOfWeek].audiencias++;
+      }
+    });
+
+    const chartData = Object.values(weekdayData);
+
+    await cache.set(cacheKey, chartData, CACHE_TTL.CHARTS);
+
+    res.json(chartData);
+  } catch (error: any) {
+    console.error('Erro ao buscar eventos por dia da semana:', error);
+    res.status(500).json({ error: 'Erro ao buscar dados' });
+  }
+};
+
+// Obter distribuição de processos por status (com cache)
+export const getCasesByStatus = async (req: AuthRequest, res: Response) => {
+  try {
+    const companyId = req.user!.companyId;
+    const cacheKey = `dashboard:cases-status:${companyId}`;
+
+    const cachedData = await cache.get<any>(cacheKey);
+    if (cachedData) {
+      return res.json(cachedData);
+    }
+
+    const casesGrouped = await prisma.case.groupBy({
+      by: ['status'],
+      where: { companyId },
+      _count: true
+    });
+
+    const statusLabels: any = {
+      'ACTIVE': 'Ativos',
+      'SUSPENDED': 'Suspensos',
+      'CLOSED': 'Encerrados',
+      'ARCHIVED': 'Arquivados'
+    };
+
+    const chartData = casesGrouped.map(item => ({
+      name: statusLabels[item.status] || item.status,
+      value: item._count,
+      status: item.status
+    }));
+
+    await cache.set(cacheKey, chartData, CACHE_TTL.CHARTS);
+
+    res.json(chartData);
+  } catch (error: any) {
+    console.error('Erro ao buscar processos por status:', error);
+    res.status(500).json({ error: 'Erro ao buscar dados' });
+  }
+};
+
+// Obter andamentos recebidos nos últimos 30 dias (com cache)
+export const getMovementsTimeline = async (req: AuthRequest, res: Response) => {
+  try {
+    const companyId = req.user!.companyId;
+    const cacheKey = `dashboard:movements-timeline:${companyId}`;
+
+    const cachedData = await cache.get<any>(cacheKey);
+    if (cachedData) {
+      return res.json(cachedData);
+    }
+
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    thirtyDaysAgo.setHours(0, 0, 0, 0);
+
+    const movements = await prisma.caseMovement.findMany({
+      where: {
+        case: { companyId },
+        createdAt: { gte: thirtyDaysAgo }
+      },
+      select: { createdAt: true },
+      orderBy: { createdAt: 'asc' }
+    });
+
+    const dailyCounts: any = {};
+
+    movements.forEach(movement => {
+      const date = new Date(movement.createdAt);
+      const dateKey = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+      dailyCounts[dateKey] = (dailyCounts[dateKey] || 0) + 1;
+    });
+
+    const chartData: any[] = [];
+    for (let i = 29; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      const dateKey = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+      chartData.push({ date: dateKey, andamentos: dailyCounts[dateKey] || 0 });
+    }
+
+    await cache.set(cacheKey, chartData, CACHE_TTL.CHARTS);
+
+    res.json(chartData);
+  } catch (error: any) {
+    console.error('Erro ao buscar timeline de andamentos:', error);
+    res.status(500).json({ error: 'Erro ao buscar dados' });
+  }
+};
+
+// Obter prazos próximos (com cache curto)
+export const getUpcomingDeadlines = async (req: AuthRequest, res: Response) => {
+  try {
+    const companyId = req.user!.companyId;
+    const cacheKey = `dashboard:upcoming-deadlines:${companyId}`;
+
+    const cachedData = await cache.get<any>(cacheKey);
+    if (cachedData) {
+      return res.json(cachedData);
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const fifteenDaysLater = new Date(today);
+    fifteenDaysLater.setDate(fifteenDaysLater.getDate() + 15);
+
+    const deadlines = await prisma.scheduleEvent.findMany({
+      where: {
+        companyId,
+        type: 'PRAZO',
+        date: { gte: today, lte: fifteenDaysLater }
+      },
+      include: {
+        client: { select: { name: true } },
+        case: { select: { processNumber: true } }
+      },
+      orderBy: { date: 'asc' },
+      take: 10
+    });
+
+    const formattedDeadlines = deadlines.map(deadline => ({
+      id: deadline.id,
+      title: deadline.title,
+      date: deadline.date,
+      clientName: deadline.client?.name || 'N/A',
+      processNumber: deadline.case?.processNumber || 'N/A',
+      daysUntil: Math.ceil((new Date(deadline.date).getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+    }));
+
+    await cache.set(cacheKey, formattedDeadlines, CACHE_TTL.STATS);
+
+    res.json(formattedDeadlines);
+  } catch (error: any) {
+    console.error('Erro ao buscar prazos próximos:', error);
+    res.status(500).json({ error: 'Erro ao buscar dados' });
+  }
+};
+
+// Obter clientes novos nos últimos 6 meses (com cache)
+export const getNewClientsTimeline = async (req: AuthRequest, res: Response) => {
+  try {
+    const companyId = req.user!.companyId;
+    const cacheKey = `dashboard:new-clients:${companyId}`;
+
+    const cachedData = await cache.get<any>(cacheKey);
+    if (cachedData) {
+      return res.json(cachedData);
+    }
+
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+    sixMonthsAgo.setDate(1);
+    sixMonthsAgo.setHours(0, 0, 0, 0);
+
+    const clients = await prisma.client.findMany({
+      where: {
+        companyId,
+        createdAt: { gte: sixMonthsAgo }
+      },
+      select: { createdAt: true },
+      orderBy: { createdAt: 'asc' }
+    });
+
+    const monthlyData: any = {};
+    const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date();
+      date.setMonth(date.getMonth() - i);
+      const monthKey = `${monthNames[date.getMonth()]}/${date.getFullYear().toString().slice(2)}`;
+      monthlyData[monthKey] = 0;
+    }
+
+    clients.forEach(client => {
+      const date = new Date(client.createdAt);
+      const monthKey = `${monthNames[date.getMonth()]}/${date.getFullYear().toString().slice(2)}`;
+      if (monthlyData[monthKey] !== undefined) {
+        monthlyData[monthKey]++;
+      }
+    });
+
+    const chartData = Object.keys(monthlyData).map(month => ({
+      mes: month,
+      clientes: monthlyData[month]
+    }));
+
+    await cache.set(cacheKey, chartData, CACHE_TTL.CHARTS);
+
+    res.json(chartData);
+  } catch (error: any) {
+    console.error('Erro ao buscar clientes novos:', error);
+    res.status(500).json({ error: 'Erro ao buscar dados' });
+  }
+};
+
+// Obter audiências nos próximos 7 dias (com cache)
+export const getUpcomingHearings = async (req: AuthRequest, res: Response) => {
+  try {
+    const companyId = req.user!.companyId;
+    const cacheKey = `dashboard:upcoming-hearings:${companyId}`;
+
+    const cachedData = await cache.get<any>(cacheKey);
+    if (cachedData) {
+      return res.json(cachedData);
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const sevenDaysLater = new Date(today);
+    sevenDaysLater.setDate(sevenDaysLater.getDate() + 7);
+
+    const hearings = await prisma.scheduleEvent.findMany({
+      where: {
+        companyId,
+        type: 'AUDIENCIA',
+        date: { gte: today, lte: sevenDaysLater }
+      },
+      select: { date: true },
+      orderBy: { date: 'asc' }
+    });
+
+    const dailyData: any = {};
+
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(today);
+      date.setDate(date.getDate() + i);
+      const dateKey = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+      dailyData[dateKey] = 0;
+    }
+
+    hearings.forEach(hearing => {
+      const date = new Date(hearing.date);
+      const dateKey = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+      if (dailyData[dateKey] !== undefined) {
+        dailyData[dateKey]++;
+      }
+    });
+
+    const chartData = Object.keys(dailyData).map(day => ({
+      dia: day,
+      audiencias: dailyData[day]
+    }));
+
+    await cache.set(cacheKey, chartData, CACHE_TTL.STATS);
+
+    res.json(chartData);
+  } catch (error: any) {
+    console.error('Erro ao buscar audiências próximas:', error);
+    res.status(500).json({ error: 'Erro ao buscar dados' });
   }
 };

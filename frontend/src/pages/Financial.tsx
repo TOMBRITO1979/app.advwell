@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import Layout from '../components/Layout';
 import api from '../services/api';
 import toast from 'react-hot-toast';
-import { Plus, Search, Edit, Trash2, DollarSign, TrendingUp, TrendingDown, X, Filter, List } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, DollarSign, TrendingUp, TrendingDown, X, Filter, List, FileText } from 'lucide-react';
 import { ExportButton } from '../components/ui';
 import InstallmentsModal from '../components/InstallmentsModal';
 
@@ -236,6 +236,27 @@ const Financial: React.FC = () => {
     setShowInstallmentsModal(true);
   };
 
+  const handleGenerateReceipt = async (transaction: Transaction) => {
+    try {
+      const response = await api.get(`/financial/${transaction.id}/receipt`, {
+        responseType: 'blob'
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      const receiptType = transaction.type === 'INCOME' ? 'recibo' : 'comprovante';
+      link.setAttribute('download', `${receiptType}_${transaction.id.substring(0, 8)}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      toast.success(`${transaction.type === 'INCOME' ? 'Recibo' : 'Comprovante'} gerado com sucesso!`);
+    } catch (error) {
+      toast.error('Erro ao gerar recibo');
+    }
+  };
+
   const handleDelete = async (transaction: Transaction) => {
     if (!window.confirm(`Tem certeza que deseja excluir esta transação?`)) {
       return;
@@ -421,9 +442,9 @@ const Financial: React.FC = () => {
             {/* Linha 2 no mobile: Botão Nova Transação em largura total */}
             <button
               onClick={handleNew}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 rounded-lg bg-primary-600 hover:bg-primary-700 text-white font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200 min-h-[44px]"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 rounded-lg bg-green-100 text-green-700 border border-green-200 hover:bg-green-200 font-medium text-sm transition-all duration-200 min-h-[44px]"
             >
-              <Plus size={18} className="sm:w-5 sm:h-5" />
+              <Plus size={20} />
               <span>Nova Transação</span>
             </button>
           </div>
@@ -586,13 +607,13 @@ const Financial: React.FC = () => {
                       </td>
                       <td className="px-4 py-3 text-sm">
                         {transaction.type === 'INCOME' ? (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 min-h-[44px]">
-                            <TrendingUp size={12} className="mr-1" />
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            <TrendingUp size={16} className="mr-1" />
                             Receita
                           </span>
                         ) : (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-error-100 text-error-800 min-h-[44px]">
-                            <TrendingDown size={12} className="mr-1" />
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-error-100 text-error-800">
+                            <TrendingDown size={16} className="mr-1" />
                             Despesa
                           </span>
                         )}
@@ -625,22 +646,29 @@ const Financial: React.FC = () => {
                           {transaction.isInstallment && (
                             <button
                               onClick={() => handleViewInstallments(transaction)}
-                              className="text-blue-600 hover:text-blue-800 transition-colors"
+                              className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-info-600 hover:text-info-700 hover:bg-info-50 rounded-md transition-all duration-200"
                               title="Ver Parcelas"
                             >
                               <List size={18} />
                             </button>
                           )}
                           <button
+                            onClick={() => handleGenerateReceipt(transaction)}
+                            className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-amber-600 hover:text-amber-700 hover:bg-amber-50 rounded-md transition-all duration-200"
+                            title={transaction.type === 'INCOME' ? 'Gerar Recibo' : 'Gerar Comprovante'}
+                          >
+                            <FileText size={18} />
+                          </button>
+                          <button
                             onClick={() => handleEdit(transaction)}
-                            className="text-primary-600 hover:text-primary-800 transition-colors"
+                            className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-md transition-all duration-200"
                             title="Editar"
                           >
                             <Edit size={18} />
                           </button>
                           <button
                             onClick={() => handleDelete(transaction)}
-                            className="text-error-600 hover:text-error-800 transition-colors"
+                            className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-error-600 hover:text-error-700 hover:bg-error-50 rounded-md transition-all duration-200"
                             title="Excluir"
                           >
                             <Trash2 size={18} />
@@ -786,9 +814,9 @@ const Financial: React.FC = () => {
                         setCaseSearchText('');
                         setFormData({ ...formData, caseId: '' });
                       }}
-                      className="absolute right-3 top-9 text-neutral-400 hover:text-neutral-600"
+                      className="absolute right-3 top-9 text-neutral-400 hover:text-neutral-600 transition-colors"
                     >
-                      <X size={16} />
+                      <X size={20} />
                     </button>
                   )}
                 </div>
@@ -917,7 +945,7 @@ const Financial: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors min-h-[44px]"
+                  className="px-6 py-2 bg-purple-100 text-purple-700 border border-purple-200 rounded-md hover:bg-purple-200 transition-colors min-h-[44px]"
                 >
                   {editMode ? 'Atualizar' : 'Salvar'}
                 </button>
@@ -932,6 +960,8 @@ const Financial: React.FC = () => {
         <InstallmentsModal
           transactionId={selectedTransactionForInstallments.id}
           transactionDescription={selectedTransactionForInstallments.description}
+          transactionAmount={selectedTransactionForInstallments.amount}
+          transactionType={selectedTransactionForInstallments.type}
           onClose={() => {
             setShowInstallmentsModal(false);
             setSelectedTransactionForInstallments(null);

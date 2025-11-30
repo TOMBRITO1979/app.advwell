@@ -863,54 +863,33 @@ export const updateInstallment = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// Gerar PDF de recibo para uma parcela específica
-export const generateInstallmentReceipt = async (req: AuthRequest, res: Response) => {
+// Gerar PDF de recibo/comprovante para uma transação específica
+export const generateTransactionReceipt = async (req: AuthRequest, res: Response) => {
   try {
-    const { installmentId } = req.params;
+    const { id } = req.params;
     const companyId = req.user!.companyId;
 
-    // Buscar parcela com todos os dados relacionados
-    const installment = await prisma.installmentPayment.findFirst({
-      where: {
-        id: installmentId,
-        financialTransaction: { companyId },
-      },
+    // Buscar transação com todos os dados relacionados
+    const transaction = await prisma.financialTransaction.findFirst({
+      where: { id, companyId },
       include: {
-        financialTransaction: {
-          include: {
-            client: true,
-            case: {
-              select: {
-                processNumber: true,
-                subject: true,
-              },
-            },
+        client: true,
+        case: {
+          select: {
+            processNumber: true,
+            subject: true,
+            court: true,
           },
+        },
+        installments: {
+          orderBy: { installmentNumber: 'asc' },
         },
       },
     });
 
-    if (!installment) {
-      return res.status(404).json({ error: 'Parcela não encontrada' });
+    if (!transaction) {
+      return res.status(404).json({ error: 'Transação não encontrada' });
     }
-
-    // Buscar todas as parcelas da transação para calcular o valor devido total
-    const allInstallments = await prisma.installmentPayment.findMany({
-      where: {
-        financialTransactionId: installment.financialTransactionId,
-      },
-      select: {
-        paidAmount: true,
-      },
-    });
-
-    // Calcular total já pago (soma de todos os paidAmount)
-    const totalPaid = allInstallments.reduce((sum, inst) => {
-      return sum + (inst.paidAmount || 0);
-    }, 0);
-
-    // Valor Devido = Valor Total Contratado - Total Já Pago
-    const valorDevido = installment.financialTransaction.amount - totalPaid;
 
     // Buscar dados da empresa
     const company = await prisma.company.findUnique({
@@ -923,26 +902,47 @@ export const generateInstallmentReceipt = async (req: AuthRequest, res: Response
         city: true,
         state: true,
         zipCode: true,
+        cnpj: true,
         logo: true,
       },
     });
+
+    // Calcular valores para parcelamento
+    let totalPaid = 0;
+    let valorDevido = transaction.amount;
+
+    if (transaction.isInstallment && transaction.installments.length > 0) {
+      totalPaid = transaction.installments.reduce((sum, inst) => {
+        return sum + (inst.paidAmount || 0);
+      }, 0);
+      valorDevido = transaction.amount - totalPaid;
+    }
 
     // Gerar PDF usando PDFKit
     const PDFDocument = require('pdfkit');
     const doc = new PDFDocument({ margin: 50 });
 
-    const filename = `recibo_parcela_${installment.installmentNumber}_${installment.financialTransaction.id.substring(0, 8)}.pdf`;
+    // Definir tipo do documento baseado no tipo de transação
+    const isIncome = transaction.type === 'INCOME';
+    const documentTitle = isIncome ? 'RECIBO DE PAGAMENTO' : 'COMPROVANTE DE PAGAMENTO';
+    const documentSubtitle = isIncome ? 'Receita' : 'Despesa';
+
+    const filename = `${isIncome ? 'recibo' : 'comprovante'}_${transaction.id.substring(0, 8)}.pdf`;
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
 
     doc.pipe(res);
 
-    // Header com dados da empresa
+    // ==================== HEADER DA EMPRESA ====================
     if (company) {
-      doc.fontSize(16).text(company.name, { align: 'center', bold: true });
+      doc.fontSize(18).font('Helvetica-Bold').text(company.name, { align: 'center' });
       doc.moveDown(0.3);
-      doc.fontSize(9);
+      doc.fontSize(10).font('Helvetica');
+
+      if (company.cnpj) {
+        doc.text(`CNPJ: ${company.cnpj}`, { align: 'center' });
+      }
 
       if (company.address || company.city || company.state) {
         const addressParts = [];
@@ -965,62 +965,314 @@ export const generateInstallmentReceipt = async (req: AuthRequest, res: Response
       doc.moveDown(1);
     }
 
-    // Título do recibo
-    doc.fontSize(20).text('Recibo de Pagamento', { align: 'center' });
+    // ==================== TÍTULO DO DOCUMENTO ====================
+    doc.fontSize(22).font('Helvetica-Bold').text(documentTitle, { align: 'center' });
+    doc.fontSize(12).font('Helvetica').text(`(${documentSubtitle})`, { align: 'center' });
+    doc.moveDown(0.5);
+
+    // Número do documento
+    const documentNumber = `Nº ${transaction.id.substring(0, 8).toUpperCase()}`;
+    doc.fontSize(10).text(documentNumber, { align: 'center' });
     doc.moveDown(2);
 
-    // Informações da parcela
-    doc.fontSize(12).text('Informações da Parcela:', { underline: true });
+    // ==================== DADOS DO CLIENTE ====================
+    doc.fontSize(14).font('Helvetica-Bold').text('DADOS DO CLIENTE', { underline: true });
     doc.moveDown(0.5);
-    doc.fontSize(10);
+    doc.fontSize(11).font('Helvetica');
 
-    // Cliente
-    doc.text(`Cliente: ${installment.financialTransaction.client.name}`);
+    doc.text(`Nome: ${transaction.client.name}`);
+    if (transaction.client.cpf) {
+      doc.text(`CPF/CNPJ: ${transaction.client.cpf}`);
+    }
+    if (transaction.client.email) {
+      doc.text(`E-mail: ${transaction.client.email}`);
+    }
+    if (transaction.client.phone) {
+      doc.text(`Telefone: ${transaction.client.phone}`);
+    }
+    if (transaction.client.address) {
+      doc.text(`Endereço: ${transaction.client.address}`);
+    }
+    doc.moveDown(1.5);
+
+    // ==================== DADOS DA TRANSAÇÃO ====================
+    doc.fontSize(14).font('Helvetica-Bold').text('DETALHES DA TRANSAÇÃO', { underline: true });
+    doc.moveDown(0.5);
+    doc.fontSize(11).font('Helvetica');
+
+    doc.text(`Descrição: ${transaction.description}`);
+    doc.text(`Data: ${new Date(transaction.date).toLocaleDateString('pt-BR')}`);
+
+    if (transaction.case) {
+      doc.moveDown(0.5);
+      doc.text(`Processo Vinculado: ${transaction.case.processNumber}`);
+      if (transaction.case.subject) {
+        doc.text(`Assunto: ${transaction.case.subject}`);
+      }
+      if (transaction.case.court) {
+        doc.text(`Tribunal: ${transaction.case.court}`);
+      }
+    }
+    doc.moveDown(1.5);
+
+    // ==================== VALORES ====================
+    doc.fontSize(14).font('Helvetica-Bold').text('VALORES', { underline: true });
+    doc.moveDown(0.5);
+    doc.fontSize(11).font('Helvetica');
+
+    // Verificar se é parcelado
+    if (transaction.isInstallment && transaction.installmentCount) {
+      doc.text(`Tipo de Pagamento: Parcelado`);
+      doc.text(`Número de Parcelas: ${transaction.installmentCount}x`);
+      if (transaction.installmentInterval) {
+        doc.text(`Intervalo entre Parcelas: ${transaction.installmentInterval} dias`);
+      }
+      doc.moveDown(0.5);
+      doc.fontSize(12).font('Helvetica-Bold');
+      doc.text(`Valor Total: R$ ${transaction.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
+      doc.text(`Valor por Parcela: R$ ${(transaction.amount / transaction.installmentCount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
+      doc.moveDown(0.5);
+      doc.text(`Total Pago: R$ ${totalPaid.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
+      doc.text(`Valor Devido: R$ ${valorDevido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
+
+      // Tabela de parcelas
+      if (transaction.installments.length > 0) {
+        doc.moveDown(1);
+        doc.fontSize(12).font('Helvetica-Bold').text('DETALHAMENTO DAS PARCELAS:', { underline: true });
+        doc.moveDown(0.5);
+        doc.fontSize(10).font('Helvetica');
+
+        for (const inst of transaction.installments) {
+          const statusLabels: Record<string, string> = {
+            PENDING: 'Pendente',
+            PAID: 'Pago',
+            OVERDUE: 'Atrasado',
+            CANCELLED: 'Cancelado',
+          };
+          const status = inst.paidAmount && inst.paidAmount >= inst.amount ? 'Pago' : statusLabels[inst.status] || 'Pendente';
+          const dueDate = new Date(inst.dueDate).toLocaleDateString('pt-BR');
+          const paidInfo = inst.paidAmount ? ` (Pago: R$ ${inst.paidAmount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })})` : '';
+
+          doc.text(`  ${inst.installmentNumber}ª Parcela - R$ ${inst.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} - Venc: ${dueDate} - ${status}${paidInfo}`);
+        }
+      }
+    } else {
+      doc.text(`Tipo de Pagamento: À Vista`);
+      doc.moveDown(0.5);
+      doc.fontSize(14).font('Helvetica-Bold');
+      doc.text(`Valor Total: R$ ${transaction.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
+    }
+
+    doc.moveDown(2);
+
+    // ==================== LINHA DE ASSINATURA ====================
+    doc.moveTo(50, doc.y).lineTo(545, doc.y).stroke();
+    doc.moveDown(2);
+
+    // Área de assinatura
+    doc.fontSize(10).font('Helvetica');
+    const signatureY = doc.y;
+
+    // Assinatura do recebedor/pagador
+    doc.text('_________________________________', 100, signatureY);
+    doc.text(isIncome ? 'Assinatura do Pagador' : 'Assinatura do Beneficiário', 100, signatureY + 15);
+
+    doc.text('_________________________________', 350, signatureY);
+    doc.text(isIncome ? 'Assinatura do Recebedor' : 'Assinatura do Responsável', 350, signatureY + 15);
+
+    // ==================== RODAPÉ ====================
+    doc.moveDown(4);
+    doc.fontSize(9).font('Helvetica');
+    doc.text(`Documento gerado em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}`, { align: 'center' });
+    doc.text('Este documento é válido como comprovante de transação.', { align: 'center' });
+
+    doc.end();
+  } catch (error) {
+    console.error('Erro ao gerar recibo:', error);
+    res.status(500).json({ error: 'Erro ao gerar recibo da transação' });
+  }
+};
+
+// Gerar PDF de recibo para uma parcela específica
+export const generateInstallmentReceipt = async (req: AuthRequest, res: Response) => {
+  try {
+    const { installmentId } = req.params;
+    const companyId = req.user!.companyId;
+
+    // Buscar parcela com todos os dados relacionados
+    const installment = await prisma.installmentPayment.findFirst({
+      where: {
+        id: installmentId,
+        financialTransaction: { companyId },
+      },
+      include: {
+        financialTransaction: {
+          include: {
+            client: true,
+            case: {
+              select: {
+                processNumber: true,
+                subject: true,
+                court: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!installment) {
+      return res.status(404).json({ error: 'Parcela não encontrada' });
+    }
+
+    // Buscar todas as parcelas da transação para calcular valores
+    const allInstallments = await prisma.installmentPayment.findMany({
+      where: {
+        financialTransactionId: installment.financialTransactionId,
+      },
+      orderBy: { installmentNumber: 'asc' },
+    });
+
+    // Calcular total já pago (soma de todos os paidAmount)
+    const totalPaid = allInstallments.reduce((sum, inst) => {
+      return sum + (inst.paidAmount || 0);
+    }, 0);
+
+    // Saldo Devedor = Valor Total - Total Já Pago
+    const saldoDevedor = installment.financialTransaction.amount - totalPaid;
+
+    // Buscar dados da empresa
+    const company = await prisma.company.findUnique({
+      where: { id: companyId },
+      select: {
+        name: true,
+        email: true,
+        phone: true,
+        address: true,
+        city: true,
+        state: true,
+        zipCode: true,
+        cnpj: true,
+        logo: true,
+      },
+    });
+
+    // Gerar PDF usando PDFKit
+    const PDFDocument = require('pdfkit');
+    const doc = new PDFDocument({ margin: 50 });
+
+    const isIncome = installment.financialTransaction.type === 'INCOME';
+    const documentTitle = isIncome ? 'RECIBO DE PAGAMENTO' : 'COMPROVANTE DE PAGAMENTO';
+
+    const filename = `${isIncome ? 'recibo' : 'comprovante'}_parcela_${installment.installmentNumber}_${installment.financialTransaction.id.substring(0, 8)}.pdf`;
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
+
+    doc.pipe(res);
+
+    // ==================== HEADER DA EMPRESA ====================
+    if (company) {
+      doc.fontSize(18).font('Helvetica-Bold').text(company.name, { align: 'center' });
+      doc.moveDown(0.3);
+      doc.fontSize(10).font('Helvetica');
+
+      if (company.cnpj) {
+        doc.text(`CNPJ: ${company.cnpj}`, { align: 'center' });
+      }
+
+      if (company.address || company.city || company.state) {
+        const addressParts = [];
+        if (company.address) addressParts.push(company.address);
+        if (company.city) addressParts.push(company.city);
+        if (company.state) addressParts.push(company.state);
+        if (company.zipCode) addressParts.push(`CEP: ${company.zipCode}`);
+        doc.text(addressParts.join(' - '), { align: 'center' });
+      }
+
+      const contactParts = [];
+      if (company.phone) contactParts.push(`Tel: ${company.phone}`);
+      if (company.email) contactParts.push(company.email);
+      if (contactParts.length > 0) {
+        doc.text(contactParts.join(' | '), { align: 'center' });
+      }
+
+      doc.moveDown(1);
+      doc.moveTo(50, doc.y).lineTo(545, doc.y).stroke();
+      doc.moveDown(1);
+    }
+
+    // ==================== TÍTULO DO DOCUMENTO ====================
+    doc.fontSize(22).font('Helvetica-Bold').text(documentTitle, { align: 'center' });
+    doc.fontSize(14).font('Helvetica').text(`Parcela ${installment.installmentNumber}/${installment.financialTransaction.installmentCount}`, { align: 'center' });
+    doc.moveDown(0.5);
+
+    // Número do documento
+    const documentNumber = `Nº ${installment.id.substring(0, 8).toUpperCase()}`;
+    doc.fontSize(10).text(documentNumber, { align: 'center' });
+    doc.moveDown(2);
+
+    // ==================== DADOS DO CLIENTE ====================
+    doc.fontSize(14).font('Helvetica-Bold').text('DADOS DO CLIENTE', { underline: true });
+    doc.moveDown(0.5);
+    doc.fontSize(11).font('Helvetica');
+
+    doc.text(`Nome: ${installment.financialTransaction.client.name}`);
     if (installment.financialTransaction.client.cpf) {
       doc.text(`CPF/CNPJ: ${installment.financialTransaction.client.cpf}`);
     }
-    doc.moveDown(0.5);
+    if (installment.financialTransaction.client.email) {
+      doc.text(`E-mail: ${installment.financialTransaction.client.email}`);
+    }
+    if (installment.financialTransaction.client.phone) {
+      doc.text(`Telefone: ${installment.financialTransaction.client.phone}`);
+    }
+    doc.moveDown(1.5);
 
-    // Dados da transação
+    // ==================== REFERÊNCIA DO SERVIÇO ====================
+    doc.fontSize(14).font('Helvetica-Bold').text('REFERÊNCIA', { underline: true });
+    doc.moveDown(0.5);
+    doc.fontSize(11).font('Helvetica');
+
     doc.text(`Descrição: ${installment.financialTransaction.description}`);
     if (installment.financialTransaction.case) {
       doc.text(`Processo: ${installment.financialTransaction.case.processNumber}`);
       if (installment.financialTransaction.case.subject) {
         doc.text(`Assunto: ${installment.financialTransaction.case.subject}`);
       }
+      if (installment.financialTransaction.case.court) {
+        doc.text(`Tribunal: ${installment.financialTransaction.case.court}`);
+      }
     }
-    doc.moveDown(0.5);
+    doc.moveDown(1.5);
 
-    // Informações da parcela
+    // ==================== INFORMAÇÕES DA PARCELA ====================
+    doc.fontSize(14).font('Helvetica-Bold').text('DETALHES DA PARCELA', { underline: true });
+    doc.moveDown(0.5);
+    doc.fontSize(11).font('Helvetica');
+
     const dueDate = new Date(installment.dueDate).toLocaleDateString('pt-BR');
-    doc.text(`Parcela: ${installment.installmentNumber} de ${installment.financialTransaction.installmentCount}.`);
-    doc.text(`Valor Total Contratado: R$ ${installment.financialTransaction.amount.toFixed(2)}`);
-    doc.text(`Valor da Parcela: R$ ${installment.amount.toFixed(2)}`);
+    doc.text(`Parcela: ${installment.installmentNumber} de ${installment.financialTransaction.installmentCount}`);
+    doc.text(`Valor da Parcela: R$ ${installment.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
     doc.text(`Data de Vencimento: ${dueDate}`);
 
-    // Status e pagamento
-    doc.moveDown(0.5);
-
-    // Determinar status real da parcela
+    // Status da parcela
     let statusText = '';
     if (installment.status === 'CANCELLED') {
       statusText = 'Cancelado';
-    } else if (installment.paidAmount) {
-      if (installment.paidAmount >= installment.amount) {
-        statusText = 'Pago';
-      } else {
-        statusText = 'Pago Parcialmente';
-      }
+    } else if (installment.paidAmount && installment.paidAmount >= installment.amount) {
+      statusText = 'Pago';
+    } else if (installment.paidAmount && installment.paidAmount > 0) {
+      statusText = 'Pago Parcialmente';
     } else {
-      const statusLabels = {
+      const statusLabels: Record<string, string> = {
         PENDING: 'Pendente',
         PAID: 'Pago',
         OVERDUE: 'Atrasado',
         CANCELLED: 'Cancelado',
       };
-      statusText = statusLabels[installment.status as keyof typeof statusLabels] || 'Pendente';
+      statusText = statusLabels[installment.status] || 'Pendente';
     }
-
     doc.text(`Status: ${statusText}`);
 
     if (installment.paidDate) {
@@ -1029,25 +1281,64 @@ export const generateInstallmentReceipt = async (req: AuthRequest, res: Response
     }
 
     if (installment.paidAmount) {
-      doc.text(`Valor Pago: R$ ${installment.paidAmount.toFixed(2)}`);
+      doc.text(`Valor Pago nesta Parcela: R$ ${installment.paidAmount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
     }
 
     if (installment.notes) {
-      doc.moveDown(0.5);
       doc.text(`Observações: ${installment.notes}`);
     }
+    doc.moveDown(1.5);
 
-    // Valor devido
-    doc.moveDown(1);
+    // ==================== RESUMO FINANCEIRO ====================
     doc.moveTo(50, doc.y).lineTo(545, doc.y).stroke();
     doc.moveDown(1);
-    doc.fontSize(12);
-    doc.text(`Valor Devido: R$ ${valorDevido.toFixed(2)}`);
 
-    // Rodapé
-    doc.moveDown(3);
-    doc.fontSize(9);
+    doc.fontSize(14).font('Helvetica-Bold').text('RESUMO FINANCEIRO DO CONTRATO', { underline: true });
+    doc.moveDown(0.5);
+    doc.fontSize(12).font('Helvetica');
+
+    doc.text(`Valor Total do Contrato: R$ ${installment.financialTransaction.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
+    doc.font('Helvetica-Bold').text(`Total Já Pago: R$ ${totalPaid.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
+    doc.font('Helvetica-Bold').fillColor(saldoDevedor > 0 ? 'red' : 'green').text(`Saldo Devedor: R$ ${saldoDevedor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
+    doc.fillColor('black');
+
+    // ==================== HISTÓRICO DE PARCELAS ====================
+    doc.moveDown(1);
+    doc.fontSize(12).font('Helvetica-Bold').text('STATUS DAS PARCELAS:', { underline: true });
+    doc.moveDown(0.5);
+    doc.fontSize(10).font('Helvetica');
+
+    for (const inst of allInstallments) {
+      const instStatus = inst.paidAmount && inst.paidAmount >= inst.amount ? '✓ Pago' :
+                         inst.paidAmount && inst.paidAmount > 0 ? '◐ Parcial' : '○ Pendente';
+      const instDueDate = new Date(inst.dueDate).toLocaleDateString('pt-BR');
+      const paidInfo = inst.paidAmount ? ` (R$ ${inst.paidAmount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })})` : '';
+      const isCurrent = inst.id === installment.id ? ' ← ESTA PARCELA' : '';
+
+      doc.text(`  ${inst.installmentNumber}ª - R$ ${inst.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} - Venc: ${instDueDate} - ${instStatus}${paidInfo}${isCurrent}`);
+    }
+
+    doc.moveDown(2);
+
+    // ==================== LINHA DE ASSINATURA ====================
+    doc.moveTo(50, doc.y).lineTo(545, doc.y).stroke();
+    doc.moveDown(2);
+
+    // Área de assinatura
+    doc.fontSize(10).font('Helvetica');
+    const signatureY = doc.y;
+
+    doc.text('_________________________________', 100, signatureY);
+    doc.text(isIncome ? 'Assinatura do Pagador' : 'Assinatura do Beneficiário', 100, signatureY + 15);
+
+    doc.text('_________________________________', 350, signatureY);
+    doc.text(isIncome ? 'Assinatura do Recebedor' : 'Assinatura do Responsável', 350, signatureY + 15);
+
+    // ==================== RODAPÉ ====================
+    doc.moveDown(4);
+    doc.fontSize(9).font('Helvetica');
     doc.text(`Documento gerado em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}`, { align: 'center' });
+    doc.text('Este documento é válido como comprovante de pagamento de parcela.', { align: 'center' });
 
     doc.end();
   } catch (error) {
