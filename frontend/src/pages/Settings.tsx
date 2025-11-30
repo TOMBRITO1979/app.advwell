@@ -371,9 +371,13 @@ const Settings: React.FC = () => {
                   <strong>Endpoints disponíveis:</strong>
                   <ul className="mt-1 ml-4 list-disc">
                     <li><code>POST /validate-client</code> - Valida CPF + Data Nascimento</li>
-                    <li><code>GET /client/:id/cases</code> - Lista processos do cliente</li>
+                    <li><code>GET /client/:id/cases</code> - Lista processos (inclui <strong>informarCliente</strong>)</li>
+                    <li><code>GET /client/:id/case/:caseId/movements</code> - Movimentações do processo</li>
                     <li><code>GET /client/:id/schedule</code> - Lista audiências e prazos</li>
                   </ul>
+                  <p className="mt-2 text-xs italic">
+                    O campo <code className="bg-orange-100 px-1 rounded">informarCliente</code> contém a "Informação para o Cliente" de cada processo.
+                  </p>
                 </div>
               </div>
             </div>
