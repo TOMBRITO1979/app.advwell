@@ -4,7 +4,7 @@ services:
   # Redis for caching and job queues
   redis:
     image: redis:7-alpine
-    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru --tcp-keepalive 300
     volumes:
       - redis_data:/data
     networks:
@@ -61,9 +61,9 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     command: >
       postgres
-      -c max_connections=300
-      -c shared_buffers=1GB
-      -c effective_cache_size=4GB
+      -c max_connections=500
+      -c shared_buffers=2GB
+      -c effective_cache_size=6GB
       -c work_mem=16MB
       -c maintenance_work_mem=256MB
       -c random_page_cost=1.1
