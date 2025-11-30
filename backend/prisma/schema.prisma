@@ -125,6 +125,7 @@ model Client {
   state         String?
   zipCode       String?
   profession    String?   // Profissão
+  nationality   String?   // Nacionalidade
   maritalStatus String?   // Estado civil
   birthDate     DateTime? // Data de nascimento
   representativeName String? // Nome do representante legal (para Pessoa Jurídica)

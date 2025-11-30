@@ -19,6 +19,7 @@ interface Client {
   state?: string;
   zipCode?: string;
   profession?: string;
+  nationality?: string;
   maritalStatus?: string;
   birthDate?: string;
   representativeName?: string;
@@ -42,6 +43,7 @@ interface ClientFormData {
   state: string;
   zipCode: string;
   profession: string;
+  nationality: string;
   maritalStatus: string;
   birthDate: string;
   representativeName: string;
@@ -75,6 +77,7 @@ const Clients: React.FC = () => {
     state: '',
     zipCode: '',
     profession: '',
+    nationality: '',
     maritalStatus: '',
     birthDate: '',
     representativeName: '',
@@ -174,6 +177,7 @@ const Clients: React.FC = () => {
       state: '',
       zipCode: '',
       profession: '',
+      nationality: '',
       maritalStatus: '',
       birthDate: '',
       representativeName: '',
@@ -218,6 +222,7 @@ const Clients: React.FC = () => {
       state: client.state || '',
       zipCode: client.zipCode || '',
       profession: client.profession || '',
+      nationality: client.nationality || '',
       maritalStatus: client.maritalStatus || '',
       birthDate: client.birthDate ? client.birthDate.split('T')[0] : '',
       representativeName: client.representativeName || '',
@@ -291,9 +296,9 @@ const Clients: React.FC = () => {
             />
             <button
               onClick={handleNewClient}
-              className="inline-flex items-center justify-center gap-2 px-2 sm:px-4 py-2 rounded-lg bg-primary-600 hover:bg-primary-700 text-white font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200 min-h-[44px]"
+              className="inline-flex items-center justify-center gap-2 px-2 sm:px-4 py-2 rounded-lg bg-green-100 text-green-700 border border-green-200 hover:bg-green-200 font-medium text-sm transition-all duration-200 min-h-[44px]"
             >
-              <Plus size={18} className="sm:w-5 sm:h-5" />
+              <Plus size={20} />
               <span className="hidden sm:inline">Novo Cliente</span>
               <span className="sm:hidden">Novo</span>
             </button>
@@ -355,21 +360,21 @@ const Clients: React.FC = () => {
                         <div className="flex items-center justify-center gap-2">
                           <button
                             onClick={() => handleViewDetails(client)}
-                            className="text-info-600 hover:text-info-800 transition-colors"
+                            className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-info-600 hover:text-info-700 hover:bg-info-50 rounded-md transition-all duration-200"
                             title="Ver detalhes"
                           >
                             <Eye size={18} />
                           </button>
                           <button
                             onClick={() => handleEdit(client)}
-                            className="text-primary-600 hover:text-primary-800 transition-colors"
+                            className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-md transition-all duration-200"
                             title="Editar"
                           >
                             <Edit size={18} />
                           </button>
                           <button
                             onClick={() => handleDelete(client)}
-                            className="text-error-600 hover:text-error-800 transition-colors"
+                            className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-error-600 hover:text-error-700 hover:bg-error-50 rounded-md transition-all duration-200"
                             title="Excluir"
                           >
                             <Trash2 size={18} />
@@ -527,6 +532,19 @@ const Clients: React.FC = () => {
                             className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                           />
                         </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-neutral-700 mb-1">
+                            Nacionalidade
+                          </label>
+                          <input
+                            type="text"
+                            value={formData.nationality}
+                            onChange={(e) => setFormData({ ...formData, nationality: e.target.value })}
+                            placeholder="Ex: Brasileiro(a)"
+                            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                          />
+                        </div>
                       </>
                     )}
                   </div>
@@ -612,6 +630,19 @@ const Clients: React.FC = () => {
                           type="text"
                           value={formData.profession}
                           onChange={(e) => setFormData({ ...formData, profession: e.target.value })}
+                          className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-neutral-700 mb-1">
+                          Nacionalidade do Representante
+                        </label>
+                        <input
+                          type="text"
+                          value={formData.nationality}
+                          onChange={(e) => setFormData({ ...formData, nationality: e.target.value })}
+                          placeholder="Ex: Brasileiro(a)"
                           className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                         />
                       </div>
@@ -768,7 +799,7 @@ const Clients: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200 min-h-[44px]"
+                  className="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-purple-100 text-purple-700 border border-purple-200 hover:bg-purple-200 rounded-lg font-medium text-sm transition-all duration-200 min-h-[44px]"
                 >
                   {editMode ? 'Atualizar' : 'Salvar'}
                 </button>
@@ -954,9 +985,9 @@ const Clients: React.FC = () => {
                   setShowDetailsModal(false);
                   handleEdit(selectedClient);
                 }}
-                className="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200 min-h-[44px]"
+                className="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-blue-100 text-blue-700 border border-blue-200 hover:bg-blue-200 rounded-lg font-medium text-sm transition-all duration-200 min-h-[44px]"
               >
-                <Edit size={18} className="sm:w-5 sm:h-5" />
+                <Edit size={20} />
                 <span className="hidden sm:inline">Editar Cliente</span>
                 <span className="sm:hidden">Editar</span>
               </button>
