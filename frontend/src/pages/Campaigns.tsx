@@ -264,7 +264,7 @@ const Campaigns: React.FC = () => {
           </div>
           <button
             onClick={() => setShowModal(true)}
-            className="w-full sm:w-auto flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors min-h-[44px]"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-green-100 text-green-700 border border-green-200 hover:bg-green-200 font-medium rounded-lg transition-all duration-200"
           >
             <Plus size={20} />
             Nova Campanha
@@ -279,7 +279,7 @@ const Campaigns: React.FC = () => {
                 <p className="text-gray-600 text-sm">Total de Campanhas</p>
                 <p className="text-2xl font-bold text-gray-900">{campaigns.length}</p>
               </div>
-              <Mail className="text-green-600" size={32} />
+              <Mail className="text-success-600" size={32} />
             </div>
           </div>
           <div className="bg-white rounded-lg shadow p-4">
@@ -290,7 +290,7 @@ const Campaigns: React.FC = () => {
                   {campaigns.filter((c) => c.status === 'completed').length}
                 </p>
               </div>
-              <CheckCircle className="text-green-600" size={32} />
+              <CheckCircle className="text-success-600" size={32} />
             </div>
           </div>
           <div className="bg-white rounded-lg shadow p-4">
@@ -301,7 +301,7 @@ const Campaigns: React.FC = () => {
                   {campaigns.filter((c) => c.status === 'sending').length}
                 </p>
               </div>
-              <Clock className="text-blue-600" size={32} />
+              <Clock className="text-info-600" size={32} />
             </div>
           </div>
           <div className="bg-white rounded-lg shadow p-4">
@@ -312,7 +312,7 @@ const Campaigns: React.FC = () => {
                   {clients.filter((c) => c.email).length}
                 </p>
               </div>
-              <Users className="text-green-600" size={32} />
+              <Users className="text-success-600" size={32} />
             </div>
           </div>
         </div>
@@ -331,7 +331,7 @@ const Campaigns: React.FC = () => {
             </p>
             <button
               onClick={() => setShowModal(true)}
-              className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors min-h-[44px]"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-green-100 text-green-700 border border-green-200 hover:bg-green-200 font-medium rounded-lg transition-all duration-200"
             >
               <Plus size={20} />
               Nova Campanha
@@ -399,7 +399,7 @@ const Campaigns: React.FC = () => {
                       <div className="flex justify-end gap-2">
                         <button
                           onClick={() => handleView(campaign)}
-                          className="text-blue-600 hover:text-blue-800"
+                          className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-info-600 hover:text-info-700 hover:bg-info-50 rounded-md transition-all duration-200"
                           title="Visualizar"
                         >
                           <Eye size={18} />
@@ -407,7 +407,7 @@ const Campaigns: React.FC = () => {
                         {campaign.status === 'draft' && (
                           <button
                             onClick={() => handleSend(campaign.id)}
-                            className="text-green-600 hover:text-green-800"
+                            className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-success-600 hover:text-success-700 hover:bg-success-50 rounded-md transition-all duration-200"
                             title="Enviar"
                           >
                             <Send size={18} />
@@ -416,7 +416,7 @@ const Campaigns: React.FC = () => {
                         {campaign.status !== 'sending' && (
                           <button
                             onClick={() => handleDelete(campaign.id)}
-                            className="text-red-600 hover:text-red-800"
+                            className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-error-600 hover:text-error-700 hover:bg-error-50 rounded-md transition-all duration-200"
                             title="Excluir"
                           >
                             <Trash2 size={18} />
@@ -586,13 +586,13 @@ const Campaigns: React.FC = () => {
                         setShowModal(false);
                         resetForm();
                       }}
-                      className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 min-h-[44px]"
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 bg-white hover:bg-neutral-50 text-neutral-700 font-medium rounded-lg transition-all duration-200"
                     >
                       Cancelar
                     </button>
                     <button
                       type="submit"
-                      className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md min-h-[44px]"
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-purple-100 text-purple-700 border border-purple-200 hover:bg-purple-200 font-medium rounded-lg transition-all duration-200"
                     >
                       Criar Campanha
                     </button>
@@ -671,7 +671,7 @@ const Campaigns: React.FC = () => {
                 <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-gray-200">
                   <button
                     onClick={() => setShowViewModal(false)}
-                    className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 min-h-[44px]"
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 bg-white hover:bg-neutral-50 text-neutral-700 font-medium rounded-lg transition-all duration-200"
                   >
                     Fechar
                   </button>

@@ -261,7 +261,7 @@ const Companies: React.FC = () => {
           <h1 className="text-2xl font-bold text-neutral-900">Empresas</h1>
           <button
             onClick={handleNewCompany}
-            className="flex items-center gap-2 bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 min-h-[44px]"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-green-100 text-green-700 border border-green-200 hover:bg-green-200 font-medium rounded-lg transition-all duration-200"
           >
             <Plus size={20} />
             <span>Nova Empresa</span>
@@ -353,28 +353,28 @@ const Companies: React.FC = () => {
                         <div className="flex items-center justify-center gap-2">
                           <button
                             onClick={() => handleViewUsers(company)}
-                            className="text-blue-600 hover:text-blue-800 transition-colors"
+                            className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-info-600 hover:text-info-700 hover:bg-info-50 rounded-md transition-all duration-200"
                             title="Ver Usuários"
                           >
                             <UserCog size={18} />
                           </button>
                           <button
                             onClick={() => handleToggleActive(company)}
-                            className={`${company.active ? 'text-error-600 hover:text-error-800' : 'text-primary-600 hover:text-primary-800'} transition-colors`}
+                            className={`inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] ${company.active ? 'text-error-600 hover:text-error-700 hover:bg-error-50' : 'text-success-600 hover:text-success-700 hover:bg-success-50'} rounded-md transition-all duration-200`}
                             title={company.active ? 'Desativar' : 'Ativar'}
                           >
                             {company.active ? <ToggleRight size={18} /> : <ToggleLeft size={18} />}
                           </button>
                           <button
                             onClick={() => handleEdit(company)}
-                            className="text-primary-600 hover:text-primary-800 transition-colors"
+                            className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-md transition-all duration-200"
                             title="Editar"
                           >
                             <Edit size={18} />
                           </button>
                           <button
                             onClick={() => handleDeleteClick(company)}
-                            className="text-error-600 hover:text-error-800 transition-colors"
+                            className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-error-600 hover:text-error-700 hover:bg-error-50 rounded-md transition-all duration-200"
                             title="Deletar"
                           >
                             <Trash2 size={18} />
@@ -405,7 +405,7 @@ const Companies: React.FC = () => {
                   setSelectedCompany(null);
                   resetForm();
                 }}
-                className="text-neutral-400 hover:text-neutral-600"
+                className="text-neutral-400 hover:text-neutral-600 transition-colors"
               >
                 <X size={24} />
               </button>
@@ -602,13 +602,13 @@ const Companies: React.FC = () => {
                     setSelectedCompany(null);
                     resetForm();
                   }}
-                  className="px-6 py-2 border border-neutral-300 rounded-md text-neutral-700 hover:bg-neutral-50 transition-colors min-h-[44px]"
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 bg-white hover:bg-neutral-50 text-neutral-700 font-medium rounded-lg transition-all duration-200"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors min-h-[44px]"
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-purple-100 text-purple-700 border border-purple-200 hover:bg-purple-200 font-medium rounded-lg transition-all duration-200"
                 >
                   {editMode ? 'Atualizar' : 'Criar Empresa'}
                 </button>
@@ -653,13 +653,13 @@ const Companies: React.FC = () => {
                   setShowDeleteModal(false);
                   setSelectedCompany(null);
                 }}
-                className="flex-1 px-4 py-2 border border-neutral-300 rounded-md text-neutral-700 hover:bg-neutral-50 transition-colors min-h-[44px]"
+                className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 bg-white hover:bg-neutral-50 text-neutral-700 font-medium rounded-lg transition-all duration-200"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleDeleteConfirm}
-                className="flex-1 px-4 py-2 bg-error-600 text-neutral-900 rounded-md hover:bg-error-700 transition-colors min-h-[44px]"
+                className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-red-100 text-red-700 border border-red-200 hover:bg-red-200 font-medium rounded-lg transition-all duration-200"
               >
                 Sim, Deletar
               </button>
@@ -698,7 +698,7 @@ const Companies: React.FC = () => {
                   setSelectedCompany(null);
                   setUsersData(null);
                 }}
-                className="text-neutral-400 hover:text-neutral-600"
+                className="text-neutral-400 hover:text-neutral-600 transition-colors"
               >
                 <X size={24} />
               </button>
@@ -756,10 +756,10 @@ const Companies: React.FC = () => {
                             {user.role !== 'SUPER_ADMIN' && (
                               <button
                                 onClick={() => handleToggleUserActive(user.id)}
-                                className={`${user.active ? 'text-error-600 hover:text-error-800' : 'text-green-600 hover:text-green-800'} transition-colors`}
+                                className={`inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] ${user.active ? 'text-error-600 hover:text-error-700 hover:bg-error-50' : 'text-success-600 hover:text-success-700 hover:bg-success-50'} rounded-md transition-all duration-200`}
                                 title={user.active ? 'Desativar usuário' : 'Ativar usuário'}
                               >
-                                {user.active ? <ToggleRight size={20} /> : <ToggleLeft size={20} />}
+                                {user.active ? <ToggleRight size={18} /> : <ToggleLeft size={18} />}
                               </button>
                             )}
                             {user.role === 'SUPER_ADMIN' && (

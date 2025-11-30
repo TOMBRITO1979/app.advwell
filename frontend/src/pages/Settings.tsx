@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
 import api from '../services/api';
 import toast from 'react-hot-toast';
-import { Building2, MapPin, Save } from 'lucide-react';
+import { Building2, MapPin, Save, Key, Copy, RefreshCw, Eye, EyeOff } from 'lucide-react';
 
 interface CompanySettings {
   id: string;
@@ -31,8 +31,14 @@ const Settings: React.FC = () => {
     logo: '',
   });
 
+  // API Key states
+  const [apiKey, setApiKey] = useState<string | null>(null);
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [regeneratingKey, setRegeneratingKey] = useState(false);
+
   useEffect(() => {
     loadSettings();
+    loadApiKey();
   }, []);
 
   const loadSettings = async () => {
@@ -43,6 +49,40 @@ const Settings: React.FC = () => {
       toast.error('Erro ao carregar configurações');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadApiKey = async () => {
+    try {
+      const response = await api.get('/companies/own/api-key');
+      setApiKey(response.data.apiKey);
+    } catch (error) {
+      console.error('Erro ao carregar API Key:', error);
+    }
+  };
+
+  const handleRegenerateApiKey = async () => {
+    if (!window.confirm('Tem certeza que deseja regenerar a API Key? Todas as integrações existentes (WhatsApp, N8N, etc) precisarão ser atualizadas com a nova chave.')) {
+      return;
+    }
+
+    setRegeneratingKey(true);
+    try {
+      const response = await api.post('/companies/own/api-key/regenerate');
+      setApiKey(response.data.apiKey);
+      setShowApiKey(true);
+      toast.success('API Key regenerada com sucesso!');
+    } catch (error) {
+      toast.error('Erro ao regenerar API Key');
+    } finally {
+      setRegeneratingKey(false);
+    }
+  };
+
+  const handleCopyApiKey = () => {
+    if (apiKey) {
+      navigator.clipboard.writeText(apiKey);
+      toast.success('API Key copiada!');
     }
   };
 
@@ -92,7 +132,7 @@ const Settings: React.FC = () => {
         <div className="max-w-4xl mx-auto">
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-neutral-800 flex items-center gap-2">
-              <Building2 className="h-7 w-7" />
+              <Building2 size={28} className="text-primary-600" />
               Configurações da Empresa
             </h1>
             <p className="text-neutral-600 mt-2">
@@ -104,7 +144,7 @@ const Settings: React.FC = () => {
             {/* Informações Básicas */}
             <div className="mb-6">
               <h2 className="text-lg font-semibold text-neutral-700 mb-4 flex items-center gap-2">
-                <Building2 className="h-5 w-5" />
+                <Building2 size={20} className="text-primary-600" />
                 Informações Básicas
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -169,7 +209,7 @@ const Settings: React.FC = () => {
             {/* Endereço */}
             <div className="mb-6">
               <h2 className="text-lg font-semibold text-neutral-700 mb-4 flex items-center gap-2">
-                <MapPin className="h-5 w-5" />
+                <MapPin size={20} className="text-primary-600" />
                 Endereço
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -238,9 +278,9 @@ const Settings: React.FC = () => {
               <button
                 type="submit"
                 disabled={saving}
-                className="flex items-center gap-2 bg-primary-600 text-white px-6 py-2 rounded-md hover:bg-primary-700 disabled:bg-neutral-400 disabled:cursor-not-allowed transition-colors min-h-[44px]"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-purple-100 text-purple-700 border border-purple-200 hover:bg-purple-200 font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Save className="h-4 w-4" />
+                <Save size={20} />
                 {saving ? 'Salvando...' : 'Salvar Configurações'}
               </button>
             </div>
@@ -248,11 +288,95 @@ const Settings: React.FC = () => {
 
           {/* Informações Adicionais */}
           <div className="mt-6 bg-green-50 border border-primary-200 rounded-lg p-4">
-            <h3 className="font-semibold text-green-900 mb-2">ℹ️ Informação</h3>
+            <h3 className="font-semibold text-green-900 mb-2">Informacao</h3>
             <p className="text-sm text-green-800">
               Os dados configurados aqui serão automaticamente incluídos no cabeçalho dos relatórios
               financeiros em PDF, dando um aspecto mais profissional aos seus documentos.
             </p>
+          </div>
+
+          {/* API Key Section */}
+          <div className="mt-6 bg-white rounded-lg shadow-md p-6">
+            <h2 className="text-lg font-semibold text-neutral-700 mb-4 flex items-center gap-2">
+              <Key size={20} className="text-orange-600" />
+              API Key para Integrações
+            </h2>
+            <p className="text-sm text-neutral-600 mb-4">
+              Use esta chave para integrar com WhatsApp, N8N, Chatwoot ou outros sistemas externos.
+              A IA do WhatsApp usará esta chave para consultar processos e agenda dos seus clientes.
+            </p>
+
+            <div className="space-y-4">
+              {/* API Key Display */}
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-2">
+                  Sua API Key
+                </label>
+                <div className="flex gap-2">
+                  <div className="flex-1 relative">
+                    <input
+                      type={showApiKey ? 'text' : 'password'}
+                      readOnly
+                      value={apiKey || 'Nenhuma API Key gerada'}
+                      className="w-full px-3 py-2 pr-10 border border-neutral-300 rounded-md bg-neutral-50 text-neutral-700 font-mono text-sm min-h-[44px]"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowApiKey(!showApiKey)}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-neutral-700"
+                      title={showApiKey ? 'Ocultar' : 'Mostrar'}
+                    >
+                      {showApiKey ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleCopyApiKey}
+                    disabled={!apiKey}
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-blue-100 text-blue-700 border border-blue-200 hover:bg-blue-200 font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Copiar API Key"
+                  >
+                    <Copy size={18} />
+                    Copiar
+                  </button>
+                </div>
+              </div>
+
+              {/* Regenerate Button */}
+              <div className="flex items-center gap-4">
+                <button
+                  type="button"
+                  onClick={handleRegenerateApiKey}
+                  disabled={regeneratingKey}
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-orange-100 text-orange-700 border border-orange-200 hover:bg-orange-200 font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <RefreshCw size={18} className={regeneratingKey ? 'animate-spin' : ''} />
+                  {regeneratingKey ? 'Gerando...' : apiKey ? 'Regenerar API Key' : 'Gerar API Key'}
+                </button>
+                {apiKey && (
+                  <span className="text-sm text-neutral-500">
+                    Regenerar invalidará a chave atual
+                  </span>
+                )}
+              </div>
+
+              {/* Usage Instructions */}
+              <div className="mt-4 bg-orange-50 border border-orange-200 rounded-lg p-4">
+                <h4 className="font-medium text-orange-900 mb-2">Como usar:</h4>
+                <ul className="text-sm text-orange-800 space-y-1">
+                  <li><strong>Header:</strong> <code className="bg-orange-100 px-1 rounded">X-API-Key: sua-api-key</code></li>
+                  <li><strong>Base URL:</strong> <code className="bg-orange-100 px-1 rounded">https://api.advwell.pro/api/integration</code></li>
+                </ul>
+                <div className="mt-3 text-sm text-orange-800">
+                  <strong>Endpoints disponíveis:</strong>
+                  <ul className="mt-1 ml-4 list-disc">
+                    <li><code>POST /validate-client</code> - Valida CPF + Data Nascimento</li>
+                    <li><code>GET /client/:id/cases</code> - Lista processos do cliente</li>
+                    <li><code>GET /client/:id/schedule</code> - Lista audiências e prazos</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

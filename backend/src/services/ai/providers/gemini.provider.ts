@@ -67,6 +67,34 @@ export class GeminiProvider implements IAIProvider {
   }
 
   /**
+   * Generate text from a custom prompt
+   */
+  async generateText(prompt: string): Promise<string> {
+    try {
+      const genModel = this.client.getGenerativeModel({ model: this.model });
+      const result = await genModel.generateContent(prompt);
+      const response = await result.response;
+      const text = response.text().trim();
+
+      if (!text) {
+        throw new Error('Gemini returned empty response');
+      }
+
+      return text;
+    } catch (error: any) {
+      console.error('Gemini generateText Error:', error);
+
+      if (error.message?.includes('API_KEY_INVALID') || error.message?.includes('invalid API key')) {
+        throw new Error('API Key inválida. Verifique sua configuração.');
+      } else if (error.message?.includes('quota') || error.message?.includes('429')) {
+        throw new Error('Limite de requisições excedido. Tente novamente em alguns minutos.');
+      }
+
+      throw new Error(`Erro ao gerar texto: ${error.message}`);
+    }
+  }
+
+  /**
    * Test connection with Gemini API
    */
   async testConnection(): Promise<string> {

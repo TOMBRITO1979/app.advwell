@@ -80,6 +80,43 @@ export class OpenAIProvider implements IAIProvider {
   }
 
   /**
+   * Generate text from a custom prompt
+   */
+  async generateText(prompt: string): Promise<string> {
+    try {
+      const response = await this.client.chat.completions.create({
+        model: this.model,
+        messages: [
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
+        temperature: 0.7,
+        max_tokens: 2000,
+      });
+
+      const text = response.choices[0]?.message?.content?.trim();
+
+      if (!text) {
+        throw new Error('OpenAI returned empty response');
+      }
+
+      return text;
+    } catch (error: any) {
+      console.error('OpenAI generateText Error:', error);
+
+      if (error.status === 401) {
+        throw new Error('API Key inválida. Verifique sua configuração.');
+      } else if (error.status === 429) {
+        throw new Error('Limite de requisições excedido. Tente novamente em alguns minutos.');
+      }
+
+      throw new Error(`Erro ao gerar texto: ${error.message}`);
+    }
+  }
+
+  /**
    * Test connection with OpenAI API
    */
   async testConnection(): Promise<string> {

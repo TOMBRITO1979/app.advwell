@@ -166,10 +166,10 @@ const Updates: React.FC = () => {
                             href={update.linkProcesso}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-primary-600 hover:text-primary-800"
+                            className="text-primary-600 hover:text-primary-800 transition-colors"
                             title="Abrir processo no tribunal"
                           >
-                            <ExternalLink className="w-4 h-4" />
+                            <ExternalLink className="w-5 h-5" />
                           </a>
                         )}
                       </div>
@@ -217,16 +217,16 @@ const Updates: React.FC = () => {
                       <button
                         onClick={() => handleAcknowledge(update.id, update.processNumber)}
                         disabled={acknowledging === update.id}
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:bg-neutral-400 disabled:cursor-not-allowed transition-colors min-h-[44px]"
+                        className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-green-100 text-green-700 border border-green-200 hover:bg-green-200 font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                       >
                         {acknowledging === update.id ? (
                           <>
-                            <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                            <div className="animate-spin rounded-full h-5 w-5 border-2 border-green-600 border-t-transparent"></div>
                             Processando...
                           </>
                         ) : (
                           <>
-                            <CheckCircle className="w-4 h-4" />
+                            <CheckCircle size={20} />
                             Ciente
                           </>
                         )}

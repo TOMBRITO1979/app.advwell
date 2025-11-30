@@ -17,6 +17,7 @@ import {
   listInstallments,
   updateInstallment,
   generateInstallmentReceipt,
+  generateTransactionReceipt,
 } from '../controllers/financial.controller';
 
 const router = Router();
@@ -98,6 +99,7 @@ router.get('/summary', getFinancialSummary);          // Resumo financeiro
 router.get('/export/pdf', exportPDF);                 // Exportar para PDF
 router.get('/export/csv', exportCSV);                 // Exportar para CSV
 router.post('/import/csv', upload.single('file'), importCSV); // Importar transações via CSV
+router.get('/:id/receipt', generateTransactionReceipt);  // Gerar recibo/comprovante da transação
 router.get('/:id', getTransaction);                   // Buscar transação por ID
 router.post('/', createTransactionValidation, validate, createTransaction);  // Criar nova transação
 router.put('/:id', updateTransactionValidation, validate, updateTransaction); // Atualizar transação

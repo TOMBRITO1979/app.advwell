@@ -96,6 +96,12 @@ router.get('/export/pdf', accountsPayableController.exportPDF);
 router.get('/export/csv', accountsPayableController.exportCSV);
 router.post('/import/csv', upload.single('file'), accountsPayableController.importCSV);
 
+// Rotas de extrato (statement)
+router.get('/categories', accountsPayableController.getCategories);
+router.get('/statement', accountsPayableController.generateStatement);
+router.get('/statement/pdf', accountsPayableController.exportStatementPDF);
+router.get('/statement/csv', accountsPayableController.exportStatementCSV);
+
 // Rotas CRUD
 router.post('/', createValidation, validate, accountsPayableController.create);
 router.get('/', accountsPayableController.list);

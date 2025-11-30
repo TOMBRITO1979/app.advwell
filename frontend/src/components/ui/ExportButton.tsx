@@ -21,25 +21,28 @@ const ExportButton: React.FC<ExportButtonProps> = ({
       icon: Download,
       defaultLabel: 'Exportar CSV',
       mobileLabel: 'CSV',
-      bgColor: 'bg-[#22c55e]',
-      hoverColor: 'hover:bg-[#16a34a]',
-      textColor: 'text-white',
+      bgColor: 'bg-purple-100',
+      hoverColor: 'hover:bg-purple-200',
+      textColor: 'text-purple-700',
+      borderColor: 'border border-purple-200',
     },
     pdf: {
       icon: FileText,
       defaultLabel: 'Exportar PDF',
       mobileLabel: 'PDF',
-      bgColor: 'bg-[#f87171]',
-      hoverColor: 'hover:bg-[#ef4444]',
-      textColor: 'text-white',
+      bgColor: 'bg-red-100',
+      hoverColor: 'hover:bg-red-200',
+      textColor: 'text-red-700',
+      borderColor: 'border border-red-200',
     },
     import: {
       icon: Upload,
       defaultLabel: 'Importar CSV',
       mobileLabel: 'Importar',
-      bgColor: 'bg-[#60a5fa]',
-      hoverColor: 'hover:bg-[#3b82f6]',
-      textColor: 'text-white',
+      bgColor: 'bg-blue-100',
+      hoverColor: 'hover:bg-blue-200',
+      textColor: 'text-blue-700',
+      borderColor: 'border border-blue-200',
     },
   };
 
@@ -50,8 +53,8 @@ const ExportButton: React.FC<ExportButtonProps> = ({
     <button
       className={`
         inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg
-        ${config.bgColor} ${config.hoverColor} ${config.textColor}
-        font-medium text-sm shadow-sm hover:shadow-md
+        ${config.bgColor} ${config.hoverColor} ${config.textColor} ${config.borderColor}
+        font-medium text-sm
         transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed
         min-h-[44px]
         ${className}

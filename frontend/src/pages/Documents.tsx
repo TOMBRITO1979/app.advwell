@@ -417,14 +417,14 @@ const Documents: React.FC = () => {
             <button
               onClick={handleSearch}
               disabled={loading || (!selectedClient && !selectedCase)}
-              className="flex-1 px-3 py-2 bg-info-600 text-neutral-900 rounded-md hover:bg-info-700 disabled:bg-neutral-400 disabled:cursor-not-allowed text-sm sm:text-base whitespace-nowrap min-h-[44px]"
+              className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-info-600 hover:bg-info-700 text-white font-medium rounded-lg shadow-sm hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base whitespace-nowrap"
             >
               {loading ? 'Buscando...' : 'Visualizar Documentos'}
             </button>
             <button
               onClick={handleAddDocument}
               disabled={!selectedClient && !selectedCase}
-              className="flex-1 px-3 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:bg-neutral-400 disabled:cursor-not-allowed text-sm sm:text-base whitespace-nowrap min-h-[44px]"
+              className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-green-100 text-green-700 border border-green-200 hover:bg-green-200 font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base whitespace-nowrap"
             >
               + Adicionar Documento
             </button>
@@ -519,7 +519,7 @@ const Documents: React.FC = () => {
                       <div className="flex gap-2 mt-4">
                         <button
                           onClick={() => handleOpenDocument(doc)}
-                          className="px-4 py-2 bg-info-600 text-neutral-900 rounded-md hover:bg-info-700 text-sm flex items-center gap-1 min-h-[44px]"
+                          className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-info-600 hover:bg-info-700 text-white font-medium rounded-lg shadow-sm hover:shadow-md transition-all duration-200 text-sm"
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                             <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
@@ -529,7 +529,7 @@ const Documents: React.FC = () => {
                         </button>
                         <button
                           onClick={() => handleDownloadDocument(doc)}
-                          className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 text-sm flex items-center gap-1 min-h-[44px]"
+                          className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-blue-100 text-blue-700 border border-blue-200 hover:bg-blue-200 font-medium rounded-lg transition-all duration-200 text-sm"
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                             <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -538,7 +538,7 @@ const Documents: React.FC = () => {
                         </button>
                         <button
                           onClick={() => handleDeleteDocument(doc.id)}
-                          className="px-4 py-2 bg-error-600 text-neutral-900 rounded-md hover:bg-error-700 text-sm min-h-[44px]"
+                          className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-red-100 text-red-700 border border-red-200 hover:bg-red-200 font-medium rounded-lg transition-all duration-200 text-sm"
                         >
                           Excluir
                         </button>
@@ -552,7 +552,7 @@ const Documents: React.FC = () => {
             <div className="p-6 border-t border-neutral-200">
               <button
                 onClick={() => setShowViewModal(false)}
-                className="w-full px-4 py-2 bg-neutral-200 text-neutral-800 rounded-md hover:bg-neutral-300 min-h-[44px]"
+                className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 bg-white hover:bg-neutral-50 text-neutral-700 font-medium rounded-lg transition-all duration-200"
               >
                 Fechar
               </button>
@@ -727,14 +727,14 @@ const Documents: React.FC = () => {
                   setShowAddModal(false);
                   resetForm();
                 }}
-                className="flex-1 px-4 py-2 bg-neutral-200 text-neutral-800 rounded-md hover:bg-neutral-300 min-h-[44px]"
+                className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 bg-white hover:bg-neutral-50 text-neutral-700 font-medium rounded-lg transition-all duration-200"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleSaveDocument}
                 disabled={loading}
-                className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:bg-neutral-400 disabled:cursor-not-allowed min-h-[44px]"
+                className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-purple-100 text-purple-700 border border-purple-200 hover:bg-purple-200 font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? 'Enviando...' : 'Salvar Documento'}
               </button>

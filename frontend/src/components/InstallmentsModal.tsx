@@ -17,10 +17,18 @@ interface Installment {
 interface InstallmentsModalProps {
   transactionId: string;
   transactionDescription: string;
+  transactionAmount: number;
+  transactionType: 'INCOME' | 'EXPENSE';
   onClose: () => void;
 }
 
-const InstallmentsModal: React.FC<InstallmentsModalProps> = ({ transactionId, transactionDescription, onClose }) => {
+const InstallmentsModal: React.FC<InstallmentsModalProps> = ({
+  transactionId,
+  transactionDescription,
+  transactionAmount,
+  transactionType,
+  onClose
+}) => {
   const [installments, setInstallments] = useState<Installment[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedInstallment, setSelectedInstallment] = useState<Installment | null>(null);
@@ -127,6 +135,11 @@ const InstallmentsModal: React.FC<InstallmentsModalProps> = ({ transactionId, tr
     return new Date(dateString).toLocaleDateString('pt-BR');
   };
 
+  // Calcular resumo financeiro
+  const totalPaid = installments.reduce((sum, inst) => sum + (inst.paidAmount || 0), 0);
+  const saldoDevedor = transactionAmount - totalPaid;
+  const paidCount = installments.filter(i => i.paidAmount && i.paidAmount >= i.amount).length;
+
   const getStatusBadge = (status: string) => {
     const badges = {
       PENDING: 'bg-yellow-100 text-yellow-800',
@@ -161,9 +174,11 @@ const InstallmentsModal: React.FC<InstallmentsModalProps> = ({ transactionId, tr
     <>
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div className="bg-white rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-          <div className="flex justify-between items-center mb-6">
+          <div className="flex justify-between items-start mb-6">
             <div>
-              <h2 className="text-2xl font-bold text-neutral-800">Parcelas</h2>
+              <h2 className="text-2xl font-bold text-neutral-800">
+                Parcelas {transactionType === 'INCOME' ? '(Receita)' : '(Despesa)'}
+              </h2>
               <p className="text-sm text-neutral-600 mt-1">{transactionDescription}</p>
             </div>
             <button
@@ -172,6 +187,28 @@ const InstallmentsModal: React.FC<InstallmentsModalProps> = ({ transactionId, tr
             >
               <X size={24} />
             </button>
+          </div>
+
+          {/* Resumo Financeiro */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 p-4 bg-neutral-50 rounded-lg">
+            <div className="text-center">
+              <p className="text-xs text-neutral-500 uppercase font-medium">Valor Total</p>
+              <p className="text-lg font-bold text-neutral-800">{formatCurrency(transactionAmount)}</p>
+            </div>
+            <div className="text-center">
+              <p className="text-xs text-neutral-500 uppercase font-medium">Total Pago</p>
+              <p className="text-lg font-bold text-green-600">{formatCurrency(totalPaid)}</p>
+            </div>
+            <div className="text-center">
+              <p className="text-xs text-neutral-500 uppercase font-medium">Saldo Devedor</p>
+              <p className={`text-lg font-bold ${saldoDevedor > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                {formatCurrency(saldoDevedor)}
+              </p>
+            </div>
+            <div className="text-center">
+              <p className="text-xs text-neutral-500 uppercase font-medium">Parcelas Pagas</p>
+              <p className="text-lg font-bold text-neutral-800">{paidCount}/{installments.length}</p>
+            </div>
           </div>
 
           <div className="overflow-x-auto">

@@ -69,4 +69,41 @@ router.post('/update-password', integrationController.updatePassword);
  */
 router.post('/sso-token', integrationController.generateSsoToken);
 
+// ============================================
+// ENDPOINTS PARA IA DO WHATSAPP
+// ============================================
+
+/**
+ * POST /api/integration/validate-client
+ * Valida cliente por CPF e data de nascimento
+ *
+ * Body: { cpf, birthDate }
+ * Retorna: { valid: true, clientId, name } ou { valid: false, message }
+ */
+router.post('/validate-client', integrationController.validateClient);
+
+/**
+ * GET /api/integration/client/:clientId/cases
+ * Lista processos de um cliente
+ *
+ * Retorna: { clientName, totalCases, cases: [...] }
+ */
+router.get('/client/:clientId/cases', integrationController.getClientCases);
+
+/**
+ * GET /api/integration/client/:clientId/case/:caseId/movements
+ * Lista movimentações de um processo específico
+ *
+ * Retorna: { processNumber, subject, informarCliente, movements: [...] }
+ */
+router.get('/client/:clientId/case/:caseId/movements', integrationController.getCaseMovements);
+
+/**
+ * GET /api/integration/client/:clientId/schedule
+ * Lista agenda/compromissos do cliente (audiências, prazos)
+ *
+ * Retorna: { clientName, upcomingEvents: [...], caseDeadlines: [...] }
+ */
+router.get('/client/:clientId/schedule', integrationController.getClientSchedule);
+
 export default router;

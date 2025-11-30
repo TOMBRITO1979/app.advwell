@@ -33,6 +33,13 @@ export interface IAIProvider {
   generateSummary(movements: CaseMovementData[], caseInfo: CaseInfo): Promise<string>;
 
   /**
+   * Generate text from a custom prompt
+   * @param prompt - The prompt to send to the AI
+   * @returns Generated text
+   */
+  generateText(prompt: string): Promise<string>;
+
+  /**
    * Test the connection with the AI provider
    * @returns Success message or throws error
    */

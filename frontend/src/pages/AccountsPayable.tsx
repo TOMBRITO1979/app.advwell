@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Check, Repeat } from 'lucide-react';
+import { Plus, Edit2, Trash2, Check, Repeat, FileText, Download } from 'lucide-react';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import Layout from '../components/Layout';
@@ -38,6 +38,21 @@ const AccountsPayable: React.FC = () => {
   const [editingAccount, setEditingAccount] = useState<AccountPayable | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>('');
 
+  // Statement generation state
+  const [showStatementModal, setShowStatementModal] = useState(false);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [statementFilters, setStatementFilters] = useState({
+    startDate: '',
+    endDate: '',
+    category: '',
+  });
+  const [statementData, setStatementData] = useState<{
+    accounts: AccountPayable[];
+    total: number;
+    count: number;
+  } | null>(null);
+  const [generatingStatement, setGeneratingStatement] = useState(false);
+
   const [formData, setFormData] = useState<FormData>({
     supplier: '',
     description: '',
@@ -66,6 +81,106 @@ const AccountsPayable: React.FC = () => {
   useEffect(() => {
     fetchAccounts();
   }, [filterStatus]);
+
+  useEffect(() => {
+    if (showStatementModal) {
+      fetchCategories();
+    }
+  }, [showStatementModal]);
+
+  const fetchCategories = async () => {
+    try {
+      const response = await api.get('/accounts-payable/categories');
+      setCategories(response.data);
+    } catch (error) {
+      console.error('Erro ao carregar categorias:', error);
+    }
+  };
+
+  const handleGenerateStatement = async () => {
+    if (!statementFilters.startDate || !statementFilters.endDate) {
+      toast.error('Selecione o período');
+      return;
+    }
+
+    try {
+      setGeneratingStatement(true);
+      const params: any = {
+        startDate: statementFilters.startDate,
+        endDate: statementFilters.endDate,
+      };
+      if (statementFilters.category) {
+        params.category = statementFilters.category;
+      }
+
+      const response = await api.get('/accounts-payable/statement', { params });
+      setStatementData(response.data);
+      toast.success('Extrato gerado!');
+    } catch (error) {
+      toast.error('Erro ao gerar extrato');
+      console.error(error);
+    } finally {
+      setGeneratingStatement(false);
+    }
+  };
+
+  const handleExportPDF = async () => {
+    try {
+      const params: any = {
+        startDate: statementFilters.startDate,
+        endDate: statementFilters.endDate,
+      };
+      if (statementFilters.category) {
+        params.category = statementFilters.category;
+      }
+
+      const response = await api.get('/accounts-payable/statement/pdf', {
+        params,
+        responseType: 'blob',
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `extrato_${new Date().toISOString().split('T')[0]}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      toast.success('PDF baixado!');
+    } catch (error) {
+      toast.error('Erro ao exportar PDF');
+      console.error(error);
+    }
+  };
+
+  const handleExportCSV = async () => {
+    try {
+      const params: any = {
+        startDate: statementFilters.startDate,
+        endDate: statementFilters.endDate,
+      };
+      if (statementFilters.category) {
+        params.category = statementFilters.category;
+      }
+
+      const response = await api.get('/accounts-payable/statement/csv', {
+        params,
+        responseType: 'blob',
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `extrato_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      toast.success('CSV baixado!');
+    } catch (error) {
+      toast.error('Erro ao exportar CSV');
+      console.error(error);
+    }
+  };
 
   const fetchAccounts = async () => {
     try {
@@ -171,16 +286,25 @@ const AccountsPayable: React.FC = () => {
           <h1 className="text-3xl font-bold text-gray-900">
             Contas a Pagar
           </h1>
-          <button
-            onClick={() => {
-              resetForm();
-              setShowModal(true);
-            }}
-            className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors min-h-[44px]"
-          >
-            <Plus size={20} />
-            Nova Conta
-          </button>
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            <button
+              onClick={() => setShowStatementModal(true)}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-blue-100 text-blue-700 border border-blue-200 hover:bg-blue-200 font-medium rounded-lg transition-all duration-200"
+            >
+              <FileText size={20} />
+              Gerar Extrato
+            </button>
+            <button
+              onClick={() => {
+                resetForm();
+                setShowModal(true);
+              }}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-green-100 text-green-700 border border-green-200 hover:bg-green-200 font-medium rounded-lg transition-all duration-200"
+            >
+              <Plus size={20} />
+              Nova Conta
+            </button>
+          </div>
         </div>
 
         {/* Filtros */}
@@ -245,8 +369,8 @@ const AccountsPayable: React.FC = () => {
                       <div className="flex items-center gap-2">
                         {account.description}
                         {(account as any).isRecurring && (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800 min-h-[44px]" title="Conta recorrente">
-                            <Repeat size={12} className="mr-1" />
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800" title="Conta recorrente">
+                            <Repeat size={16} className="mr-1" />
                             Recorrente
                           </span>
                         )}
@@ -268,7 +392,7 @@ const AccountsPayable: React.FC = () => {
                         {account.status === 'PENDING' && (
                           <button
                             onClick={() => handleMarkAsPaid(account.id)}
-                            className="text-green-600 hover:text-green-800"
+                            className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-success-600 hover:text-success-700 hover:bg-success-50 rounded-md transition-all duration-200"
                             title="Marcar como pago"
                           >
                             <Check size={18} />
@@ -276,14 +400,14 @@ const AccountsPayable: React.FC = () => {
                         )}
                         <button
                           onClick={() => handleEdit(account)}
-                          className="text-blue-600 hover:text-blue-800"
+                          className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-md transition-all duration-200"
                           title="Editar"
                         >
                           <Edit2 size={18} />
                         </button>
                         <button
                           onClick={() => handleDelete(account.id)}
-                          className="text-red-600 hover:text-red-800"
+                          className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-error-600 hover:text-error-700 hover:bg-error-50 rounded-md transition-all duration-200"
                           title="Excluir"
                         >
                           <Trash2 size={18} />
@@ -294,6 +418,198 @@ const AccountsPayable: React.FC = () => {
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {/* Statement Modal */}
+        {showStatementModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+            <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl my-8">
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                    <FileText size={28} className="text-primary-600" />
+                    Gerar Extrato de Pagamentos
+                  </h2>
+                  <button
+                    onClick={() => {
+                      setShowStatementModal(false);
+                      setStatementData(null);
+                      setStatementFilters({ startDate: '', endDate: '', category: '' });
+                    }}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                {/* Filters */}
+                <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Data Início *
+                      </label>
+                      <input
+                        type="date"
+                        value={statementFilters.startDate}
+                        onChange={(e) => setStatementFilters({ ...statementFilters, startDate: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md min-h-[44px]"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Data Fim *
+                      </label>
+                      <input
+                        type="date"
+                        value={statementFilters.endDate}
+                        onChange={(e) => setStatementFilters({ ...statementFilters, endDate: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md min-h-[44px]"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Categoria
+                      </label>
+                      <select
+                        value={statementFilters.category}
+                        onChange={(e) => setStatementFilters({ ...statementFilters, category: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md min-h-[44px]"
+                      >
+                        <option value="">Todas as Categorias</option>
+                        {categories.map((cat) => (
+                          <option key={cat} value={cat}>
+                            {cat}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 flex gap-2">
+                    <button
+                      onClick={handleGenerateStatement}
+                      disabled={generatingStatement}
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-purple-100 text-purple-700 border border-purple-200 hover:bg-purple-200 font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {generatingStatement ? 'Gerando...' : 'Visualizar Extrato'}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Statement Results */}
+                {statementData && (
+                  <div className="space-y-6">
+                    {/* Total Box */}
+                    <div className="bg-green-50 border border-primary-200 rounded-lg p-4">
+                      <div className="text-center">
+                        <p className="text-sm text-gray-600 mb-1">Total Pago no Período</p>
+                        <p className="text-3xl font-bold text-primary-600">
+                          {formatCurrency(statementData.total)}
+                        </p>
+                        <p className="text-sm text-gray-500 mt-1">
+                          {statementData.count} pagamento{statementData.count !== 1 ? 's' : ''}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Export Buttons */}
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handleExportPDF}
+                        className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-red-100 text-red-700 border border-red-200 hover:bg-red-200 font-medium rounded-lg transition-all duration-200"
+                      >
+                        <Download size={20} />
+                        Exportar PDF
+                      </button>
+                      <button
+                        onClick={handleExportCSV}
+                        className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-purple-100 text-purple-700 border border-purple-200 hover:bg-purple-200 font-medium rounded-lg transition-all duration-200"
+                      >
+                        <Download size={20} />
+                        Exportar CSV
+                      </button>
+                    </div>
+
+                    {/* Payments Table */}
+                    <div className="border border-gray-200 rounded-lg overflow-hidden">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                              Fornecedor
+                            </th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                              Descrição
+                            </th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                              Categoria
+                            </th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                              Valor
+                            </th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                              Data Pagamento
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {statementData.accounts.length === 0 ? (
+                            <tr>
+                              <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
+                                Nenhum pagamento encontrado no período selecionado
+                              </td>
+                            </tr>
+                          ) : (
+                            statementData.accounts.map((account) => (
+                              <tr key={account.id} className="hover:bg-gray-50">
+                                <td className="px-4 py-3 text-sm text-gray-900">
+                                  {account.supplier}
+                                </td>
+                                <td className="px-4 py-3 text-sm text-gray-600">
+                                  {account.description}
+                                </td>
+                                <td className="px-4 py-3 text-sm text-gray-600">
+                                  {account.category || '-'}
+                                </td>
+                                <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                                  {formatCurrency(account.amount)}
+                                </td>
+                                <td className="px-4 py-3 text-sm text-gray-600">
+                                  {formatDate(account.paidDate || account.dueDate)}
+                                </td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+
+                {!statementData && (
+                  <div className="text-center py-8 text-gray-500">
+                    Selecione o período e clique em "Visualizar Extrato" para gerar o relatório
+                  </div>
+                )}
+
+                <div className="mt-6 flex justify-end">
+                  <button
+                    onClick={() => {
+                      setShowStatementModal(false);
+                      setStatementData(null);
+                      setStatementFilters({ startDate: '', endDate: '', category: '' });
+                    }}
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 bg-white hover:bg-neutral-50 text-neutral-700 font-medium rounded-lg transition-all duration-200"
+                  >
+                    Fechar
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
@@ -414,13 +730,13 @@ const AccountsPayable: React.FC = () => {
                         setShowModal(false);
                         resetForm();
                       }}
-                      className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 min-h-[44px]"
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 bg-white hover:bg-neutral-50 text-neutral-700 font-medium rounded-lg transition-all duration-200"
                     >
                       Cancelar
                     </button>
                     <button
                       type="submit"
-                      className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md min-h-[44px]"
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-success-600 hover:bg-success-700 text-white font-medium rounded-lg shadow-sm hover:shadow-md transition-all duration-200"
                     >
                       {editingAccount ? 'Atualizar' : 'Criar'}
                     </button>

@@ -357,16 +357,16 @@ const AIConfigPage: React.FC = () => {
                 type="button"
                 onClick={handleTestConnection}
                 disabled={testing || saving}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-info-600 text-neutral-900 rounded-md hover:bg-info-700 disabled:bg-neutral-400 disabled:cursor-not-allowed transition-colors min-h-[44px]"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-blue-100 text-blue-700 border border-blue-200 hover:bg-blue-200 font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {testing ? (
                   <>
-                    <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
+                    <div className="animate-spin h-5 w-5 border-2 border-blue-600 border-t-transparent rounded-full"></div>
                     Testando...
                   </>
                 ) : (
                   <>
-                    <TestTube className="h-4 w-4" />
+                    <TestTube size={20} />
                     Testar Conexão
                   </>
                 )}
@@ -375,16 +375,16 @@ const AIConfigPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={saving || testing}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:bg-neutral-400 disabled:cursor-not-allowed transition-colors min-h-[44px]"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-purple-100 text-purple-700 border border-purple-200 hover:bg-purple-200 font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {saving ? (
                   <>
-                    <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
+                    <div className="animate-spin h-5 w-5 border-2 border-purple-600 border-t-transparent rounded-full"></div>
                     Salvando...
                   </>
                 ) : (
                   <>
-                    <Save className="h-4 w-4" />
+                    <Save size={20} />
                     Salvar Configuração
                   </>
                 )}
@@ -395,7 +395,7 @@ const AIConfigPage: React.FC = () => {
                   type="button"
                   onClick={handleDelete}
                   disabled={saving || testing}
-                  className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-error-600 text-neutral-900 rounded-md hover:bg-error-700 disabled:bg-neutral-400 disabled:cursor-not-allowed transition-colors min-h-[44px]"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-red-100 text-red-700 border border-red-200 hover:bg-red-200 font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Remover Configuração
                 </button>
