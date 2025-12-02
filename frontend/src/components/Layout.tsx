@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import api from '../services/api';
 import {
   Home,
   Users,
@@ -24,7 +25,15 @@ import {
   Scale,
   Clock,
   Gavel,
+  Crown,
+  AlertTriangle,
 } from 'lucide-react';
+
+interface SubscriptionStatus {
+  status: 'TRIAL' | 'ACTIVE' | 'EXPIRED' | 'CANCELLED' | null;
+  isValid: boolean;
+  daysRemaining?: number;
+}
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -36,6 +45,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false);
+  const [subscriptionStatus, setSubscriptionStatus] = React.useState<SubscriptionStatus | null>(null);
+  const [showSubscriptionBanner, setShowSubscriptionBanner] = React.useState(true);
 
   // Verificar se a sidebar deve ser escondida para este usuário
   const shouldHideSidebar = user?.hideSidebar === true;
@@ -47,6 +58,29 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       setSidebarCollapsed(saved === 'true');
     }
   }, []);
+
+  // Verificar status da assinatura (apenas para ADMIN, não SUPER_ADMIN)
+  React.useEffect(() => {
+    const checkSubscription = async () => {
+      // Não verificar para SUPER_ADMIN
+      if (user?.role === 'SUPER_ADMIN') return;
+
+      try {
+        const response = await api.get('/subscription/info');
+        setSubscriptionStatus({
+          status: response.data.status,
+          isValid: response.data.isValid,
+          daysRemaining: response.data.daysRemaining,
+        });
+      } catch (error) {
+        console.error('Error checking subscription:', error);
+      }
+    };
+
+    if (user) {
+      checkSubscription();
+    }
+  }, [user]);
 
   // Salvar estado do sidebar no localStorage
   const toggleSidebarCollapse = () => {
@@ -72,6 +106,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { path: '/legal-documents', label: 'Documentos', icon: Scale },
     { path: '/updates', label: 'Atualizações', icon: Bell },
     { path: '/financial', label: 'Financeiro', icon: DollarSign },
+    { path: '/client-subscriptions', label: 'Planos', icon: CreditCard },
+    { path: '/stripe-config', label: 'Config. Stripe', icon: CreditCard },
     { path: '/accounts-payable', label: 'Contas a Pagar', icon: CreditCard },
   ];
 
@@ -80,16 +116,103 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     menuItems.push({ path: '/smtp-settings', label: 'Config. SMTP', icon: Settings });
     menuItems.push({ path: '/ai-config', label: 'Config. IA', icon: Bot });
     menuItems.push({ path: '/users', label: 'Usuários', icon: UserCog });
+    menuItems.push({ path: '/subscription', label: 'Assinatura', icon: Crown });
   }
 
   if (user?.role === 'SUPER_ADMIN') {
     menuItems.push({ path: '/companies', label: 'Empresas', icon: Building2 });
+    menuItems.push({ path: '/subscription-alerts', label: 'Alertas Assinatura', icon: AlertTriangle });
   }
 
   menuItems.push({ path: '/settings', label: 'Configurações', icon: Settings });
 
+  // Determinar se deve mostrar o banner de assinatura
+  const shouldShowSubscriptionBanner =
+    showSubscriptionBanner &&
+    subscriptionStatus &&
+    user?.role !== 'SUPER_ADMIN' &&
+    (!subscriptionStatus.isValid ||
+     (subscriptionStatus.status === 'TRIAL' && subscriptionStatus.daysRemaining !== undefined && subscriptionStatus.daysRemaining <= 1));
+
+  const getSubscriptionBannerContent = () => {
+    if (!subscriptionStatus) return null;
+
+    if (!subscriptionStatus.isValid) {
+      if (subscriptionStatus.status === 'EXPIRED' || subscriptionStatus.status === 'TRIAL') {
+        return {
+          type: 'error' as const,
+          message: 'Seu periodo de teste expirou! Assine agora para continuar usando o sistema.',
+          buttonText: 'Assinar Agora',
+        };
+      }
+      if (subscriptionStatus.status === 'CANCELLED') {
+        return {
+          type: 'warning' as const,
+          message: 'Sua assinatura foi cancelada. Reative para continuar usando o sistema.',
+          buttonText: 'Reativar',
+        };
+      }
+    }
+
+    if (subscriptionStatus.status === 'TRIAL' && subscriptionStatus.daysRemaining !== undefined) {
+      if (subscriptionStatus.daysRemaining <= 0) {
+        return {
+          type: 'error' as const,
+          message: 'Seu periodo de teste expira hoje! Assine agora para nao perder acesso.',
+          buttonText: 'Assinar Agora',
+        };
+      }
+      if (subscriptionStatus.daysRemaining === 1) {
+        return {
+          type: 'warning' as const,
+          message: `Seu periodo de teste expira em ${subscriptionStatus.daysRemaining} dia. Assine agora!`,
+          buttonText: 'Ver Planos',
+        };
+      }
+    }
+
+    return null;
+  };
+
+  const bannerContent = getSubscriptionBannerContent();
+
   return (
     <div className="min-h-screen bg-neutral-50">
+      {/* Banner de Assinatura */}
+      {shouldShowSubscriptionBanner && bannerContent && (
+        <div className={`${
+          bannerContent.type === 'error'
+            ? 'bg-red-600'
+            : 'bg-yellow-500'
+        } text-white px-4 py-3 relative z-50`}>
+          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <AlertTriangle size={20} />
+              <span className="text-sm font-medium">{bannerContent.message}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Link
+                to="/subscription"
+                className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-colors ${
+                  bannerContent.type === 'error'
+                    ? 'bg-white text-red-600 hover:bg-red-50'
+                    : 'bg-white text-yellow-600 hover:bg-yellow-50'
+                }`}
+              >
+                {bannerContent.buttonText}
+              </Link>
+              <button
+                onClick={() => setShowSubscriptionBanner(false)}
+                className="p-1 hover:bg-white/20 rounded transition-colors"
+                title="Fechar"
+              >
+                <X size={18} />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Overlay para mobile */}
       {!shouldHideSidebar && sidebarOpen && (
         <div

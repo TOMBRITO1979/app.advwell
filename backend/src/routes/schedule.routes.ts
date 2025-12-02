@@ -1,20 +1,47 @@
 import { Router } from 'express';
+import { body, param } from 'express-validator';
 import scheduleController from '../controllers/schedule.controller';
 import { authenticate } from '../middleware/auth';
 import { validateTenant } from '../middleware/tenant';
+import { validate } from '../middleware/validation';
 
 const router = Router();
 
 // Aplicar middleware de autenticação e validação de tenant
 router.use(authenticate, validateTenant);
 
+// Validações
+const createValidation = [
+  body('title').trim().notEmpty().withMessage('Título é obrigatório').isLength({ max: 200 }).withMessage('Título muito longo'),
+  body('type').isIn(['COMPROMISSO', 'TAREFA', 'PRAZO', 'AUDIENCIA', 'GOOGLE_MEET']).withMessage('Tipo inválido'),
+  body('startDate').isISO8601().withMessage('Data de início inválida'),
+  body('endDate').optional({ nullable: true }).isISO8601().withMessage('Data de fim inválida'),
+  body('clientId').optional({ nullable: true }).isUUID().withMessage('ID do cliente inválido'),
+  body('caseId').optional({ nullable: true }).isUUID().withMessage('ID do caso inválido'),
+  validate,
+];
+
+const updateValidation = [
+  param('id').isUUID().withMessage('ID inválido'),
+  body('title').optional().trim().notEmpty().withMessage('Título não pode ser vazio').isLength({ max: 200 }),
+  body('type').optional().isIn(['COMPROMISSO', 'TAREFA', 'PRAZO', 'AUDIENCIA', 'GOOGLE_MEET']).withMessage('Tipo inválido'),
+  body('startDate').optional().isISO8601().withMessage('Data de início inválida'),
+  body('endDate').optional({ nullable: true }).isISO8601().withMessage('Data de fim inválida'),
+  validate,
+];
+
+const idValidation = [
+  param('id').isUUID().withMessage('ID inválido'),
+  validate,
+];
+
 // Rotas CRUD
 router.get('/', scheduleController.list);
 router.get('/upcoming', scheduleController.upcoming); // Próximos eventos (para dashboard)
-router.get('/:id', scheduleController.get);
-router.post('/', scheduleController.create);
-router.put('/:id', scheduleController.update);
-router.delete('/:id', scheduleController.delete);
-router.patch('/:id/toggle-complete', scheduleController.toggleComplete);
+router.get('/:id', idValidation, scheduleController.get);
+router.post('/', createValidation, scheduleController.create);
+router.put('/:id', updateValidation, scheduleController.update);
+router.delete('/:id', idValidation, scheduleController.delete);
+router.patch('/:id/toggle-complete', idValidation, scheduleController.toggleComplete);
 
 export default router;

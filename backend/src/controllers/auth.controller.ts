@@ -27,6 +27,10 @@ export class AuthController {
       const emailVerificationToken = generateResetToken();
       const emailVerificationExpiry = new Date(Date.now() + 86400000); // 24 horas
 
+      // Calculate trial end date (1 day from now)
+      const trialEndsAt = new Date();
+      trialEndsAt.setDate(trialEndsAt.getDate() + 1);
+
       // Cria a empresa e o usuário admin em uma transação
       const result = await prisma.$transaction(async (tx) => {
         const company = await tx.company.create({
@@ -34,6 +38,9 @@ export class AuthController {
             name: companyName,
             cnpj,
             email,
+            subscriptionStatus: 'TRIAL',
+            trialEndsAt,
+            casesLimit: 1000, // Trial has Bronze limit
           },
         });
 
@@ -388,6 +395,91 @@ export class AuthController {
       res.status(500).json({ error: 'Erro ao processar solicitação' });
     }
   }
+  /**
+   * Embed Authentication - Auto-login via embed token
+   * Used for Chatwell integration iframe embedding
+   *
+   * GET /api/auth/embed/:token
+   */
+  async embedAuth(req: Request, res: Response) {
+    try {
+      const { token } = req.params;
+
+      if (!token) {
+        return res.status(400).json({ error: 'Token não fornecido' });
+      }
+
+      // 1. Buscar empresa pelo apiKey (embed token)
+      const company = await prisma.company.findFirst({
+        where: {
+          apiKey: token,
+          active: true,
+        },
+      });
+
+      if (!company) {
+        return res.status(401).json({ error: 'Token inválido ou empresa inativa' });
+      }
+
+      // 2. Verificar assinatura
+      if (company.subscriptionStatus === 'EXPIRED' || company.subscriptionStatus === 'CANCELLED') {
+        return res.status(403).json({ error: 'Assinatura expirada ou cancelada' });
+      }
+
+      // Se for TRIAL, verificar se ainda está válido
+      if (company.subscriptionStatus === 'TRIAL' && company.trialEndsAt) {
+        if (new Date() > new Date(company.trialEndsAt)) {
+          return res.status(403).json({ error: 'Período de teste expirado' });
+        }
+      }
+
+      // 3. Buscar usuário admin da empresa
+      const user = await prisma.user.findFirst({
+        where: {
+          companyId: company.id,
+          role: 'ADMIN',
+          active: true,
+        },
+      });
+
+      if (!user) {
+        return res.status(500).json({ error: 'Nenhum usuário admin encontrado para esta empresa' });
+      }
+
+      // 4. Gerar JWT token
+      const tokens = generateTokenPair({
+        userId: user.id,
+        email: user.email,
+        role: user.role,
+        companyId: user.companyId || undefined,
+      });
+
+      securityLogger.loginSuccess(user.email, user.id, req.ip);
+
+      // 5. Retornar dados com hideSidebar = true para embed
+      res.json({
+        token: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          companyId: user.companyId,
+          companyName: company.name,
+          hideSidebar: true, // Sempre true para embed
+        },
+        company: {
+          id: company.id,
+          name: company.name,
+        },
+      });
+    } catch (error) {
+      appLogger.error('Erro na autenticação embed:', error as Error);
+      res.status(500).json({ error: 'Erro ao autenticar via embed' });
+    }
+  }
+
   async refreshToken(req: Request, res: Response) {
     try {
       const { refreshToken } = req.body;

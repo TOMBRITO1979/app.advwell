@@ -143,9 +143,9 @@ const InstallmentsModal: React.FC<InstallmentsModalProps> = ({
   const getStatusBadge = (status: string) => {
     const badges = {
       PENDING: 'bg-yellow-100 text-yellow-800',
-      PAID: 'bg-green-100 text-green-800',
+      PAID: 'bg-success-100 text-success-800',
       OVERDUE: 'bg-red-100 text-red-800',
-      CANCELLED: 'bg-gray-100 text-gray-800',
+      CANCELLED: 'bg-neutral-100 text-neutral-800',
     };
     const labels = {
       PENDING: 'Pendente',
@@ -197,11 +197,11 @@ const InstallmentsModal: React.FC<InstallmentsModalProps> = ({
             </div>
             <div className="text-center">
               <p className="text-xs text-neutral-500 uppercase font-medium">Total Pago</p>
-              <p className="text-lg font-bold text-green-600">{formatCurrency(totalPaid)}</p>
+              <p className="text-lg font-bold text-success-600">{formatCurrency(totalPaid)}</p>
             </div>
             <div className="text-center">
               <p className="text-xs text-neutral-500 uppercase font-medium">Saldo Devedor</p>
-              <p className={`text-lg font-bold ${saldoDevedor > 0 ? 'text-red-600' : 'text-green-600'}`}>
+              <p className={`text-lg font-bold ${saldoDevedor > 0 ? 'text-red-600' : 'text-success-600'}`}>
                 {formatCurrency(saldoDevedor)}
               </p>
             </div>
@@ -255,7 +255,7 @@ const InstallmentsModal: React.FC<InstallmentsModalProps> = ({
                         <div>
                           <div>{formatDate(installment.paidDate)}</div>
                           {installment.paidAmount && (
-                            <div className="text-xs text-green-600">
+                            <div className="text-xs text-success-600">
                               {formatCurrency(installment.paidAmount)}
                             </div>
                           )}
@@ -269,7 +269,7 @@ const InstallmentsModal: React.FC<InstallmentsModalProps> = ({
                         {installment.status !== 'PAID' && (
                           <button
                             onClick={() => handleMarkAsPaid(installment)}
-                            className="text-green-600 hover:text-green-800 p-1 rounded hover:bg-green-50 transition-colors"
+                            className="text-success-600 hover:text-success-800 p-1 rounded hover:bg-success-50 transition-colors"
                             title="Marcar como pago"
                           >
                             <Check size={18} />

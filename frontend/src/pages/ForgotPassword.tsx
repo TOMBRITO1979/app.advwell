@@ -28,9 +28,9 @@ const ForgotPassword: React.FC = () => {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-600 via-green-600 to-green-700 px-4 relative overflow-hidden">
         {/* Animated background geometric shapes */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-32 -left-32 w-[500px] h-[500px] bg-green-300/20 rounded-full blur-3xl animate-blob"></div>
-          <div className="absolute top-1/4 -right-24 w-96 h-96 bg-green-400/20 rounded-full blur-3xl animate-blob animation-delay-2000"></div>
-          <div className="absolute -bottom-32 left-1/4 w-[600px] h-[600px] bg-green-200/15 rounded-full blur-3xl animate-blob animation-delay-4000"></div>
+          <div className="absolute -top-32 -left-32 w-[500px] h-[500px] bg-primary-300/20 rounded-full blur-3xl animate-blob"></div>
+          <div className="absolute top-1/4 -right-24 w-96 h-96 bg-primary-400/20 rounded-full blur-3xl animate-blob animation-delay-2000"></div>
+          <div className="absolute -bottom-32 left-1/4 w-[600px] h-[600px] bg-primary-200/15 rounded-full blur-3xl animate-blob animation-delay-4000"></div>
 
           {/* Dot pattern overlay */}
           <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImRvdHMiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9IndoaXRlIiBmaWxsLW9wYWNpdHk9IjAuMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNkb3RzKSIvPjwvc3ZnPg==')] opacity-40"></div>
@@ -46,8 +46,8 @@ const ForgotPassword: React.FC = () => {
             <p className="text-slate-700 text-lg font-medium">Verifique sua caixa de entrada</p>
           </div>
 
-          <div className="bg-green-50/80 border border-primary-200/50 rounded-xl p-4 mb-6 backdrop-blur-sm relative">
-            <p className="text-green-800 text-sm">
+          <div className="bg-success-50/80 border border-primary-200/50 rounded-xl p-4 mb-6 backdrop-blur-sm relative">
+            <p className="text-success-800 text-sm">
               Enviamos um email para <strong className="font-bold">{email}</strong> com instruções para redefinir sua senha.
             </p>
             <p className="text-primary-700 text-sm mt-2">
@@ -72,9 +72,9 @@ const ForgotPassword: React.FC = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-600 via-green-600 to-green-700 px-4 relative overflow-hidden">
       {/* Animated background geometric shapes */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-32 -left-32 w-[500px] h-[500px] bg-green-300/20 rounded-full blur-3xl animate-blob"></div>
-        <div className="absolute top-1/4 -right-24 w-96 h-96 bg-green-400/20 rounded-full blur-3xl animate-blob animation-delay-2000"></div>
-        <div className="absolute -bottom-32 left-1/4 w-[600px] h-[600px] bg-green-200/15 rounded-full blur-3xl animate-blob animation-delay-4000"></div>
+        <div className="absolute -top-32 -left-32 w-[500px] h-[500px] bg-primary-300/20 rounded-full blur-3xl animate-blob"></div>
+        <div className="absolute top-1/4 -right-24 w-96 h-96 bg-primary-400/20 rounded-full blur-3xl animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-32 left-1/4 w-[600px] h-[600px] bg-primary-200/15 rounded-full blur-3xl animate-blob animation-delay-4000"></div>
 
         {/* Dot pattern overlay */}
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImRvdHMiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9IndoaXRlIiBmaWxsLW9wYWNpdHk9IjAuMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNkb3RzKSIvPjwvc3ZnPg==')] opacity-40"></div>

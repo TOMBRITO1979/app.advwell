@@ -25,11 +25,14 @@ interface User {
 
 const AVAILABLE_RESOURCES = [
   { value: 'dashboard', label: 'Dashboard' },
+  { value: 'hearings', label: 'Audiências' },
   { value: 'schedule', label: 'Agenda' },
   { value: 'todos', label: 'Tarefas' },
   { value: 'clients', label: 'Clientes' },
   { value: 'cases', label: 'Processos' },
+  { value: 'deadlines', label: 'Prazos' },
   { value: 'documents', label: 'Uploads' },
+  { value: 'legal-documents', label: 'Documentos' },
   { value: 'updates', label: 'Atualizações' },
   { value: 'financial', label: 'Financeiro' },
   { value: 'accounts-payable', label: 'Contas a Pagar' },
@@ -200,7 +203,7 @@ const Users: React.FC = () => {
           <h1 className="text-2xl font-bold text-neutral-900">Usuários</h1>
           <button
             onClick={handleNewUser}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-green-100 text-green-700 border border-green-200 hover:bg-green-200 font-medium rounded-lg transition-all duration-200"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-success-100 text-success-700 border border-success-200 hover:bg-success-200 font-medium rounded-lg transition-all duration-200"
           >
             <Plus size={20} />
             <span>Novo Usuário</span>
@@ -245,7 +248,7 @@ const Users: React.FC = () => {
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className="divide-y divide-neutral-200">
                   {users.map((user) => (
                     <tr key={user.id} className="hover:bg-neutral-50">
                       <td className="px-4 py-3 text-sm">
@@ -272,7 +275,7 @@ const Users: React.FC = () => {
                         <span
                           className={`px-2 py-1 rounded-full text-xs font-medium ${
                             user.active
-                              ? 'bg-green-100 text-green-800'
+                              ? 'bg-success-100 text-success-800'
                               : 'bg-error-100 text-error-800'
                           }`}
                         >
@@ -503,7 +506,7 @@ const Users: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-purple-100 text-purple-700 border border-purple-200 rounded-md hover:bg-purple-200 transition-colors min-h-[44px]"
+                  className="px-6 py-2 bg-primary-100 text-primary-700 border border-primary-200 rounded-md hover:bg-primary-200 transition-colors min-h-[44px]"
                 >
                   {editMode ? 'Atualizar' : 'Criar Usuário'}
                 </button>

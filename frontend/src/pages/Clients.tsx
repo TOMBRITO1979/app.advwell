@@ -4,6 +4,7 @@ import api from '../services/api';
 import toast from 'react-hot-toast';
 import { Plus, Search, Edit, Trash2, Eye, X } from 'lucide-react';
 import { ExportButton } from '../components/ui';
+import MobileCardList, { MobileCardItem } from '../components/MobileCardList';
 
 interface Client {
   id: string;
@@ -296,7 +297,7 @@ const Clients: React.FC = () => {
             />
             <button
               onClick={handleNewClient}
-              className="inline-flex items-center justify-center gap-2 px-2 sm:px-4 py-2 rounded-lg bg-green-100 text-green-700 border border-green-200 hover:bg-green-200 font-medium text-sm transition-all duration-200 min-h-[44px]"
+              className="inline-flex items-center justify-center gap-2 px-2 sm:px-4 py-2 rounded-lg bg-primary-100 text-primary-700 border border-primary-200 hover:bg-primary-200 font-medium text-sm transition-all duration-200 min-h-[44px]"
             >
               <Plus size={20} />
               <span className="hidden sm:inline">Novo Cliente</span>
@@ -324,78 +325,101 @@ const Clients: React.FC = () => {
               {search ? 'Nenhum cliente encontrado para sua busca' : 'Nenhum cliente cadastrado'}
             </p>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-neutral-50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                      Nome
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                      CPF
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                      Telefone
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                      Email
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                      TAG
-                    </th>
-                    <th className="px-4 py-3 text-center text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                      Ações
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200 bg-white">
-                  {clients.map((client) => (
-                    <tr key={client.id} className="hover:bg-neutral-50 transition-colors">
-                      <td className="px-4 py-3 text-sm font-medium text-neutral-900">{client.name}</td>
-                      <td className="px-4 py-3 text-sm text-neutral-600">{formatCPF(client.cpf)}</td>
-                      <td className="px-4 py-3 text-sm text-neutral-600">{client.phone || '-'}</td>
-                      <td className="px-4 py-3 text-sm text-neutral-600">{client.email || '-'}</td>
-                      <td className="px-4 py-3 text-sm text-neutral-600">{client.tag || '-'}</td>
-                      <td className="px-4 py-3 text-sm text-center">
-                        <div className="flex items-center justify-center gap-2">
-                          <button
-                            onClick={() => handleViewDetails(client)}
-                            className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-info-600 hover:text-info-700 hover:bg-info-50 rounded-md transition-all duration-200"
-                            title="Ver detalhes"
-                          >
-                            <Eye size={18} />
-                          </button>
-                          <button
-                            onClick={() => handleEdit(client)}
-                            className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-md transition-all duration-200"
-                            title="Editar"
-                          >
-                            <Edit size={18} />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(client)}
-                            className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-error-600 hover:text-error-700 hover:bg-error-50 rounded-md transition-all duration-200"
-                            title="Excluir"
-                          >
-                            <Trash2 size={18} />
-                          </button>
-                        </div>
-                      </td>
+            <>
+              {/* Mobile Card View */}
+              <div className="mobile-card-view">
+                <MobileCardList
+                  items={clients.map((client): MobileCardItem => ({
+                    id: client.id,
+                    title: client.name,
+                    subtitle: formatCPF(client.cpf),
+                    badge: client.tag ? { text: client.tag, color: 'blue' } : undefined,
+                    fields: [
+                      { label: 'Telefone', value: client.phone || '-' },
+                      { label: 'Email', value: client.email || '-' },
+                    ],
+                    onView: () => handleViewDetails(client),
+                    onEdit: () => handleEdit(client),
+                    onDelete: () => handleDelete(client),
+                  }))}
+                  emptyMessage={search ? 'Nenhum cliente encontrado' : 'Nenhum cliente cadastrado'}
+                />
+              </div>
+
+              {/* Desktop Table View */}
+              <div className="desktop-table-view overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-neutral-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                        Nome
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                        CPF
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                        Telefone
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                        Email
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                        TAG
+                      </th>
+                      <th className="px-4 py-3 text-center text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                        Ações
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-neutral-200 bg-white">
+                    {clients.map((client) => (
+                      <tr key={client.id} className="hover:bg-neutral-50 transition-colors">
+                        <td className="px-4 py-3 text-sm font-medium text-neutral-900">{client.name}</td>
+                        <td className="px-4 py-3 text-sm text-neutral-600">{formatCPF(client.cpf)}</td>
+                        <td className="px-4 py-3 text-sm text-neutral-600">{client.phone || '-'}</td>
+                        <td className="px-4 py-3 text-sm text-neutral-600">{client.email || '-'}</td>
+                        <td className="px-4 py-3 text-sm text-neutral-600">{client.tag || '-'}</td>
+                        <td className="px-4 py-3 text-sm text-center">
+                          <div className="flex items-center justify-center gap-2">
+                            <button
+                              onClick={() => handleViewDetails(client)}
+                              className="action-btn action-btn-info"
+                              title="Ver detalhes"
+                            >
+                              <Eye size={18} />
+                            </button>
+                            <button
+                              onClick={() => handleEdit(client)}
+                              className="action-btn action-btn-primary"
+                              title="Editar"
+                            >
+                              <Edit size={18} />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(client)}
+                              className="action-btn action-btn-danger"
+                              title="Excluir"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </div>
       </div>
 
       {/* Modal Criar/Editar */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-neutral-200 px-6 py-4 flex justify-between items-center min-h-[44px]">
-              <h2 className="text-xl font-bold text-neutral-900">
+        <div className="modal-overlay">
+          <div className="modal-container">
+            <div className="modal-header">
+              <h2 className="text-lg sm:text-xl font-bold text-neutral-900">
                 {editMode ? 'Editar Cliente' : 'Novo Cliente'}
               </h2>
               <button
@@ -405,13 +429,13 @@ const Clients: React.FC = () => {
                   setSelectedClient(null);
                   resetForm();
                 }}
-                className="text-neutral-400 hover:text-neutral-600"
+                className="p-2 text-neutral-400 hover:text-neutral-600 rounded-lg hover:bg-neutral-100"
               >
                 <X size={24} />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-6">
+            <form onSubmit={handleSubmit} className="modal-body">
               <div className="space-y-6">
                 {/* Dados da Empresa / Dados Pessoais */}
                 <div>
@@ -799,7 +823,7 @@ const Clients: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-purple-100 text-purple-700 border border-purple-200 hover:bg-purple-200 rounded-lg font-medium text-sm transition-all duration-200 min-h-[44px]"
+                  className="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-primary-100 text-primary-700 border border-primary-200 hover:bg-primary-200 rounded-lg font-medium text-sm transition-all duration-200 min-h-[44px]"
                 >
                   {editMode ? 'Atualizar' : 'Salvar'}
                 </button>
@@ -811,22 +835,22 @@ const Clients: React.FC = () => {
 
       {/* Modal Detalhes */}
       {showDetailsModal && selectedClient && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-neutral-200 px-6 py-4 flex justify-between items-center min-h-[44px]">
-              <h2 className="text-xl font-bold text-neutral-900">Detalhes do Cliente</h2>
+        <div className="modal-overlay">
+          <div className="modal-container sm:max-w-3xl">
+            <div className="modal-header">
+              <h2 className="text-lg sm:text-xl font-bold text-neutral-900">Detalhes do Cliente</h2>
               <button
                 onClick={() => {
                   setShowDetailsModal(false);
                   setSelectedClient(null);
                 }}
-                className="text-neutral-400 hover:text-neutral-600"
+                className="p-2 text-neutral-400 hover:text-neutral-600 rounded-lg hover:bg-neutral-100"
               >
                 <X size={24} />
               </button>
             </div>
 
-            <div className="p-6 space-y-6">
+            <div className="modal-body space-y-4 sm:space-y-6">
               {/* Dados da Empresa / Dados Pessoais */}
               <div>
                 <h3 className="text-lg font-semibold text-neutral-900 mb-3">
@@ -979,26 +1003,25 @@ const Clients: React.FC = () => {
               </div>
             </div>
 
-            <div className="sticky bottom-0 bg-white border-t border-neutral-200 px-6 py-4 flex justify-end gap-3 min-h-[44px]">
-              <button
-                onClick={() => {
-                  setShowDetailsModal(false);
-                  handleEdit(selectedClient);
-                }}
-                className="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-blue-100 text-blue-700 border border-blue-200 hover:bg-blue-200 rounded-lg font-medium text-sm transition-all duration-200 min-h-[44px]"
-              >
-                <Edit size={20} />
-                <span className="hidden sm:inline">Editar Cliente</span>
-                <span className="sm:hidden">Editar</span>
-              </button>
+            <div className="modal-footer">
               <button
                 onClick={() => {
                   setShowDetailsModal(false);
                   setSelectedClient(null);
                 }}
-                className="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-white border border-neutral-300 hover:bg-neutral-50 text-neutral-700 rounded-lg font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200 min-h-[44px]"
+                className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2 bg-white border border-neutral-300 hover:bg-neutral-50 text-neutral-700 rounded-lg font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200 min-h-[44px]"
               >
                 Fechar
+              </button>
+              <button
+                onClick={() => {
+                  setShowDetailsModal(false);
+                  handleEdit(selectedClient);
+                }}
+                className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2 bg-info-100 text-info-700 border border-info-200 hover:bg-info-200 rounded-lg font-medium text-sm transition-all duration-200 min-h-[44px]"
+              >
+                <Edit size={20} />
+                Editar
               </button>
             </div>
           </div>
@@ -1007,8 +1030,8 @@ const Clients: React.FC = () => {
 
       {/* Modal de Resultados da Importação */}
       {showImportModal && importResults && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+        <div className="modal-overlay">
+          <div className="modal-container sm:max-w-2xl">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold text-neutral-900">Resultados da Importação</h2>
               <button
@@ -1021,12 +1044,12 @@ const Clients: React.FC = () => {
 
             <div className="space-y-4">
               <div className="grid grid-cols-3 gap-4">
-                <div className="bg-green-50 p-4 rounded-lg text-center">
+                <div className="bg-primary-50 p-4 rounded-lg text-center">
                   <p className="text-2xl font-bold text-primary-600">{importResults.total}</p>
                   <p className="text-sm text-neutral-600">Total de linhas</p>
                 </div>
-                <div className="bg-green-50 p-4 rounded-lg text-center">
-                  <p className="text-2xl font-bold text-primary-600">{importResults.success}</p>
+                <div className="bg-success-50 p-4 rounded-lg text-center">
+                  <p className="text-2xl font-bold text-success-600">{importResults.success}</p>
                   <p className="text-sm text-neutral-600">Importados</p>
                 </div>
                 <div className="bg-error-50 p-4 rounded-lg text-center">

@@ -113,4 +113,7 @@ router.post('/verify-email', verifyEmailValidation, validate, authController.ver
 router.post('/resend-verification', resendVerificationValidation, validate, authController.resendVerificationEmail);
 router.get('/me', authenticate, authController.me);
 
+// Embed authentication - auto-login for Chatwell integration
+router.get('/embed/:token', authController.embedAuth);
+
 export default router;

@@ -1,7 +1,7 @@
 #!/usr/bin/expect -f
 
 set timeout -1
-set password "Contadeva123@"
+set password "REMOVED_CREDENTIAL"
 set host "root@72.60.123.185"
 
 puts "\n=== VERIFICAÇÃO COMPLETA DO BANCO DE DADOS ===\n"

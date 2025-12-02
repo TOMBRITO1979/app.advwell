@@ -2,6 +2,7 @@ import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import prisma from '../utils/prisma';
 import bcrypt from 'bcryptjs';
+import { getLastPayment } from '../services/stripe.service';
 
 export class CompanyController {
   // Super Admin - Listar todas as empresas
@@ -25,7 +26,25 @@ export class CompanyController {
           skip,
           take: Number(limit),
           orderBy: { createdAt: 'desc' },
-          include: {
+          select: {
+            id: true,
+            name: true,
+            cnpj: true,
+            email: true,
+            phone: true,
+            address: true,
+            city: true,
+            state: true,
+            zipCode: true,
+            active: true,
+            createdAt: true,
+            subscriptionStatus: true,
+            subscriptionPlan: true,
+            trialEndsAt: true,
+            subscriptionEndsAt: true,
+            casesLimit: true,
+            stripeCustomerId: true,
+            stripeSubscriptionId: true,
             _count: {
               select: {
                 users: true,
@@ -324,6 +343,126 @@ export class CompanyController {
   }
 
   // ============================================
+  // SUBSCRIPTION MANAGEMENT (Super Admin)
+  // ============================================
+
+  /**
+   * Super Admin - Atualizar status de assinatura de uma empresa
+   * PUT /api/companies/:id/subscription
+   */
+  async updateSubscription(req: AuthRequest, res: Response) {
+    try {
+      const { id } = req.params;
+      const { subscriptionStatus, subscriptionPlan, casesLimit, trialEndsAt } = req.body;
+
+      // Verifica se a empresa existe
+      const company = await prisma.company.findUnique({
+        where: { id },
+      });
+
+      if (!company) {
+        return res.status(404).json({ error: 'Empresa não encontrada' });
+      }
+
+      // Prepara dados para atualização
+      const updateData: any = {};
+
+      if (subscriptionStatus !== undefined) {
+        updateData.subscriptionStatus = subscriptionStatus;
+      }
+
+      if (subscriptionPlan !== undefined) {
+        updateData.subscriptionPlan = subscriptionPlan;
+      }
+
+      if (casesLimit !== undefined) {
+        updateData.casesLimit = casesLimit;
+      }
+
+      if (trialEndsAt !== undefined) {
+        updateData.trialEndsAt = trialEndsAt ? new Date(trialEndsAt) : null;
+      }
+
+      // Se mudando para TRIAL, define data de expiração se não fornecida
+      if (subscriptionStatus === 'TRIAL' && !trialEndsAt && !company.trialEndsAt) {
+        const trialEnd = new Date();
+        trialEnd.setDate(trialEnd.getDate() + 7); // 7 dias de trial
+        updateData.trialEndsAt = trialEnd;
+      }
+
+      // Se mudando para ACTIVE sem plano, define Bronze como padrão
+      if (subscriptionStatus === 'ACTIVE' && !subscriptionPlan && !company.subscriptionPlan) {
+        updateData.subscriptionPlan = 'BRONZE';
+        updateData.casesLimit = 1000;
+      }
+
+      const updatedCompany = await prisma.company.update({
+        where: { id },
+        data: updateData,
+        select: {
+          id: true,
+          name: true,
+          subscriptionStatus: true,
+          subscriptionPlan: true,
+          casesLimit: true,
+          trialEndsAt: true,
+          subscriptionEndsAt: true,
+        },
+      });
+
+      res.json(updatedCompany);
+    } catch (error) {
+      console.error('Erro ao atualizar assinatura:', error);
+      res.status(500).json({ error: 'Erro ao atualizar assinatura' });
+    }
+  }
+
+  /**
+   * Super Admin - Buscar último pagamento de uma empresa no Stripe
+   * GET /api/companies/:id/last-payment
+   */
+  async getCompanyLastPayment(req: AuthRequest, res: Response) {
+    try {
+      const { id } = req.params;
+
+      // Verifica se a empresa existe
+      const company = await prisma.company.findUnique({
+        where: { id },
+        select: {
+          id: true,
+          name: true,
+          stripeCustomerId: true,
+        },
+      });
+
+      if (!company) {
+        return res.status(404).json({ error: 'Empresa não encontrada' });
+      }
+
+      if (!company.stripeCustomerId) {
+        return res.json({
+          companyId: id,
+          companyName: company.name,
+          hasPayments: false,
+          lastPayment: null,
+        });
+      }
+
+      const lastPayment = await getLastPayment(id);
+
+      res.json({
+        companyId: id,
+        companyName: company.name,
+        hasPayments: lastPayment !== null,
+        lastPayment,
+      });
+    } catch (error) {
+      console.error('Erro ao buscar último pagamento:', error);
+      res.status(500).json({ error: 'Erro ao buscar último pagamento' });
+    }
+  }
+
+  // ============================================
   // API KEY MANAGEMENT (Para integrações WhatsApp, N8N, etc)
   // ============================================
 
@@ -396,6 +535,123 @@ export class CompanyController {
     } catch (error) {
       console.error('Erro ao regenerar API Key:', error);
       res.status(500).json({ error: 'Erro ao regenerar API Key' });
+    }
+  }
+
+  // ============================================
+  // SUBSCRIPTION ALERTS (Super Admin)
+  // ============================================
+
+  /**
+   * Super Admin - Listar empresas com problemas de assinatura
+   * GET /api/companies/subscription-alerts
+   */
+  async getSubscriptionAlerts(req: AuthRequest, res: Response) {
+    try {
+      const now = new Date();
+
+      // Buscar empresas com trial expirado
+      const expiredTrials = await prisma.company.findMany({
+        where: {
+          subscriptionStatus: 'TRIAL',
+          trialEndsAt: {
+            lt: now,
+          },
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          subscriptionStatus: true,
+          trialEndsAt: true,
+          createdAt: true,
+          _count: {
+            select: { users: true, cases: true },
+          },
+        },
+        orderBy: { trialEndsAt: 'desc' },
+      });
+
+      // Buscar empresas com assinatura expirada
+      const expiredSubscriptions = await prisma.company.findMany({
+        where: {
+          subscriptionStatus: 'EXPIRED',
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          subscriptionStatus: true,
+          subscriptionPlan: true,
+          subscriptionEndsAt: true,
+          createdAt: true,
+          _count: {
+            select: { users: true, cases: true },
+          },
+        },
+        orderBy: { subscriptionEndsAt: 'desc' },
+      });
+
+      // Buscar empresas com assinatura cancelada
+      const cancelledSubscriptions = await prisma.company.findMany({
+        where: {
+          subscriptionStatus: 'CANCELLED',
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          subscriptionStatus: true,
+          subscriptionPlan: true,
+          subscriptionEndsAt: true,
+          createdAt: true,
+          _count: {
+            select: { users: true, cases: true },
+          },
+        },
+        orderBy: { updatedAt: 'desc' },
+      });
+
+      // Buscar empresas com trial expirando em breve (próximas 24h)
+      const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+      const expiringTrials = await prisma.company.findMany({
+        where: {
+          subscriptionStatus: 'TRIAL',
+          trialEndsAt: {
+            gte: now,
+            lte: tomorrow,
+          },
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          subscriptionStatus: true,
+          trialEndsAt: true,
+          createdAt: true,
+          _count: {
+            select: { users: true, cases: true },
+          },
+        },
+        orderBy: { trialEndsAt: 'asc' },
+      });
+
+      res.json({
+        summary: {
+          expiredTrials: expiredTrials.length,
+          expiredSubscriptions: expiredSubscriptions.length,
+          cancelledSubscriptions: cancelledSubscriptions.length,
+          expiringTrials: expiringTrials.length,
+          total: expiredTrials.length + expiredSubscriptions.length + cancelledSubscriptions.length,
+        },
+        expiredTrials,
+        expiredSubscriptions,
+        cancelledSubscriptions,
+        expiringTrials,
+      });
+    } catch (error) {
+      console.error('Erro ao buscar alertas de assinatura:', error);
+      res.status(500).json({ error: 'Erro ao buscar alertas de assinatura' });
     }
   }
 }

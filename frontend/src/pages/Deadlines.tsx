@@ -74,7 +74,7 @@ const Deadlines: React.FC = () => {
     if (daysRemaining < 0) return 'bg-red-100 text-red-800';
     if (daysRemaining <= 7) return 'bg-orange-100 text-orange-800';
     if (daysRemaining <= 15) return 'bg-yellow-100 text-yellow-800';
-    return 'bg-green-100 text-green-800';
+    return 'bg-success-100 text-success-800';
   };
 
   const getDeadlineLabel = (daysRemaining: number): string => {
@@ -87,7 +87,7 @@ const Deadlines: React.FC = () => {
   const getDeadlineIcon = (daysRemaining: number) => {
     if (daysRemaining < 0) return <AlertCircle size={18} className="text-red-600" />;
     if (daysRemaining <= 7) return <Clock size={18} className="text-orange-600" />;
-    return <Calendar size={18} className="text-green-600" />;
+    return <Calendar size={18} className="text-success-600" />;
   };
 
   const handleCaseClick = async (caseId: string) => {
@@ -159,9 +159,9 @@ const Deadlines: React.FC = () => {
 
   const statusColors = {
     PENDENTE: 'bg-yellow-100 text-yellow-800',
-    ACTIVE: 'bg-green-100 text-green-800',
-    ARCHIVED: 'bg-gray-100 text-gray-800',
-    FINISHED: 'bg-blue-100 text-blue-800',
+    ACTIVE: 'bg-success-100 text-success-800',
+    ARCHIVED: 'bg-neutral-100 text-neutral-800',
+    FINISHED: 'bg-info-100 text-info-700',
   };
 
   const statusLabels = {
@@ -234,17 +234,17 @@ const Deadlines: React.FC = () => {
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className="divide-y divide-neutral-200">
                   {cases.map((caseItem) => {
                     const daysRemaining = calculateDaysRemaining(caseItem.deadline);
                     const deadlineColor = getDeadlineColor(daysRemaining);
 
                     return (
-                      <tr key={caseItem.id} className={`hover:bg-neutral-50 ${caseItem.deadlineCompleted ? 'bg-green-50' : ''}`}>
+                      <tr key={caseItem.id} className={`hover:bg-neutral-50 ${caseItem.deadlineCompleted ? 'bg-success-50' : ''}`}>
                         <td className="px-4 py-3 text-sm">
                           <div className="flex items-center justify-center">
                             {caseItem.deadlineCompleted ? (
-                              <CheckCircle size={18} className="text-green-600" />
+                              <CheckCircle size={18} className="text-success-600" />
                             ) : (
                               getDeadlineIcon(daysRemaining)
                             )}
@@ -253,7 +253,7 @@ const Deadlines: React.FC = () => {
                         <td className="px-4 py-3 text-sm">
                           <button
                             onClick={() => handleCaseClick(caseItem.id)}
-                            className={`hover:underline font-medium transition-colors ${caseItem.deadlineCompleted ? 'text-green-600 hover:text-green-800' : 'text-primary-600 hover:text-primary-800'}`}
+                            className={`hover:underline font-medium transition-colors ${caseItem.deadlineCompleted ? 'text-success-600 hover:text-success-800' : 'text-primary-600 hover:text-primary-800'}`}
                             title="Ver detalhes do processo"
                           >
                             {caseItem.processNumber}
@@ -272,7 +272,7 @@ const Deadlines: React.FC = () => {
                         </td>
                         <td className="px-4 py-3 text-sm">
                           {caseItem.deadlineCompleted ? (
-                            <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            <span className="px-2 py-1 rounded-full text-xs font-medium bg-success-100 text-success-800">
                               Cumprido
                             </span>
                           ) : (
@@ -282,7 +282,7 @@ const Deadlines: React.FC = () => {
                           )}
                         </td>
                         <td className="px-4 py-3 text-sm">
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[caseItem.status as keyof typeof statusColors] || 'bg-gray-100 text-gray-800'}`}>
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[caseItem.status as keyof typeof statusColors] || 'bg-neutral-100 text-neutral-800'}`}>
                             {statusLabels[caseItem.status as keyof typeof statusLabels] || caseItem.status}
                           </span>
                         </td>
@@ -307,7 +307,7 @@ const Deadlines: React.FC = () => {
                               className={`inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] rounded-md transition-all duration-200 ${
                                 caseItem.deadlineCompleted
                                   ? 'text-orange-600 hover:text-orange-700 hover:bg-orange-50'
-                                  : 'text-green-600 hover:text-green-700 hover:bg-green-50'
+                                  : 'text-success-600 hover:text-success-700 hover:bg-success-50'
                               }`}
                               title={caseItem.deadlineCompleted ? 'Reabrir prazo' : 'Marcar como cumprido'}
                             >
@@ -390,7 +390,7 @@ const Deadlines: React.FC = () => {
                       <span className="mr-2">⚖️</span>
                       <span>Status</span>
                     </div>
-                    <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${statusColors[selectedCase.status as keyof typeof statusColors] || 'bg-gray-100 text-gray-800'}`}>
+                    <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${statusColors[selectedCase.status as keyof typeof statusColors] || 'bg-neutral-100 text-neutral-800'}`}>
                       {statusLabels[selectedCase.status as keyof typeof statusLabels] || selectedCase.status}
                     </span>
                   </div>
@@ -441,8 +441,8 @@ const Deadlines: React.FC = () => {
               {selectedCase.informarCliente && (
                 <div>
                   <h3 className="text-sm font-medium text-neutral-500 mb-2">Informação para o Cliente</h3>
-                  <div className="bg-green-50 border border-primary-200 rounded-md p-4">
-                    <p className="text-green-900 whitespace-pre-wrap">{selectedCase.informarCliente}</p>
+                  <div className="bg-success-50 border border-primary-200 rounded-md p-4">
+                    <p className="text-primary-800 whitespace-pre-wrap">{selectedCase.informarCliente}</p>
                   </div>
                 </div>
               )}

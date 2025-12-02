@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
 import api from '../services/api';
 import toast from 'react-hot-toast';
-import { Plus, Search, Edit, X, Building2, Users, FileText, ToggleLeft, ToggleRight, Trash2, UserCog } from 'lucide-react';
+import { Plus, Search, Edit, X, Building2, Users, FileText, ToggleLeft, ToggleRight, Trash2, UserCog, Crown, Clock, DollarSign } from 'lucide-react';
 
 interface Company {
   id: string;
@@ -16,6 +16,13 @@ interface Company {
   zipCode?: string;
   active: boolean;
   createdAt: string;
+  subscriptionStatus: 'TRIAL' | 'ACTIVE' | 'EXPIRED' | 'CANCELLED' | null;
+  subscriptionPlan: 'BRONZE' | 'PRATA' | 'OURO' | null;
+  trialEndsAt: string | null;
+  subscriptionEndsAt: string | null;
+  casesLimit: number | null;
+  stripeCustomerId: string | null;
+  stripeSubscriptionId: string | null;
   _count: {
     users: number;
     clients: number;
@@ -42,6 +49,18 @@ interface UsersData {
   };
 }
 
+interface LastPaymentData {
+  companyId: string;
+  companyName: string;
+  hasPayments: boolean;
+  lastPayment: {
+    lastPaymentDate: string | null;
+    lastPaymentAmount: number | null;
+    lastPaymentCurrency: string | null;
+    lastPaymentStatus: string | null;
+  } | null;
+}
+
 const Companies: React.FC = () => {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
@@ -49,10 +68,18 @@ const Companies: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showUsersModal, setShowUsersModal] = useState(false);
+  const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
   const [usersData, setUsersData] = useState<UsersData | null>(null);
   const [loadingUsers, setLoadingUsers] = useState(false);
+  const [lastPaymentData, setLastPaymentData] = useState<LastPaymentData | null>(null);
+  const [loadingLastPayment, setLoadingLastPayment] = useState(false);
+  const [subscriptionForm, setSubscriptionForm] = useState({
+    subscriptionStatus: '' as 'TRIAL' | 'ACTIVE' | 'EXPIRED' | 'CANCELLED' | '',
+    subscriptionPlan: '' as 'BRONZE' | 'PRATA' | 'OURO' | '',
+    casesLimit: 1000,
+  });
 
   const [formData, setFormData] = useState({
     companyName: '',
@@ -236,7 +263,7 @@ const Companies: React.FC = () => {
     const badges = {
       ADMIN: 'bg-primary-100 text-primary-800',
       USER: 'bg-neutral-100 text-neutral-800',
-      SUPER_ADMIN: 'bg-purple-100 text-purple-800',
+      SUPER_ADMIN: 'bg-primary-100 text-primary-800',
     };
     const labels = {
       ADMIN: 'Admin',
@@ -254,6 +281,97 @@ const Companies: React.FC = () => {
     return new Date(dateString).toLocaleDateString('pt-BR');
   };
 
+  const formatDateTime = (dateString: string | null) => {
+    if (!dateString) return '-';
+    return new Date(dateString).toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  const getSubscriptionBadge = (status: string | null) => {
+    const badges: Record<string, string> = {
+      TRIAL: 'bg-blue-100 text-blue-800',
+      ACTIVE: 'bg-green-100 text-green-800',
+      EXPIRED: 'bg-red-100 text-red-800',
+      CANCELLED: 'bg-gray-100 text-gray-800',
+    };
+    const labels: Record<string, string> = {
+      TRIAL: 'Trial',
+      ACTIVE: 'Ativa',
+      EXPIRED: 'Expirada',
+      CANCELLED: 'Cancelada',
+    };
+    if (!status) {
+      return <span className="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">-</span>;
+    }
+    return (
+      <span className={`px-2 py-1 rounded-full text-xs font-medium ${badges[status] || 'bg-gray-100 text-gray-800'}`}>
+        {labels[status] || status}
+      </span>
+    );
+  };
+
+  const getPlanBadge = (plan: string | null) => {
+    const badges: Record<string, string> = {
+      BRONZE: 'bg-amber-100 text-amber-800',
+      PRATA: 'bg-gray-200 text-gray-800',
+      OURO: 'bg-yellow-100 text-yellow-800',
+    };
+    if (!plan) return <span className="text-xs text-gray-400">-</span>;
+    return (
+      <span className={`px-2 py-1 rounded-full text-xs font-medium ${badges[plan] || 'bg-gray-100'}`}>
+        {plan}
+      </span>
+    );
+  };
+
+  const handleEditSubscription = async (company: Company) => {
+    setSelectedCompany(company);
+    setSubscriptionForm({
+      subscriptionStatus: company.subscriptionStatus || '',
+      subscriptionPlan: company.subscriptionPlan || '',
+      casesLimit: company.casesLimit || 1000,
+    });
+    setLastPaymentData(null);
+    setShowSubscriptionModal(true);
+
+    // Buscar último pagamento do Stripe
+    if (company.stripeCustomerId) {
+      setLoadingLastPayment(true);
+      try {
+        const response = await api.get(`/companies/${company.id}/last-payment`);
+        setLastPaymentData(response.data);
+      } catch (error) {
+        console.error('Error fetching last payment:', error);
+      } finally {
+        setLoadingLastPayment(false);
+      }
+    }
+  };
+
+  const handleUpdateSubscription = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedCompany) return;
+
+    try {
+      await api.put(`/companies/${selectedCompany.id}/subscription`, {
+        subscriptionStatus: subscriptionForm.subscriptionStatus || null,
+        subscriptionPlan: subscriptionForm.subscriptionPlan || null,
+        casesLimit: subscriptionForm.casesLimit,
+      });
+      toast.success('Assinatura atualizada com sucesso!');
+      setShowSubscriptionModal(false);
+      setSelectedCompany(null);
+      loadCompanies();
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Erro ao atualizar assinatura');
+    }
+  };
+
   return (
     <Layout>
       <div className="space-y-6">
@@ -261,7 +379,7 @@ const Companies: React.FC = () => {
           <h1 className="text-2xl font-bold text-neutral-900">Empresas</h1>
           <button
             onClick={handleNewCompany}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-green-100 text-green-700 border border-green-200 hover:bg-green-200 font-medium rounded-lg transition-all duration-200"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-success-100 text-success-700 border border-success-200 hover:bg-success-200 font-medium rounded-lg transition-all duration-200"
           >
             <Plus size={20} />
             <span>Nova Empresa</span>
@@ -293,7 +411,7 @@ const Companies: React.FC = () => {
                       Empresa
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
-                      Contato
+                      Assinatura
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
                       Estatísticas
@@ -306,7 +424,7 @@ const Companies: React.FC = () => {
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className="divide-y divide-neutral-200">
                   {companies.map((company) => (
                     <tr key={company.id} className="hover:bg-neutral-50">
                       <td className="px-4 py-3 text-sm">
@@ -316,10 +434,23 @@ const Companies: React.FC = () => {
                           <p className="text-xs text-neutral-400">Criada em {formatDate(company.createdAt)}</p>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-sm text-neutral-600">
-                        <div>
-                          <p>{company.email}</p>
-                          {company.phone && <p className="text-xs text-neutral-500">{company.phone}</p>}
+                      <td className="px-4 py-3 text-sm">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            {getSubscriptionBadge(company.subscriptionStatus)}
+                            {getPlanBadge(company.subscriptionPlan)}
+                          </div>
+                          <div className="text-xs text-neutral-500">
+                            {company.subscriptionStatus === 'TRIAL' && company.trialEndsAt && (
+                              <span className="flex items-center gap-1">
+                                <Clock size={12} />
+                                Trial até: {formatDateTime(company.trialEndsAt)}
+                              </span>
+                            )}
+                            {company.casesLimit && (
+                              <span>Limite: {company._count.cases}/{company.casesLimit} processos</span>
+                            )}
+                          </div>
                         </div>
                       </td>
                       <td className="px-4 py-3 text-sm text-neutral-600">
@@ -342,7 +473,7 @@ const Companies: React.FC = () => {
                         <span
                           className={`px-2 py-1 rounded-full text-xs font-medium ${
                             company.active
-                              ? 'bg-green-100 text-green-800'
+                              ? 'bg-success-100 text-success-800'
                               : 'bg-error-100 text-error-800'
                           }`}
                         >
@@ -350,7 +481,14 @@ const Companies: React.FC = () => {
                         </span>
                       </td>
                       <td className="px-4 py-3 text-sm">
-                        <div className="flex items-center justify-center gap-2">
+                        <div className="flex items-center justify-center gap-1">
+                          <button
+                            onClick={() => handleEditSubscription(company)}
+                            className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50 rounded-md transition-all duration-200"
+                            title="Gerenciar Assinatura"
+                          >
+                            <Crown size={18} />
+                          </button>
                           <button
                             onClick={() => handleViewUsers(company)}
                             className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-info-600 hover:text-info-700 hover:bg-info-50 rounded-md transition-all duration-200"
@@ -608,7 +746,7 @@ const Companies: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-purple-100 text-purple-700 border border-purple-200 hover:bg-purple-200 font-medium rounded-lg transition-all duration-200"
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-primary-100 text-primary-700 border border-primary-200 hover:bg-primary-200 font-medium rounded-lg transition-all duration-200"
                 >
                   {editMode ? 'Atualizar' : 'Criar Empresa'}
                 </button>
@@ -745,7 +883,7 @@ const Companies: React.FC = () => {
                             <span
                               className={`px-2 py-1 rounded-full text-xs font-medium ${
                                 user.active
-                                  ? 'bg-green-100 text-green-800'
+                                  ? 'bg-success-100 text-success-800'
                                   : 'bg-error-100 text-error-800'
                               }`}
                             >
@@ -775,6 +913,151 @@ const Companies: React.FC = () => {
                 <p className="text-center py-8 text-neutral-600">Nenhum usuário encontrado</p>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Gerenciamento de Assinatura */}
+      {showSubscriptionModal && selectedCompany && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-md w-full">
+            <div className="sticky top-0 bg-white border-b border-neutral-200 px-6 py-4 flex justify-between items-center">
+              <div>
+                <h2 className="text-xl font-bold text-neutral-900">Gerenciar Assinatura</h2>
+                <p className="text-sm text-neutral-600 mt-1">{selectedCompany.name}</p>
+              </div>
+              <button
+                onClick={() => {
+                  setShowSubscriptionModal(false);
+                  setSelectedCompany(null);
+                  setLastPaymentData(null);
+                }}
+                className="text-neutral-400 hover:text-neutral-600 transition-colors"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <form onSubmit={handleUpdateSubscription} className="p-6 space-y-4">
+              {/* Info atual */}
+              <div className="bg-neutral-50 p-4 rounded-lg space-y-2 text-sm">
+                <p><strong>Status atual:</strong> {selectedCompany.subscriptionStatus || 'Nenhum'}</p>
+                <p><strong>Plano atual:</strong> {selectedCompany.subscriptionPlan || 'Nenhum'}</p>
+                <p><strong>Processos:</strong> {selectedCompany._count.cases} / {selectedCompany.casesLimit || 'ilimitado'}</p>
+                {selectedCompany.trialEndsAt && (
+                  <p><strong>Trial expira:</strong> {formatDateTime(selectedCompany.trialEndsAt)}</p>
+                )}
+                {selectedCompany.stripeSubscriptionId && (
+                  <p className="text-green-600"><strong>✓ Stripe ativo</strong></p>
+                )}
+              </div>
+
+              {/* Último Pagamento */}
+              {selectedCompany.stripeCustomerId && (
+                <div className="bg-green-50 border border-green-200 p-4 rounded-lg">
+                  <div className="flex items-center gap-2 mb-2">
+                    <DollarSign size={18} className="text-green-600" />
+                    <span className="font-semibold text-green-800">Último Pagamento</span>
+                  </div>
+                  {loadingLastPayment ? (
+                    <p className="text-sm text-green-600">Carregando...</p>
+                  ) : lastPaymentData?.hasPayments && lastPaymentData.lastPayment ? (
+                    <div className="text-sm text-green-700 space-y-1">
+                      <p>
+                        <strong>Data:</strong>{' '}
+                        {lastPaymentData.lastPayment.lastPaymentDate
+                          ? formatDateTime(lastPaymentData.lastPayment.lastPaymentDate)
+                          : '-'}
+                      </p>
+                      <p>
+                        <strong>Valor:</strong>{' '}
+                        {lastPaymentData.lastPayment.lastPaymentAmount !== null
+                          ? `${lastPaymentData.lastPayment.lastPaymentCurrency} ${lastPaymentData.lastPayment.lastPaymentAmount.toFixed(2)}`
+                          : '-'}
+                      </p>
+                      <p>
+                        <strong>Status:</strong>{' '}
+                        <span className="px-2 py-0.5 bg-green-200 text-green-800 rounded-full text-xs">
+                          {lastPaymentData.lastPayment.lastPaymentStatus === 'paid' ? 'Pago' : lastPaymentData.lastPayment.lastPaymentStatus}
+                        </span>
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-green-600">Nenhum pagamento encontrado</p>
+                  )}
+                </div>
+              )}
+
+              <div>
+                <label className="block text-sm font-medium text-neutral-700">Status da Assinatura</label>
+                <select
+                  value={subscriptionForm.subscriptionStatus}
+                  onChange={(e) => setSubscriptionForm({ ...subscriptionForm, subscriptionStatus: e.target.value as any })}
+                  className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md min-h-[44px]"
+                >
+                  <option value="">Selecione...</option>
+                  <option value="TRIAL">Trial (Período de Teste)</option>
+                  <option value="ACTIVE">Ativa</option>
+                  <option value="EXPIRED">Expirada</option>
+                  <option value="CANCELLED">Cancelada</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-neutral-700">Plano</label>
+                <select
+                  value={subscriptionForm.subscriptionPlan}
+                  onChange={(e) => {
+                    const plan = e.target.value as 'BRONZE' | 'PRATA' | 'OURO' | '';
+                    const limits: Record<string, number> = { BRONZE: 1000, PRATA: 2500, OURO: 5000 };
+                    setSubscriptionForm({
+                      ...subscriptionForm,
+                      subscriptionPlan: plan,
+                      casesLimit: limits[plan] || subscriptionForm.casesLimit,
+                    });
+                  }}
+                  className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md min-h-[44px]"
+                >
+                  <option value="">Sem plano</option>
+                  <option value="BRONZE">Bronze ($99/mês - 1.000 processos)</option>
+                  <option value="PRATA">Prata ($159/mês - 2.500 processos)</option>
+                  <option value="OURO">Ouro ($219/mês - 5.000 processos)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-neutral-700">Limite de Processos</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={subscriptionForm.casesLimit}
+                  onChange={(e) => setSubscriptionForm({ ...subscriptionForm, casesLimit: parseInt(e.target.value) || 0 })}
+                  className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md min-h-[44px]"
+                />
+                <p className="text-xs text-neutral-500 mt-1">Deixe 0 para ilimitado</p>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 border-t border-neutral-200">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowSubscriptionModal(false);
+                    setSelectedCompany(null);
+                    setLastPaymentData(null);
+                  }}
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 bg-white hover:bg-neutral-50 text-neutral-700 font-medium rounded-lg transition-all duration-200"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-yellow-100 text-yellow-700 border border-yellow-200 hover:bg-yellow-200 font-medium rounded-lg transition-all duration-200"
+                >
+                  <Crown size={18} />
+                  Salvar Assinatura
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

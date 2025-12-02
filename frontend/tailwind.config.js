@@ -7,73 +7,166 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Paleta Principal - Baseada em #16a34a (Verde Advocacia)
+        // ===========================================
+        // PALETA DE CORES SUAVES - Verde Principal
+        // ===========================================
+
+        // Cor Primária - Verde Suave (Principal do App)
         primary: {
-          50: '#f0fdf4',
-          100: '#dcfce7',
-          200: '#bbf7d0',
-          300: '#86efac',
-          400: '#4ade80',
-          500: '#16a34a', // Cor principal - Verde
-          600: '#15803d',
-          700: '#166534',
-          800: '#14532d',
-          900: '#052e16',
+          50: '#E8F5E9',
+          100: '#C8E6C9',   // Verde Claro Principal
+          200: '#A5D6A7',
+          300: '#81C784',
+          400: '#66BB6A',
+          500: '#4CAF50',   // Verde médio
+          600: '#43A047',
+          700: '#388E3C',
+          800: '#2E7D32',
+          900: '#1B5E20',
         },
-        // Cores Neutras Modernas
+
+        // Cores Neutras - Tons suaves e confortáveis
         neutral: {
-          50: '#F9FAFB',
-          100: '#F3F4F6',
-          200: '#E5E7EB',
-          300: '#D1D5DB',
-          400: '#9CA3AF',
-          500: '#6B7280',
-          600: '#4B5563',
-          700: '#374151',
-          800: '#1F2937',
-          900: '#111827',
+          50: '#FAFAFA',    // Fundo principal - branco cremoso
+          100: '#F5F5F5',   // Fundo secundário - cinza névoa
+          200: '#EEEEEE',   // Fundo terciário
+          300: '#E0E0E0',   // Bordas claras
+          400: '#BDBDBD',   // Bordas médias
+          500: '#9E9E9E',   // Texto terciário
+          600: '#757575',   // Texto secundário
+          700: '#616161',   // Texto médio
+          800: '#424242',   // Texto escuro
+          900: '#37474F',   // Texto principal - cinza azulado escuro
         },
-        // Cores Semânticas
+
+        // Sucesso - Verde Suave (diferente do primary para feedbacks)
         success: {
-          50: '#ECFDF5',
-          100: '#D1FAE5',
-          500: '#10B981',
-          600: '#059669',
-          700: '#047857',
+          50: '#E8F5E9',
+          100: '#C8E6C9',
+          200: '#A5D6A7',
+          300: '#81C784',
+          400: '#66BB6A',
+          500: '#4CAF50',
+          600: '#43A047',
+          700: '#388E3C',
         },
+
+        // Erro - Vermelho Suave
         error: {
-          50: '#FEF2F2',
-          100: '#FEE2E2',
-          500: '#EF4444',
-          600: '#DC2626',
-          700: '#B91C1C',
+          50: '#FFEBEE',
+          100: '#FFCDD2',
+          200: '#EF9A9A',
+          300: '#E57373',
+          400: '#EF5350',
+          500: '#F44336',
+          600: '#E53935',
+          700: '#D32F2F',
         },
+
+        // Aviso - Âmbar Suave
         warning: {
-          50: '#FFFBEB',
-          100: '#FEF3C7',
-          500: '#F59E0B',
-          600: '#D97706',
-          700: '#B45309',
+          50: '#FFF8E1',
+          100: '#FFECB3',
+          200: '#FFE082',
+          300: '#FFD54F',
+          400: '#FFCA28',
+          500: '#FFC107',
+          600: '#FFB300',
+          700: '#FFA000',
         },
+
+        // Info - Azul Claro Suave
         info: {
-          50: '#EFF6FF',
-          100: '#DBEAFE',
-          500: '#3B82F6',
-          600: '#2563EB',
-          700: '#1D4ED8',
+          50: '#E3F2FD',
+          100: '#BBDEFB',
+          200: '#90CAF9',
+          300: '#64B5F6',
+          400: '#42A5F5',
+          500: '#2196F3',
+          600: '#1E88E5',
+          700: '#1976D2',
         },
-        // Cores para botões de Export/Import (suaves e tradicionais)
+
+        // Roxo/Lavanda - Alternativo
+        purple: {
+          50: '#EDE7F6',
+          100: '#D1C4E9',
+          200: '#B39DDB',
+          300: '#9575CD',
+          400: '#7E57C2',
+          500: '#673AB7',
+          600: '#5E35B1',
+          700: '#512DA8',
+        },
+
+        // Azul Índigo - Para acentos
+        indigo: {
+          50: '#E8EAF6',
+          100: '#C5CAE9',
+          200: '#9FA8DA',
+          300: '#7986CB',
+          400: '#5C6BC0',
+          500: '#3F51B5',
+          600: '#3949AB',
+          700: '#303F9F',
+        },
+
+        // Laranja Suave
+        orange: {
+          50: '#FFF3E0',
+          100: '#FFE0B2',
+          200: '#FFCC80',
+          300: '#FFB74D',
+          400: '#FFA726',
+          500: '#FF9800',
+          600: '#FB8C00',
+          700: '#F57C00',
+        },
+
+        // Rosa Suave
+        pink: {
+          50: '#FCE4EC',
+          100: '#F8BBD0',
+          200: '#F48FB1',
+          300: '#F06292',
+          400: '#EC407A',
+          500: '#E91E63',
+          600: '#D81B60',
+          700: '#C2185B',
+        },
+
+        // Cinza Azulado (Blue Grey)
+        'blue-grey': {
+          50: '#ECEFF1',
+          100: '#CFD8DC',
+          200: '#B0BEC5',
+          300: '#90A4AE',
+          400: '#78909C',
+          500: '#607D8B',
+          600: '#546E7A',
+          700: '#455A64',
+        },
+
+        // Cores para botões de Export/Import
         export: {
-          csv: '#22c55e',      // Verde claro suave (CSV Export)
-          csvHover: '#16a34a', // Verde mais escuro (hover)
-          pdf: '#f87171',      // Vermelho claro suave (PDF)
-          pdfHover: '#ef4444', // Vermelho médio (hover)
+          csv: '#66BB6A',      // Verde claro suave (CSV Export)
+          csvHover: '#4CAF50', // Verde mais escuro (hover)
+          pdf: '#EF5350',      // Vermelho claro suave (PDF)
+          pdfHover: '#E53935', // Vermelho médio (hover)
         },
         import: {
-          csv: '#60a5fa',      // Azul claro suave (CSV Import)
-          csvHover: '#3b82f6', // Azul médio (hover)
+          csv: '#42A5F5',      // Azul claro suave (CSV Import)
+          csvHover: '#1E88E5', // Azul médio (hover)
         },
       },
+
+      // Backgrounds customizados
+      backgroundColor: {
+        'app': '#FAFAFA',
+        'card': '#FFFFFF',
+        'hover': '#F5F5F5',
+      },
+
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
       },
@@ -95,10 +188,11 @@ export default {
         '2xl': '1rem',
       },
       boxShadow: {
-        'sm': '0 1px 2px 0 rgb(0 0 0 / 0.05)',
-        'md': '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
-        'lg': '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
-        'xl': '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
+        'xs': '0 1px 2px rgba(0, 0, 0, 0.04)',
+        'sm': '0 2px 4px rgba(0, 0, 0, 0.05)',
+        'md': '0 4px 12px rgba(0, 0, 0, 0.08)',
+        'lg': '0 8px 24px rgba(0, 0, 0, 0.12)',
+        'xl': '0 16px 48px rgba(0, 0, 0, 0.16)',
         'inner': 'inset 0 2px 4px 0 rgb(0 0 0 / 0.05)',
       },
       spacing: {

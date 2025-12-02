@@ -39,10 +39,10 @@ const ExportButton: React.FC<ExportButtonProps> = ({
       icon: Upload,
       defaultLabel: 'Importar CSV',
       mobileLabel: 'Importar',
-      bgColor: 'bg-blue-100',
-      hoverColor: 'hover:bg-blue-200',
-      textColor: 'text-blue-700',
-      borderColor: 'border border-blue-200',
+      bgColor: 'bg-info-100',
+      hoverColor: 'hover:bg-info-200',
+      textColor: 'text-info-700',
+      borderColor: 'border border-info-200',
     },
   };
 

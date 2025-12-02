@@ -102,7 +102,7 @@ services:
       retries: 5
 
   backend:
-    image: tomautomations/advwell-backend:v101-nationality
+    image: tomautomations/advwell-backend:v123-improvements
     environment:
       # Database direct connection (PgBouncer optional)
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?connection_limit=10&pool_timeout=10
@@ -136,6 +136,10 @@ services:
 
       # DataJud CNJ API
       - DATAJUD_API_KEY=${DATAJUD_API_KEY}
+
+      # Stripe
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
 
       # Server
       - PORT=3000
@@ -180,7 +184,7 @@ services:
         - "traefik.docker.network=network_public"
 
   frontend:
-    image: tomautomations/advwell-frontend:v101-api-docs
+    image: tomautomations/advwell-frontend:v122-security
     environment:
       - VITE_API_URL=${VITE_API_URL}
     networks:
@@ -193,6 +197,9 @@ services:
         parallelism: 1
         delay: 10s
         order: start-first
+      rollback_config:
+        parallelism: 1
+        delay: 5s
       resources:
         limits:
           cpus: '0.5'
@@ -202,6 +209,8 @@ services:
           memory: 128M
       restart_policy:
         condition: on-failure
+        delay: 5s
+        max_attempts: 3
       labels:
         - "traefik.enable=true"
         - "traefik.http.routers.advwell-frontend.rule=Host(`app.advwell.pro`)"

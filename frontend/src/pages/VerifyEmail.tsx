@@ -49,7 +49,7 @@ const VerifyEmail: React.FC = () => {
         <div className="bg-white rounded-2xl shadow-xl p-8">
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 mb-4">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-success-100 mb-4">
               <Mail className="w-8 h-8 text-primary-600" />
             </div>
             <h1 className="text-2xl font-bold text-neutral-900 mb-2">
@@ -90,7 +90,7 @@ const VerifyEmail: React.FC = () => {
                 <div className="space-y-3 w-full">
                   <button
                     onClick={() => navigate('/resend-verification')}
-                    className="w-full px-4 py-2 bg-purple-100 text-purple-700 border border-purple-200 rounded-lg hover:bg-purple-200 transition-colors min-h-[44px]"
+                    className="w-full px-4 py-2 bg-primary-100 text-primary-700 border border-primary-200 rounded-lg hover:bg-primary-200 transition-colors min-h-[44px]"
                   >
                     Solicitar Novo Link
                   </button>

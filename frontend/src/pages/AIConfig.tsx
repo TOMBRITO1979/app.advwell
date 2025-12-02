@@ -273,9 +273,9 @@ const AIConfigPage: React.FC = () => {
 
               {/* Status da API Key Salva */}
               {hasConfig && !apiKey && (
-                <div className="mb-2 flex items-center gap-2 bg-green-50 border border-primary-200 rounded-md px-3 py-2 min-h-[44px]">
+                <div className="mb-2 flex items-center gap-2 bg-success-50 border border-primary-200 rounded-md px-3 py-2 min-h-[44px]">
                   <CheckCircle className="h-4 w-4 text-primary-600" />
-                  <span className="text-sm text-green-800 font-medium">
+                  <span className="text-sm text-success-800 font-medium">
                     API Key salva e criptografada com segurança
                   </span>
                 </div>
@@ -357,11 +357,11 @@ const AIConfigPage: React.FC = () => {
                 type="button"
                 onClick={handleTestConnection}
                 disabled={testing || saving}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-blue-100 text-blue-700 border border-blue-200 hover:bg-blue-200 font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-info-100 text-info-700 border border-info-200 hover:bg-info-200 font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {testing ? (
                   <>
-                    <div className="animate-spin h-5 w-5 border-2 border-blue-600 border-t-transparent rounded-full"></div>
+                    <div className="animate-spin h-5 w-5 border-2 border-info-600 border-t-transparent rounded-full"></div>
                     Testando...
                   </>
                 ) : (
@@ -375,11 +375,11 @@ const AIConfigPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={saving || testing}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-purple-100 text-purple-700 border border-purple-200 hover:bg-purple-200 font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-primary-100 text-primary-700 border border-primary-200 hover:bg-primary-200 font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {saving ? (
                   <>
-                    <div className="animate-spin h-5 w-5 border-2 border-purple-600 border-t-transparent rounded-full"></div>
+                    <div className="animate-spin h-5 w-5 border-2 border-primary-600 border-t-transparent rounded-full"></div>
                     Salvando...
                   </>
                 ) : (
@@ -405,10 +405,10 @@ const AIConfigPage: React.FC = () => {
 
           {/* Success indicator */}
           {hasConfig && (
-            <div className="mt-6 bg-green-50 border border-primary-200 rounded-lg p-4">
+            <div className="mt-6 bg-success-50 border border-primary-200 rounded-lg p-4">
               <div className="flex gap-3">
                 <CheckCircle className="h-5 w-5 text-primary-600 flex-shrink-0" />
-                <div className="text-sm text-green-800">
+                <div className="text-sm text-success-800">
                   <p className="font-semibold">IA configurada com sucesso!</p>
                   <p className="mt-1">
                     Provedor: <span className="font-mono">{config.provider}</span> |

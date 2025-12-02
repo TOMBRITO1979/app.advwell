@@ -29,13 +29,18 @@ const Users = lazy(() => import('./pages/Users'));
 const Companies = lazy(() => import('./pages/Companies'));
 const LegalDocuments = lazy(() => import('./pages/LegalDocuments'));
 const Hearings = lazy(() => import('./pages/Hearings'));
+const Subscription = lazy(() => import('./pages/Subscription'));
+const SubscriptionAlerts = lazy(() => import('./pages/SubscriptionAlerts'));
+const StripeConfig = lazy(() => import('./pages/StripeConfig'));
+const ClientSubscriptions = lazy(() => import('./pages/ClientSubscriptions'));
+const Embed = lazy(() => import('./pages/Embed'));
 
 // Loading spinner component
 const LoadingSpinner = () => (
-  <div className="min-h-screen flex items-center justify-center bg-gray-50">
+  <div className="min-h-screen flex items-center justify-center bg-neutral-50">
     <div className="text-center">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
-      <p className="mt-4 text-gray-600">Carregando...</p>
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
+      <p className="mt-4 text-neutral-600">Carregando...</p>
     </div>
   </div>
 );
@@ -68,6 +73,8 @@ function App() {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/resend-verification" element={<ResendVerification />} />
+          {/* Embed route for Chatwell integration - auto-login */}
+          <Route path="/embed/:token/*" element={<Embed />} />
           <Route
             path="/dashboard"
             element={
@@ -217,6 +224,38 @@ function App() {
             element={
               <PrivateRoute>
                 <Companies />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/subscription"
+            element={
+              <PrivateRoute>
+                <Subscription />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/subscription-alerts"
+            element={
+              <PrivateRoute>
+                <SubscriptionAlerts />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/stripe-config"
+            element={
+              <PrivateRoute>
+                <StripeConfig />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/client-subscriptions"
+            element={
+              <PrivateRoute>
+                <ClientSubscriptions />
               </PrivateRoute>
             }
           />

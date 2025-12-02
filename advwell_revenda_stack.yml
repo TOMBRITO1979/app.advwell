@@ -1,0 +1,228 @@
+# ============================================================================
+# ADVWELL - STACK DE REVENDA
+# ============================================================================
+#
+# INSTRUCOES: Substitua todos os valores marcados com <<TROCAR_...>>
+# pelos valores do cliente antes de fazer o deploy.
+#
+# Apos alterar este arquivo, siga o guia: advwell_revenda_como_instalar.md
+#
+# ============================================================================
+
+version: '3.8'
+
+services:
+  # Redis for caching and job queues
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru --tcp-keepalive 300
+    volumes:
+      - redis_data:/data
+    networks:
+      - network_public
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  postgres:
+    image: postgres:16-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      # <<TROCAR_NOME_BANCO>> - Nome do banco de dados (ex: advwell_cliente1)
+      - POSTGRES_DB=<<TROCAR_NOME_BANCO>>
+      # <<TROCAR_USUARIO_BANCO>> - Usuario do banco (ex: postgres)
+      - POSTGRES_USER=<<TROCAR_USUARIO_BANCO>>
+      # <<TROCAR_SENHA_BANCO>> - Senha forte para o banco (gerar com: openssl rand -base64 32)
+      - POSTGRES_PASSWORD=<<TROCAR_SENHA_BANCO>>
+    command: >
+      postgres
+      -c max_connections=500
+      -c shared_buffers=2GB
+      -c effective_cache_size=6GB
+      -c work_mem=16MB
+      -c maintenance_work_mem=256MB
+      -c random_page_cost=1.1
+      -c effective_io_concurrency=200
+      -c wal_buffers=16MB
+      -c min_wal_size=1GB
+      -c max_wal_size=2GB
+      -c max_worker_processes=4
+      -c max_parallel_workers_per_gather=2
+      -c max_parallel_workers=4
+      -c log_min_duration_statement=1000
+      -c log_connections=on
+      -c log_disconnections=on
+    networks:
+      - network_public
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          cpus: '2'
+          memory: 3G
+        reservations:
+          cpus: '1'
+          memory: 2G
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U <<TROCAR_USUARIO_BANCO>> -d <<TROCAR_NOME_BANCO>>"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    # <<TROCAR_IMAGEM_BACKEND>> - Imagem do backend (manter ou usar versao especifica)
+    image: tomautomations/advwell-backend:v101-nationality
+    environment:
+      # Database - usar mesmos valores do postgres acima
+      - DATABASE_URL=postgresql://<<TROCAR_USUARIO_BANCO>>:<<TROCAR_SENHA_BANCO>>@postgres:5432/<<TROCAR_NOME_BANCO>>?connection_limit=10&pool_timeout=10
+
+      # Redis (nao precisa alterar)
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+
+      # <<TROCAR_JWT_SECRET>> - Chave secreta para tokens (gerar com: openssl rand -hex 32)
+      - JWT_SECRET=<<TROCAR_JWT_SECRET>>
+
+      # <<TROCAR_ENCRYPTION_KEY>> - Chave de criptografia (gerar com: openssl rand -hex 32)
+      - ENCRYPTION_KEY=<<TROCAR_ENCRYPTION_KEY>>
+
+      # AWS S3 - Credenciais para upload de arquivos
+      # <<TROCAR_AWS_ACCESS_KEY>> - Access Key ID da AWS
+      - AWS_ACCESS_KEY_ID=<<TROCAR_AWS_ACCESS_KEY>>
+      # <<TROCAR_AWS_SECRET_KEY>> - Secret Access Key da AWS
+      - AWS_SECRET_ACCESS_KEY=<<TROCAR_AWS_SECRET_KEY>>
+      # <<TROCAR_AWS_REGION>> - Regiao AWS (ex: us-east-1, sa-east-1)
+      - AWS_REGION=<<TROCAR_AWS_REGION>>
+      # <<TROCAR_S3_BUCKET>> - Nome do bucket S3
+      - S3_BUCKET_NAME=<<TROCAR_S3_BUCKET>>
+
+      # SMTP - Configuracao de email
+      # <<TROCAR_SMTP_HOST>> - Servidor SMTP (ex: smtp.gmail.com)
+      - SMTP_HOST=<<TROCAR_SMTP_HOST>>
+      # <<TROCAR_SMTP_PORT>> - Porta SMTP (ex: 587)
+      - SMTP_PORT=<<TROCAR_SMTP_PORT>>
+      # <<TROCAR_SMTP_USER>> - Usuario/email SMTP
+      - SMTP_USER=<<TROCAR_SMTP_USER>>
+      # <<TROCAR_SMTP_PASSWORD>> - Senha do SMTP (App Password para Gmail)
+      - SMTP_PASSWORD=<<TROCAR_SMTP_PASSWORD>>
+      # <<TROCAR_SMTP_FROM>> - Email remetente (ex: noreply@dominio.com)
+      - SMTP_FROM=<<TROCAR_SMTP_FROM>>
+
+      # URLs do Sistema - IMPORTANTE: usar o dominio do cliente
+      # <<TROCAR_DOMINIO_API>> - URL da API (ex: https://api.cliente.com.br)
+      - API_URL=https://<<TROCAR_DOMINIO_API>>
+      # <<TROCAR_DOMINIO_APP>> - URL do Frontend (ex: https://app.cliente.com.br)
+      - FRONTEND_URL=https://<<TROCAR_DOMINIO_APP>>
+
+      # DataJud CNJ API (chave publica do CNJ)
+      - DATAJUD_API_KEY=cDZHYzlZa0JadVREZDJCendQbXY6SkJlTzNjLV9TRENyQk1RdnFKZGRQdw==
+
+      # Server (nao alterar)
+      - PORT=3000
+      - NODE_ENV=production
+      - NODE_OPTIONS=--max-old-space-size=1024
+    networks:
+      - network_public
+    depends_on:
+      - postgres
+      - redis
+    deploy:
+      replicas: 3
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
+      rollback_config:
+        parallelism: 1
+        delay: 5s
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      labels:
+        - "traefik.enable=true"
+        # <<TROCAR_DOMINIO_API>> - Dominio da API (ex: api.cliente.com.br)
+        - "traefik.http.routers.advwell-backend.rule=Host(`<<TROCAR_DOMINIO_API>>`)"
+        - "traefik.http.routers.advwell-backend.entrypoints=websecure"
+        - "traefik.http.routers.advwell-backend.tls=true"
+        - "traefik.http.routers.advwell-backend.tls.certresolver=letsencryptresolver"
+        - "traefik.http.services.advwell-backend.loadbalancer.server.port=3000"
+        - "traefik.http.services.advwell-backend.loadbalancer.healthcheck.path=/health"
+        - "traefik.http.services.advwell-backend.loadbalancer.healthcheck.interval=10s"
+        - "traefik.docker.network=network_public"
+
+  frontend:
+    # <<TROCAR_IMAGEM_FRONTEND>> - ATENCAO: Precisa fazer rebuild com nova URL!
+    # Veja instrucoes em advwell_revenda_como_instalar.md
+    image: <<TROCAR_IMAGEM_FRONTEND>>
+    environment:
+      - VITE_API_URL=https://<<TROCAR_DOMINIO_API>>/api
+    networks:
+      - network_public
+    depends_on:
+      - backend
+    deploy:
+      replicas: 2
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+      restart_policy:
+        condition: on-failure
+      labels:
+        - "traefik.enable=true"
+        # <<TROCAR_DOMINIO_APP>> - Dominio do App (ex: app.cliente.com.br)
+        - "traefik.http.routers.advwell-frontend.rule=Host(`<<TROCAR_DOMINIO_APP>>`)"
+        - "traefik.http.routers.advwell-frontend.entrypoints=websecure"
+        - "traefik.http.routers.advwell-frontend.tls=true"
+        - "traefik.http.routers.advwell-frontend.tls.certresolver=letsencryptresolver"
+        - "traefik.http.services.advwell-frontend.loadbalancer.server.port=80"
+        - "traefik.docker.network=network_public"
+
+networks:
+  network_public:
+    external: true
+
+volumes:
+  postgres_data:
+  redis_data:

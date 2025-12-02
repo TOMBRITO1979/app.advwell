@@ -13,8 +13,15 @@ import crypto from 'crypto';
  */
 
 // Chave de criptografia (deve ter 32 bytes para AES-256)
-// Se não definida, usa uma chave padrão (APENAS PARA DESENVOLVIMENTO)
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || 'advwell-encryption-key-2024-change-in-production!!'; // 32 bytes
+const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY;
+
+// Validação de segurança - ENCRYPTION_KEY é obrigatória em produção
+if (!ENCRYPTION_KEY || ENCRYPTION_KEY.length < 32) {
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('ENCRYPTION_KEY deve ser definida em produção com pelo menos 32 caracteres');
+  }
+  console.warn('⚠️ AVISO: ENCRYPTION_KEY não definida ou muito curta. Defina em produção.');
+}
 
 // Algoritmo de criptografia
 const ALGORITHM = 'aes-256-cbc';
@@ -25,6 +32,10 @@ const ALGORITHM = 'aes-256-cbc';
  * @returns String criptografada no formato: iv:encryptedData (ambos em hex)
  */
 export function encrypt(text: string): string {
+  if (!ENCRYPTION_KEY) {
+    throw new Error('ENCRYPTION_KEY não definida');
+  }
+
   try {
     // Gerar IV aleatório (16 bytes para AES)
     const iv = crypto.randomBytes(16);
@@ -53,6 +64,10 @@ export function encrypt(text: string): string {
  * @returns Texto original descriptografado
  */
 export function decrypt(encryptedText: string): string {
+  if (!ENCRYPTION_KEY) {
+    throw new Error('ENCRYPTION_KEY não definida');
+  }
+
   try {
     // Separar IV e dados criptografados
     const parts = encryptedText.split(':');
@@ -112,9 +127,4 @@ export function generateEncryptionKey(): string {
   return crypto.randomBytes(32).toString('hex');
 }
 
-// Avisos de segurança
-if (process.env.NODE_ENV === 'production' && !process.env.ENCRYPTION_KEY) {
-  console.warn('⚠️  AVISO DE SEGURANÇA: ENCRYPTION_KEY não definida em produção!');
-  console.warn('⚠️  Usando chave padrão. Defina ENCRYPTION_KEY nas variáveis de ambiente.');
-  console.warn('⚠️  Use: generateEncryptionKey() para gerar uma chave segura.');
-}
+// Em produção, a validação no topo do arquivo já lançará erro se ENCRYPTION_KEY não estiver definida

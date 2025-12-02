@@ -7,6 +7,21 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Enum para status de assinatura
+enum SubscriptionStatus {
+  TRIAL
+  ACTIVE
+  EXPIRED
+  CANCELLED
+}
+
+// Enum para planos de assinatura
+enum SubscriptionPlan {
+  BRONZE    // $99/mês - até 1000 processos
+  PRATA     // $159/mês - até 2500 processos
+  OURO      // $219/mês - até 5000 processos
+}
+
 // Tabela de empresas (tenants)
 model Company {
   id        String   @id @default(uuid())
@@ -24,6 +39,15 @@ model Company {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // Campos de assinatura Stripe
+  subscriptionStatus    SubscriptionStatus @default(TRIAL)
+  subscriptionPlan      SubscriptionPlan?
+  trialEndsAt           DateTime?          // Quando o trial expira (1 dia após criação)
+  stripeCustomerId      String?            // ID do cliente no Stripe
+  stripeSubscriptionId  String?            // ID da assinatura no Stripe
+  subscriptionEndsAt    DateTime?          // Data de expiração da assinatura atual
+  casesLimit            Int                @default(1000) // Limite de processos do plano
+
   users                 User[]
   clients               Client[]
   cases                 Case[]
@@ -35,6 +59,9 @@ model Company {
   emailCampaigns        EmailCampaign[]
   aiConfig              AIConfig?
   legalDocuments        LegalDocument[]
+  stripeConfig          StripeConfig?
+  servicePlans          ServicePlan[]
+  clientSubscriptions   ClientSubscription[]
 
   @@map("companies")
 }
@@ -142,7 +169,12 @@ model Client {
   documents             Document[]
   scheduleEvents        ScheduleEvent[]
   legalDocuments        LegalDocument[]       @relation("LegalDocumentClient")
+  subscriptions         ClientSubscription[]
 
+  @@index([companyId])
+  @@index([email])
+  @@index([cpf])
+  @@index([companyId, createdAt])
   @@map("clients")
 }
 
@@ -214,6 +246,8 @@ model CaseMovement {
 
   case            Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
 
+  @@index([caseId])
+  @@index([movementDate])
   @@map("case_movements")
 }
 
@@ -325,6 +359,12 @@ model FinancialTransaction {
   case         Case?           @relation(fields: [caseId], references: [id], onDelete: SetNull)
   installments InstallmentPayment[]  // Relação com parcelas
 
+  @@index([companyId])
+  @@index([clientId])
+  @@index([caseId])
+  @@index([type])
+  @@index([date])
+  @@index([companyId, date])
   @@map("financial_transactions")
 }
 
@@ -407,6 +447,10 @@ model Document {
   client      Client?       @relation(fields: [clientId], references: [id], onDelete: Cascade)
   user        User?         @relation(fields: [uploadedBy], references: [id], onDelete: SetNull)
 
+  @@index([companyId])
+  @@index([clientId])
+  @@index([caseId])
+  @@index([storageType])
   @@map("documents")
 }
 
@@ -463,6 +507,10 @@ model ScheduleEvent {
   user        User?             @relation(fields: [createdBy], references: [id], onDelete: SetNull)
   assignedUsers EventAssignment[]
 
+  @@index([companyId])
+  @@index([date])
+  @@index([type])
+  @@index([companyId, date])
   @@map("schedule_events")
 }
 
@@ -524,6 +572,10 @@ model AccountPayable {
   company     Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
   user        User?                @relation(fields: [createdBy], references: [id], onDelete: SetNull)
 
+  @@index([companyId])
+  @@index([dueDate])
+  @@index([status])
+  @@index([companyId, dueDate])
   @@map("accounts_payable")
 }
 
@@ -613,6 +665,8 @@ model EmailCampaign {
   user            User?                  @relation(fields: [createdBy], references: [id], onDelete: SetNull)
   recipients      CampaignRecipient[]
 
+  @@index([companyId])
+  @@index([status])
   @@map("email_campaigns")
 }
 
@@ -638,6 +692,114 @@ model CampaignRecipient {
   campaign       EmailCampaign   @relation(fields: [campaignId], references: [id], onDelete: Cascade)
 
   @@map("campaign_recipients")
+}
+
+// ============================================================================
+// CLIENT SUBSCRIPTION PLANS SYSTEM (Stripe)
+// ============================================================================
+
+// Configuração Stripe por empresa (chaves API do escritório)
+model StripeConfig {
+  id                    String   @id @default(uuid())
+  companyId             String   @unique
+  stripePublicKey       String   // pk_live_... ou pk_test_...
+  stripeSecretKey       String   // Criptografado com AES-256 (sk_live_... ou sk_test_...)
+  stripeWebhookSecret   String?  // Criptografado (whsec_...)
+  isActive              Boolean  @default(true)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  company               Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@map("stripe_configs")
+}
+
+// Enum para intervalo de cobrança
+enum BillingInterval {
+  MONTHLY   // Mensal
+  QUARTERLY // Trimestral
+  YEARLY    // Anual
+}
+
+// Planos/Serviços oferecidos pelo escritório
+model ServicePlan {
+  id                String          @id @default(uuid())
+  companyId         String
+  name              String          // Ex: "Assessoria Jurídica Básica"
+  description       String?
+  price             Float           // Valor em reais (ex: 500.00)
+  interval          BillingInterval @default(MONTHLY)
+  stripeProductId   String?         // ID do produto no Stripe (prod_...)
+  stripePriceId     String?         // ID do preço no Stripe (price_...)
+  isActive          Boolean         @default(true)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  company           Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  subscriptions     ClientSubscription[]
+
+  @@index([companyId])
+  @@index([isActive])
+  @@map("service_plans")
+}
+
+// Enum para status de assinatura do cliente
+enum ClientSubscriptionStatus {
+  ACTIVE        // Assinatura ativa
+  PAST_DUE      // Pagamento atrasado
+  CANCELED      // Cancelado
+  UNPAID        // Não pago
+  INCOMPLETE    // Aguardando primeiro pagamento
+  TRIALING      // Em período de teste
+}
+
+// Assinatura de cliente em um plano
+model ClientSubscription {
+  id                    String                   @id @default(uuid())
+  companyId             String
+  clientId              String
+  servicePlanId         String
+  stripeCustomerId      String?                  // ID do cliente no Stripe (cus_...)
+  stripeSubscriptionId  String?                  // ID da assinatura no Stripe (sub_...)
+  status                ClientSubscriptionStatus @default(INCOMPLETE)
+  currentPeriodStart    DateTime?                // Início do período atual
+  currentPeriodEnd      DateTime?                // Fim do período atual
+  canceledAt            DateTime?                // Data de cancelamento
+  cancelReason          String?                  // Motivo do cancelamento
+  createdAt             DateTime                 @default(now())
+  updatedAt             DateTime                 @updatedAt
+
+  company               Company                  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  client                Client                   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  servicePlan           ServicePlan              @relation(fields: [servicePlanId], references: [id], onDelete: Cascade)
+  payments              SubscriptionPayment[]
+
+  @@unique([clientId, servicePlanId])  // Cliente só pode ter uma assinatura por plano
+  @@index([companyId])
+  @@index([clientId])
+  @@index([status])
+  @@index([companyId, status])
+  @@map("client_subscriptions")
+}
+
+// Histórico de pagamentos de assinatura
+model SubscriptionPayment {
+  id                    String                 @id @default(uuid())
+  clientSubscriptionId  String
+  stripeInvoiceId       String?                // ID da fatura no Stripe (in_...)
+  stripePaymentIntentId String?                // ID do pagamento no Stripe (pi_...)
+  amount                Float                  // Valor pago
+  currency              String                 @default("brl")
+  status                String                 // paid, failed, pending, refunded
+  paidAt                DateTime?              // Data do pagamento
+  failedAt              DateTime?              // Data da falha (se aplicável)
+  failureReason         String?                // Motivo da falha
+  receiptUrl            String?                // URL do recibo do Stripe
+  createdAt             DateTime               @default(now())
+
+  clientSubscription    ClientSubscription     @relation(fields: [clientSubscriptionId], references: [id], onDelete: Cascade)
+
+  @@map("subscription_payments")
 }
 
 // ============================================================================

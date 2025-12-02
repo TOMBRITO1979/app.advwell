@@ -633,7 +633,7 @@ const Cases: React.FC = () => {
             />
             <button
               onClick={handleNewCase}
-              className="inline-flex items-center justify-center gap-2 px-2 sm:px-4 py-2 rounded-lg bg-green-100 text-green-700 border border-green-200 hover:bg-green-200 font-medium text-sm transition-all duration-200 min-h-[44px]"
+              className="inline-flex items-center justify-center gap-2 px-2 sm:px-4 py-2 rounded-lg bg-success-100 text-success-700 border border-success-200 hover:bg-success-200 font-medium text-sm transition-all duration-200 min-h-[44px]"
             >
               <Plus size={20} />
               <span className="hidden sm:inline">Novo Processo</span>
@@ -672,118 +672,201 @@ const Cases: React.FC = () => {
           ) : cases.length === 0 ? (
             <p className="text-center py-4 text-neutral-600">Nenhum processo encontrado</p>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-neutral-50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
-                      Número
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
-                      Cliente
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
-                      Assunto
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
-                      Status
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
-                      Prazo
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
-                      Ações
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {cases.map((caseItem) => {
-                    // Status badge colors
-                    const statusColors = {
-                      PENDENTE: 'bg-yellow-100 text-yellow-800',
-                      ACTIVE: 'bg-green-100 text-green-800',
-                      ARCHIVED: 'bg-gray-100 text-gray-800',
-                      FINISHED: 'bg-blue-100 text-blue-800',
-                    };
-
-                    const statusLabels = {
-                      PENDENTE: 'Pendente',
-                      ACTIVE: 'Ativo',
-                      ARCHIVED: 'Arquivado',
-                      FINISHED: 'Finalizado',
-                    };
-
-                    return (
-                      <tr key={caseItem.id} className="hover:bg-neutral-50">
-                        <td className="px-4 py-3 text-sm">
+            <>
+              {/* Mobile Card View */}
+              <div className="mobile-card-view">
+                {cases.map((caseItem) => {
+                  const statusColors: { [key: string]: 'green' | 'yellow' | 'gray' | 'blue' } = {
+                    PENDENTE: 'yellow',
+                    ACTIVE: 'green',
+                    ARCHIVED: 'gray',
+                    FINISHED: 'blue',
+                  };
+                  const statusLabels: { [key: string]: string } = {
+                    PENDENTE: 'Pendente',
+                    ACTIVE: 'Ativo',
+                    ARCHIVED: 'Arquivado',
+                    FINISHED: 'Finalizado',
+                  };
+                  return (
+                    <div key={caseItem.id} className="mobile-card">
+                      <div className="mobile-card-header">
+                        <div className="flex-1 min-w-0">
                           <button
                             onClick={() => handleCaseClick(caseItem.id)}
-                            className="text-primary-600 hover:text-primary-800 hover:underline font-medium"
-                            title="Ver detalhes do processo"
+                            className="mobile-card-title text-primary-600 hover:underline text-left"
                           >
                             {caseItem.processNumber}
                           </button>
-                        </td>
-                        <td className="px-4 py-3 text-sm text-neutral-600">
-                          {caseItem.client.name}
-                        </td>
-                        <td className="px-4 py-3 text-sm text-neutral-600">{caseItem.subject}</td>
-                        <td className="px-4 py-3 text-sm">
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[caseItem.status as keyof typeof statusColors] || 'bg-gray-100 text-gray-800'}`}>
-                            {statusLabels[caseItem.status as keyof typeof statusLabels] || caseItem.status}
+                          <p className="mobile-card-subtitle truncate">{caseItem.client.name}</p>
+                        </div>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap ml-2 ${
+                          statusColors[caseItem.status] === 'green' ? 'bg-success-100 text-success-800' :
+                          statusColors[caseItem.status] === 'yellow' ? 'bg-yellow-100 text-yellow-800' :
+                          statusColors[caseItem.status] === 'blue' ? 'bg-info-100 text-info-700' :
+                          'bg-neutral-100 text-neutral-800'
+                        }`}>
+                          {statusLabels[caseItem.status] || caseItem.status}
+                        </span>
+                      </div>
+                      <div className="space-y-0">
+                        <div className="mobile-card-row">
+                          <span className="mobile-card-label">Assunto</span>
+                          <span className="mobile-card-value truncate max-w-[60%]">{caseItem.subject || '-'}</span>
+                        </div>
+                        <div className="mobile-card-row">
+                          <span className="mobile-card-label">Prazo</span>
+                          <span className="mobile-card-value">
+                            {caseItem.deadline ? new Date(caseItem.deadline).toLocaleDateString('pt-BR') : '-'}
                           </span>
-                        </td>
-                        <td className="px-4 py-3 text-sm text-neutral-600">
-                          {caseItem.deadline ? new Date(caseItem.deadline).toLocaleDateString('pt-BR') : '-'}
-                        </td>
-                        <td className="px-4 py-3 text-sm">
-                          <div className="flex items-center justify-center gap-2">
+                        </div>
+                      </div>
+                      <div className="mobile-card-actions">
+                        <button
+                          onClick={() => handleSync(caseItem.id)}
+                          className="flex-1 action-btn bg-purple-100 text-purple-700 rounded-lg"
+                          title="Sincronizar"
+                        >
+                          <RefreshCw size={16} />
+                        </button>
+                        <button
+                          onClick={() => handleCaseClick(caseItem.id)}
+                          className="flex-1 action-btn action-btn-info bg-info-50 rounded-lg"
+                          title="Ver"
+                        >
+                          <Eye size={16} />
+                        </button>
+                        <button
+                          onClick={() => handleEdit(caseItem)}
+                          className="flex-1 action-btn action-btn-primary bg-primary-50 rounded-lg"
+                          title="Editar"
+                        >
+                          <Edit size={16} />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(caseItem)}
+                          className="flex-1 action-btn action-btn-danger bg-error-50 rounded-lg"
+                          title="Excluir"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Desktop Table View */}
+              <div className="desktop-table-view overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-neutral-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                        Número
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                        Cliente
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                        Assunto
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                        Status
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                        Prazo
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                        Ações
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-neutral-200">
+                    {cases.map((caseItem) => {
+                      const statusColors = {
+                        PENDENTE: 'bg-yellow-100 text-yellow-800',
+                        ACTIVE: 'bg-success-100 text-success-800',
+                        ARCHIVED: 'bg-neutral-100 text-neutral-800',
+                        FINISHED: 'bg-info-100 text-info-700',
+                      };
+                      const statusLabels = {
+                        PENDENTE: 'Pendente',
+                        ACTIVE: 'Ativo',
+                        ARCHIVED: 'Arquivado',
+                        FINISHED: 'Finalizado',
+                      };
+                      return (
+                        <tr key={caseItem.id} className="hover:bg-neutral-50">
+                          <td className="px-4 py-3 text-sm">
                             <button
-                              onClick={() => handleSync(caseItem.id)}
-                              className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-purple-600 hover:text-purple-700 hover:bg-purple-50 rounded-md transition-all duration-200"
-                              title="Sincronizar com DataJud"
+                              onClick={() => handleCaseClick(caseItem.id)}
+                              className="text-primary-600 hover:text-primary-800 hover:underline font-medium"
+                              title="Ver detalhes do processo"
                             >
-                              <RefreshCw size={18} />
+                              {caseItem.processNumber}
                             </button>
-                            <button
-                              onClick={() => handleViewAndamento(caseItem)}
-                              className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-info-600 hover:text-info-700 hover:bg-info-50 rounded-md transition-all duration-200"
-                              title="Visualizar Andamento para Cliente"
-                            >
-                              <Eye size={18} />
-                            </button>
-                            <button
-                              onClick={() => handleEdit(caseItem)}
-                              className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-md transition-all duration-200"
-                              title="Editar"
-                            >
-                              <Edit size={18} />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(caseItem)}
-                              className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-error-600 hover:text-error-700 hover:bg-error-50 rounded-md transition-all duration-200"
-                              title="Excluir"
-                            >
-                              <Trash2 size={18} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                          </td>
+                          <td className="px-4 py-3 text-sm text-neutral-600">
+                            {caseItem.client.name}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-neutral-600">{caseItem.subject}</td>
+                          <td className="px-4 py-3 text-sm">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[caseItem.status as keyof typeof statusColors] || 'bg-neutral-100 text-neutral-800'}`}>
+                              {statusLabels[caseItem.status as keyof typeof statusLabels] || caseItem.status}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-sm text-neutral-600">
+                            {caseItem.deadline ? new Date(caseItem.deadline).toLocaleDateString('pt-BR') : '-'}
+                          </td>
+                          <td className="px-4 py-3 text-sm">
+                            <div className="flex items-center justify-center gap-2">
+                              <button
+                                onClick={() => handleSync(caseItem.id)}
+                                className="action-btn text-purple-700 hover:text-purple-800 hover:bg-purple-100"
+                                title="Sincronizar com DataJud"
+                              >
+                                <RefreshCw size={18} />
+                              </button>
+                              <button
+                                onClick={() => handleViewAndamento(caseItem)}
+                                className="action-btn action-btn-info"
+                                title="Visualizar Andamento para Cliente"
+                              >
+                                <Eye size={18} />
+                              </button>
+                              <button
+                                onClick={() => handleEdit(caseItem)}
+                                className="action-btn action-btn-primary"
+                                title="Editar"
+                              >
+                                <Edit size={18} />
+                              </button>
+                              <button
+                                onClick={() => handleDelete(caseItem)}
+                                className="action-btn action-btn-danger"
+                                title="Excluir"
+                              >
+                                <Trash2 size={18} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </div>
       </div>
 
       {/* Modal Criar/Editar Processo */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-screen overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-neutral-200 px-6 py-4 flex justify-between items-center min-h-[44px]">
-              <h2 className="text-xl font-bold text-neutral-900">
+        <div className="modal-overlay">
+          <div className="modal-container sm:max-w-2xl">
+            <div className="modal-header">
+              <h2 className="text-lg sm:text-xl font-bold text-neutral-900">
                 {editMode ? 'Editar Processo' : 'Novo Processo'}
               </h2>
               <button
@@ -793,7 +876,7 @@ const Cases: React.FC = () => {
                   setSelectedCase(null);
                   resetForm();
                 }}
-                className="text-neutral-400 hover:text-neutral-600"
+                className="p-2 text-neutral-400 hover:text-neutral-600 rounded-lg hover:bg-neutral-100"
               >
                 <X size={24} />
               </button>
@@ -968,8 +1051,8 @@ const Cases: React.FC = () => {
               </div>
 
               {selectedCase && selectedCase.ultimoAndamento && (
-                <div className="bg-green-50 border border-primary-200 rounded-md p-3">
-                  <label className="block text-sm font-medium text-green-900">Último Andamento (via API)</label>
+                <div className="bg-success-50 border border-primary-200 rounded-md p-3">
+                  <label className="block text-sm font-medium text-primary-800">Último Andamento (via API)</label>
                   <p className="mt-1 text-sm text-primary-700">{selectedCase.ultimoAndamento}</p>
                   <p className="mt-1 text-xs text-primary-600">Atualizado automaticamente ao sincronizar com DataJud</p>
                 </div>
@@ -1000,9 +1083,9 @@ const Cases: React.FC = () => {
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
                             <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                              part.type === 'AUTOR' ? 'bg-green-100 text-primary-700' :
+                              part.type === 'AUTOR' ? 'bg-success-100 text-primary-700' :
                               part.type === 'REU' ? 'bg-error-100 text-error-700' :
-                              'bg-green-100 text-primary-700'
+                              'bg-success-100 text-primary-700'
                             }`}>
                               {part.type === 'AUTOR' ? 'Autor' : part.type === 'REU' ? 'Réu' : 'Representante Legal'}
                             </span>
@@ -1166,7 +1249,7 @@ const Cases: React.FC = () => {
                       <button
                         type="button"
                         onClick={handleAddPart}
-                        className="px-3 py-1.5 text-sm bg-purple-100 text-purple-700 border border-purple-200 rounded-md hover:bg-purple-200 min-h-[44px]"
+                        className="px-3 py-1.5 text-sm bg-primary-100 text-primary-700 border border-primary-200 rounded-md hover:bg-primary-200 min-h-[44px]"
                       >
                         {editingPartIndex !== null ? 'Atualizar' : 'Adicionar'}
                       </button>
@@ -1190,7 +1273,7 @@ const Cases: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-purple-100 text-purple-700 border border-purple-200 rounded-md hover:bg-purple-200 transition-colors min-h-[44px]"
+                  className="px-6 py-2 bg-primary-100 text-primary-700 border border-primary-200 rounded-md hover:bg-primary-200 transition-colors min-h-[44px]"
                 >
                   {editMode ? 'Atualizar' : 'Salvar'}
                 </button>
@@ -1303,9 +1386,9 @@ const Cases: React.FC = () => {
                         {(() => {
                           const statusColors = {
                             PENDENTE: 'bg-yellow-100 text-yellow-800',
-                            ACTIVE: 'bg-green-100 text-green-800',
-                            ARCHIVED: 'bg-gray-100 text-gray-800',
-                            FINISHED: 'bg-blue-100 text-blue-800',
+                            ACTIVE: 'bg-success-100 text-success-800',
+                            ARCHIVED: 'bg-neutral-100 text-neutral-800',
+                            FINISHED: 'bg-info-100 text-info-700',
                           };
 
                           const statusLabels = {
@@ -1316,7 +1399,7 @@ const Cases: React.FC = () => {
                           };
 
                           return (
-                            <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${statusColors[selectedCase.status as keyof typeof statusColors] || 'bg-gray-100 text-gray-800'}`}>
+                            <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${statusColors[selectedCase.status as keyof typeof statusColors] || 'bg-neutral-100 text-neutral-800'}`}>
                               {statusLabels[selectedCase.status as keyof typeof statusLabels] || selectedCase.status}
                             </span>
                           );
@@ -1355,7 +1438,7 @@ const Cases: React.FC = () => {
                         <button
                           onClick={() => handleGenerateSummary(selectedCase.id)}
                           disabled={generatingSummary}
-                          className="flex items-center gap-2 px-4 py-2 bg-green-100 text-green-700 border border-green-200 rounded-md hover:bg-green-200 disabled:bg-neutral-100 disabled:text-neutral-400 disabled:border-neutral-200 disabled:cursor-not-allowed transition-colors min-h-[44px]"
+                          className="flex items-center gap-2 px-4 py-2 bg-purple-100 text-purple-700 border border-purple-200 rounded-md hover:bg-purple-200 disabled:bg-neutral-100 disabled:text-neutral-400 disabled:border-neutral-200 disabled:cursor-not-allowed transition-colors min-h-[44px]"
                           title="Gerar resumo com Inteligência Artificial"
                         >
                           {generatingSummary ? (
@@ -1386,16 +1469,16 @@ const Cases: React.FC = () => {
                     // Prioridade 1: Usar linkProcesso se existir (mais confiável)
                     if (selectedCase.linkProcesso) {
                       return (
-                        <div className="bg-green-50 border-2 border-green-300 rounded-lg p-4">
-                          <h3 className="text-sm font-semibold text-green-900 mb-2 flex items-center">
+                        <div className="bg-success-50 border-2 border-success-300 rounded-lg p-4">
+                          <h3 className="text-sm font-semibold text-primary-800 mb-2 flex items-center">
                             <span className="mr-2">🔗</span>
                             Consultar Processo no Tribunal
                           </h3>
-                          <div className="bg-white border border-green-300 rounded p-3 mb-3">
+                          <div className="bg-white border border-success-300 rounded p-3 mb-3">
                             <p className="text-sm text-neutral-700 mb-1">
                               <strong>Número do Processo:</strong>
                             </p>
-                            <p className="text-lg font-mono font-semibold text-green-900 select-all">
+                            <p className="text-lg font-mono font-semibold text-primary-800 select-all">
                               {selectedCase.processNumber}
                             </p>
                             <p className="text-xs text-neutral-500 mt-1">
@@ -1406,7 +1489,7 @@ const Cases: React.FC = () => {
                             href={selectedCase.linkProcesso}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 px-4 py-2 bg-green-100 text-green-700 border border-green-200 rounded-md hover:bg-green-200 transition-colors font-medium"
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-success-100 text-success-700 border border-success-200 rounded-md hover:bg-success-200 transition-colors font-medium"
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                               <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
@@ -1415,7 +1498,7 @@ const Cases: React.FC = () => {
                             </svg>
                             Abrir Processo no {selectedCase.court}
                           </a>
-                          <p className="text-xs text-green-700 mt-2">
+                          <p className="text-xs text-success-700 mt-2">
                             ✅ Link direto para o processo no site do tribunal
                           </p>
                         </div>
@@ -1425,16 +1508,16 @@ const Cases: React.FC = () => {
                     // Prioridade 2: Tentar gerar automaticamente pelo código CNJ
                     const tribunalInfo = generateTribunalLink(selectedCase.court, selectedCase.processNumber);
                     return tribunalInfo ? (
-                      <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
-                        <h3 className="text-sm font-semibold text-blue-900 mb-2 flex items-center">
+                      <div className="bg-info-50 border-2 border-info-200 rounded-lg p-4">
+                        <h3 className="text-sm font-semibold text-info-700 mb-2 flex items-center">
                           <span className="mr-2">🔗</span>
                           Consultar no Site do Tribunal ({tribunalInfo.tribunalName})
                         </h3>
-                        <div className="bg-white border border-blue-300 rounded p-3 mb-3">
+                        <div className="bg-white border border-info-300 rounded p-3 mb-3">
                           <p className="text-sm text-neutral-700 mb-1">
                             <strong>Número do Processo:</strong>
                           </p>
-                          <p className="text-lg font-mono font-semibold text-blue-900 select-all">
+                          <p className="text-lg font-mono font-semibold text-info-700 select-all">
                             {selectedCase.processNumber}
                           </p>
                           <p className="text-xs text-neutral-500 mt-1">
@@ -1445,7 +1528,7 @@ const Cases: React.FC = () => {
                           href={tribunalInfo.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 border border-blue-200 rounded-md hover:bg-blue-200 transition-colors font-medium"
+                          className="inline-flex items-center gap-2 px-4 py-2 bg-info-100 text-info-700 border border-info-200 rounded-md hover:bg-info-200 transition-colors font-medium"
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
@@ -1454,7 +1537,7 @@ const Cases: React.FC = () => {
                           </svg>
                           Consultar Processo no {tribunalInfo.tribunalName}
                         </a>
-                        <p className="text-xs text-blue-700 mt-2">
+                        <p className="text-xs text-info-700 mt-2">
                           {tribunalInfo.url.includes('show.do')
                             ? '⚠️ Link gerado automaticamente. Para melhor confiabilidade, adicione o link oficial no campo "Link do Processo" ao editar.'
                             : 'Abre a página de consulta processual oficial. Cole o número do processo acima para buscar.'}
@@ -1467,8 +1550,8 @@ const Cases: React.FC = () => {
                   {selectedCase.informarCliente && (
                     <div>
                       <h3 className="text-sm font-medium text-neutral-500 mb-2">Informação para o Cliente</h3>
-                      <div className="bg-green-50 border border-primary-200 rounded-md p-4">
-                        <p className="text-green-900 whitespace-pre-wrap">{selectedCase.informarCliente}</p>
+                      <div className="bg-success-50 border border-primary-200 rounded-md p-4">
+                        <p className="text-primary-800 whitespace-pre-wrap">{selectedCase.informarCliente}</p>
                       </div>
                       <p className="text-xs text-neutral-500 mt-1">Texto explicativo do andamento para informar ao cliente</p>
                     </div>
@@ -1481,7 +1564,7 @@ const Cases: React.FC = () => {
                         Partes Envolvidas
                       </h3>
                       <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200 border border-neutral-200 rounded-lg">
+                        <table className="min-w-full divide-y divide-neutral-200 border border-neutral-200 rounded-lg">
                           <thead className="bg-neutral-50">
                             <tr>
                               <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
@@ -1504,7 +1587,7 @@ const Cases: React.FC = () => {
                               </th>
                             </tr>
                           </thead>
-                          <tbody className="bg-white divide-y divide-gray-200">
+                          <tbody className="bg-white divide-y divide-neutral-200">
                             {selectedCase.parts.map((part) => {
                               const typeLabels = {
                                 AUTOR: 'Autor',
@@ -1513,9 +1596,9 @@ const Cases: React.FC = () => {
                               };
 
                               const typeBadgeColors = {
-                                AUTOR: 'bg-green-100 text-green-800',
+                                AUTOR: 'bg-success-100 text-success-800',
                                 REU: 'bg-error-100 text-error-800',
-                                REPRESENTANTE_LEGAL: 'bg-green-100 text-green-800',
+                                REPRESENTANTE_LEGAL: 'bg-success-100 text-success-800',
                               };
 
                               return (
@@ -1600,7 +1683,7 @@ const Cases: React.FC = () => {
                                       Tipo do Movimento: {movement.movementName}
                                     </h4>
                                     {index === 0 && (
-                                      <span className="inline-block text-xs bg-green-100 text-primary-700 px-2 py-1 rounded-full whitespace-nowrap ml-2">
+                                      <span className="inline-block text-xs bg-success-100 text-primary-700 px-2 py-1 rounded-full whitespace-nowrap ml-2">
                                         Mais recente
                                       </span>
                                     )}
@@ -1646,7 +1729,7 @@ const Cases: React.FC = () => {
                         setShowDetailsModal(false);
                         handleEdit(selectedCase as Case);
                       }}
-                      className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-blue-100 text-blue-700 border border-blue-200 hover:bg-blue-200 font-medium rounded-lg transition-all duration-200"
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-info-100 text-info-700 border border-info-200 hover:bg-info-200 font-medium rounded-lg transition-all duration-200"
                     >
                       <Edit size={20} />
                       <span>Editar Processo</span>
@@ -1847,7 +1930,7 @@ const Cases: React.FC = () => {
               </button>
               <button
                 onClick={handleSaveEditedPart}
-                className="px-6 py-2 bg-purple-100 text-purple-700 border border-purple-200 rounded-md hover:bg-purple-200 transition-colors min-h-[44px]"
+                className="px-6 py-2 bg-primary-100 text-primary-700 border border-primary-200 rounded-md hover:bg-primary-200 transition-colors min-h-[44px]"
               >
                 Salvar Alterações
               </button>
@@ -1872,11 +1955,11 @@ const Cases: React.FC = () => {
 
             <div className="space-y-4">
               <div className="grid grid-cols-3 gap-4">
-                <div className="bg-green-50 p-4 rounded-lg text-center">
+                <div className="bg-success-50 p-4 rounded-lg text-center">
                   <p className="text-2xl font-bold text-primary-600">{importResults.total}</p>
                   <p className="text-sm text-neutral-600">Total de linhas</p>
                 </div>
-                <div className="bg-green-50 p-4 rounded-lg text-center">
+                <div className="bg-success-50 p-4 rounded-lg text-center">
                   <p className="text-2xl font-bold text-primary-600">{importResults.success}</p>
                   <p className="text-sm text-neutral-600">Importados</p>
                 </div>
@@ -1945,16 +2028,16 @@ const Cases: React.FC = () => {
                 </div>
 
                 {selectedCase.ultimoAndamento && (
-                  <div className="bg-green-50 border border-primary-200 rounded-md p-4">
-                    <h3 className="text-sm font-medium text-green-900 mb-1">Último Andamento (DataJud)</h3>
+                  <div className="bg-success-50 border border-primary-200 rounded-md p-4">
+                    <h3 className="text-sm font-medium text-primary-800 mb-1">Último Andamento (DataJud)</h3>
                     <p className="text-primary-700">{selectedCase.ultimoAndamento}</p>
                   </div>
                 )}
 
                 {selectedCase.informarCliente ? (
-                  <div className="bg-green-50 border border-primary-200 rounded-md p-4">
-                    <h3 className="text-sm font-medium text-green-900 mb-2">Informação para o Cliente</h3>
-                    <div className="text-green-800 whitespace-pre-wrap">{selectedCase.informarCliente}</div>
+                  <div className="bg-success-50 border border-primary-200 rounded-md p-4">
+                    <h3 className="text-sm font-medium text-primary-800 mb-2">Informação para o Cliente</h3>
+                    <div className="text-success-800 whitespace-pre-wrap">{selectedCase.informarCliente}</div>
                   </div>
                 ) : (
                   <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">

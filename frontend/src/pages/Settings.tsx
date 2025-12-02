@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
 import api from '../services/api';
 import toast from 'react-hot-toast';
-import { Building2, MapPin, Save, Key, Copy, RefreshCw, Eye, EyeOff } from 'lucide-react';
+import { Building2, MapPin, Save, Key, Copy, RefreshCw, Eye, EyeOff, ExternalLink } from 'lucide-react';
 
 interface CompanySettings {
   id: string;
@@ -278,7 +278,7 @@ const Settings: React.FC = () => {
               <button
                 type="submit"
                 disabled={saving}
-                className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-purple-100 text-purple-700 border border-purple-200 hover:bg-purple-200 font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-primary-100 text-primary-700 border border-primary-200 hover:bg-primary-200 font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Save size={20} />
                 {saving ? 'Salvando...' : 'Salvar Configurações'}
@@ -287,9 +287,9 @@ const Settings: React.FC = () => {
           </form>
 
           {/* Informações Adicionais */}
-          <div className="mt-6 bg-green-50 border border-primary-200 rounded-lg p-4">
-            <h3 className="font-semibold text-green-900 mb-2">Informacao</h3>
-            <p className="text-sm text-green-800">
+          <div className="mt-6 bg-success-50 border border-primary-200 rounded-lg p-4">
+            <h3 className="font-semibold text-primary-800 mb-2">Informacao</h3>
+            <p className="text-sm text-success-800">
               Os dados configurados aqui serão automaticamente incluídos no cabeçalho dos relatórios
               financeiros em PDF, dando um aspecto mais profissional aos seus documentos.
             </p>
@@ -333,7 +333,7 @@ const Settings: React.FC = () => {
                     type="button"
                     onClick={handleCopyApiKey}
                     disabled={!apiKey}
-                    className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-blue-100 text-blue-700 border border-blue-200 hover:bg-blue-200 font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-info-100 text-info-700 border border-info-200 hover:bg-info-200 font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     title="Copiar API Key"
                   >
                     <Copy size={18} />
@@ -382,6 +382,70 @@ const Settings: React.FC = () => {
               </div>
             </div>
           </div>
+
+          {/* Embed URLs for Chatwell */}
+          {apiKey && (
+            <div className="mt-6 bg-white rounded-lg shadow-md p-6">
+              <h2 className="text-lg font-semibold text-neutral-700 mb-4 flex items-center gap-2">
+                <ExternalLink size={20} className="text-purple-600" />
+                URLs de Embed para Chatwell
+              </h2>
+              <p className="text-sm text-neutral-600 mb-4">
+                Use estas URLs para incorporar o AdvWell no painel de aplicativos do Chatwell.
+                O login será automático - não será necessário digitar senha.
+              </p>
+
+              <div className="space-y-3">
+                {[
+                  { page: 'dashboard', label: 'Dashboard' },
+                  { page: 'clients', label: 'Clientes' },
+                  { page: 'cases', label: 'Processos' },
+                  { page: 'hearings', label: 'Audiências' },
+                  { page: 'schedule', label: 'Agenda' },
+                  { page: 'todos', label: 'Tarefas' },
+                  { page: 'financial', label: 'Financeiro' },
+                ].map(({ page, label }) => {
+                  const embedUrl = `https://app.advwell.pro/embed/${apiKey}/${page}`;
+                  return (
+                    <div key={page} className="flex items-center gap-2">
+                      <span className="w-24 text-sm font-medium text-neutral-600">{label}:</span>
+                      <input
+                        type="text"
+                        readOnly
+                        value={embedUrl}
+                        className="flex-1 px-3 py-1.5 border border-neutral-300 rounded-md bg-neutral-50 text-neutral-700 font-mono text-xs"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard.writeText(embedUrl);
+                          toast.success(`URL de ${label} copiada!`);
+                        }}
+                        className="p-2 text-purple-600 hover:bg-purple-50 rounded transition-colors"
+                        title="Copiar URL"
+                      >
+                        <Copy size={16} />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="mt-4 bg-purple-50 border border-purple-200 rounded-lg p-4">
+                <h4 className="font-medium text-purple-900 mb-2">Como configurar no Chatwell:</h4>
+                <ol className="text-sm text-purple-800 space-y-1 list-decimal ml-4">
+                  <li>Acesse <strong>Configurações &gt; Integrações &gt; Painel de Aplicativos</strong></li>
+                  <li>Clique em <strong>Adicionar novo aplicativo</strong></li>
+                  <li>Cole uma das URLs acima no campo de URL</li>
+                  <li>Dê um nome (ex: "AdvWell - Dashboard")</li>
+                  <li>Salve e teste!</li>
+                </ol>
+                <p className="mt-3 text-xs text-purple-700 italic">
+                  A sidebar será automaticamente ocultada quando acessado via embed.
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </Layout>

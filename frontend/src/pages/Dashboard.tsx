@@ -133,10 +133,10 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  // Cores para os gráficos
-  const COLORS = ['#2563eb', '#7c3aed', '#dc2626', '#059669'];
-  const PRIMARY_COLOR = '#2563eb';
-  const SECONDARY_COLOR = '#7c3aed';
+  // Cores suaves para os gráficos (Nova Paleta)
+  const COLORS = ['#66BB6A', '#7986CB', '#EF5350', '#FFB74D']; // Verde, Índigo, Vermelho, Laranja
+  const PRIMARY_COLOR = '#4CAF50';   // Verde principal
+  const SECONDARY_COLOR = '#5C6BC0'; // Índigo suave
 
   if (loading) {
     return (
@@ -150,79 +150,79 @@ const Dashboard: React.FC = () => {
 
   return (
     <Layout>
-      <div className="p-6 space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-neutral-800 flex items-center gap-2">
-            <Activity className="text-primary-600" size={28} />
+        <div className="mb-4 sm:mb-6">
+          <h1 className="text-xl sm:text-2xl font-bold text-neutral-800 flex items-center gap-2">
+            <Activity className="text-primary-600" size={24} />
             Dashboard
           </h1>
-          <p className="text-neutral-600 mt-1">
-            Bem-vindo, {user?.name}! Visão geral das suas atividades e estatísticas
+          <p className="text-sm sm:text-base text-neutral-600 mt-1">
+            Bem-vindo, {user?.name}!
           </p>
         </div>
 
-        {/* Cards de Estatísticas */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-lg p-6 text-white">
+        {/* Cards de Estatísticas - Nova Paleta Suave */}
+        <div className="stats-grid">
+          <div className="stat-card bg-gradient-to-br from-primary-400 to-primary-500">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-blue-100 text-sm font-medium">Total de Clientes</p>
-                <p className="text-3xl font-bold mt-2">{stats.clients}</p>
+                <p className="stat-card-label text-primary-100">Clientes</p>
+                <p className="stat-card-value">{stats.clients}</p>
               </div>
-              <Users size={40} className="text-blue-200" />
+              <Users size={32} className="text-primary-200 hidden sm:block" />
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow-lg p-6 text-white">
+          <div className="stat-card bg-gradient-to-br from-indigo-400 to-indigo-500">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-purple-100 text-sm font-medium">Processos Ativos</p>
-                <p className="text-3xl font-bold mt-2">{stats.cases}</p>
+                <p className="stat-card-label text-indigo-100">Processos</p>
+                <p className="stat-card-value">{stats.cases}</p>
               </div>
-              <Briefcase size={40} className="text-purple-200" />
+              <Briefcase size={32} className="text-indigo-200 hidden sm:block" />
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow-lg p-6 text-white">
+          <div className="stat-card bg-gradient-to-br from-info-400 to-info-500">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-green-100 text-sm font-medium">Audiências Hoje</p>
-                <p className="text-3xl font-bold mt-2">{stats.todayHearings}</p>
+                <p className="stat-card-label text-info-100">Audiências Hoje</p>
+                <p className="stat-card-value">{stats.todayHearings}</p>
               </div>
-              <Calendar size={40} className="text-green-200" />
+              <Calendar size={32} className="text-info-200 hidden sm:block" />
             </div>
           </div>
 
           {stats.companies !== undefined && user?.role === 'SUPER_ADMIN' && (
-            <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg shadow-lg p-6 text-white">
+            <div className="stat-card bg-gradient-to-br from-orange-400 to-orange-500">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-orange-100 text-sm font-medium">Total de Empresas</p>
-                  <p className="text-3xl font-bold mt-2">{stats.companies}</p>
+                  <p className="stat-card-label text-orange-100">Empresas</p>
+                  <p className="stat-card-value">{stats.companies}</p>
                 </div>
-                <Building2 size={40} className="text-orange-200" />
+                <Building2 size={32} className="text-orange-200 hidden sm:block" />
               </div>
             </div>
           )}
         </div>
 
         {/* Primeira Linha de Gráficos */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
           {/* Eventos por Dia da Semana */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-lg font-semibold text-neutral-800 mb-4 flex items-center gap-2">
+          <div className="chart-container">
+            <h2 className="chart-title">
               <CalendarCheck className="text-primary-600" size={20} />
-              Eventos por Dia da Semana
+              Eventos por Dia
             </h2>
-            <p className="text-sm text-neutral-600 mb-4">Últimos 7 dias</p>
-            <ResponsiveContainer width="100%" height={300}>
+            <p className="text-xs sm:text-sm text-neutral-600 mb-2 sm:mb-4">Últimos 7 dias</p>
+            <ResponsiveContainer width="100%" height={250}>
               <BarChart data={eventsPerWeekday}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
+                <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                <YAxis tick={{ fontSize: 12 }} />
                 <Tooltip />
-                <Legend />
+                <Legend wrapperStyle={{ fontSize: '12px' }} />
                 <Bar dataKey="eventos" fill={PRIMARY_COLOR} name="Eventos" />
                 <Bar dataKey="audiencias" fill={SECONDARY_COLOR} name="Audiências" />
               </BarChart>
@@ -230,13 +230,13 @@ const Dashboard: React.FC = () => {
           </div>
 
           {/* Processos por Status */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-lg font-semibold text-neutral-800 mb-4 flex items-center gap-2">
+          <div className="chart-container">
+            <h2 className="chart-title">
               <Briefcase className="text-primary-600" size={20} />
               Processos por Status
             </h2>
-            <p className="text-sm text-neutral-600 mb-4">Distribuição atual</p>
-            <ResponsiveContainer width="100%" height={300}>
+            <p className="text-xs sm:text-sm text-neutral-600 mb-2 sm:mb-4">Distribuição atual</p>
+            <ResponsiveContainer width="100%" height={250}>
               <PieChart>
                 <Pie
                   data={casesByStatus}
@@ -244,7 +244,7 @@ const Dashboard: React.FC = () => {
                   cy="50%"
                   labelLine={false}
                   label={({ name, percent }) => `${name}: ${((percent || 0) * 100).toFixed(0)}%`}
-                  outerRadius={80}
+                  outerRadius={70}
                   fill="#8884d8"
                   dataKey="value"
                 >
@@ -259,47 +259,47 @@ const Dashboard: React.FC = () => {
         </div>
 
         {/* Segunda Linha de Gráficos */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
           {/* Andamentos Recebidos */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-lg font-semibold text-neutral-800 mb-4 flex items-center gap-2">
+          <div className="chart-container">
+            <h2 className="chart-title">
               <Activity className="text-primary-600" size={20} />
               Andamentos Recebidos
             </h2>
-            <p className="text-sm text-neutral-600 mb-4">Últimos 30 dias</p>
-            <ResponsiveContainer width="100%" height={300}>
+            <p className="text-xs sm:text-sm text-neutral-600 mb-2 sm:mb-4">Últimos 30 dias</p>
+            <ResponsiveContainer width="100%" height={250}>
               <LineChart data={movementsTimeline}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
+                <XAxis dataKey="date" tick={{ fontSize: 10 }} />
+                <YAxis tick={{ fontSize: 12 }} />
                 <Tooltip />
-                <Legend />
+                <Legend wrapperStyle={{ fontSize: '12px' }} />
                 <Line
                   type="monotone"
                   dataKey="andamentos"
                   stroke={PRIMARY_COLOR}
                   strokeWidth={2}
                   name="Andamentos"
-                  dot={{ fill: PRIMARY_COLOR }}
+                  dot={{ fill: PRIMARY_COLOR, r: 3 }}
                 />
               </LineChart>
             </ResponsiveContainer>
           </div>
 
           {/* Audiências Próximas */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-lg font-semibold text-neutral-800 mb-4 flex items-center gap-2">
+          <div className="chart-container">
+            <h2 className="chart-title">
               <Calendar className="text-primary-600" size={20} />
               Audiências Próximas
             </h2>
-            <p className="text-sm text-neutral-600 mb-4">Próximos 7 dias</p>
-            <ResponsiveContainer width="100%" height={300}>
+            <p className="text-xs sm:text-sm text-neutral-600 mb-2 sm:mb-4">Próximos 7 dias</p>
+            <ResponsiveContainer width="100%" height={250}>
               <BarChart data={upcomingHearings}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="dia" />
-                <YAxis />
+                <XAxis dataKey="dia" tick={{ fontSize: 12 }} />
+                <YAxis tick={{ fontSize: 12 }} />
                 <Tooltip />
-                <Legend />
+                <Legend wrapperStyle={{ fontSize: '12px' }} />
                 <Bar dataKey="audiencias" fill={SECONDARY_COLOR} name="Audiências" />
               </BarChart>
             </ResponsiveContainer>
@@ -307,34 +307,34 @@ const Dashboard: React.FC = () => {
         </div>
 
         {/* Terceira Linha */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
           {/* Novos Clientes */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-lg font-semibold text-neutral-800 mb-4 flex items-center gap-2">
+          <div className="chart-container">
+            <h2 className="chart-title">
               <TrendingUp className="text-primary-600" size={20} />
               Novos Clientes
             </h2>
-            <p className="text-sm text-neutral-600 mb-4">Últimos 6 meses</p>
-            <ResponsiveContainer width="100%" height={300}>
+            <p className="text-xs sm:text-sm text-neutral-600 mb-2 sm:mb-4">Últimos 6 meses</p>
+            <ResponsiveContainer width="100%" height={250}>
               <BarChart data={newClientsTimeline}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="mes" />
-                <YAxis />
+                <XAxis dataKey="mes" tick={{ fontSize: 12 }} />
+                <YAxis tick={{ fontSize: 12 }} />
                 <Tooltip />
-                <Legend />
+                <Legend wrapperStyle={{ fontSize: '12px' }} />
                 <Bar dataKey="clientes" fill="#059669" name="Clientes" />
               </BarChart>
             </ResponsiveContainer>
           </div>
 
           {/* Prazos Próximos */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-lg font-semibold text-neutral-800 mb-4 flex items-center gap-2">
+          <div className="chart-container">
+            <h2 className="chart-title">
               <Clock className="text-primary-600" size={20} />
               Prazos Próximos
             </h2>
-            <p className="text-sm text-neutral-600 mb-4">Próximos 15 dias</p>
-            <div className="space-y-3 max-h-[300px] overflow-y-auto">
+            <p className="text-xs sm:text-sm text-neutral-600 mb-2 sm:mb-4">Próximos 15 dias</p>
+            <div className="space-y-2 sm:space-y-3 max-h-[250px] overflow-y-auto">
               {upcomingDeadlines.length === 0 ? (
                 <p className="text-neutral-500 text-sm text-center py-8">
                   Nenhum prazo próximo
@@ -343,23 +343,23 @@ const Dashboard: React.FC = () => {
                 upcomingDeadlines.map((deadline) => (
                   <div
                     key={deadline.id}
-                    className="flex items-start justify-between p-3 bg-neutral-50 rounded-lg hover:bg-neutral-100 transition-colors"
+                    className="flex items-start justify-between p-2 sm:p-3 bg-neutral-50 rounded-lg hover:bg-neutral-100 transition-colors"
                   >
-                    <div className="flex-1">
-                      <p className="font-medium text-neutral-800">{deadline.title}</p>
-                      <p className="text-sm text-neutral-600">
-                        {deadline.clientName} • {deadline.processNumber}
+                    <div className="flex-1 min-w-0 mr-2">
+                      <p className="font-medium text-neutral-800 text-sm truncate">{deadline.title}</p>
+                      <p className="text-xs sm:text-sm text-neutral-600 truncate">
+                        {deadline.clientName}
                       </p>
                       <p className="text-xs text-neutral-500 mt-1">
                         {new Date(deadline.date).toLocaleDateString('pt-BR')}
                       </p>
                     </div>
-                    <div className={`flex items-center justify-center w-12 h-12 rounded-full ${
+                    <div className={`flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full flex-shrink-0 ${
                       deadline.daysUntil <= 3
                         ? 'bg-red-100 text-red-700'
                         : deadline.daysUntil <= 7
                         ? 'bg-yellow-100 text-yellow-700'
-                        : 'bg-green-100 text-green-700'
+                        : 'bg-success-100 text-success-700'
                     }`}>
                       <span className="text-xs font-bold">{deadline.daysUntil}d</span>
                     </div>

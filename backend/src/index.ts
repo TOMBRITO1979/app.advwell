@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { config } from './config';
 import routes from './routes';
+import stripeWebhookRoutes from './routes/stripe-webhook.routes';
 import cron from 'node-cron';
 import prisma from './utils/prisma';
 import { redis, cache } from './utils/redis';
@@ -87,15 +88,19 @@ app.use(helmet({
   hidePoweredBy: true,
 }));
 
-// Rate limiting global (aumentado para escala)
+// Rate limiting global (ajustado para segurança)
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 500, // Aumentado de 100 para 500
+  max: 200, // Ajustado de 500 para 200 (mais seguro contra DDoS)
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: 'Muitas requisições. Tente novamente em 15 minutos.' },
+  message: { error: 'Too many attempts. Please try again later.', retry_after: 15 * 60 },
   validate: {
     trustProxy: false,
+  },
+  skip: (req) => {
+    // Skip rate limiting for health checks
+    return req.path === '/health';
   },
 });
 app.use('/api/', globalLimiter);
@@ -111,6 +116,9 @@ const authLimiter = rateLimit({
 });
 app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/register', authLimiter);
+
+// Stripe webhook (must be BEFORE express.json() to receive raw body)
+app.use('/api/stripe-webhook', stripeWebhookRoutes);
 
 // Body parser com limite de tamanho
 app.use(express.json({ limit: '10mb' }));

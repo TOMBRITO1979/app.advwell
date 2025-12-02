@@ -1,105 +1,121 @@
 #!/bin/bash
-# AdvWell Automated Backup Script
-# Runs daily at 2 AM via cron
-# Backs up PostgreSQL database to S3 with 30-day retention
+# ============================================
+# AdvWell - Backup para S3
+# ============================================
+# Este script faz backup do banco de dados PostgreSQL
+# e envia para um bucket S3.
+#
+# Requisitos:
+# - AWS CLI instalado (apt install awscli)
+# - Credenciais AWS configuradas
+#
+# Uso:
+#   ./backup-to-s3.sh
+#
+# Variáveis de ambiente necessárias:
+#   AWS_ACCESS_KEY_ID     - Chave de acesso AWS
+#   AWS_SECRET_ACCESS_KEY - Chave secreta AWS
+#   AWS_REGION            - Região AWS (padrão: us-east-1)
+#   S3_BACKUP_BUCKET      - Nome do bucket para backups
+# ============================================
 
 set -e
 
-# Configuration
-BACKUP_DIR="/root/advtom/backups"
-DATE=$(date +%Y%m%d_%H%M%S)
-BACKUP_FILE="advtom_backup_${DATE}.sql.gz"
-S3_BUCKET="${S3_BUCKET_NAME:-advwell-app}"
-S3_PREFIX="database-backups"
-RETENTION_DAYS=30
+# Configuração
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+BACKUP_DIR="/tmp/advwell-backups"
+DB_BACKUP_FILE="advwell_db_${TIMESTAMP}.sql.gz"
+FULL_BACKUP_FILE="advwell_full_${TIMESTAMP}.tar.gz"
 
-# Colors for output
-GREEN='\033[0;32m'
+# Cores para output
 RED='\033[0;31m'
+GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
-echo -e "${GREEN}=== AdvWell Database Backup ===${NC}"
-echo "Date: $(date)"
-echo "Backup file: $BACKUP_FILE"
+echo -e "${GREEN}========================================${NC}"
+echo -e "${GREEN}  AdvWell - Backup para S3${NC}"
+echo -e "${GREEN}  Data: $(date)${NC}"
+echo -e "${GREEN}========================================${NC}"
 echo ""
 
-# Create backup directory if not exists
+# Verificar variáveis de ambiente
+if [ -z "$AWS_ACCESS_KEY_ID" ] || [ -z "$AWS_SECRET_ACCESS_KEY" ]; then
+    echo -e "${RED}ERRO: Credenciais AWS não configuradas.${NC}"
+    echo ""
+    echo "Configure as variáveis de ambiente:"
+    echo "  export AWS_ACCESS_KEY_ID='sua-access-key'"
+    echo "  export AWS_SECRET_ACCESS_KEY='sua-secret-key'"
+    echo "  export AWS_REGION='us-east-1'"
+    echo "  export S3_BACKUP_BUCKET='seu-bucket-de-backup'"
+    exit 1
+fi
+
+if [ -z "$S3_BACKUP_BUCKET" ]; then
+    echo -e "${YELLOW}AVISO: S3_BACKUP_BUCKET não definido. Usando 'advwell-backups'${NC}"
+    S3_BACKUP_BUCKET="advwell-backups"
+fi
+
+AWS_REGION=${AWS_REGION:-us-east-1}
+
+# Criar diretório de backup
 mkdir -p "$BACKUP_DIR"
 
-# Get PostgreSQL container ID
-echo -e "${YELLOW}[1/5] Finding PostgreSQL container...${NC}"
-PG_CONTAINER=$(docker ps -q -f name=advtom_postgres)
-
-if [ -z "$PG_CONTAINER" ]; then
-    echo -e "${RED}ERROR: PostgreSQL container not found!${NC}"
-    exit 1
-fi
-echo -e "${GREEN}✓ Found container: $PG_CONTAINER${NC}"
-
-# Create database backup
-echo -e "${YELLOW}[2/5] Creating database dump...${NC}"
-docker exec $PG_CONTAINER pg_dump -U postgres advtom | gzip > "$BACKUP_DIR/$BACKUP_FILE"
-
-if [ ! -f "$BACKUP_DIR/$BACKUP_FILE" ]; then
-    echo -e "${RED}ERROR: Backup file not created!${NC}"
+echo -e "${YELLOW}[1/4] Fazendo backup do banco de dados...${NC}"
+POSTGRES_CONTAINER=$(docker ps -q -f name=advtom_postgres)
+if [ -z "$POSTGRES_CONTAINER" ]; then
+    echo -e "${RED}ERRO: Container PostgreSQL não encontrado.${NC}"
     exit 1
 fi
 
-BACKUP_SIZE=$(du -h "$BACKUP_DIR/$BACKUP_FILE" | cut -f1)
-echo -e "${GREEN}✓ Backup created: $BACKUP_SIZE${NC}"
+docker exec "$POSTGRES_CONTAINER" pg_dump -U postgres -d advtom | gzip > "$BACKUP_DIR/$DB_BACKUP_FILE"
+DB_SIZE=$(du -h "$BACKUP_DIR/$DB_BACKUP_FILE" | cut -f1)
+echo -e "${GREEN}   ✓ Backup do banco: $DB_BACKUP_FILE ($DB_SIZE)${NC}"
 
-# Upload to S3
-echo -e "${YELLOW}[3/5] Uploading to S3...${NC}"
-if command -v aws &> /dev/null; then
-    aws s3 cp "$BACKUP_DIR/$BACKUP_FILE" "s3://$S3_BUCKET/$S3_PREFIX/$BACKUP_FILE" \
-        --storage-class STANDARD_IA \
-        --metadata "backup-date=$(date -Iseconds),database=advtom,retention-days=$RETENTION_DAYS"
+echo -e "${YELLOW}[2/4] Criando backup completo (código + configs)...${NC}"
+cd /root/advtom
+tar -czf "$BACKUP_DIR/$FULL_BACKUP_FILE" \
+    --exclude='node_modules' \
+    --exclude='.git' \
+    --exclude='*.log' \
+    --exclude='dist' \
+    docker-compose.yml \
+    .env \
+    backend/prisma \
+    backend/src \
+    frontend/src \
+    2>/dev/null || true
 
-    if [ $? -eq 0 ]; then
-        echo -e "${GREEN}✓ Uploaded to S3: s3://$S3_BUCKET/$S3_PREFIX/$BACKUP_FILE${NC}"
-    else
-        echo -e "${RED}ERROR: S3 upload failed!${NC}"
-        exit 1
-    fi
-else
-    echo -e "${RED}ERROR: AWS CLI not installed!${NC}"
-    echo "Install with: apt-get install awscli"
-    exit 1
-fi
+FULL_SIZE=$(du -h "$BACKUP_DIR/$FULL_BACKUP_FILE" | cut -f1)
+echo -e "${GREEN}   ✓ Backup completo: $FULL_BACKUP_FILE ($FULL_SIZE)${NC}"
 
-# Clean old local backups (keep last 7 days)
-echo -e "${YELLOW}[4/5] Cleaning old local backups (>7 days)...${NC}"
-find "$BACKUP_DIR" -name "advtom_backup_*.sql.gz" -mtime +7 -delete
-echo -e "${GREEN}✓ Local cleanup complete${NC}"
+echo -e "${YELLOW}[3/4] Enviando para S3...${NC}"
 
-# Clean old S3 backups (keep last 30 days)
-echo -e "${YELLOW}[5/5] Cleaning old S3 backups (>$RETENTION_DAYS days)...${NC}"
-CUTOFF_DATE=$(date -d "$RETENTION_DAYS days ago" +%Y%m%d)
+# Configurar AWS CLI
+export AWS_ACCESS_KEY_ID
+export AWS_SECRET_ACCESS_KEY
+export AWS_DEFAULT_REGION=$AWS_REGION
 
-aws s3 ls "s3://$S3_BUCKET/$S3_PREFIX/" | while read -r line; do
-    # Extract date from filename
-    BACKUP_DATE=$(echo "$line" | grep -oP 'advtom_backup_\K[0-9]{8}' || true)
+# Upload do backup do banco
+aws s3 cp "$BACKUP_DIR/$DB_BACKUP_FILE" "s3://$S3_BACKUP_BUCKET/database/$DB_BACKUP_FILE" --quiet
+echo -e "${GREEN}   ✓ Banco enviado para s3://$S3_BACKUP_BUCKET/database/$DB_BACKUP_FILE${NC}"
 
-    if [ -n "$BACKUP_DATE" ] && [ "$BACKUP_DATE" -lt "$CUTOFF_DATE" ]; then
-        FILE_NAME=$(echo "$line" | awk '{print $4}')
-        echo "Deleting old backup: $FILE_NAME"
-        aws s3 rm "s3://$S3_BUCKET/$S3_PREFIX/$FILE_NAME"
-    fi
-done
-echo -e "${GREEN}✓ S3 cleanup complete${NC}"
+# Upload do backup completo
+aws s3 cp "$BACKUP_DIR/$FULL_BACKUP_FILE" "s3://$S3_BACKUP_BUCKET/full/$FULL_BACKUP_FILE" --quiet
+echo -e "${GREEN}   ✓ Backup completo enviado para s3://$S3_BACKUP_BUCKET/full/$FULL_BACKUP_FILE${NC}"
 
-# Summary
+echo -e "${YELLOW}[4/4] Limpando arquivos temporários...${NC}"
+rm -rf "$BACKUP_DIR"
+echo -e "${GREEN}   ✓ Arquivos temporários removidos${NC}"
+
 echo ""
-echo -e "${GREEN}=== Backup Complete ===${NC}"
-echo "Local: $BACKUP_DIR/$BACKUP_FILE ($BACKUP_SIZE)"
-echo "S3: s3://$S3_BUCKET/$S3_PREFIX/$BACKUP_FILE"
-echo "Retention: $RETENTION_DAYS days"
-echo "Next backup: $(date -d 'tomorrow 02:00' '+%Y-%m-%d %H:%M')"
-
-# Send success notification (optional - requires additional setup)
-# curl -X POST https://hooks.slack.com/services/YOUR/WEBHOOK/URL \
-#   -H 'Content-Type: application/json' \
-#   -d "{\"text\":\"✅ AdvWell backup successful: $BACKUP_FILE ($BACKUP_SIZE)\"}"
-
-exit 0
+echo -e "${GREEN}========================================${NC}"
+echo -e "${GREEN}  Backup concluído com sucesso!${NC}"
+echo -e "${GREEN}========================================${NC}"
+echo ""
+echo "Arquivos no S3:"
+echo "  - s3://$S3_BACKUP_BUCKET/database/$DB_BACKUP_FILE"
+echo "  - s3://$S3_BACKUP_BUCKET/full/$FULL_BACKUP_FILE"
+echo ""
+echo "Para restaurar o banco de dados:"
+echo "  aws s3 cp s3://$S3_BACKUP_BUCKET/database/$DB_BACKUP_FILE - | gunzip | docker exec -i \$(docker ps -q -f name=advtom_postgres) psql -U postgres -d advtom"

@@ -93,7 +93,7 @@ const Hearings: React.FC = () => {
   const [selectedEditUserId, setSelectedEditUserId] = useState<string>('');
 
   const priorityColors = {
-    BAIXA: 'border-l-green-500 bg-green-50',
+    BAIXA: 'border-l-green-500 bg-success-50',
     MEDIA: 'border-l-yellow-500 bg-yellow-50',
     ALTA: 'border-l-orange-500 bg-orange-50',
     URGENTE: 'border-l-red-500 bg-red-50',
@@ -398,7 +398,7 @@ const Hearings: React.FC = () => {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h1 className="text-3xl font-bold text-neutral-900 flex items-center gap-2">
-              <Gavel className="text-purple-600" size={28} />
+              <Gavel className="text-primary-600" size={28} />
               Audiências
             </h1>
             <p className="text-neutral-600 mt-1">
@@ -437,7 +437,7 @@ const Hearings: React.FC = () => {
               </button>
               <button
                 onClick={() => setSelectedDate(new Date().toISOString().split('T')[0])}
-                className="px-3 py-2 text-sm bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors"
+                className="px-3 py-2 text-sm bg-primary-100 text-primary-700 rounded-lg hover:bg-primary-200 transition-colors"
               >
                 Hoje
               </button>
@@ -533,7 +533,7 @@ const Hearings: React.FC = () => {
                               </span>
                               <span className={`text-xs px-2 py-1 rounded-full ${
                                 hearing.completed
-                                  ? 'bg-green-100 text-green-700'
+                                  ? 'bg-success-100 text-success-700'
                                   : 'bg-neutral-100 text-neutral-600'
                               }`}>
                                 {hearing.completed ? 'Concluída' : priorityLabels[hearing.priority || 'MEDIA']}
@@ -561,7 +561,7 @@ const Hearings: React.FC = () => {
                             )}
 
                             {/* Indicador de edição */}
-                            <div className="mt-2 flex items-center gap-1 text-xs text-purple-600">
+                            <div className="mt-2 flex items-center gap-1 text-xs text-primary-600">
                               <Edit2 size={12} />
                               <span>Clique para editar</span>
                             </div>
@@ -581,14 +581,14 @@ const Hearings: React.FC = () => {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
               <div className="p-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                <h2 className="text-2xl font-bold text-neutral-900 mb-4">
                   Editar Evento
                 </h2>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                   {/* Title */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">
                       Título *
                     </label>
                     <input
@@ -602,7 +602,7 @@ const Hearings: React.FC = () => {
 
                   {/* Type */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">
                       Tipo *
                     </label>
                     <select
@@ -621,7 +621,7 @@ const Hearings: React.FC = () => {
 
                   {/* Priority */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">
                       Prioridade *
                     </label>
                     <select
@@ -640,7 +640,7 @@ const Hearings: React.FC = () => {
                   {/* Date and Time */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-neutral-700 mb-1">
                         Data e Hora *
                       </label>
                       <input
@@ -652,7 +652,7 @@ const Hearings: React.FC = () => {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-neutral-700 mb-1">
                         Data/Hora Término (opcional)
                       </label>
                       <input
@@ -666,7 +666,7 @@ const Hearings: React.FC = () => {
 
                   {/* Client Autocomplete */}
                   <div className="relative">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">
                       Cliente {formData.type === 'AUDIENCIA' ? '*' : '(opcional)'}
                     </label>
                     <input
@@ -692,16 +692,16 @@ const Hearings: React.FC = () => {
                               setClientSearchTerm(client.name);
                               setShowClientSuggestions(false);
                             }}
-                            className="px-4 py-2 hover:bg-gray-100 cursor-pointer min-h-[44px]"
+                            className="px-4 py-2 hover:bg-neutral-100 cursor-pointer min-h-[44px]"
                           >
-                            <div className="font-medium text-gray-900">{client.name}</div>
-                            {client.cpf && <div className="text-sm text-gray-500">CPF: {client.cpf}</div>}
+                            <div className="font-medium text-neutral-900">{client.name}</div>
+                            {client.cpf && <div className="text-sm text-neutral-500">CPF: {client.cpf}</div>}
                           </div>
                         ))}
                       </div>
                     )}
                     {selectedClient && (
-                      <div className="mt-1 text-sm text-green-600">
+                      <div className="mt-1 text-sm text-success-600">
                         {selectedClient.name} selecionado
                       </div>
                     )}
@@ -709,7 +709,7 @@ const Hearings: React.FC = () => {
 
                   {/* Case Autocomplete */}
                   <div className="relative">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">
                       Processo {formData.type === 'AUDIENCIA' ? '*' : '(opcional)'}
                     </label>
                     <input
@@ -735,16 +735,16 @@ const Hearings: React.FC = () => {
                               setCaseSearchTerm(caseItem.processNumber);
                               setShowCaseSuggestions(false);
                             }}
-                            className="px-4 py-2 hover:bg-gray-100 cursor-pointer min-h-[44px]"
+                            className="px-4 py-2 hover:bg-neutral-100 cursor-pointer min-h-[44px]"
                           >
-                            <div className="font-medium text-gray-900">{caseItem.processNumber}</div>
-                            <div className="text-sm text-gray-500">{caseItem.subject}</div>
+                            <div className="font-medium text-neutral-900">{caseItem.processNumber}</div>
+                            <div className="text-sm text-neutral-500">{caseItem.subject}</div>
                           </div>
                         ))}
                       </div>
                     )}
                     {selectedCase && (
-                      <div className="mt-1 text-sm text-green-600">
+                      <div className="mt-1 text-sm text-success-600">
                         {selectedCase.processNumber} selecionado
                       </div>
                     )}
@@ -752,7 +752,7 @@ const Hearings: React.FC = () => {
 
                   {/* Assigned User - Select único */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">
                       Responsável (opcional)
                     </label>
                     <select
@@ -771,7 +771,7 @@ const Hearings: React.FC = () => {
 
                   {/* Description */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">
                       Descrição
                     </label>
                     <textarea
@@ -788,7 +788,7 @@ const Hearings: React.FC = () => {
                     <button
                       type="submit"
                       disabled={loading}
-                      className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-purple-100 text-purple-700 border border-purple-200 hover:bg-purple-200 font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-primary-100 text-primary-700 border border-primary-200 hover:bg-primary-200 font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {loading ? 'Salvando...' : 'Atualizar'}
                     </button>

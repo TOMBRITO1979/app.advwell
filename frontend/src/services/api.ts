@@ -48,6 +48,18 @@ api.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
+    // Handle 402 Payment Required (subscription expired)
+    if (error.response?.status === 402) {
+      const responseData = error.response.data as { code?: string; redirectTo?: string };
+      if (responseData?.code === 'SUBSCRIPTION_EXPIRED') {
+        // Only redirect if not already on subscription page
+        if (!window.location.pathname.includes('/subscription')) {
+          window.location.href = '/subscription';
+        }
+      }
+      return Promise.reject(error);
+    }
+
     // Se não é erro 401 ou já tentou retry, rejeita
     if (error.response?.status !== 401 || originalRequest._retry) {
       // Se é 401 e já tentou refresh, faz logout

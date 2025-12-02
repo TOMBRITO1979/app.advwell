@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Send, Trash2, Eye, Mail, Users, CheckCircle, Clock } from 'lucide-react';
+import DOMPurify from 'dompurify';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import Layout from '../components/Layout';
@@ -63,9 +64,9 @@ const Campaigns: React.FC = () => {
   };
 
   const statusColors = {
-    draft: 'bg-gray-100 text-gray-800',
-    sending: 'bg-blue-100 text-blue-800',
-    completed: 'bg-green-100 text-green-800',
+    draft: 'bg-neutral-100 text-neutral-800',
+    sending: 'bg-info-100 text-info-700',
+    completed: 'bg-success-100 text-success-800',
     failed: 'bg-red-100 text-red-800',
     cancelled: 'bg-yellow-100 text-yellow-800',
   };
@@ -255,16 +256,16 @@ const Campaigns: React.FC = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-3xl font-bold text-neutral-900">
               Campanhas de Email
             </h1>
-            <p className="text-gray-600 mt-1">
+            <p className="text-neutral-600 mt-1">
               Envie emails em massa para seus clientes
             </p>
           </div>
           <button
             onClick={() => setShowModal(true)}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-green-100 text-green-700 border border-green-200 hover:bg-green-200 font-medium rounded-lg transition-all duration-200"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-success-100 text-success-700 border border-success-200 hover:bg-success-200 font-medium rounded-lg transition-all duration-200"
           >
             <Plus size={20} />
             Nova Campanha
@@ -276,8 +277,8 @@ const Campaigns: React.FC = () => {
           <div className="bg-white rounded-lg shadow p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-600 text-sm">Total de Campanhas</p>
-                <p className="text-2xl font-bold text-gray-900">{campaigns.length}</p>
+                <p className="text-neutral-600 text-sm">Total de Campanhas</p>
+                <p className="text-2xl font-bold text-neutral-900">{campaigns.length}</p>
               </div>
               <Mail className="text-success-600" size={32} />
             </div>
@@ -285,8 +286,8 @@ const Campaigns: React.FC = () => {
           <div className="bg-white rounded-lg shadow p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-600 text-sm">Concluídas</p>
-                <p className="text-2xl font-bold text-green-600">
+                <p className="text-neutral-600 text-sm">Concluídas</p>
+                <p className="text-2xl font-bold text-success-600">
                   {campaigns.filter((c) => c.status === 'completed').length}
                 </p>
               </div>
@@ -296,8 +297,8 @@ const Campaigns: React.FC = () => {
           <div className="bg-white rounded-lg shadow p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-600 text-sm">Em Envio</p>
-                <p className="text-2xl font-bold text-blue-600">
+                <p className="text-neutral-600 text-sm">Em Envio</p>
+                <p className="text-2xl font-bold text-info-600">
                   {campaigns.filter((c) => c.status === 'sending').length}
                 </p>
               </div>
@@ -307,8 +308,8 @@ const Campaigns: React.FC = () => {
           <div className="bg-white rounded-lg shadow p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-600 text-sm">Clientes com Email</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-neutral-600 text-sm">Clientes com Email</p>
+                <p className="text-2xl font-bold text-neutral-900">
                   {clients.filter((c) => c.email).length}
                 </p>
               </div>
@@ -319,19 +320,19 @@ const Campaigns: React.FC = () => {
 
         {/* Lista de Campanhas */}
         {loading ? (
-          <div className="text-center py-8 text-gray-600">Carregando...</div>
+          <div className="text-center py-8 text-neutral-600">Carregando...</div>
         ) : campaigns.length === 0 ? (
           <div className="bg-white rounded-lg shadow p-8 text-center">
             <Mail size={48} className="mx-auto text-neutral-500 mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            <h3 className="text-lg font-semibold text-neutral-900 mb-2">
               Nenhuma campanha criada
             </h3>
-            <p className="text-gray-600 mb-4">
+            <p className="text-neutral-600 mb-4">
               Crie sua primeira campanha de email para começar
             </p>
             <button
               onClick={() => setShowModal(true)}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-green-100 text-green-700 border border-green-200 hover:bg-green-200 font-medium rounded-lg transition-all duration-200"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-success-100 text-success-700 border border-success-200 hover:bg-success-200 font-medium rounded-lg transition-all duration-200"
             >
               <Plus size={20} />
               Nova Campanha
@@ -339,39 +340,39 @@ const Campaigns: React.FC = () => {
           </div>
         ) : (
           <div className="bg-white rounded-lg shadow overflow-hidden">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-neutral-200">
+              <thead className="bg-neutral-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
                     Nome
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
                     Assunto
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
                     Destinatários
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
                     Enviados
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
                     Data
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                  <th className="px-6 py-3 text-right text-xs font-medium text-neutral-500 uppercase">
                     Ações
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white divide-y divide-neutral-200">
                 {campaigns.map((campaign) => (
-                  <tr key={campaign.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                  <tr key={campaign.id} className="hover:bg-neutral-50">
+                    <td className="px-6 py-4 text-sm font-medium text-neutral-900">
                       {campaign.name}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
+                    <td className="px-6 py-4 text-sm text-neutral-600">
                       {campaign.subject}
                     </td>
                     <td className="px-6 py-4">
@@ -383,16 +384,16 @@ const Campaigns: React.FC = () => {
                         {statusLabels[campaign.status]}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
+                    <td className="px-6 py-4 text-sm text-neutral-600">
                       {campaign.totalRecipients}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
+                    <td className="px-6 py-4 text-sm text-neutral-600">
                       {campaign.sentCount} / {campaign.totalRecipients}
                       {campaign.failedCount > 0 && (
                         <span className="text-red-600 ml-2">({campaign.failedCount} falhas)</span>
                       )}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
+                    <td className="px-6 py-4 text-sm text-neutral-600">
                       {formatDate(campaign.createdAt)}
                     </td>
                     <td className="px-6 py-4 text-sm text-right">
@@ -436,19 +437,19 @@ const Campaigns: React.FC = () => {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
               <div className="p-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                <h2 className="text-2xl font-bold text-neutral-900 mb-4">
                   Nova Campanha de Email
                 </h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
                   {/* Template Selector */}
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                    <label className="block text-sm font-medium text-green-900 mb-2">
+                  <div className="bg-success-50 border border-success-200 rounded-lg p-4">
+                    <label className="block text-sm font-medium text-primary-800 mb-2">
                       📝 Usar Template Pronto (Opcional)
                     </label>
                     <select
                       value={selectedTemplate}
                       onChange={(e) => handleTemplateSelect(e.target.value)}
-                      className="w-full px-3 py-2 border border-green-300 rounded-md min-h-[44px]"
+                      className="w-full px-3 py-2 border border-success-300 rounded-md min-h-[44px]"
                     >
                       <option value="">Selecione um template ou crie do zero</option>
                       {templates.map((template) => (
@@ -457,13 +458,13 @@ const Campaigns: React.FC = () => {
                         </option>
                       ))}
                     </select>
-                    <p className="text-xs text-green-700 mt-2">
+                    <p className="text-xs text-success-700 mt-2">
                       💡 Os templates incluem variáveis que serão substituídas automaticamente: {'{nome_cliente}'}, {'{nome_empresa}'}, {'{data}'}
                     </p>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">
                       Nome da Campanha *
                     </label>
                     <input
@@ -477,7 +478,7 @@ const Campaigns: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">
                       Assunto do Email *
                     </label>
                     <input
@@ -491,7 +492,7 @@ const Campaigns: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">
                       Corpo do Email (HTML) *
                     </label>
                     <textarea
@@ -502,14 +503,14 @@ const Campaigns: React.FC = () => {
                       placeholder="<h1>Olá!</h1><p>Sua mensagem aqui...</p>"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md font-mono text-sm min-h-[44px]"
                     />
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-neutral-500 mt-1">
                       Você pode usar HTML para formatar o email
                     </p>
                   </div>
 
                   {/* Filtro de Destinatários */}
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <label className="block text-sm font-medium text-blue-900 mb-2">
+                  <div className="bg-info-50 border border-info-200 rounded-lg p-4">
+                    <label className="block text-sm font-medium text-info-700 mb-2">
                       📧 Selecionar Destinatários
                     </label>
 
@@ -525,10 +526,10 @@ const Campaigns: React.FC = () => {
                           className="mt-0.5 mr-2"
                         />
                         <label htmlFor="filter-all" className="flex-1 cursor-pointer">
-                          <span className="text-sm font-medium text-blue-900">
+                          <span className="text-sm font-medium text-info-700">
                             Todos os clientes com email
                           </span>
-                          <p className="text-xs text-blue-700 mt-0.5">
+                          <p className="text-xs text-info-700 mt-0.5">
                             {clients.filter((c) => c.email).length} destinatários
                           </p>
                         </label>
@@ -545,14 +546,14 @@ const Campaigns: React.FC = () => {
                           className="mt-0.5 mr-2"
                         />
                         <label htmlFor="filter-tag" className="flex-1 cursor-pointer">
-                          <span className="text-sm font-medium text-blue-900">
+                          <span className="text-sm font-medium text-info-700">
                             Apenas clientes com tag específica
                           </span>
                           {recipientFilter === 'tag' && (
                             <select
                               value={selectedTag}
                               onChange={(e) => setSelectedTag(e.target.value)}
-                              className="w-full mt-2 px-3 py-2 border border-blue-300 rounded-md text-sm min-h-[44px]"
+                              className="w-full mt-2 px-3 py-2 border border-info-300 rounded-md text-sm min-h-[44px]"
                             >
                               <option value="">Selecione uma tag</option>
                               {availableTags.map((tag) => {
@@ -566,7 +567,7 @@ const Campaigns: React.FC = () => {
                             </select>
                           )}
                           {recipientFilter === 'tag' && selectedTag && (
-                            <p className="text-xs text-blue-700 mt-1">
+                            <p className="text-xs text-info-700 mt-1">
                               {clients.filter((c) => c.tag === selectedTag && c.email).length} destinatários
                             </p>
                           )}
@@ -574,7 +575,7 @@ const Campaigns: React.FC = () => {
                       </div>
                     </div>
 
-                    <p className="text-xs text-blue-700 mt-3 pt-3 border-t border-blue-200">
+                    <p className="text-xs text-info-700 mt-3 pt-3 border-t border-info-200">
                       💡 Limite: 500 destinatários por campanha
                     </p>
                   </div>
@@ -592,7 +593,7 @@ const Campaigns: React.FC = () => {
                     </button>
                     <button
                       type="submit"
-                      className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-purple-100 text-purple-700 border border-purple-200 hover:bg-purple-200 font-medium rounded-lg transition-all duration-200"
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-primary-100 text-primary-700 border border-primary-200 hover:bg-primary-200 font-medium rounded-lg transition-all duration-200"
                     >
                       Criar Campanha
                     </button>
@@ -610,16 +611,16 @@ const Campaigns: React.FC = () => {
               <div className="p-6">
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <h2 className="text-2xl font-bold text-gray-900">
+                    <h2 className="text-2xl font-bold text-neutral-900">
                       {selectedCampaign.name}
                     </h2>
-                    <p className="text-gray-600 mt-1">
+                    <p className="text-neutral-600 mt-1">
                       {selectedCampaign.subject}
                     </p>
                   </div>
                   <button
                     onClick={() => setShowViewModal(false)}
-                    className="text-neutral-500 hover:text-gray-600"
+                    className="text-neutral-500 hover:text-neutral-600"
                   >
                     ✕
                   </button>
@@ -628,7 +629,7 @@ const Campaigns: React.FC = () => {
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <p className="text-sm text-gray-600">Status</p>
+                      <p className="text-sm text-neutral-600">Status</p>
                       <span
                         className={`inline-block px-3 py-1 text-sm font-medium rounded-full mt-1 ${
                           statusColors[selectedCampaign.status]
@@ -638,19 +639,19 @@ const Campaigns: React.FC = () => {
                       </span>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-600">Total Destinatários</p>
-                      <p className="text-lg font-semibold text-gray-900">
+                      <p className="text-sm text-neutral-600">Total Destinatários</p>
+                      <p className="text-lg font-semibold text-neutral-900">
                         {selectedCampaign.totalRecipients}
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-600">Enviados</p>
-                      <p className="text-lg font-semibold text-green-600">
+                      <p className="text-sm text-neutral-600">Enviados</p>
+                      <p className="text-lg font-semibold text-success-600">
                         {selectedCampaign.sentCount}
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-600">Falhas</p>
+                      <p className="text-sm text-neutral-600">Falhas</p>
                       <p className="text-lg font-semibold text-red-600">
                         {selectedCampaign.failedCount}
                       </p>
@@ -658,12 +659,17 @@ const Campaigns: React.FC = () => {
                   </div>
 
                   <div className="border-t border-gray-200 pt-4">
-                    <p className="text-sm font-medium text-gray-700 mb-2">
+                    <p className="text-sm font-medium text-neutral-700 mb-2">
                       Prévia do Email:
                     </p>
                     <div
-                      className="border border-gray-300 rounded p-4 bg-gray-50"
-                      dangerouslySetInnerHTML={{ __html: selectedCampaign.body }}
+                      className="border border-gray-300 rounded p-4 bg-neutral-50"
+                      dangerouslySetInnerHTML={{
+                        __html: DOMPurify.sanitize(selectedCampaign.body, {
+                          ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'p', 'br', 'a', 'img', 'h1', 'h2', 'h3', 'h4', 'ul', 'ol', 'li', 'div', 'span', 'table', 'tr', 'td', 'th', 'thead', 'tbody', 'hr'],
+                          ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'style', 'class', 'target', 'width', 'height']
+                        })
+                      }}
                     />
                   </div>
                 </div>

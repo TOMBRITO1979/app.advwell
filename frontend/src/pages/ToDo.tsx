@@ -184,7 +184,7 @@ const ToDo: React.FC = () => {
 
   const getPriorityColor = (priority: string) => {
     const colors = {
-      BAIXA: 'bg-green-100 text-green-800',
+      BAIXA: 'bg-success-100 text-success-800',
       MEDIA: 'bg-yellow-100 text-yellow-800',
       ALTA: 'bg-orange-100 text-orange-800',
       URGENTE: 'bg-red-100 text-red-800',
@@ -220,7 +220,7 @@ const ToDo: React.FC = () => {
               resetForm();
               setShowModal(true);
             }}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-green-100 text-green-700 border border-green-200 hover:bg-green-200 font-medium rounded-lg transition-all duration-200"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-primary-100 text-primary-700 border border-primary-200 hover:bg-primary-200 font-medium rounded-lg transition-all duration-200"
           >
             <Plus size={20} />
             <span className="hidden sm:inline">Nova Tarefa</span>
@@ -264,7 +264,7 @@ const ToDo: React.FC = () => {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
+              <table className="min-w-full divide-y divide-neutral-200">
                 <thead className="bg-neutral-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Status</th>
@@ -274,7 +274,7 @@ const ToDo: React.FC = () => {
                     <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Ações</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white divide-y divide-neutral-200">
                   {todos.map((todo) => (
                     <tr key={todo.id} className="hover:bg-neutral-50">
                       <td className="px-6 py-4">
@@ -384,18 +384,18 @@ const ToDo: React.FC = () => {
 
                   {/* Assigned Users */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-neutral-700 mb-2">
                       Atribuir a usuários (opcional)
                     </label>
                     <div className="border border-gray-300 rounded-md p-3 max-h-48 overflow-y-auto">
                       {companyUsers.length === 0 ? (
-                        <p className="text-sm text-gray-500 italic">Nenhum usuário disponível</p>
+                        <p className="text-sm text-neutral-500 italic">Nenhum usuário disponível</p>
                       ) : (
                         <div className="space-y-2">
                           {companyUsers.map((user) => (
                             <label
                               key={user.id}
-                              className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded"
+                              className="flex items-center gap-2 cursor-pointer hover:bg-neutral-50 p-2 rounded"
                             >
                               <input
                                 type="checkbox"
@@ -409,9 +409,9 @@ const ToDo: React.FC = () => {
                                 }}
                                 className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
                               />
-                              <span className="text-sm text-gray-700">
+                              <span className="text-sm text-neutral-700">
                                 {user.name}
-                                <span className="text-gray-500 text-xs ml-1">({user.email})</span>
+                                <span className="text-neutral-500 text-xs ml-1">({user.email})</span>
                               </span>
                             </label>
                           ))}
@@ -419,7 +419,7 @@ const ToDo: React.FC = () => {
                       )}
                     </div>
                     {selectedUserIds.length > 0 && (
-                      <p className="text-sm text-gray-600 mt-2">
+                      <p className="text-sm text-neutral-600 mt-2">
                         {selectedUserIds.length} usuário(s) selecionado(s)
                       </p>
                     )}
@@ -438,7 +438,7 @@ const ToDo: React.FC = () => {
                     </button>
                     <button
                       type="submit"
-                      className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-purple-100 text-purple-700 border border-purple-200 hover:bg-purple-200 font-medium rounded-lg transition-all duration-200"
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-primary-100 text-primary-700 border border-primary-200 hover:bg-primary-200 font-medium rounded-lg transition-all duration-200"
                     >
                       {editMode ? 'Salvar' : 'Criar'}
                     </button>

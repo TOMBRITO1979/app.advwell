@@ -442,7 +442,7 @@ const Financial: React.FC = () => {
             {/* Linha 2 no mobile: Botão Nova Transação em largura total */}
             <button
               onClick={handleNew}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 rounded-lg bg-green-100 text-green-700 border border-green-200 hover:bg-green-200 font-medium text-sm transition-all duration-200 min-h-[44px]"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 rounded-lg bg-primary-100 text-primary-700 border border-primary-200 hover:bg-primary-200 font-medium text-sm transition-all duration-200 min-h-[44px]"
             >
               <Plus size={20} />
               <span>Nova Transação</span>
@@ -460,7 +460,7 @@ const Financial: React.FC = () => {
                   {formatCurrency(summary.totalIncome)}
                 </p>
               </div>
-              <div className="p-3 bg-green-100 rounded-full">
+              <div className="p-3 bg-success-100 rounded-full">
                 <TrendingUp className="text-primary-600" size={24} />
               </div>
             </div>
@@ -488,7 +488,7 @@ const Financial: React.FC = () => {
                   {formatCurrency(summary.balance)}
                 </p>
               </div>
-              <div className={`p-3 rounded-full ${summary.balance >= 0 ? 'bg-green-100' : 'bg-error-100'}`}>
+              <div className={`p-3 rounded-full ${summary.balance >= 0 ? 'bg-success-100' : 'bg-error-100'}`}>
                 <DollarSign className={summary.balance >= 0 ? 'text-primary-600' : 'text-error-600'} size={24} />
               </div>
             </div>
@@ -599,7 +599,7 @@ const Financial: React.FC = () => {
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200 bg-white">
+                <tbody className="divide-y divide-neutral-200 bg-white">
                   {transactions.map((transaction) => (
                     <tr key={transaction.id} className="hover:bg-neutral-50 transition-colors">
                       <td className="px-4 py-3 text-sm text-neutral-900">
@@ -607,7 +607,7 @@ const Financial: React.FC = () => {
                       </td>
                       <td className="px-4 py-3 text-sm">
                         {transaction.type === 'INCOME' ? (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-success-100 text-success-800">
                             <TrendingUp size={16} className="mr-1" />
                             Receita
                           </span>
@@ -718,7 +718,7 @@ const Financial: React.FC = () => {
                       onClick={() => setFormData({ ...formData, type: 'INCOME' })}
                       className={`flex items-center justify-center gap-2 px-4 py-3 rounded-md border-2 transition-colors ${
                         formData.type === 'INCOME'
-                          ? 'border-primary-500 bg-green-50 text-primary-700'
+                          ? 'border-primary-500 bg-success-50 text-primary-700'
                           : 'border-neutral-300 hover:border-neutral-400'
                       }`}
                     >
@@ -918,8 +918,8 @@ const Financial: React.FC = () => {
                       </div>
 
                       {formData.amount && formData.installmentCount && (
-                        <div className="col-span-2 p-3 bg-blue-50 rounded-md border border-blue-200">
-                          <p className="text-sm text-blue-800">
+                        <div className="col-span-2 p-3 bg-info-50 rounded-md border border-info-200">
+                          <p className="text-sm text-info-700">
                             <span className="font-semibold">Valor por parcela:</span>{' '}
                             {formatCurrency(parseFloat(formData.amount) / parseInt(formData.installmentCount) || 0)}
                           </p>
@@ -945,7 +945,7 @@ const Financial: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-purple-100 text-purple-700 border border-purple-200 rounded-md hover:bg-purple-200 transition-colors min-h-[44px]"
+                  className="px-6 py-2 bg-primary-100 text-primary-700 border border-primary-200 rounded-md hover:bg-primary-200 transition-colors min-h-[44px]"
                 >
                   {editMode ? 'Atualizar' : 'Salvar'}
                 </button>

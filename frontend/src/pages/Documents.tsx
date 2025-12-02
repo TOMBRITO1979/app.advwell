@@ -260,11 +260,21 @@ const Documents: React.FC = () => {
       const contentType = response.headers['content-type'];
       if (contentType && contentType.includes('application/json')) {
         // It's an external link, parse and open
-        const text = await response.data.text();
-        const data = JSON.parse(text);
-        if (data.downloadUrl) {
-          window.open(data.downloadUrl, '_blank');
-          toast.success('Abrindo link externo...');
+        try {
+          const text = await response.data.text();
+          const data = JSON.parse(text);
+          if (data.downloadUrl && typeof data.downloadUrl === 'string') {
+            // Validate URL to prevent open redirect attacks
+            const parsedUrl = new URL(data.downloadUrl);
+            if (['http:', 'https:'].includes(parsedUrl.protocol)) {
+              window.open(data.downloadUrl, '_blank', 'noopener,noreferrer');
+              toast.success('Abrindo link externo...');
+              return;
+            }
+          }
+        } catch (parseError) {
+          console.error('Erro ao processar resposta:', parseError);
+          toast.error('Erro ao processar documento');
           return;
         }
       }
@@ -424,7 +434,7 @@ const Documents: React.FC = () => {
             <button
               onClick={handleAddDocument}
               disabled={!selectedClient && !selectedCase}
-              className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-green-100 text-green-700 border border-green-200 hover:bg-green-200 font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base whitespace-nowrap"
+              className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-success-100 text-success-700 border border-success-200 hover:bg-success-200 font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base whitespace-nowrap"
             >
               + Adicionar Documento
             </button>
@@ -433,8 +443,8 @@ const Documents: React.FC = () => {
 
         {/* Selected Entity Display */}
         {(selectedClient || selectedCase) && (
-          <div className="mt-4 p-3 bg-green-50 border border-primary-200 rounded-md">
-            <span className="font-medium text-green-900">Selecionado: </span>
+          <div className="mt-4 p-3 bg-success-50 border border-primary-200 rounded-md">
+            <span className="font-medium text-primary-800">Selecionado: </span>
             <span className="text-primary-700">
               {selectedClient
                 ? `${selectedClient.name} ${selectedClient.cpf ? `(${selectedClient.cpf})` : ''}`
@@ -479,8 +489,8 @@ const Documents: React.FC = () => {
                         <span
                           className={`px-3 py-1 rounded-full text-xs font-medium ${
                             doc.storageType === 'upload'
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-green-100 text-green-800'
+                              ? 'bg-success-100 text-success-800'
+                              : 'bg-success-100 text-success-800'
                           }`}
                         >
                           {getStorageTypeLabel(doc.storageType)}
@@ -529,7 +539,7 @@ const Documents: React.FC = () => {
                         </button>
                         <button
                           onClick={() => handleDownloadDocument(doc)}
-                          className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-blue-100 text-blue-700 border border-blue-200 hover:bg-blue-200 font-medium rounded-lg transition-all duration-200 text-sm"
+                          className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-info-100 text-info-700 border border-info-200 hover:bg-info-200 font-medium rounded-lg transition-all duration-200 text-sm"
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                             <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -572,8 +582,8 @@ const Documents: React.FC = () => {
             <form onSubmit={handleSaveDocument} className="p-6 overflow-y-auto flex-1">
               <div className="space-y-4">
                 {/* Selected Entity */}
-                <div className="p-3 bg-green-50 border border-primary-200 rounded-md">
-                  <span className="font-medium text-green-900">
+                <div className="p-3 bg-success-50 border border-primary-200 rounded-md">
+                  <span className="font-medium text-primary-800">
                     {selectedClient ? 'Cliente: ' : 'Processo: '}
                   </span>
                   <span className="text-primary-700">
@@ -734,7 +744,7 @@ const Documents: React.FC = () => {
               <button
                 onClick={handleSaveDocument}
                 disabled={loading}
-                className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-purple-100 text-purple-700 border border-purple-200 hover:bg-purple-200 font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-primary-100 text-primary-700 border border-primary-200 hover:bg-primary-200 font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? 'Enviando...' : 'Salvar Documento'}
               </button>

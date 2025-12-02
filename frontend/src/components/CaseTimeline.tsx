@@ -33,26 +33,26 @@ interface CaseTimelineProps {
 const getActionIcon = (action: string) => {
   switch (action) {
     case 'CASE_CREATED':
-      return <FileText className="text-green-600" size={18} />;
+      return <FileText className="text-success-600" size={18} />;
     case 'STATUS_CHANGED':
-      return <Activity className="text-blue-600" size={18} />;
+      return <Activity className="text-info-600" size={18} />;
     case 'DEADLINE_CHANGED':
     case 'DEADLINE_RESPONSIBLE_CHANGED':
       return <Clock className="text-orange-600" size={18} />;
     case 'PART_ADDED':
-      return <UserPlus className="text-green-600" size={18} />;
+      return <UserPlus className="text-success-600" size={18} />;
     case 'PART_UPDATED':
-      return <Edit className="text-blue-600" size={18} />;
+      return <Edit className="text-info-600" size={18} />;
     case 'PART_DELETED':
       return <UserMinus className="text-red-600" size={18} />;
     case 'DOCUMENT_ADDED':
-      return <Upload className="text-green-600" size={18} />;
+      return <Upload className="text-success-600" size={18} />;
     case 'DOCUMENT_DELETED':
       return <Trash2 className="text-red-600" size={18} />;
     case 'DATAJUD_SYNCED':
-      return <RefreshCw className="text-purple-600" size={18} />;
+      return <RefreshCw className="text-primary-600" size={18} />;
     case 'FIELD_UPDATED':
-      return <Edit className="text-blue-600" size={18} />;
+      return <Edit className="text-info-600" size={18} />;
     default:
       return <Activity className="text-neutral-600" size={18} />;
   }

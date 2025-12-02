@@ -39,7 +39,7 @@ const ResendVerification: React.FC = () => {
         <div className="max-w-md w-full">
           <div className="bg-white rounded-2xl shadow-xl p-8">
             <div className="text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 mb-4">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-success-100 mb-4">
                 <Mail className="w-8 h-8 text-primary-600" />
               </div>
               <h1 className="text-2xl font-bold text-neutral-900 mb-2">
@@ -49,14 +49,14 @@ const ResendVerification: React.FC = () => {
                 Se o email <span className="font-semibold">{email}</span> estiver cadastrado e não verificado,
                 um novo link de verificação foi enviado.
               </p>
-              <div className="bg-green-50 border border-primary-200 rounded-lg p-4 mb-6">
-                <p className="text-sm text-green-800">
+              <div className="bg-success-50 border border-primary-200 rounded-lg p-4 mb-6">
+                <p className="text-sm text-success-800">
                   <strong>Dica:</strong> Verifique também sua caixa de spam ou lixo eletrônico.
                 </p>
               </div>
               <button
                 onClick={() => navigate('/login')}
-                className="w-full px-4 py-3 bg-purple-100 text-purple-700 border border-purple-200 rounded-lg hover:bg-purple-200 transition-colors font-medium min-h-[44px]"
+                className="w-full px-4 py-3 bg-primary-100 text-primary-700 border border-primary-200 rounded-lg hover:bg-primary-200 transition-colors font-medium min-h-[44px]"
               >
                 Ir para Login
               </button>
@@ -73,7 +73,7 @@ const ResendVerification: React.FC = () => {
         <div className="bg-white rounded-2xl shadow-xl p-8">
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 mb-4">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-success-100 mb-4">
               <Mail className="w-8 h-8 text-primary-600" />
             </div>
             <h1 className="text-2xl font-bold text-neutral-900 mb-2">
@@ -104,7 +104,7 @@ const ResendVerification: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full px-4 py-3 bg-purple-100 text-purple-700 border border-purple-200 rounded-lg hover:bg-purple-200 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
+              className="w-full px-4 py-3 bg-primary-100 text-primary-700 border border-primary-200 rounded-lg hover:bg-primary-200 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
             >
               {loading ? 'Enviando...' : 'Enviar Novo Link'}
             </button>

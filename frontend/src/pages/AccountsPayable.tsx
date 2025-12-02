@@ -73,9 +73,9 @@ const AccountsPayable: React.FC = () => {
 
   const statusColors = {
     PENDING: 'bg-yellow-100 text-yellow-800',
-    PAID: 'bg-green-100 text-green-800',
+    PAID: 'bg-success-100 text-success-800',
     OVERDUE: 'bg-red-100 text-red-800',
-    CANCELLED: 'bg-gray-100 text-gray-800',
+    CANCELLED: 'bg-neutral-100 text-neutral-800',
   };
 
   useEffect(() => {
@@ -283,13 +283,13 @@ const AccountsPayable: React.FC = () => {
     <Layout>
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-3xl font-bold text-neutral-900">
             Contas a Pagar
           </h1>
           <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
             <button
               onClick={() => setShowStatementModal(true)}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-blue-100 text-blue-700 border border-blue-200 hover:bg-blue-200 font-medium rounded-lg transition-all duration-200"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-info-100 text-info-700 border border-info-200 hover:bg-info-200 font-medium rounded-lg transition-all duration-200"
             >
               <FileText size={20} />
               Gerar Extrato
@@ -299,7 +299,7 @@ const AccountsPayable: React.FC = () => {
                 resetForm();
                 setShowModal(true);
               }}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-green-100 text-green-700 border border-green-200 hover:bg-green-200 font-medium rounded-lg transition-all duration-200"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-success-100 text-success-700 border border-success-200 hover:bg-success-200 font-medium rounded-lg transition-all duration-200"
             >
               <Plus size={20} />
               Nova Conta
@@ -311,7 +311,7 @@ const AccountsPayable: React.FC = () => {
         <div className="bg-white rounded-lg shadow p-4">
           <div className="flex gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-neutral-700 mb-1">
                 Status
               </label>
               <select
@@ -331,55 +331,55 @@ const AccountsPayable: React.FC = () => {
 
         {/* Lista */}
         {loading ? (
-          <div className="text-center py-8 text-gray-600">
+          <div className="text-center py-8 text-neutral-600">
             Carregando...
           </div>
         ) : (
-          <div className="bg-white rounded-lg shadow overflow-hidden">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+          <div className="bg-white rounded-lg shadow overflow-hidden overflow-x-auto">
+            <table className="min-w-full divide-y divide-neutral-200" style={{ minWidth: '700px' }}>
+              <thead className="bg-neutral-50">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
                     Fornecedor
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
                     Descrição
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
                     Valor
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
                     Vencimento
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
                     Status
                   </th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                  <th className="px-4 py-3 text-right text-xs font-medium text-neutral-500 uppercase">
                     Ações
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white divide-y divide-neutral-200">
                 {accounts.map((account) => (
-                  <tr key={account.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 text-sm text-gray-900">
+                  <tr key={account.id} className="hover:bg-neutral-50">
+                    <td className="px-4 py-3 text-sm text-neutral-900">
                       {account.supplier}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
+                    <td className="px-4 py-3 text-sm text-neutral-600">
                       <div className="flex items-center gap-2">
                         {account.description}
                         {(account as any).isRecurring && (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800" title="Conta recorrente">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-primary-100 text-primary-800" title="Conta recorrente">
                             <Repeat size={16} className="mr-1" />
                             Recorrente
                           </span>
                         )}
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                    <td className="px-4 py-3 text-sm font-medium text-neutral-900">
                       {formatCurrency(account.amount)}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
+                    <td className="px-4 py-3 text-sm text-neutral-600">
                       {formatDate(account.dueDate)}
                     </td>
                     <td className="px-4 py-3">
@@ -427,7 +427,7 @@ const AccountsPayable: React.FC = () => {
             <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl my-8">
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                  <h2 className="text-2xl font-bold text-neutral-900 flex items-center gap-2">
                     <FileText size={28} className="text-primary-600" />
                     Gerar Extrato de Pagamentos
                   </h2>
@@ -437,17 +437,17 @@ const AccountsPayable: React.FC = () => {
                       setStatementData(null);
                       setStatementFilters({ startDate: '', endDate: '', category: '' });
                     }}
-                    className="text-gray-400 hover:text-gray-600"
+                    className="text-neutral-400 hover:text-neutral-600"
                   >
                     ✕
                   </button>
                 </div>
 
                 {/* Filters */}
-                <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                <div className="bg-neutral-50 rounded-lg p-4 mb-6">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-neutral-700 mb-2">
                         Data Início *
                       </label>
                       <input
@@ -459,7 +459,7 @@ const AccountsPayable: React.FC = () => {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-neutral-700 mb-2">
                         Data Fim *
                       </label>
                       <input
@@ -471,7 +471,7 @@ const AccountsPayable: React.FC = () => {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-neutral-700 mb-2">
                         Categoria
                       </label>
                       <select
@@ -493,7 +493,7 @@ const AccountsPayable: React.FC = () => {
                     <button
                       onClick={handleGenerateStatement}
                       disabled={generatingStatement}
-                      className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-purple-100 text-purple-700 border border-purple-200 hover:bg-purple-200 font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-primary-100 text-primary-700 border border-primary-200 hover:bg-primary-200 font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {generatingStatement ? 'Gerando...' : 'Visualizar Extrato'}
                     </button>
@@ -504,13 +504,13 @@ const AccountsPayable: React.FC = () => {
                 {statementData && (
                   <div className="space-y-6">
                     {/* Total Box */}
-                    <div className="bg-green-50 border border-primary-200 rounded-lg p-4">
+                    <div className="bg-success-50 border border-primary-200 rounded-lg p-4">
                       <div className="text-center">
-                        <p className="text-sm text-gray-600 mb-1">Total Pago no Período</p>
+                        <p className="text-sm text-neutral-600 mb-1">Total Pago no Período</p>
                         <p className="text-3xl font-bold text-primary-600">
                           {formatCurrency(statementData.total)}
                         </p>
-                        <p className="text-sm text-gray-500 mt-1">
+                        <p className="text-sm text-neutral-500 mt-1">
                           {statementData.count} pagamento{statementData.count !== 1 ? 's' : ''}
                         </p>
                       </div>
@@ -527,7 +527,7 @@ const AccountsPayable: React.FC = () => {
                       </button>
                       <button
                         onClick={handleExportCSV}
-                        className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-purple-100 text-purple-700 border border-purple-200 hover:bg-purple-200 font-medium rounded-lg transition-all duration-200"
+                        className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-primary-100 text-primary-700 border border-primary-200 hover:bg-primary-200 font-medium rounded-lg transition-all duration-200"
                       >
                         <Download size={20} />
                         Exportar CSV
@@ -536,49 +536,49 @@ const AccountsPayable: React.FC = () => {
 
                     {/* Payments Table */}
                     <div className="border border-gray-200 rounded-lg overflow-hidden">
-                      <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
+                      <table className="min-w-full divide-y divide-neutral-200">
+                        <thead className="bg-neutral-50">
                           <tr>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                            <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
                               Fornecedor
                             </th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                            <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
                               Descrição
                             </th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                            <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
                               Categoria
                             </th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                            <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
                               Valor
                             </th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                            <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
                               Data Pagamento
                             </th>
                           </tr>
                         </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
+                        <tbody className="bg-white divide-y divide-neutral-200">
                           {statementData.accounts.length === 0 ? (
                             <tr>
-                              <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
+                              <td colSpan={5} className="px-4 py-8 text-center text-neutral-500">
                                 Nenhum pagamento encontrado no período selecionado
                               </td>
                             </tr>
                           ) : (
                             statementData.accounts.map((account) => (
-                              <tr key={account.id} className="hover:bg-gray-50">
-                                <td className="px-4 py-3 text-sm text-gray-900">
+                              <tr key={account.id} className="hover:bg-neutral-50">
+                                <td className="px-4 py-3 text-sm text-neutral-900">
                                   {account.supplier}
                                 </td>
-                                <td className="px-4 py-3 text-sm text-gray-600">
+                                <td className="px-4 py-3 text-sm text-neutral-600">
                                   {account.description}
                                 </td>
-                                <td className="px-4 py-3 text-sm text-gray-600">
+                                <td className="px-4 py-3 text-sm text-neutral-600">
                                   {account.category || '-'}
                                 </td>
-                                <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                                <td className="px-4 py-3 text-sm font-medium text-neutral-900">
                                   {formatCurrency(account.amount)}
                                 </td>
-                                <td className="px-4 py-3 text-sm text-gray-600">
+                                <td className="px-4 py-3 text-sm text-neutral-600">
                                   {formatDate(account.paidDate || account.dueDate)}
                                 </td>
                               </tr>
@@ -591,7 +591,7 @@ const AccountsPayable: React.FC = () => {
                 )}
 
                 {!statementData && (
-                  <div className="text-center py-8 text-gray-500">
+                  <div className="text-center py-8 text-neutral-500">
                     Selecione o período e clique em "Visualizar Extrato" para gerar o relatório
                   </div>
                 )}
@@ -618,12 +618,12 @@ const AccountsPayable: React.FC = () => {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
               <div className="p-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                <h2 className="text-2xl font-bold text-neutral-900 mb-4">
                   {editingAccount ? 'Editar Conta' : 'Nova Conta'}
                 </h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">
                       Fornecedor *
                     </label>
                     <input
@@ -635,7 +635,7 @@ const AccountsPayable: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">
                       Descrição *
                     </label>
                     <input
@@ -647,7 +647,7 @@ const AccountsPayable: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">
                       Valor *
                     </label>
                     <input
@@ -660,7 +660,7 @@ const AccountsPayable: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">
                       Vencimento *
                     </label>
                     <input
@@ -672,7 +672,7 @@ const AccountsPayable: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">
                       Categoria
                     </label>
                     <input
@@ -692,16 +692,16 @@ const AccountsPayable: React.FC = () => {
                         id="isRecurring"
                         checked={formData.isRecurring}
                         onChange={(e) => setFormData({ ...formData, isRecurring: e.target.checked, recurrencePeriod: e.target.checked ? 'DAYS_30' : '' })}
-                        className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                        className="w-4 h-4 text-success-600 border-gray-300 rounded focus:ring-green-500"
                       />
-                      <label htmlFor="isRecurring" className="ml-2 text-sm font-medium text-gray-700">
+                      <label htmlFor="isRecurring" className="ml-2 text-sm font-medium text-neutral-700">
                         Conta Recorrente (criar automaticamente ao pagar)
                       </label>
                     </div>
 
                     {formData.isRecurring && (
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-neutral-700 mb-1">
                           Período de Recorrência *
                         </label>
                         <select
@@ -716,7 +716,7 @@ const AccountsPayable: React.FC = () => {
                           <option value="MONTHS_6">A cada 6 meses (semestral)</option>
                           <option value="YEAR_1">A cada 1 ano (anual)</option>
                         </select>
-                        <p className="mt-1 text-xs text-gray-500">
+                        <p className="mt-1 text-xs text-neutral-500">
                           Ao marcar como paga, uma nova conta será criada automaticamente para o próximo período
                         </p>
                       </div>

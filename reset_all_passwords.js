@@ -4,7 +4,7 @@ async function main() {
   const passwords = [
     {
       email: 'appadvwell@gmail.com',
-      password: 'Contadeva123!',
+      password: 'REMOVED_CREDENTIAL',
       name: 'Super Admin - AdvWell'
     },
     {

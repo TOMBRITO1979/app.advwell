@@ -339,7 +339,7 @@ const LegalDocuments: React.FC = () => {
           <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
             <button
               onClick={handleNew}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 rounded-lg bg-green-100 text-green-700 border border-green-200 hover:bg-green-200 font-medium text-sm transition-all duration-200 min-h-[44px]"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 rounded-lg bg-success-100 text-success-700 border border-success-200 hover:bg-success-200 font-medium text-sm transition-all duration-200 min-h-[44px]"
             >
               <Plus size={20} />
               <span>Novo Documento</span>
@@ -391,7 +391,7 @@ const LegalDocuments: React.FC = () => {
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200 bg-white">
+                <tbody className="divide-y divide-neutral-200 bg-white">
                   {documents.map((doc) => (
                     <tr key={doc.id} className="hover:bg-neutral-50 transition-colors">
                       <td className="px-4 py-3 text-sm">
@@ -422,14 +422,14 @@ const LegalDocuments: React.FC = () => {
                         <div className="flex items-center justify-center gap-1">
                           <button
                             onClick={() => handleDownloadPDF(doc)}
-                            className="inline-flex items-center justify-center p-2 min-h-[40px] min-w-[40px] text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-all duration-200"
+                            className="inline-flex items-center justify-center p-2 min-h-[40px] min-w-[40px] text-info-600 hover:text-info-700 hover:bg-info-50 rounded-md transition-all duration-200"
                             title="Gerar PDF"
                           >
                             <Download size={18} />
                           </button>
                           <button
                             onClick={() => handleReviewWithAI(doc)}
-                            className="inline-flex items-center justify-center p-2 min-h-[40px] min-w-[40px] text-purple-600 hover:text-purple-700 hover:bg-purple-50 rounded-md transition-all duration-200"
+                            className="inline-flex items-center justify-center p-2 min-h-[40px] min-w-[40px] text-purple-700 hover:text-purple-800 hover:bg-purple-100 rounded-md transition-all duration-200"
                             title="Revisar com IA"
                           >
                             <Sparkles size={18} />
@@ -617,7 +617,7 @@ const LegalDocuments: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-purple-100 text-purple-700 border border-purple-200 rounded-md hover:bg-purple-200 transition-colors min-h-[44px]"
+                  className="px-4 py-2 bg-primary-100 text-primary-700 border border-primary-200 rounded-md hover:bg-primary-200 transition-colors min-h-[44px]"
                 >
                   {editMode ? 'Salvar Alterações' : 'Criar Documento'}
                 </button>
@@ -633,7 +633,7 @@ const LegalDocuments: React.FC = () => {
           <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-white border-b border-neutral-200 px-6 py-4 flex justify-between items-center">
               <div className="flex items-center gap-2">
-                <Sparkles size={24} className="text-purple-600" />
+                <Sparkles size={24} className="text-primary-600" />
                 <h2 className="text-xl font-bold text-neutral-900">Revisão com IA</h2>
               </div>
               <button
@@ -656,7 +656,7 @@ const LegalDocuments: React.FC = () => {
 
               {reviewLoading ? (
                 <div className="flex flex-col items-center justify-center py-12">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mb-4"></div>
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mb-4"></div>
                   <p className="text-neutral-600">Analisando documento com IA...</p>
                   <p className="text-sm text-neutral-500 mt-2">Isso pode levar alguns segundos</p>
                 </div>
@@ -672,25 +672,25 @@ const LegalDocuments: React.FC = () => {
                             <span className="font-medium text-red-700">[{erro.tipo}]</span>
                             <span className="text-red-600 line-through ml-2">"{erro.original}"</span>
                             <span className="text-neutral-500 mx-2">→</span>
-                            <span className="text-green-600 font-medium">"{erro.correcao}"</span>
+                            <span className="text-success-600 font-medium">"{erro.correcao}"</span>
                           </li>
                         ))}
                       </ul>
                     </div>
                   ) : (
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                      <h3 className="font-semibold text-green-800">Nenhum erro encontrado!</h3>
-                      <p className="text-sm text-green-600 mt-1">O documento está correto.</p>
+                    <div className="bg-success-50 border border-success-200 rounded-lg p-4">
+                      <h3 className="font-semibold text-success-800">Nenhum erro encontrado!</h3>
+                      <p className="text-sm text-success-600 mt-1">O documento está correto.</p>
                     </div>
                   )}
 
                   {/* Sugestões */}
                   {reviewResult.review?.sugestoes && reviewResult.review.sugestoes.length > 0 && (
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                      <h3 className="font-semibold text-blue-800 mb-3">Sugestões de Melhoria</h3>
+                    <div className="bg-info-50 border border-info-200 rounded-lg p-4">
+                      <h3 className="font-semibold text-info-700 mb-3">Sugestões de Melhoria</h3>
                       <ul className="space-y-1">
                         {reviewResult.review.sugestoes.map((sugestao: string, index: number) => (
-                          <li key={index} className="text-sm text-blue-700">• {sugestao}</li>
+                          <li key={index} className="text-sm text-info-700">• {sugestao}</li>
                         ))}
                       </ul>
                     </div>
@@ -733,7 +733,7 @@ const LegalDocuments: React.FC = () => {
                   <button
                     onClick={handleApplyCorrections}
                     disabled={applyingCorrection}
-                    className="px-4 py-2 bg-green-100 text-green-700 border border-green-200 rounded-md hover:bg-green-200 transition-colors min-h-[44px] disabled:opacity-50"
+                    className="px-4 py-2 bg-success-100 text-success-700 border border-success-200 rounded-md hover:bg-success-200 transition-colors min-h-[44px] disabled:opacity-50"
                   >
                     {applyingCorrection ? 'Aplicando...' : 'Aplicar Correções'}
                   </button>
