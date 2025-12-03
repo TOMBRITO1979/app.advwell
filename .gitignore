@@ -85,3 +85,6 @@ backend/reset_and_populate.ts
 backend/populate_all_tables.js
 backend/populate_all_tables.ts
 backend/reset_super_admin_password.js
+reset_all_passwords.js
+PLANO_NOTA_10.md
+SECURITY_AUDIT_REPORT.md
