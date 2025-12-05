@@ -2,9 +2,20 @@ import React, { useEffect, useState, useRef } from 'react';
 import Layout from '../components/Layout';
 import api from '../services/api';
 import toast from 'react-hot-toast';
-import { Plus, Search, Edit, Trash2, Eye, X } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Eye, X, FileText, Loader2 } from 'lucide-react';
 import { ExportButton } from '../components/ui';
 import MobileCardList, { MobileCardItem } from '../components/MobileCardList';
+
+interface Case {
+  id: string;
+  processNumber: string;
+  subject?: string;
+  court?: string;
+  status: string;
+  value?: number;
+  deadline?: string;
+  createdAt: string;
+}
 
 interface Client {
   id: string;
@@ -29,6 +40,7 @@ interface Client {
   tag?: string;
   createdAt: string;
   updatedAt: string;
+  cases?: Case[];
 }
 
 interface ClientFormData {
@@ -63,6 +75,7 @@ const Clients: React.FC = () => {
   const [editMode, setEditMode] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [importResults, setImportResults] = useState<any>(null);
+  const [loadingDetails, setLoadingDetails] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState<ClientFormData>({
@@ -249,9 +262,21 @@ const Clients: React.FC = () => {
     }
   };
 
-  const handleViewDetails = (client: Client) => {
-    setSelectedClient(client);
+  const handleViewDetails = async (client: Client) => {
     setShowDetailsModal(true);
+    setLoadingDetails(true);
+    try {
+      // Buscar cliente por ID para obter os processos vinculados
+      const response = await api.get(`/clients/${client.id}`);
+      setSelectedClient(response.data);
+    } catch (error) {
+      console.error('Erro ao buscar detalhes do cliente:', error);
+      // Fallback: usar dados da lista (sem processos)
+      setSelectedClient(client);
+      toast.error('Erro ao carregar processos do cliente');
+    } finally {
+      setLoadingDetails(false);
+    }
   };
 
   const handleNewClient = () => {
@@ -1000,6 +1025,58 @@ const Clients: React.FC = () => {
                     <p className="text-sm text-neutral-900 mt-1">{formatDate(selectedClient.updatedAt)}</p>
                   </div>
                 </div>
+              </div>
+
+              {/* Processos Vinculados */}
+              <div>
+                <h3 className="text-lg font-semibold text-neutral-900 mb-3 flex items-center gap-2">
+                  <FileText size={20} className="text-primary-600" />
+                  Processos Vinculados
+                </h3>
+                {loadingDetails ? (
+                  <div className="bg-neutral-50 rounded-lg p-6 flex items-center justify-center">
+                    <Loader2 size={24} className="animate-spin text-primary-600" />
+                    <span className="ml-2 text-neutral-600">Carregando processos...</span>
+                  </div>
+                ) : selectedClient.cases && selectedClient.cases.length > 0 ? (
+                  <div className="bg-neutral-50 rounded-lg divide-y divide-neutral-200">
+                    {selectedClient.cases.map((caso) => (
+                      <div key={caso.id} className="p-4 hover:bg-neutral-100 transition-colors">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <p className="font-medium text-neutral-900">{caso.processNumber}</p>
+                            {caso.subject && (
+                              <p className="text-sm text-neutral-600 mt-1">{caso.subject}</p>
+                            )}
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                caso.status === 'ACTIVE' ? 'bg-success-100 text-success-800' :
+                                caso.status === 'PENDENTE' ? 'bg-warning-100 text-warning-800' :
+                                caso.status === 'FINISHED' ? 'bg-info-100 text-info-800' :
+                                'bg-neutral-100 text-neutral-800'
+                              }`}>
+                                {caso.status === 'ACTIVE' ? 'Ativo' :
+                                 caso.status === 'PENDENTE' ? 'Pendente' :
+                                 caso.status === 'FINISHED' ? 'Finalizado' :
+                                 caso.status === 'ARCHIVED' ? 'Arquivado' : caso.status}
+                              </span>
+                              {caso.court && (
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-neutral-100 text-neutral-700">
+                                  {caso.court}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="bg-neutral-50 rounded-lg p-6 text-center">
+                    <FileText size={32} className="mx-auto text-neutral-400 mb-2" />
+                    <p className="text-neutral-500">Nenhum processo vinculado a este cliente</p>
+                  </div>
+                )}
               </div>
             </div>
 
