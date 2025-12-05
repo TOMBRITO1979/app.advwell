@@ -14,7 +14,7 @@ router.use(authenticate, validateTenant);
 const createValidation = [
   body('title').trim().notEmpty().withMessage('Título é obrigatório').isLength({ max: 200 }).withMessage('Título muito longo'),
   body('type').isIn(['COMPROMISSO', 'TAREFA', 'PRAZO', 'AUDIENCIA', 'GOOGLE_MEET']).withMessage('Tipo inválido'),
-  body('startDate').isISO8601().withMessage('Data de início inválida'),
+  body('date').isISO8601().withMessage('Data é obrigatória e deve ser válida'),
   body('endDate').optional({ nullable: true }).isISO8601().withMessage('Data de fim inválida'),
   body('clientId').optional({ nullable: true }).isUUID().withMessage('ID do cliente inválido'),
   body('caseId').optional({ nullable: true }).isUUID().withMessage('ID do caso inválido'),
@@ -25,7 +25,7 @@ const updateValidation = [
   param('id').isUUID().withMessage('ID inválido'),
   body('title').optional().trim().notEmpty().withMessage('Título não pode ser vazio').isLength({ max: 200 }),
   body('type').optional().isIn(['COMPROMISSO', 'TAREFA', 'PRAZO', 'AUDIENCIA', 'GOOGLE_MEET']).withMessage('Tipo inválido'),
-  body('startDate').optional().isISO8601().withMessage('Data de início inválida'),
+  body('date').optional().isISO8601().withMessage('Data inválida'),
   body('endDate').optional({ nullable: true }).isISO8601().withMessage('Data de fim inválida'),
   validate,
 ];
