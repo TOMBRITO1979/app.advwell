@@ -191,7 +191,7 @@ services:
         - "traefik.docker.network=network_public"
 
   frontend:
-    image: tomautomations/advwell-frontend:v126-schedule-case-filter
+    image: tomautomations/advwell-frontend:v128-timezone-fix
     environment:
       - TZ=${TZ:-America/Sao_Paulo}
       - VITE_API_URL=${VITE_API_URL}
