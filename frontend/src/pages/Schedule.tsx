@@ -754,19 +754,22 @@ const Schedule: React.FC = () => {
                           <div
                             key={client.id}
                             onClick={async () => {
+                              const isChangingClient = !selectedClient || selectedClient.id !== client.id;
                               setSelectedClient(client);
                               setClientSearchTerm(client.name);
                               setShowClientSuggestions(false);
-                              // Limpar processo selecionado ao mudar de cliente
-                              setSelectedCase(null);
-                              setCaseSearchTerm('');
-                              setCaseSuggestions([]);
-                              // Carregar processos do cliente automaticamente
-                              try {
-                                const response = await api.get('/cases/search', { params: { clientId: client.id } });
-                                setCaseSuggestions(response.data);
-                              } catch (error) {
-                                console.error('Erro ao carregar processos do cliente:', error);
+                              // Só limpar processo se estiver MUDANDO de cliente
+                              if (isChangingClient) {
+                                setSelectedCase(null);
+                                setCaseSearchTerm('');
+                                setCaseSuggestions([]);
+                                // Carregar processos do novo cliente
+                                try {
+                                  const response = await api.get('/cases/search', { params: { clientId: client.id } });
+                                  setCaseSuggestions(response.data);
+                                } catch (error) {
+                                  console.error('Erro ao carregar processos do cliente:', error);
+                                }
                               }
                             }}
                             className="px-4 py-2 hover:bg-neutral-100 cursor-pointer min-h-[44px]"
