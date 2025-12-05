@@ -100,11 +100,18 @@ const ToDo: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      // Adicionar hora 12:00 para evitar problema de fuso horário
+      // Quando apenas a data é enviada (YYYY-MM-DD), o JS interpreta como UTC meia-noite
+      // o que pode resultar em um dia anterior quando convertido para o fuso local
+      const dateWithTime = formData.dueDate
+        ? `${formData.dueDate}T12:00:00`
+        : new Date().toISOString();
+
       const data = {
         ...formData,
         type: 'TAREFA',
-        date: formData.dueDate || new Date().toISOString(),
-        startDate: formData.dueDate,
+        date: dateWithTime,
+        startDate: dateWithTime,
         completed: false,
         assignedUserIds: selectedUserIds,
       };

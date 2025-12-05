@@ -4,7 +4,8 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { config } from './config';
 import routes from './routes';
-import stripeWebhookRoutes from './routes/stripe-webhook.routes';
+// Temporariamente desabilitado - aguardando schema Prisma
+// import stripeWebhookRoutes from './routes/stripe-webhook.routes';
 import cron from 'node-cron';
 import prisma from './utils/prisma';
 import { redis, cache } from './utils/redis';
@@ -118,7 +119,7 @@ app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/register', authLimiter);
 
 // Stripe webhook (must be BEFORE express.json() to receive raw body)
-app.use('/api/stripe-webhook', stripeWebhookRoutes);
+// app.use('/api/stripe-webhook', stripeWebhookRoutes);
 
 // Body parser com limite de tamanho
 app.use(express.json({ limit: '10mb' }));

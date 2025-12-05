@@ -8,6 +8,15 @@ import { AIService } from '../services/ai/ai.service';
 import { sendCaseUpdateNotification } from '../utils/email';
 import AuditService from '../services/audit.service';
 
+// Função para corrigir timezone de datas (evita que dia 06 vire dia 05)
+function fixDateTimezone(dateString: string): Date {
+  // Se a data vier como YYYY-MM-DD, adiciona horário meio-dia para evitar problemas de timezone
+  const date = new Date(dateString);
+  // Ajusta para meio-dia no timezone local
+  date.setHours(12, 0, 0, 0);
+  return date;
+}
+
 // Função utilitária para formatar o último movimento
 function getUltimoAndamento(movimentos: any[]): string | null {
   if (!movimentos || movimentos.length === 0) return null;
@@ -22,6 +31,85 @@ function getUltimoAndamento(movimentos: any[]): string | null {
   return `${ultimo.nome} - ${data}`;
 }
 
+// Função para criar/atualizar evento de prazo na agenda
+async function syncDeadlineToSchedule(
+  caseId: string,
+  companyId: string,
+  deadline: Date | null,
+  processNumber: string,
+  clientId: string,
+  createdBy: string,
+  deadlineResponsibleId?: string | null
+): Promise<void> {
+  try {
+    // Buscar evento existente vinculado a este processo com tipo PRAZO
+    const existingEvent = await prisma.scheduleEvent.findFirst({
+      where: {
+        caseId,
+        companyId,
+        type: 'PRAZO',
+      },
+    });
+
+    if (deadline) {
+      // Adicionar hora 12:00 para evitar problema de fuso horário
+      const deadlineWithTime = new Date(deadline);
+      deadlineWithTime.setHours(12, 0, 0, 0);
+
+      if (existingEvent) {
+        // Atualizar evento existente
+        await prisma.scheduleEvent.update({
+          where: { id: existingEvent.id },
+          data: {
+            date: deadlineWithTime,
+            title: `Prazo: ${processNumber}`,
+            // Atualizar usuário atribuído se houver responsável pelo prazo
+            ...(deadlineResponsibleId !== undefined && {
+              assignedUsers: {
+                deleteMany: {},
+                ...(deadlineResponsibleId && {
+                  create: [{ userId: deadlineResponsibleId }],
+                }),
+              },
+            }),
+          },
+        });
+      } else {
+        // Criar novo evento
+        await prisma.scheduleEvent.create({
+          data: {
+            companyId,
+            title: `Prazo: ${processNumber}`,
+            type: 'PRAZO',
+            priority: 'ALTA',
+            date: deadlineWithTime,
+            caseId,
+            clientId,
+            createdBy,
+            completed: false,
+            // Adicionar usuário atribuído se houver responsável pelo prazo
+            ...(deadlineResponsibleId && {
+              assignedUsers: {
+                create: [{ userId: deadlineResponsibleId }],
+              },
+            }),
+          },
+        });
+      }
+    } else {
+      // Se o prazo foi removido, excluir o evento
+      if (existingEvent) {
+        await prisma.scheduleEvent.delete({
+          where: { id: existingEvent.id },
+        });
+      }
+    }
+  } catch (error) {
+    console.error('Erro ao sincronizar prazo com agenda:', error);
+    // Não lança erro para não interromper o fluxo principal
+  }
+}
+
 export class CaseController {
 
   async create(req: AuthRequest, res: Response) {
@@ -32,7 +120,7 @@ export class CaseController {
       // Converter strings vazias em null/undefined
       const cleanValue = value === '' || value === null || value === undefined ? undefined : parseFloat(value);
       const cleanLinkProcesso = linkProcesso === '' ? null : linkProcesso;
-      const cleanDeadline = deadline && deadline !== '' ? new Date(deadline) : undefined;
+      const cleanDeadline = deadline && deadline !== '' ? fixDateTimezone(deadline) : undefined;
       const cleanStatus = status || 'ACTIVE';
 
       if (!companyId) {
@@ -292,7 +380,7 @@ export class CaseController {
       }
 
       // Converter deadline se fornecido (null para limpar o campo)
-      const cleanDeadline = deadline && deadline !== '' ? new Date(deadline) : null;
+      const cleanDeadline = deadline && deadline !== '' ? fixDateTimezone(deadline) : null;
 
       // Sanitiza informarCliente se fornecido
       const sanitizedInformarCliente = informarCliente !== undefined ? sanitizeString(informarCliente) : undefined;
@@ -369,6 +457,19 @@ export class CaseController {
             newResponsibleName
           );
         }
+      }
+
+      // Sincronizar prazo com a agenda se o prazo foi alterado
+      if (deadline !== undefined) {
+        await syncDeadlineToSchedule(
+          id,
+          companyId!,
+          cleanDeadline,
+          caseData.processNumber,
+          caseData.clientId,
+          req.user!.userId,
+          deadlineResponsibleId !== undefined ? deadlineResponsibleId : caseData.deadlineResponsibleId
+        );
       }
 
       // Enviar email ao cliente se informarCliente foi atualizado e não está vazio
@@ -1043,11 +1144,14 @@ export class CaseController {
         return res.status(404).json({ error: 'Processo não encontrado' });
       }
 
+      // Corrigir timezone da deadline (evita que dia 06 vire dia 05)
+      const fixedDeadline = deadline ? fixDateTimezone(deadline) : null;
+
       // Atualizar prazo
       const updatedCase = await prisma.case.update({
         where: { id },
         data: {
-          deadline: deadline ? new Date(deadline) : null,
+          deadline: fixedDeadline,
           deadlineResponsibleId: deadlineResponsibleId || null,
           // Se o prazo mudou, resetar o status de cumprido
           deadlineCompleted: false,
@@ -1070,6 +1174,17 @@ export class CaseController {
           },
         },
       });
+
+      // Sincronizar prazo com a agenda
+      await syncDeadlineToSchedule(
+        id,
+        companyId,
+        fixedDeadline,
+        caseData.processNumber,
+        caseData.clientId,
+        req.user!.userId,
+        deadlineResponsibleId || null
+      );
 
       res.json(updatedCase);
     } catch (error) {

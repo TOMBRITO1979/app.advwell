@@ -123,6 +123,39 @@ const Schedule: React.FC = () => {
     URGENTE: 'bg-red-100 text-red-800',
   };
 
+  // Função para ordenar eventos: hoje primeiro, depois futuros, por último passados
+  const sortEventsByDate = (eventsToSort: ScheduleEvent[]): ScheduleEvent[] => {
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
+
+    return [...eventsToSort].sort((a, b) => {
+      const dateA = new Date(a.date);
+      const dateB = new Date(b.date);
+
+      const isAToday = dateA >= todayStart && dateA < todayEnd;
+      const isBToday = dateB >= todayStart && dateB < todayEnd;
+      const isAFuture = dateA >= todayEnd;
+      const isBFuture = dateB >= todayEnd;
+      const isAPast = dateA < todayStart;
+      const isBPast = dateB < todayStart;
+
+      // Prioridade: Hoje > Futuro > Passado
+      if (isAToday && !isBToday) return -1;
+      if (!isAToday && isBToday) return 1;
+      if (isAFuture && isBPast) return -1;
+      if (isAPast && isBFuture) return 1;
+
+      // Dentro da mesma categoria, ordenar por data
+      // Hoje e Futuro: ordem crescente (mais próximo primeiro)
+      // Passado: ordem decrescente (mais recente primeiro)
+      if (isAPast && isBPast) {
+        return dateB.getTime() - dateA.getTime(); // Mais recente primeiro
+      }
+      return dateA.getTime() - dateB.getTime(); // Mais próximo primeiro
+    });
+  };
+
   useEffect(() => {
     fetchEvents();
     fetchCompanyUsers();
@@ -172,7 +205,9 @@ const Schedule: React.FC = () => {
       if (filterCompleted) params.completed = filterCompleted;
 
       const response = await api.get('/schedule', { params });
-      setEvents(response.data.data);
+      // Ordenar eventos: hoje primeiro, depois futuros, por último passados
+      const sortedEvents = sortEventsByDate(response.data.data);
+      setEvents(sortedEvents);
     } catch (error) {
       console.error('Erro ao buscar eventos:', error);
       toast.error('Erro ao carregar eventos');
