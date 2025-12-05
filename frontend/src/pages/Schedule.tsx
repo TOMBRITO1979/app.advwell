@@ -286,15 +286,15 @@ const Schedule: React.FC = () => {
     }
   };
 
-  const handleEdit = (event: ScheduleEvent) => {
+  const handleEdit = async (event: ScheduleEvent) => {
     setEditingEvent(event);
     setFormData({
       title: event.title,
       description: event.description || '',
       type: event.type,
       priority: event.priority || 'MEDIA',
-      date: event.date.split('T')[0] + 'T' + event.date.split('T')[1].substring(0, 5),
-      endDate: event.endDate ? event.endDate.split('T')[0] + 'T' + event.endDate.split('T')[1].substring(0, 5) : '',
+      date: utcToDatetimeLocal(event.date),
+      endDate: event.endDate ? utcToDatetimeLocal(event.endDate) : '',
       clientId: event.client?.id || '',
       caseId: event.case?.id || '',
       assignedUserIds: [],
@@ -303,6 +303,13 @@ const Schedule: React.FC = () => {
     if (event.client) {
       setSelectedClient(event.client);
       setClientSearchTerm(event.client.name);
+      // Carregar processos do cliente para manter o dropdown funcional
+      try {
+        const response = await api.get('/cases/search', { params: { clientId: event.client.id } });
+        setCaseSuggestions(response.data);
+      } catch (error) {
+        console.error('Erro ao carregar processos do cliente:', error);
+      }
     }
     if (event.case) {
       setSelectedCase(event.case);
@@ -386,6 +393,28 @@ const Schedule: React.FC = () => {
       hour: '2-digit',
       minute: '2-digit',
     });
+  };
+
+  // Converte data UTC para formato datetime-local no timezone de São Paulo
+  const utcToDatetimeLocal = (dateString: string): string => {
+    const date = new Date(dateString);
+    // Formata a data no timezone de São Paulo
+    const options: Intl.DateTimeFormatOptions = {
+      timeZone: 'America/Sao_Paulo',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    };
+    const parts = new Intl.DateTimeFormat('pt-BR', options).formatToParts(date);
+    const values: Record<string, string> = {};
+    parts.forEach(part => {
+      values[part.type] = part.value;
+    });
+    // Formato datetime-local: YYYY-MM-DDTHH:MM
+    return `${values.year}-${values.month}-${values.day}T${values.hour}:${values.minute}`;
   };
 
   return (
