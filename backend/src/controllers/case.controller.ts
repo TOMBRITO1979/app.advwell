@@ -970,10 +970,11 @@ export class CaseController {
   }
 
   // Busca rápida para autocomplete (apenas campos essenciais)
+  // Suporta filtro opcional por clientId para mostrar apenas processos do cliente
   async search(req: AuthRequest, res: Response) {
     try {
       const companyId = req.user!.companyId;
-      const { q = '' } = req.query;
+      const { q = '', clientId = '' } = req.query;
 
       if (!companyId) {
         return res.status(403).json({ error: 'Usuário não possui empresa associada' });
@@ -982,6 +983,9 @@ export class CaseController {
       const cases = await prisma.case.findMany({
         where: {
           companyId,
+          // Filtro por cliente (se fornecido)
+          ...(clientId && { clientId: String(clientId) }),
+          // Filtro por texto (se fornecido)
           ...(q && {
             OR: [
               { processNumber: { contains: String(q) } },

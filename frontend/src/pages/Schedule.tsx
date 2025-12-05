@@ -228,7 +228,12 @@ const Schedule: React.FC = () => {
 
   const searchCases = async (query: string) => {
     try {
-      const response = await api.get('/cases/search', { params: { q: query } });
+      // Se um cliente está selecionado, buscar apenas processos desse cliente
+      const params: any = { q: query };
+      if (selectedClient) {
+        params.clientId = selectedClient.id;
+      }
+      const response = await api.get('/cases/search', { params });
       setCaseSuggestions(response.data);
       setShowCaseSuggestions(true);
     } catch (error) {
@@ -718,10 +723,21 @@ const Schedule: React.FC = () => {
                         {clientSuggestions.map((client) => (
                           <div
                             key={client.id}
-                            onClick={() => {
+                            onClick={async () => {
                               setSelectedClient(client);
                               setClientSearchTerm(client.name);
                               setShowClientSuggestions(false);
+                              // Limpar processo selecionado ao mudar de cliente
+                              setSelectedCase(null);
+                              setCaseSearchTerm('');
+                              setCaseSuggestions([]);
+                              // Carregar processos do cliente automaticamente
+                              try {
+                                const response = await api.get('/cases/search', { params: { clientId: client.id } });
+                                setCaseSuggestions(response.data);
+                              } catch (error) {
+                                console.error('Erro ao carregar processos do cliente:', error);
+                              }
                             }}
                             className="px-4 py-2 hover:bg-neutral-100 cursor-pointer min-h-[44px]"
                           >
@@ -742,19 +758,29 @@ const Schedule: React.FC = () => {
                   <div className="relative">
                     <label className="block text-sm font-medium text-neutral-700 mb-1">
                       Processo {formData.type === 'AUDIENCIA' ? '*' : '(opcional)'}
+                      {selectedClient && caseSuggestions.length > 0 && !selectedCase && (
+                        <span className="ml-2 text-xs text-info-600">
+                          ({caseSuggestions.length} processo{caseSuggestions.length > 1 ? 's' : ''} do cliente)
+                        </span>
+                      )}
                     </label>
                     <input
                       type="text"
                       value={caseSearchTerm}
                       onChange={(e) => setCaseSearchTerm(e.target.value)}
-                      onFocus={() => setShowCaseSuggestions(true)}
+                      onFocus={() => {
+                        // Mostrar sugestões ao focar se há processos carregados
+                        if (caseSuggestions.length > 0 || caseSearchTerm) {
+                          setShowCaseSuggestions(true);
+                        }
+                      }}
                       onBlur={() => setTimeout(() => setShowCaseSuggestions(false), 200)}
                       className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] ${
                         formData.type === 'AUDIENCIA' && !selectedCase
                           ? 'border-red-300 bg-red-50'
                           : 'border-gray-300'
                       }`}
-                      placeholder="Digite o número ou assunto do processo..."
+                      placeholder={selectedClient ? 'Selecione ou digite para buscar...' : 'Selecione um cliente primeiro...'}
                     />
                     {showCaseSuggestions && caseSuggestions.length > 0 && (
                       <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
@@ -772,6 +798,11 @@ const Schedule: React.FC = () => {
                             <div className="text-sm text-neutral-500">{caseItem.subject}</div>
                           </div>
                         ))}
+                      </div>
+                    )}
+                    {selectedClient && caseSuggestions.length === 0 && !selectedCase && showCaseSuggestions && (
+                      <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg p-3 text-sm text-neutral-500">
+                        Nenhum processo vinculado a este cliente
                       </div>
                     )}
                     {selectedCase && (
