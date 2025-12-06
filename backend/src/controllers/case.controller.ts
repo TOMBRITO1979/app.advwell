@@ -8,13 +8,14 @@ import { AIService } from '../services/ai/ai.service';
 import { sendCaseUpdateNotification } from '../utils/email';
 import AuditService from '../services/audit.service';
 
-// Função para corrigir timezone de datas (evita que dia 06 vire dia 05)
+// Função para corrigir timezone de datas (evita que dia 31 vire dia 30)
 function fixDateTimezone(dateString: string): Date {
-  // Se a data vier como YYYY-MM-DD, adiciona horário meio-dia para evitar problemas de timezone
-  const date = new Date(dateString);
-  // Ajusta para meio-dia no timezone local
-  date.setHours(12, 0, 0, 0);
-  return date;
+  // Extrai partes da data para evitar problemas de timezone
+  // new Date("2025-12-31") interpreta como UTC meia-noite, que no Brasil (UTC-3) é dia anterior
+  // Solução: extrair ano/mês/dia e criar Date no fuso local
+  const [year, month, day] = dateString.split('T')[0].split('-').map(Number);
+  // Cria a data com meio-dia no timezone local para evitar edge cases
+  return new Date(year, month - 1, day, 12, 0, 0, 0);
 }
 
 // Função utilitária para formatar o último movimento
