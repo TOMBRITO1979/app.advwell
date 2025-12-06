@@ -104,10 +104,12 @@ const AIConfigPage: React.FC = () => {
 
     setTesting(true);
     try {
-      const endpoint = hasConfig ? '/ai-config/test' : '/ai-config/test-provider';
-      const data = hasConfig
-        ? {}
-        : { provider: config.provider, apiKey, model: config.model };
+      // Se o usuário digitou uma API Key, sempre usa ela para testar (mais confiável)
+      // Se não digitou mas tem config existente, tenta usar a chave armazenada
+      const endpoint = apiKey ? '/ai-config/test-provider' : '/ai-config/test';
+      const data = apiKey
+        ? { provider: config.provider, apiKey, model: config.model }
+        : {};
 
       const response = await api.post(endpoint, data);
       toast.success(response.data.message);
