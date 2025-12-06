@@ -1197,6 +1197,40 @@ export class CaseController {
     }
   }
 
+  // Excluir processo
+  async delete(req: AuthRequest, res: Response) {
+    try {
+      const { id } = req.params;
+      const companyId = req.user!.companyId;
+
+      if (!companyId) {
+        return res.status(403).json({ error: 'Usuário não possui empresa associada' });
+      }
+
+      // Verificar se o processo pertence à empresa
+      const caseData = await prisma.case.findFirst({
+        where: {
+          id,
+          companyId,
+        },
+      });
+
+      if (!caseData) {
+        return res.status(404).json({ error: 'Processo não encontrado' });
+      }
+
+      // Excluir o processo (as relações com onDelete: Cascade serão excluídas automaticamente)
+      await prisma.case.delete({
+        where: { id },
+      });
+
+      res.json({ message: 'Processo excluído com sucesso' });
+    } catch (error) {
+      console.error('Erro ao excluir processo:', error);
+      res.status(500).json({ error: 'Erro ao excluir processo' });
+    }
+  }
+
   // Buscar logs de auditoria de um processo
   async getAuditLogs(req: AuthRequest, res: Response) {
     try {

@@ -131,6 +131,7 @@ router.get('/updates', caseController.getPendingUpdates); // Lista atualizaçõe
 router.get('/:id/audit-logs', caseController.getAuditLogs); // Busca logs de auditoria
 router.get('/:id', caseController.get);
 router.put('/:id', updateCaseValidation, validate, caseController.update);
+router.delete('/:id', caseController.delete); // Excluir processo
 router.post('/:id/sync', caseController.syncMovements);
 router.post('/:id/generate-summary', caseController.generateSummary); // Gera resumo com IA
 router.post('/:id/acknowledge', caseController.acknowledgeUpdate); // Marca como ciente
