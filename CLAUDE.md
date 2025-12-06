@@ -1,6 +1,6 @@
-# CLAUDE.md - AdvWell Technical Reference
+# CLAUDE.md
 
-Technical guide for Claude Code when working with this repository.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
 
@@ -11,9 +11,11 @@ AdvWell is a multitenant SaaS for Brazilian law firms with DataJud CNJ integrati
 - Backend API: https://api.advwell.pro
 
 **Current Versions:**
-- Backend: v66-audit-logs - Case audit logging system with comprehensive action tracking
-- Frontend: v91-chatwoot-typography - Improved typography with Inter font and Chatwoot color scheme
+- Backend: Check `docker-compose.yml` for current image tag (format: `tomautomations/advwell-backend:vXX-description`)
+- Frontend: Check `docker-compose.yml` for current image tag (format: `tomautomations/advwell-frontend:vXX-description`)
 - Database: PostgreSQL 16 (with CaseAuditLog table for complete audit trail)
+
+**Note:** Some Stripe-related controllers are disabled and moved to `backend/_disabled/` - these are not currently in use.
 
 **Production Configuration (100+ Companies Ready):**
 - **Horizontal Scaling:** Backend 3 replicas, Frontend 2 replicas (Docker Swarm)
@@ -209,11 +211,11 @@ docker service logs advtom_backend -f | grep -i integration
 ```bash
 cd backend
 npm install
-npm run dev                    # Start dev server with hot reload
-npm run build                  # Compile TypeScript
-npm start                      # Run compiled code
+npm run dev                    # Start dev server with hot reload (tsx watch)
+npm run build                  # Compile TypeScript (also checks for errors)
+npm start                      # Run compiled code (dist/index.js)
 npm run prisma:generate        # Generate Prisma client
-npm run prisma:migrate         # Run migrations
+npm run prisma:migrate         # Run migrations (prisma migrate deploy)
 npm run prisma:studio          # Open Prisma Studio GUI
 ```
 
@@ -222,8 +224,15 @@ npm run prisma:studio          # Open Prisma Studio GUI
 cd frontend
 npm install
 npm run dev                    # Start Vite dev server (port 5173)
-npm run build                  # Build for production
+npm run build                  # TypeScript check + Vite build (tsc && vite build)
 npm run preview                # Preview production build
+```
+
+### Type Checking
+```bash
+# Check for TypeScript errors without building
+cd backend && npx tsc --noEmit
+cd frontend && npx tsc --noEmit
 ```
 
 ### Testing & Verification
@@ -805,6 +814,7 @@ Critical variables in docker-compose.yml:
 - `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD` - Email configuration (default system-wide)
 - `DATAJUD_API_KEY` - CNJ DataJud API access
 - `API_URL`, `FRONTEND_URL` - Service URLs for CORS and email links
+- `TZ` - Timezone (hardcoded to `America/Sao_Paulo` for Brazilian law firm dates)
 
 ## Common Tasks
 
