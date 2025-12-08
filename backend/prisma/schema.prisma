@@ -62,6 +62,7 @@ model Company {
   stripeConfig          StripeConfig?
   servicePlans          ServicePlan[]
   clientSubscriptions   ClientSubscription[]
+  leads                 Lead[]
 
   @@map("companies")
 }
@@ -170,6 +171,7 @@ model Client {
   scheduleEvents        ScheduleEvent[]
   legalDocuments        LegalDocument[]       @relation("LegalDocumentClient")
   subscriptions         ClientSubscription[]
+  leadsConverted        Lead[]                @relation("LeadToClient")
 
   @@index([companyId])
   @@index([email])
@@ -800,6 +802,66 @@ model SubscriptionPayment {
   clientSubscription    ClientSubscription     @relation(fields: [clientSubscriptionId], references: [id], onDelete: Cascade)
 
   @@map("subscription_payments")
+}
+
+// ============================================================================
+// LEAD MANAGEMENT SYSTEM
+// ============================================================================
+
+// Enum para status do lead
+enum LeadStatus {
+  NOVO          // Lead recém-criado
+  CONTATADO     // Lead foi contatado
+  QUALIFICADO   // Lead qualificado para conversão
+  CONVERTIDO    // Convertido para cliente
+  PERDIDO       // Lead perdido/não interessado
+}
+
+// Enum para origem do lead
+enum LeadSource {
+  WHATSAPP      // Via WhatsApp
+  TELEFONE      // Ligação telefônica
+  SITE          // Formulário do site
+  INDICACAO     // Indicação de cliente
+  REDES_SOCIAIS // Instagram, Facebook, etc
+  OUTROS        // Outras origens
+}
+
+// Tabela de leads (potenciais clientes)
+model Lead {
+  id                  String      @id @default(uuid())
+  companyId           String
+
+  // Dados do lead
+  name                String
+  phone               String      // Telefone é obrigatório para verificar se é cliente existente
+  email               String?
+  contactReason       String?     @db.Text  // Motivo do contato/resumo do atendimento
+
+  // Status e origem
+  status              LeadStatus  @default(NOVO)
+  source              LeadSource  @default(WHATSAPP)
+
+  // Observações adicionais
+  notes               String?     @db.Text
+
+  // Conversão para cliente
+  convertedToClientId String?     // ID do cliente se convertido
+  convertedAt         DateTime?   // Data da conversão
+
+  // Metadados
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+
+  // Relations
+  company             Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  convertedToClient   Client?     @relation("LeadToClient", fields: [convertedToClientId], references: [id], onDelete: SetNull)
+
+  @@index([companyId])
+  @@index([phone])
+  @@index([status])
+  @@index([companyId, status])
+  @@map("leads")
 }
 
 // ============================================================================

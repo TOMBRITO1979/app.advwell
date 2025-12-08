@@ -5,6 +5,7 @@ import api from '../services/api';
 import {
   Home,
   Users,
+  UserPlus,
   FileText,
   DollarSign,
   FolderOpen,
@@ -99,6 +100,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { path: '/hearings', label: 'Audiências', icon: Gavel },
     { path: '/schedule', label: 'Agenda', icon: Calendar },
     { path: '/todos', label: 'Tarefas', icon: CheckSquare },
+    { path: '/leads', label: 'Leads', icon: UserPlus },
     { path: '/clients', label: 'Clientes', icon: Users },
     { path: '/cases', label: 'Processos', icon: FileText },
     { path: '/deadlines', label: 'Prazos', icon: Clock },

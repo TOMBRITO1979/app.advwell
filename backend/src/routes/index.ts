@@ -16,6 +16,7 @@ import campaignRoutes from './campaign.routes';
 import aiConfigRoutes from './ai-config.routes';
 import legalDocumentRoutes from './legal-document.routes';
 import subscriptionRoutes from './subscription.routes';
+import leadRoutes from './lead.routes';
 // Temporariamente desabilitado - aguardando schema Prisma
 // import stripeConfigRoutes from './stripe-config.routes';
 // import servicePlanRoutes from './service-plan.routes';
@@ -40,6 +41,7 @@ router.use('/campaigns', campaignRoutes); // Campanhas de email
 router.use('/ai-config', aiConfigRoutes); // Configuração de IA por empresa
 router.use('/legal-documents', legalDocumentRoutes); // Documentos jurídicos (recibos, contratos, etc.)
 router.use('/subscription', subscriptionRoutes); // Assinatura e pagamentos (Stripe)
+router.use('/leads', leadRoutes); // Gestão de leads (potenciais clientes)
 // router.use('/stripe-config', stripeConfigRoutes); // Configuração Stripe do escritório para cobranças de clientes
 // router.use('/service-plans', servicePlanRoutes); // Planos de serviço do escritório
 // router.use('/client-subscriptions', clientSubscriptionRoutes); // Assinaturas de clientes em planos

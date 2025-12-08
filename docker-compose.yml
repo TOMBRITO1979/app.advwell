@@ -106,7 +106,7 @@ services:
       retries: 5
 
   backend:
-    image: tomautomations/advwell-backend:v130-deadline-timezone-fix
+    image: tomautomations/advwell-backend:v134-lead-fix
     environment:
       # Timezone Brasil (São Paulo)
       - TZ=${TZ:-America/Sao_Paulo}
@@ -191,7 +191,7 @@ services:
         - "traefik.docker.network=network_public"
 
   frontend:
-    image: tomautomations/advwell-frontend:v132-ai-test-fix
+    image: tomautomations/advwell-frontend:v134-lead-fix
     environment:
       - TZ=${TZ:-America/Sao_Paulo}
       - VITE_API_URL=${VITE_API_URL}
