@@ -36,6 +36,11 @@ interface SubscriptionStatus {
   daysRemaining?: number;
 }
 
+interface AccountsDueToday {
+  count: number;
+  total: number;
+}
+
 interface LayoutProps {
   children: React.ReactNode;
 }
@@ -48,6 +53,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false);
   const [subscriptionStatus, setSubscriptionStatus] = React.useState<SubscriptionStatus | null>(null);
   const [showSubscriptionBanner, setShowSubscriptionBanner] = React.useState(true);
+  const [accountsDueToday, setAccountsDueToday] = React.useState<AccountsDueToday | null>(null);
 
   // Verificar se a sidebar deve ser escondida para este usuário
   const shouldHideSidebar = user?.hideSidebar === true;
@@ -80,6 +86,28 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
     if (user) {
       checkSubscription();
+    }
+  }, [user]);
+
+  // Verificar contas a pagar vencendo hoje
+  React.useEffect(() => {
+    const checkAccountsDueToday = async () => {
+      try {
+        const response = await api.get('/accounts-payable/due-today');
+        setAccountsDueToday({
+          count: response.data.count,
+          total: response.data.total,
+        });
+      } catch (error) {
+        console.error('Error checking accounts due today:', error);
+      }
+    };
+
+    if (user) {
+      checkAccountsDueToday();
+      // Atualizar a cada 5 minutos
+      const interval = setInterval(checkAccountsDueToday, 5 * 60 * 1000);
+      return () => clearInterval(interval);
     }
   }, [user]);
 
@@ -289,6 +317,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               {menuItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = location.pathname.startsWith(item.path);
+                const showBadge = item.path === '/accounts-payable' && accountsDueToday && accountsDueToday.count > 0;
                 return (
                   <Link
                     key={item.path}
@@ -301,10 +330,26 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                         : 'text-neutral-700 hover:bg-neutral-50 hover:text-primary-600'
                     }`}
                     onClick={() => setSidebarOpen(false)}
-                    title={sidebarCollapsed ? item.label : ''}
+                    title={sidebarCollapsed ? (showBadge ? `${item.label} (${accountsDueToday?.count} vencendo hoje)` : item.label) : ''}
                   >
-                    <Icon size={20} />
-                    {!sidebarCollapsed && <span className="text-sm">{item.label}</span>}
+                    <div className="relative">
+                      <Icon size={20} />
+                      {showBadge && sidebarCollapsed && (
+                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                          {accountsDueToday.count > 9 ? '9+' : accountsDueToday.count}
+                        </span>
+                      )}
+                    </div>
+                    {!sidebarCollapsed && (
+                      <div className="flex items-center justify-between flex-1">
+                        <span className="text-sm">{item.label}</span>
+                        {showBadge && (
+                          <span className="bg-red-500 text-white text-xs font-bold rounded-full px-2 py-0.5 ml-2" title={`R$ ${accountsDueToday.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} vencendo hoje`}>
+                            {accountsDueToday.count}
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </Link>
                 );
               })}

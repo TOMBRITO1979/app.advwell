@@ -510,6 +510,53 @@ export class AccountsPayableController {
     }
   }
 
+  // Obter contas vencendo hoje (para notificação no sidebar)
+  async getDueToday(req: AuthRequest, res: Response) {
+    try {
+      const companyId = req.user!.companyId;
+
+      if (!companyId) {
+        return res.status(403).json({ error: 'Usuário não possui empresa associada' });
+      }
+
+      // Calcular início e fim do dia atual (timezone Brasil)
+      const today = new Date();
+      const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0, 0);
+      const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
+
+      const accounts = await prisma.accountPayable.findMany({
+        where: {
+          companyId,
+          status: 'PENDING',
+          dueDate: {
+            gte: startOfDay,
+            lte: endOfDay,
+          },
+        },
+        select: {
+          id: true,
+          supplier: true,
+          description: true,
+          amount: true,
+          dueDate: true,
+          category: true,
+        },
+        orderBy: { amount: 'desc' },
+      });
+
+      const total = accounts.reduce((sum, account) => sum + Number(account.amount), 0);
+
+      res.json({
+        count: accounts.length,
+        total,
+        accounts,
+      });
+    } catch (error) {
+      console.error('Erro ao buscar contas vencendo hoje:', error);
+      res.status(500).json({ error: 'Erro ao buscar contas vencendo hoje' });
+    }
+  }
+
   // Obter categorias únicas
   async getCategories(req: AuthRequest, res: Response) {
     try {

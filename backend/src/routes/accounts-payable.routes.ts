@@ -91,6 +91,9 @@ const updateValidation = [
     .withMessage('Observações devem ter no máximo 5000 caracteres'),
 ];
 
+// Rota para contas vencendo hoje (notificação sidebar)
+router.get('/due-today', accountsPayableController.getDueToday);
+
 // Rotas de exportação e importação
 router.get('/export/pdf', accountsPayableController.exportPDF);
 router.get('/export/csv', accountsPayableController.exportCSV);
