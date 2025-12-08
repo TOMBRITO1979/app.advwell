@@ -176,8 +176,7 @@ export class ScheduleController {
         clientId,
         caseId,
         startDate,
-        endDate,
-        assignedUserId
+        endDate
       } = req.query;
 
       if (!companyId) {
@@ -191,11 +190,13 @@ export class ScheduleController {
         companyId,
       };
 
-      // Filtro de busca por título ou descrição
+      // Filtro de busca unificada: título, descrição, nome do cliente ou nome do advogado
       if (search) {
         where.OR = [
           { title: { contains: String(search), mode: 'insensitive' as const } },
           { description: { contains: String(search), mode: 'insensitive' as const } },
+          { client: { name: { contains: String(search), mode: 'insensitive' as const } } },
+          { assignedUsers: { some: { user: { name: { contains: String(search), mode: 'insensitive' as const } } } } },
         ];
       }
 
@@ -228,15 +229,6 @@ export class ScheduleController {
         if (endDate) {
           where.date.lte = new Date(String(endDate));
         }
-      }
-
-      // Filtro por advogado/usuário atribuído
-      if (assignedUserId) {
-        where.assignedUsers = {
-          some: {
-            userId: String(assignedUserId)
-          }
-        };
       }
 
       const [events, total] = await Promise.all([
