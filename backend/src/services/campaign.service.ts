@@ -1,12 +1,15 @@
-import nodemailer from 'nodemailer';
 import prisma from '../utils/prisma';
-import { decrypt } from '../utils/encryption';
-import { replaceTemplateVariables } from '../utils/email-templates';
+import { enqueueCampaignEmails } from '../queues/email.queue';
 
-// Enviar campanha em background
+/**
+ * Envia campanha de email usando fila Bull para processamento em background.
+ * Cada email é processado individualmente com retry automático.
+ *
+ * @param campaignId - ID da campanha a ser enviada
+ */
 export async function sendCampaign(campaignId: string) {
   try {
-    // Buscar campanha
+    // Buscar campanha para validação
     const campaign = await prisma.emailCampaign.findUnique({
       where: { id: campaignId },
       include: {
@@ -15,99 +18,58 @@ export async function sendCampaign(campaignId: string) {
             smtpConfig: true,
           },
         },
-        recipients: {
-          where: { status: 'pending' },
+        _count: {
+          select: {
+            recipients: {
+              where: { status: 'pending' },
+            },
+          },
         },
       },
     });
 
-    if (!campaign || !campaign.company.smtpConfig) {
-      throw new Error('Campanha ou configuração SMTP não encontrada');
+    if (!campaign) {
+      throw new Error('Campanha não encontrada');
     }
 
-    const smtp = campaign.company.smtpConfig;
-
-    // Criar transporter
-    const transporter = nodemailer.createTransport({
-      host: smtp.host,
-      port: smtp.port,
-      secure: smtp.port === 465,
-      auth: {
-        user: smtp.user,
-        pass: decrypt(smtp.password),
-      },
-    });
-
-    let sentCount = 0;
-    let failedCount = 0;
-
-    // Enviar para cada destinatário com delay
-    for (const recipient of campaign.recipients) {
-      try {
-        // Substituir variáveis do template
-        const variables = {
-          nome_cliente: recipient.recipientName || recipient.recipientEmail,
-          nome_empresa: campaign.company.name,
-          data: new Date().getFullYear().toString(),
-        };
-
-        const personalizedSubject = replaceTemplateVariables(campaign.subject, variables);
-        const personalizedBody = replaceTemplateVariables(campaign.body, variables);
-
-        await transporter.sendMail({
-          from: `${smtp.fromName || campaign.company.name} <${smtp.fromEmail}>`,
-          to: recipient.recipientEmail,
-          subject: personalizedSubject,
-          html: personalizedBody,
-        });
-
-        // Atualizar como enviado
-        await prisma.campaignRecipient.update({
-          where: { id: recipient.id },
-          data: {
-            status: 'sent',
-            sentAt: new Date(),
-          },
-        });
-
-        sentCount++;
-
-        // Delay de 100ms entre emails (10 emails/segundo)
-        await new Promise(resolve => setTimeout(resolve, 100));
-      } catch (error: any) {
-        // Atualizar como falhou
-        await prisma.campaignRecipient.update({
-          where: { id: recipient.id },
-          data: {
-            status: 'failed',
-            errorMessage: error.message || 'Erro desconhecido',
-          },
-        });
-
-        failedCount++;
-        console.error(`Erro ao enviar para ${recipient.recipientEmail}:`, error.message);
-      }
+    if (!campaign.company.smtpConfig) {
+      throw new Error('Configuração SMTP não encontrada');
     }
 
-    // Atualizar campanha como completa
-    await prisma.emailCampaign.update({
-      where: { id: campaignId },
-      data: {
-        status: 'completed',
-        sentCount,
-        failedCount,
-        sentAt: new Date(),
-      },
-    });
+    if (!campaign.company.smtpConfig.isActive) {
+      throw new Error('Configuração SMTP inativa');
+    }
 
-    console.log(`✅ Campanha ${campaign.name} concluída: ${sentCount} enviados, ${failedCount} falhas`);
-  } catch (error) {
-    console.error('Erro ao enviar campanha:', error);
+    const pendingCount = campaign._count.recipients;
 
-    // Marcar campanha como falha
+    if (pendingCount === 0) {
+      console.log(`Campaign ${campaignId} has no pending recipients`);
+
+      // Mark as completed if no recipients
+      await prisma.emailCampaign.update({
+        where: { id: campaignId },
+        data: {
+          status: 'completed',
+          sentAt: new Date(),
+        },
+      });
+
+      return;
+    }
+
+    // Enqueue all emails for processing
+    const result = await enqueueCampaignEmails(campaignId);
+
+    console.log(`📧 Campaign ${campaign.name} started: ${result.enqueued} emails queued`);
+  } catch (error: any) {
+    console.error('Error starting campaign:', error);
+
+    // Mark campaign as failed
     await prisma.emailCampaign.update({
       where: { id: campaignId },
       data: { status: 'failed' },
     }).catch(console.error);
+
+    throw error;
   }
 }

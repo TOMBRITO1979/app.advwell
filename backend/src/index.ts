@@ -10,6 +10,7 @@ import cron from 'node-cron';
 import prisma from './utils/prisma';
 import { redis, cache } from './utils/redis';
 import { enqueueDailySync, getQueueStats } from './queues/sync.queue';
+import { getEmailQueueStats } from './queues/email.queue';
 import crypto from 'crypto';
 
 // Security validation at startup
@@ -172,7 +173,7 @@ app.get('/health', async (req, res) => {
     };
   }
 
-  // 3. Queue stats
+  // 3. Queue stats (sync queue)
   try {
     const queueStats = await getQueueStats();
     health.checks.queue = {
@@ -181,6 +182,20 @@ app.get('/health', async (req, res) => {
     };
   } catch (error) {
     health.checks.queue = {
+      status: 'unavailable',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    };
+  }
+
+  // 3.1 Email queue stats
+  try {
+    const emailQueueStats = await getEmailQueueStats();
+    health.checks.emailQueue = {
+      status: 'operational',
+      ...emailQueueStats
+    };
+  } catch (error) {
+    health.checks.emailQueue = {
       status: 'unavailable',
       error: error instanceof Error ? error.message : 'Unknown error'
     };

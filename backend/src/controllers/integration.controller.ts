@@ -669,6 +669,667 @@ export class IntegrationController {
     if (cleaned.length !== 11) return cpf;
     return `${cleaned.slice(0, 3)}.${cleaned.slice(3, 6)}.${cleaned.slice(6, 9)}-${cleaned.slice(9)}`;
   }
+
+  // ============================================
+  // ENDPOINTS PARA INTEGRAÇÃO COM N8N
+  // ============================================
+
+  /**
+   * Cria um novo cliente
+   * POST /api/integration/clients
+   *
+   * Body esperado:
+   * {
+   *   "name": "Nome do Cliente",
+   *   "cpf": "123.456.789-00",
+   *   "email": "cliente@email.com",
+   *   "phone": "(11) 99999-9999",
+   *   "birthDate": "1990-01-15",
+   *   "address": "Rua X, 123",
+   *   "city": "São Paulo",
+   *   "state": "SP",
+   *   "zipCode": "01234-567",
+   *   "notes": "Observações"
+   * }
+   */
+  async createClient(req: ApiKeyRequest, res: Response) {
+    try {
+      const companyId = req.company!.id;
+      const {
+        name,
+        cpf,
+        email,
+        phone,
+        birthDate,
+        address,
+        city,
+        state,
+        zipCode,
+        notes,
+        personType,
+        profession,
+        nationality,
+        maritalStatus,
+        tag,
+      } = req.body;
+
+      if (!name) {
+        return res.status(400).json({
+          error: 'Dados incompletos',
+          message: 'Nome é obrigatório'
+        });
+      }
+
+      // Verifica se já existe cliente com mesmo CPF/email
+      if (cpf || email) {
+        const existingClient = await prisma.client.findFirst({
+          where: {
+            companyId,
+            OR: [
+              cpf ? { cpf } : {},
+              email ? { email } : {},
+            ].filter(obj => Object.keys(obj).length > 0),
+          },
+        });
+
+        if (existingClient) {
+          return res.status(409).json({
+            error: 'Cliente já existe',
+            message: 'Já existe um cliente com este CPF ou email',
+            clientId: existingClient.id,
+          });
+        }
+      }
+
+      // Parse da data de nascimento
+      let parsedBirthDate: Date | undefined;
+      if (birthDate) {
+        if (birthDate.includes('/')) {
+          const [day, month, year] = birthDate.split('/');
+          parsedBirthDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+        } else {
+          parsedBirthDate = new Date(birthDate);
+        }
+      }
+
+      const client = await prisma.client.create({
+        data: {
+          companyId,
+          name,
+          cpf: cpf || null,
+          email: email || null,
+          phone: phone || null,
+          birthDate: parsedBirthDate || null,
+          address: address || null,
+          city: city || null,
+          state: state || null,
+          zipCode: zipCode || null,
+          notes: notes || null,
+          personType: personType || 'FISICA',
+          profession: profession || null,
+          nationality: nationality || null,
+          maritalStatus: maritalStatus || null,
+          tag: tag || null,
+          active: true,
+        },
+        select: {
+          id: true,
+          name: true,
+          cpf: true,
+          email: true,
+          phone: true,
+          createdAt: true,
+        },
+      });
+
+      return res.status(201).json({
+        success: true,
+        message: 'Cliente criado com sucesso',
+        client,
+      });
+
+    } catch (error) {
+      console.error('Erro ao criar cliente:', error);
+      return res.status(500).json({ error: 'Erro ao criar cliente' });
+    }
+  }
+
+  /**
+   * Atualiza um cliente existente
+   * PUT /api/integration/clients/:id
+   */
+  async updateClient(req: ApiKeyRequest, res: Response) {
+    try {
+      const companyId = req.company!.id;
+      const { id } = req.params;
+      const updateData = req.body;
+
+      // Verifica se cliente existe e pertence à empresa
+      const existingClient = await prisma.client.findFirst({
+        where: { id, companyId },
+      });
+
+      if (!existingClient) {
+        return res.status(404).json({
+          error: 'Cliente não encontrado',
+          message: 'Cliente não encontrado ou não pertence a esta empresa'
+        });
+      }
+
+      // Parse da data de nascimento se fornecida
+      if (updateData.birthDate) {
+        if (updateData.birthDate.includes('/')) {
+          const [day, month, year] = updateData.birthDate.split('/');
+          updateData.birthDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+        } else {
+          updateData.birthDate = new Date(updateData.birthDate);
+        }
+      }
+
+      const client = await prisma.client.update({
+        where: { id },
+        data: updateData,
+        select: {
+          id: true,
+          name: true,
+          cpf: true,
+          email: true,
+          phone: true,
+          updatedAt: true,
+        },
+      });
+
+      return res.json({
+        success: true,
+        message: 'Cliente atualizado com sucesso',
+        client,
+      });
+
+    } catch (error) {
+      console.error('Erro ao atualizar cliente:', error);
+      return res.status(500).json({ error: 'Erro ao atualizar cliente' });
+    }
+  }
+
+  /**
+   * Cria um novo processo
+   * POST /api/integration/cases
+   *
+   * Body esperado:
+   * {
+   *   "clientId": "uuid",
+   *   "processNumber": "1234567-89.2024.8.26.0100",
+   *   "court": "TJSP",
+   *   "subject": "Ação de Cobrança",
+   *   "value": 50000.00,
+   *   "status": "ACTIVE",
+   *   "notes": "Observações"
+   * }
+   */
+  async createCase(req: ApiKeyRequest, res: Response) {
+    try {
+      const companyId = req.company!.id;
+      const {
+        clientId,
+        processNumber,
+        court,
+        subject,
+        value,
+        status,
+        notes,
+        deadline,
+        linkProcesso,
+      } = req.body;
+
+      if (!clientId || !processNumber || !court || !subject) {
+        return res.status(400).json({
+          error: 'Dados incompletos',
+          message: 'clientId, processNumber, court e subject são obrigatórios'
+        });
+      }
+
+      // Verifica se cliente existe e pertence à empresa
+      const client = await prisma.client.findFirst({
+        where: { id: clientId, companyId },
+      });
+
+      if (!client) {
+        return res.status(404).json({
+          error: 'Cliente não encontrado',
+          message: 'Cliente não encontrado ou não pertence a esta empresa'
+        });
+      }
+
+      // Verifica se já existe processo com mesmo número
+      const existingCase = await prisma.case.findFirst({
+        where: { companyId, processNumber },
+      });
+
+      if (existingCase) {
+        return res.status(409).json({
+          error: 'Processo já existe',
+          message: 'Já existe um processo com este número',
+          caseId: existingCase.id,
+        });
+      }
+
+      const newCase = await prisma.case.create({
+        data: {
+          companyId,
+          clientId,
+          processNumber,
+          court,
+          subject,
+          value: value || null,
+          status: status || 'ACTIVE',
+          notes: notes || null,
+          deadline: deadline ? new Date(deadline) : null,
+          linkProcesso: linkProcesso || null,
+        },
+        select: {
+          id: true,
+          processNumber: true,
+          court: true,
+          subject: true,
+          status: true,
+          createdAt: true,
+        },
+      });
+
+      return res.status(201).json({
+        success: true,
+        message: 'Processo criado com sucesso',
+        case: newCase,
+      });
+
+    } catch (error) {
+      console.error('Erro ao criar processo:', error);
+      return res.status(500).json({ error: 'Erro ao criar processo' });
+    }
+  }
+
+  /**
+   * Atualiza um processo existente
+   * PUT /api/integration/cases/:id
+   */
+  async updateCase(req: ApiKeyRequest, res: Response) {
+    try {
+      const companyId = req.company!.id;
+      const { id } = req.params;
+      const updateData = req.body;
+
+      // Verifica se processo existe e pertence à empresa
+      const existingCase = await prisma.case.findFirst({
+        where: { id, companyId },
+      });
+
+      if (!existingCase) {
+        return res.status(404).json({
+          error: 'Processo não encontrado',
+          message: 'Processo não encontrado ou não pertence a esta empresa'
+        });
+      }
+
+      // Parse da deadline se fornecida
+      if (updateData.deadline) {
+        updateData.deadline = new Date(updateData.deadline);
+      }
+
+      const updatedCase = await prisma.case.update({
+        where: { id },
+        data: updateData,
+        select: {
+          id: true,
+          processNumber: true,
+          court: true,
+          subject: true,
+          status: true,
+          updatedAt: true,
+        },
+      });
+
+      return res.json({
+        success: true,
+        message: 'Processo atualizado com sucesso',
+        case: updatedCase,
+      });
+
+    } catch (error) {
+      console.error('Erro ao atualizar processo:', error);
+      return res.status(500).json({ error: 'Erro ao atualizar processo' });
+    }
+  }
+
+  /**
+   * Cria um novo evento na agenda
+   * POST /api/integration/schedule
+   *
+   * Body esperado:
+   * {
+   *   "title": "Audiência Cliente X",
+   *   "description": "Descrição do evento",
+   *   "type": "AUDIENCIA",
+   *   "priority": "ALTA",
+   *   "date": "2024-01-15T14:00:00",
+   *   "endDate": "2024-01-15T16:00:00",
+   *   "clientId": "uuid",
+   *   "caseId": "uuid"
+   * }
+   */
+  async createScheduleEvent(req: ApiKeyRequest, res: Response) {
+    try {
+      const companyId = req.company!.id;
+      const {
+        title,
+        description,
+        type,
+        priority,
+        date,
+        endDate,
+        clientId,
+        caseId,
+        googleMeetLink,
+      } = req.body;
+
+      if (!title || !date) {
+        return res.status(400).json({
+          error: 'Dados incompletos',
+          message: 'title e date são obrigatórios'
+        });
+      }
+
+      // Valida clientId se fornecido
+      if (clientId) {
+        const client = await prisma.client.findFirst({
+          where: { id: clientId, companyId },
+        });
+        if (!client) {
+          return res.status(404).json({
+            error: 'Cliente não encontrado',
+            message: 'Cliente não encontrado ou não pertence a esta empresa'
+          });
+        }
+      }
+
+      // Valida caseId se fornecido
+      if (caseId) {
+        const caseRecord = await prisma.case.findFirst({
+          where: { id: caseId, companyId },
+        });
+        if (!caseRecord) {
+          return res.status(404).json({
+            error: 'Processo não encontrado',
+            message: 'Processo não encontrado ou não pertence a esta empresa'
+          });
+        }
+      }
+
+      const event = await prisma.scheduleEvent.create({
+        data: {
+          companyId,
+          title,
+          description: description || null,
+          type: type || 'COMPROMISSO',
+          priority: priority || 'MEDIA',
+          date: new Date(date),
+          endDate: endDate ? new Date(endDate) : null,
+          clientId: clientId || null,
+          caseId: caseId || null,
+          googleMeetLink: googleMeetLink || null,
+          completed: false,
+        },
+        select: {
+          id: true,
+          title: true,
+          type: true,
+          priority: true,
+          date: true,
+          createdAt: true,
+        },
+      });
+
+      return res.status(201).json({
+        success: true,
+        message: 'Evento criado com sucesso',
+        event,
+      });
+
+    } catch (error) {
+      console.error('Erro ao criar evento:', error);
+      return res.status(500).json({ error: 'Erro ao criar evento' });
+    }
+  }
+
+  /**
+   * Cria um novo lead
+   * POST /api/integration/leads
+   *
+   * Body esperado:
+   * {
+   *   "name": "Nome do Lead",
+   *   "phone": "(11) 99999-9999",
+   *   "email": "lead@email.com",
+   *   "contactReason": "Motivo do contato",
+   *   "source": "WHATSAPP",
+   *   "notes": "Observações"
+   * }
+   */
+  async createLead(req: ApiKeyRequest, res: Response) {
+    try {
+      const companyId = req.company!.id;
+      const {
+        name,
+        phone,
+        email,
+        contactReason,
+        source,
+        notes,
+      } = req.body;
+
+      if (!name || !phone) {
+        return res.status(400).json({
+          error: 'Dados incompletos',
+          message: 'name e phone são obrigatórios'
+        });
+      }
+
+      // Verifica se já existe lead ou cliente com mesmo telefone
+      const normalizedPhone = phone.replace(/\D/g, '');
+
+      const existingLead = await prisma.lead.findFirst({
+        where: {
+          companyId,
+          phone: { contains: normalizedPhone },
+        },
+      });
+
+      if (existingLead) {
+        return res.status(409).json({
+          error: 'Lead já existe',
+          message: 'Já existe um lead com este telefone',
+          leadId: existingLead.id,
+          status: existingLead.status,
+        });
+      }
+
+      // Verifica se já é cliente
+      const existingClient = await prisma.client.findFirst({
+        where: {
+          companyId,
+          phone: { contains: normalizedPhone },
+        },
+      });
+
+      if (existingClient) {
+        return res.status(409).json({
+          error: 'Já é cliente',
+          message: 'Este telefone pertence a um cliente existente',
+          clientId: existingClient.id,
+          clientName: existingClient.name,
+        });
+      }
+
+      const lead = await prisma.lead.create({
+        data: {
+          companyId,
+          name,
+          phone,
+          email: email || null,
+          contactReason: contactReason || null,
+          source: source || 'WHATSAPP',
+          notes: notes || null,
+          status: 'NOVO',
+        },
+        select: {
+          id: true,
+          name: true,
+          phone: true,
+          email: true,
+          status: true,
+          source: true,
+          createdAt: true,
+        },
+      });
+
+      return res.status(201).json({
+        success: true,
+        message: 'Lead criado com sucesso',
+        lead,
+      });
+
+    } catch (error) {
+      console.error('Erro ao criar lead:', error);
+      return res.status(500).json({ error: 'Erro ao criar lead' });
+    }
+  }
+
+  /**
+   * Retorna estatísticas da empresa
+   * GET /api/integration/stats
+   */
+  async getStats(req: ApiKeyRequest, res: Response) {
+    try {
+      const companyId = req.company!.id;
+
+      const [
+        totalClients,
+        activeClients,
+        totalCases,
+        activeCases,
+        totalLeads,
+        newLeads,
+        upcomingEvents,
+      ] = await Promise.all([
+        prisma.client.count({ where: { companyId } }),
+        prisma.client.count({ where: { companyId, active: true } }),
+        prisma.case.count({ where: { companyId } }),
+        prisma.case.count({ where: { companyId, status: 'ACTIVE' } }),
+        prisma.lead.count({ where: { companyId } }),
+        prisma.lead.count({ where: { companyId, status: 'NOVO' } }),
+        prisma.scheduleEvent.count({
+          where: {
+            companyId,
+            date: { gte: new Date() },
+            completed: false,
+          },
+        }),
+      ]);
+
+      return res.json({
+        company: {
+          id: companyId,
+          name: req.company!.name,
+        },
+        clients: {
+          total: totalClients,
+          active: activeClients,
+        },
+        cases: {
+          total: totalCases,
+          active: activeCases,
+        },
+        leads: {
+          total: totalLeads,
+          new: newLeads,
+        },
+        schedule: {
+          upcomingEvents,
+        },
+        generatedAt: new Date().toISOString(),
+      });
+
+    } catch (error) {
+      console.error('Erro ao buscar estatísticas:', error);
+      return res.status(500).json({ error: 'Erro ao buscar estatísticas' });
+    }
+  }
+
+  /**
+   * Busca cliente por telefone ou email
+   * GET /api/integration/clients/search?phone=xxx ou email=xxx
+   */
+  async searchClient(req: ApiKeyRequest, res: Response) {
+    try {
+      const companyId = req.company!.id;
+      const { phone, email, cpf } = req.query;
+
+      if (!phone && !email && !cpf) {
+        return res.status(400).json({
+          error: 'Parâmetro obrigatório',
+          message: 'Forneça phone, email ou cpf para busca'
+        });
+      }
+
+      const whereConditions: any[] = [];
+
+      if (phone) {
+        const normalizedPhone = String(phone).replace(/\D/g, '');
+        whereConditions.push({ phone: { contains: normalizedPhone } });
+      }
+
+      if (email) {
+        whereConditions.push({ email: String(email).toLowerCase() });
+      }
+
+      if (cpf) {
+        const normalizedCpf = String(cpf).replace(/\D/g, '');
+        whereConditions.push({ cpf: { contains: normalizedCpf } });
+      }
+
+      const client = await prisma.client.findFirst({
+        where: {
+          companyId,
+          active: true,
+          OR: whereConditions,
+        },
+        select: {
+          id: true,
+          name: true,
+          cpf: true,
+          email: true,
+          phone: true,
+          birthDate: true,
+          createdAt: true,
+        },
+      });
+
+      if (!client) {
+        return res.json({
+          found: false,
+          message: 'Cliente não encontrado'
+        });
+      }
+
+      return res.json({
+        found: true,
+        client,
+      });
+
+    } catch (error) {
+      console.error('Erro ao buscar cliente:', error);
+      return res.status(500).json({ error: 'Erro ao buscar cliente' });
+    }
+  }
 }
 
 export default new IntegrationController();

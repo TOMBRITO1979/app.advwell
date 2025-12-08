@@ -145,4 +145,79 @@ router.get('/client/:clientId/case/:caseId/movements', caseIdValidation, integra
  */
 router.get('/client/:clientId/schedule', clientIdValidation, integrationController.getClientSchedule);
 
+// ============================================
+// ENDPOINTS PARA INTEGRAÇÃO COM N8N
+// ============================================
+
+/**
+ * GET /api/integration/stats
+ * Retorna estatísticas da empresa
+ *
+ * Retorna: { clients, cases, leads, schedule }
+ */
+router.get('/stats', integrationController.getStats);
+
+/**
+ * GET /api/integration/clients/search
+ * Busca cliente por telefone, email ou CPF
+ *
+ * Query: ?phone=xxx ou ?email=xxx ou ?cpf=xxx
+ * Retorna: { found: true/false, client?: {...} }
+ */
+router.get('/clients/search', integrationController.searchClient);
+
+/**
+ * POST /api/integration/clients
+ * Cria um novo cliente
+ *
+ * Body: { name, cpf?, email?, phone?, birthDate?, address?, city?, state?, zipCode?, notes? }
+ * Retorna: { success: true, client: {...} }
+ */
+router.post('/clients', integrationController.createClient);
+
+/**
+ * PUT /api/integration/clients/:id
+ * Atualiza um cliente existente
+ *
+ * Body: campos a serem atualizados
+ * Retorna: { success: true, client: {...} }
+ */
+router.put('/clients/:id', integrationController.updateClient);
+
+/**
+ * POST /api/integration/cases
+ * Cria um novo processo
+ *
+ * Body: { clientId, processNumber, court, subject, value?, status?, notes?, deadline?, linkProcesso? }
+ * Retorna: { success: true, case: {...} }
+ */
+router.post('/cases', integrationController.createCase);
+
+/**
+ * PUT /api/integration/cases/:id
+ * Atualiza um processo existente
+ *
+ * Body: campos a serem atualizados
+ * Retorna: { success: true, case: {...} }
+ */
+router.put('/cases/:id', integrationController.updateCase);
+
+/**
+ * POST /api/integration/schedule
+ * Cria um novo evento na agenda
+ *
+ * Body: { title, date, description?, type?, priority?, endDate?, clientId?, caseId?, googleMeetLink? }
+ * Retorna: { success: true, event: {...} }
+ */
+router.post('/schedule', integrationController.createScheduleEvent);
+
+/**
+ * POST /api/integration/leads
+ * Cria um novo lead
+ *
+ * Body: { name, phone, email?, contactReason?, source?, notes? }
+ * Retorna: { success: true, lead: {...} }
+ */
+router.post('/leads', integrationController.createLead);
+
 export default router;
