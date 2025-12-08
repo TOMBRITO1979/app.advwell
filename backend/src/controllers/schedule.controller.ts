@@ -176,7 +176,8 @@ export class ScheduleController {
         clientId,
         caseId,
         startDate,
-        endDate
+        endDate,
+        assignedUserId
       } = req.query;
 
       if (!companyId) {
@@ -227,6 +228,15 @@ export class ScheduleController {
         if (endDate) {
           where.date.lte = new Date(String(endDate));
         }
+      }
+
+      // Filtro por advogado/usuário atribuído
+      if (assignedUserId) {
+        where.assignedUsers = {
+          some: {
+            userId: String(assignedUserId)
+          }
+        };
       }
 
       const [events, total] = await Promise.all([

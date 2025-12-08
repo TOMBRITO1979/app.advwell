@@ -66,6 +66,11 @@ const Schedule: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<string>('');
   const [filterCompleted, setFilterCompleted] = useState<string>('');
+  const [filterClientId, setFilterClientId] = useState<string>('');
+  const [filterAssignedUserId, setFilterAssignedUserId] = useState<string>('');
+
+  // Listas para filtros
+  const [allClients, setAllClients] = useState<Client[]>([]);
 
   // Estado para seleção única de usuário responsável
   const [companyUsers, setCompanyUsers] = useState<User[]>([]);
@@ -159,7 +164,8 @@ const Schedule: React.FC = () => {
   useEffect(() => {
     fetchEvents();
     fetchCompanyUsers();
-  }, [searchTerm, filterType, filterCompleted]);
+    fetchAllClients();
+  }, [searchTerm, filterType, filterCompleted, filterClientId, filterAssignedUserId]);
 
   // Debounce para busca de clientes
   useEffect(() => {
@@ -196,6 +202,15 @@ const Schedule: React.FC = () => {
     }
   };
 
+  const fetchAllClients = async () => {
+    try {
+      const response = await api.get('/clients', { params: { limit: 1000 } });
+      setAllClients(response.data.data || []);
+    } catch (error) {
+      console.error('Erro ao buscar clientes:', error);
+    }
+  };
+
   const fetchEvents = async () => {
     setLoading(true);
     try {
@@ -203,6 +218,8 @@ const Schedule: React.FC = () => {
       if (searchTerm) params.search = searchTerm;
       if (filterType) params.type = filterType;
       if (filterCompleted) params.completed = filterCompleted;
+      if (filterClientId) params.clientId = filterClientId;
+      if (filterAssignedUserId) params.assignedUserId = filterAssignedUserId;
 
       const response = await api.get('/schedule', { params });
       // Ordenar eventos: hoje primeiro, depois futuros, por último passados
@@ -445,7 +462,7 @@ const Schedule: React.FC = () => {
 
       {/* Filters */}
       <div className="bg-white rounded-lg shadow p-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           {/* Search */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-500" size={20} />
@@ -480,6 +497,34 @@ const Schedule: React.FC = () => {
             <option value="">Todos os status</option>
             <option value="false">Pendentes</option>
             <option value="true">Concluídos</option>
+          </select>
+
+          {/* Filter by client */}
+          <select
+            value={filterClientId}
+            onChange={(e) => setFilterClientId(e.target.value)}
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+          >
+            <option value="">Todos os clientes</option>
+            {allClients.map((client) => (
+              <option key={client.id} value={client.id}>
+                {client.name}
+              </option>
+            ))}
+          </select>
+
+          {/* Filter by assigned user (advogado) */}
+          <select
+            value={filterAssignedUserId}
+            onChange={(e) => setFilterAssignedUserId(e.target.value)}
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+          >
+            <option value="">Todos os advogados</option>
+            {companyUsers.map((user) => (
+              <option key={user.id} value={user.id}>
+                {user.name}
+              </option>
+            ))}
           </select>
         </div>
       </div>
