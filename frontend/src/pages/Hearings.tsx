@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Gavel, Calendar, ChevronLeft, ChevronRight, Edit2, User } from 'lucide-react';
+import { Gavel, Calendar, ChevronLeft, ChevronRight, Edit2, User, LayoutGrid, CalendarDays } from 'lucide-react';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import Layout from '../components/Layout';
@@ -65,6 +65,8 @@ const Hearings: React.FC = () => {
     const today = new Date();
     return today.toISOString().split('T')[0];
   });
+  const [viewMode, setViewMode] = useState<'columns' | 'week'>('columns');
+  const [weekEvents, setWeekEvents] = useState<ScheduleEvent[]>([]);
 
   // Modal de edição
   const [showEditModal, setShowEditModal] = useState(false);
@@ -131,8 +133,12 @@ const Hearings: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    fetchHearings();
-  }, [selectedDate, selectedUserId]);
+    if (viewMode === 'columns') {
+      fetchHearings();
+    } else {
+      fetchWeekHearings();
+    }
+  }, [selectedDate, selectedUserId, viewMode]);
 
   // Debounce para busca de clientes
   useEffect(() => {
@@ -371,6 +377,91 @@ const Hearings: React.FC = () => {
     setSelectedDate(current.toISOString().split('T')[0]);
   };
 
+  const changeWeek = (weeks: number) => {
+    const current = new Date(selectedDate);
+    current.setDate(current.getDate() + (weeks * 7));
+    setSelectedDate(current.toISOString().split('T')[0]);
+  };
+
+  // Obter os dias da semana baseado na data selecionada
+  const getWeekDays = () => {
+    const date = new Date(selectedDate + 'T00:00:00');
+    const dayOfWeek = date.getDay();
+    const monday = new Date(date);
+    monday.setDate(date.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1));
+
+    const days = [];
+    for (let i = 0; i < 7; i++) {
+      const day = new Date(monday);
+      day.setDate(monday.getDate() + i);
+      days.push(day);
+    }
+    return days;
+  };
+
+  // Buscar eventos da semana inteira
+  const fetchWeekHearings = async () => {
+    setLoading(true);
+    try {
+      const weekDays = getWeekDays();
+      const startDate = weekDays[0].toISOString().split('T')[0];
+      const endDate = weekDays[6].toISOString().split('T')[0];
+
+      const params: any = {
+        type: 'AUDIENCIA',
+        limit: 500,
+        startDate: startDate,
+        endDate: endDate + 'T23:59:59',
+      };
+
+      const response = await api.get('/schedule', { params });
+      let hearings = response.data.data || [];
+
+      // Filtrar por usuário selecionado
+      if (selectedUserId) {
+        hearings = hearings.filter((event: ScheduleEvent) => {
+          if (event.assignedUsers && event.assignedUsers.length > 0) {
+            return event.assignedUsers.some(a => a.user.id === selectedUserId);
+          }
+          return event.user?.id === selectedUserId;
+        });
+      }
+
+      setWeekEvents(hearings);
+    } catch (error) {
+      console.error('Erro ao buscar audiências da semana:', error);
+      toast.error('Erro ao carregar audiências');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Obter audiências de um dia específico
+  const getHearingsForDay = (date: Date) => {
+    const dateStr = date.toISOString().split('T')[0];
+    return weekEvents.filter(event => {
+      const eventDate = new Date(event.date).toISOString().split('T')[0];
+      return eventDate === dateStr;
+    }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  };
+
+  // Formatar dia da semana curto
+  const formatWeekDay = (date: Date) => {
+    return date.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', '');
+  };
+
+  // Formatar dia do mês
+  const formatDayNumber = (date: Date) => {
+    return date.getDate().toString().padStart(2, '0');
+  };
+
+  // Verificar se é hoje
+  const isToday = (date: Date) => {
+    const today = new Date();
+    return date.toISOString().split('T')[0] === today.toISOString().split('T')[0];
+  };
+
+
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleTimeString('pt-BR', {
@@ -402,8 +493,34 @@ const Hearings: React.FC = () => {
               Audiências
             </h1>
             <p className="text-neutral-600 mt-1">
-              Visualização por advogado/usuário
+              {viewMode === 'columns' ? 'Visualização por advogado' : 'Visualização semanal'}
             </p>
+          </div>
+
+          {/* Toggle de Visualização */}
+          <div className="flex bg-neutral-100 rounded-lg p-1">
+            <button
+              onClick={() => setViewMode('columns')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                viewMode === 'columns'
+                  ? 'bg-white text-primary-700 shadow-sm'
+                  : 'text-neutral-600 hover:text-neutral-900'
+              }`}
+            >
+              <LayoutGrid size={18} />
+              Colunas
+            </button>
+            <button
+              onClick={() => setViewMode('week')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                viewMode === 'week'
+                  ? 'bg-white text-primary-700 shadow-sm'
+                  : 'text-neutral-600 hover:text-neutral-900'
+              }`}
+            >
+              <CalendarDays size={18} />
+              Semana
+            </button>
           </div>
         </div>
 
@@ -413,9 +530,9 @@ const Hearings: React.FC = () => {
             {/* Navegação de Data */}
             <div className="flex items-center gap-2">
               <button
-                onClick={() => changeDate(-1)}
+                onClick={() => viewMode === 'columns' ? changeDate(-1) : changeWeek(-1)}
                 className="p-2 hover:bg-neutral-100 rounded-lg transition-colors"
-                title="Dia anterior"
+                title={viewMode === 'columns' ? 'Dia anterior' : 'Semana anterior'}
               >
                 <ChevronLeft size={20} />
               </button>
@@ -429,9 +546,9 @@ const Hearings: React.FC = () => {
                 />
               </div>
               <button
-                onClick={() => changeDate(1)}
+                onClick={() => viewMode === 'columns' ? changeDate(1) : changeWeek(1)}
                 className="p-2 hover:bg-neutral-100 rounded-lg transition-colors"
-                title="Próximo dia"
+                title={viewMode === 'columns' ? 'Próximo dia' : 'Próxima semana'}
               >
                 <ChevronRight size={20} />
               </button>
@@ -463,34 +580,48 @@ const Hearings: React.FC = () => {
 
           {/* Data selecionada em destaque */}
           <div className="mt-4 text-center">
-            <p className="text-lg font-semibold text-neutral-800 capitalize">
-              {formatDateDisplay(selectedDate)}
-            </p>
-            <p className="text-sm text-neutral-500">
-              {events.length} audiência(s) encontrada(s)
-            </p>
+            {viewMode === 'columns' ? (
+              <>
+                <p className="text-lg font-semibold text-neutral-800 capitalize">
+                  {formatDateDisplay(selectedDate)}
+                </p>
+                <p className="text-sm text-neutral-500">
+                  {events.length} audiência(s) encontrada(s)
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-lg font-semibold text-neutral-800">
+                  Semana de {getWeekDays()[0].toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })} a {getWeekDays()[6].toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })}
+                </p>
+                <p className="text-sm text-neutral-500">
+                  {weekEvents.length} audiência(s) na semana
+                </p>
+              </>
+            )}
           </div>
         </div>
 
-        {/* Colunas por Advogado */}
+        {/* Visualização */}
         {loading ? (
           <div className="flex items-center justify-center h-64">
             <div className="text-neutral-500">Carregando audiências...</div>
           </div>
-        ) : hearingsByUser.length === 0 ? (
-          <div className="bg-white rounded-lg shadow p-8 text-center">
-            <Gavel size={48} className="text-neutral-300 mx-auto mb-4" />
-            <p className="text-neutral-500">Nenhuma audiência encontrada para esta data.</p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto pb-4">
-            <div className="flex gap-4 min-w-max">
+        ) : viewMode === 'columns' ? (
+          /* Visualização em Colunas por Advogado - Grid Responsivo */
+          hearingsByUser.length === 0 ? (
+            <div className="bg-white rounded-lg shadow p-8 text-center">
+              <Gavel size={48} className="text-neutral-300 mx-auto mb-4" />
+              <p className="text-neutral-500">Nenhuma audiência encontrada para esta data.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {hearingsByUser.map(({ user, hearings }, index) => {
                 const colors = getUserColor(index);
                 return (
                 <div
                   key={user.id}
-                  className="w-80 flex-shrink-0 bg-white rounded-lg shadow"
+                  className="bg-white rounded-lg shadow"
                 >
                   {/* Cabeçalho da Coluna */}
                   <div className={`${colors.header} p-4 rounded-t-lg`}>
@@ -509,7 +640,7 @@ const Hearings: React.FC = () => {
                   </div>
 
                   {/* Lista de Audiências */}
-                  <div className="p-3 space-y-3 max-h-[calc(100vh-400px)] overflow-y-auto">
+                  <div className="p-3 space-y-3 max-h-[400px] overflow-y-auto">
                     {hearings.length === 0 ? (
                       <div className="text-center py-8 text-neutral-400">
                         <Calendar size={32} className="mx-auto mb-2 opacity-50" />
@@ -571,6 +702,97 @@ const Hearings: React.FC = () => {
                   </div>
                 </div>
               );
+              })}
+            </div>
+          )
+        ) : (
+          /* Visualização Semanal - Calendário */
+          <div className="bg-white rounded-lg shadow overflow-hidden">
+            {/* Cabeçalho dos dias da semana */}
+            <div className="grid grid-cols-7 border-b">
+              {getWeekDays().map((day, index) => (
+                <div
+                  key={index}
+                  className={`p-3 text-center border-r last:border-r-0 ${
+                    isToday(day) ? 'bg-primary-50' : ''
+                  }`}
+                >
+                  <div className={`text-xs uppercase font-medium ${
+                    isToday(day) ? 'text-primary-600' : 'text-neutral-500'
+                  }`}>
+                    {formatWeekDay(day)}
+                  </div>
+                  <div className={`text-2xl font-bold mt-1 ${
+                    isToday(day) ? 'text-primary-600' : 'text-neutral-800'
+                  }`}>
+                    {formatDayNumber(day)}
+                  </div>
+                  {getHearingsForDay(day).length > 0 && (
+                    <div className="mt-1">
+                      <span className="inline-flex items-center justify-center w-6 h-6 text-xs font-bold bg-primary-100 text-primary-700 rounded-full">
+                        {getHearingsForDay(day).length}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Grid de audiências por dia */}
+            <div className="grid grid-cols-7 min-h-[400px]">
+              {getWeekDays().map((day, dayIndex) => {
+                const dayHearings = getHearingsForDay(day);
+                return (
+                  <div
+                    key={dayIndex}
+                    className={`border-r last:border-r-0 p-2 ${
+                      isToday(day) ? 'bg-primary-50/30' : ''
+                    }`}
+                  >
+                    <div className="space-y-2 max-h-[500px] overflow-y-auto">
+                      {dayHearings.length === 0 ? (
+                        <div className="text-center py-4 text-neutral-300">
+                          <Calendar size={20} className="mx-auto opacity-50" />
+                        </div>
+                      ) : (
+                        dayHearings.map((hearing) => (
+                          <div
+                            key={hearing.id}
+                            onClick={() => handleEditClick(hearing)}
+                            className={`p-2 rounded-lg border-l-4 cursor-pointer hover:shadow-md transition-all text-xs ${
+                              priorityColors[hearing.priority || 'MEDIA']
+                            }`}
+                          >
+                            {/* Horário */}
+                            <div className="font-bold text-neutral-800 mb-1">
+                              {formatTime(hearing.date)}
+                            </div>
+
+                            {/* Título */}
+                            <div className="font-medium text-neutral-900 line-clamp-2 mb-1">
+                              {hearing.title}
+                            </div>
+
+                            {/* Cliente */}
+                            {hearing.client && (
+                              <div className="text-neutral-600 truncate">
+                                {hearing.client.name}
+                              </div>
+                            )}
+
+                            {/* Advogado atribuído */}
+                            {hearing.assignedUsers && hearing.assignedUsers.length > 0 && (
+                              <div className="text-neutral-500 truncate mt-1 flex items-center gap-1">
+                                <User size={10} />
+                                {hearing.assignedUsers[0].user.name}
+                              </div>
+                            )}
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                );
               })}
             </div>
           </div>
