@@ -526,7 +526,7 @@ const Schedule: React.FC = () => {
               onClick={() => setViewMode('table')}
               className={`flex items-center gap-2 px-3 py-2 min-h-[44px] transition-colors ${
                 viewMode === 'table'
-                  ? 'bg-primary-100 text-primary-700'
+                  ? 'bg-neutral-200 text-neutral-800'
                   : 'bg-white text-neutral-600 hover:bg-neutral-50'
               }`}
               title="Visualização em Tabela"
@@ -538,7 +538,7 @@ const Schedule: React.FC = () => {
               onClick={() => setViewMode('calendar')}
               className={`flex items-center gap-2 px-3 py-2 min-h-[44px] transition-colors border-l border-neutral-200 ${
                 viewMode === 'calendar'
-                  ? 'bg-primary-100 text-primary-700'
+                  ? 'bg-neutral-200 text-neutral-800'
                   : 'bg-white text-neutral-600 hover:bg-neutral-50'
               }`}
               title="Visualização em Calendário"
