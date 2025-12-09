@@ -45,6 +45,10 @@ interface DeadlinesDueToday {
   count: number;
 }
 
+interface TasksDueToday {
+  count: number;
+}
+
 interface LayoutProps {
   children: React.ReactNode;
 }
@@ -59,6 +63,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [showSubscriptionBanner, setShowSubscriptionBanner] = React.useState(true);
   const [accountsDueToday, setAccountsDueToday] = React.useState<AccountsDueToday | null>(null);
   const [deadlinesDueToday, setDeadlinesDueToday] = React.useState<DeadlinesDueToday | null>(null);
+  const [tasksDueToday, setTasksDueToday] = React.useState<TasksDueToday | null>(null);
 
   // Verificar se a sidebar deve ser escondida para este usuário
   const shouldHideSidebar = user?.hideSidebar === true;
@@ -133,6 +138,27 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       checkDeadlinesDueToday();
       // Atualizar a cada 5 minutos
       const interval = setInterval(checkDeadlinesDueToday, 5 * 60 * 1000);
+      return () => clearInterval(interval);
+    }
+  }, [user]);
+
+  // Verificar tarefas vencendo hoje
+  React.useEffect(() => {
+    const checkTasksDueToday = async () => {
+      try {
+        const response = await api.get('/schedule/tasks-today');
+        setTasksDueToday({
+          count: response.data.count,
+        });
+      } catch (error) {
+        console.error('Error checking tasks due today:', error);
+      }
+    };
+
+    if (user) {
+      checkTasksDueToday();
+      // Atualizar a cada 5 minutos
+      const interval = setInterval(checkTasksDueToday, 5 * 60 * 1000);
       return () => clearInterval(interval);
     }
   }, [user]);
@@ -348,12 +374,20 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 const showAccountsBadge = item.path === '/accounts-payable' && accountsDueToday && accountsDueToday.count > 0;
                 // Badge para Prazos
                 const showDeadlinesBadge = item.path === '/deadlines' && deadlinesDueToday && deadlinesDueToday.count > 0;
+                // Badge para Tarefas
+                const showTasksBadge = item.path === '/todos' && tasksDueToday && tasksDueToday.count > 0;
                 // Badge genérico
-                const showBadge = showAccountsBadge || showDeadlinesBadge;
-                const badgeCount = showAccountsBadge ? accountsDueToday?.count : (showDeadlinesBadge ? deadlinesDueToday?.count : 0);
+                const showBadge = showAccountsBadge || showDeadlinesBadge || showTasksBadge;
+                const badgeCount = showAccountsBadge
+                  ? accountsDueToday?.count
+                  : (showDeadlinesBadge
+                    ? deadlinesDueToday?.count
+                    : (showTasksBadge ? tasksDueToday?.count : 0));
                 const badgeTitle = showAccountsBadge
                   ? `${item.label} (${accountsDueToday?.count} vencendo hoje)`
-                  : (showDeadlinesBadge ? `${item.label} (${deadlinesDueToday?.count} vencendo hoje)` : item.label);
+                  : (showDeadlinesBadge
+                    ? `${item.label} (${deadlinesDueToday?.count} vencendo hoje)`
+                    : (showTasksBadge ? `${item.label} (${tasksDueToday?.count} vencendo hoje)` : item.label));
 
                 return (
                   <Link
@@ -383,7 +417,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                         {showBadge && (
                           <span
                             className="bg-red-500 text-white text-xs font-bold rounded-full px-2 py-0.5 ml-2"
-                            title={showAccountsBadge ? `R$ ${accountsDueToday?.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} vencendo hoje` : `${deadlinesDueToday?.count} prazo(s) vencendo hoje`}
+                            title={showAccountsBadge
+                              ? `R$ ${accountsDueToday?.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} vencendo hoje`
+                              : (showDeadlinesBadge
+                                ? `${deadlinesDueToday?.count} prazo(s) vencendo hoje`
+                                : `${tasksDueToday?.count} tarefa(s) vencendo hoje`)}
                           >
                             {badgeCount}
                           </span>

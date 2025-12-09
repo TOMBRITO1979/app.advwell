@@ -38,6 +38,7 @@ const idValidation = [
 // Rotas CRUD
 router.get('/', scheduleController.list);
 router.get('/upcoming', scheduleController.upcoming); // Próximos eventos (para dashboard)
+router.get('/tasks-today', scheduleController.getTasksDueToday); // Tarefas vencendo hoje (notificação sidebar)
 router.get('/:id', idValidation, scheduleController.get);
 router.post('/', createValidation, scheduleController.create);
 router.put('/:id', updateValidation, scheduleController.update);

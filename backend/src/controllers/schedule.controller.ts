@@ -598,6 +598,41 @@ export class ScheduleController {
       res.status(500).json({ error: 'Erro ao buscar próximos eventos' });
     }
   }
+
+  // Obter tarefas vencendo hoje (para notificação no sidebar)
+  async getTasksDueToday(req: AuthRequest, res: Response) {
+    try {
+      const companyId = req.user!.companyId;
+
+      if (!companyId) {
+        return res.status(403).json({ error: 'Usuário não possui empresa associada' });
+      }
+
+      // Usar query raw SQL para comparar apenas a data (ignorando timezone)
+      const tasks = await prisma.$queryRaw<Array<{
+        id: string;
+        title: string;
+        date: Date;
+      }>>`
+        SELECT id, title, date
+        FROM schedule_events
+        WHERE "companyId" = ${companyId}
+          AND type = 'TAREFA'
+          AND completed = false
+          AND date IS NOT NULL
+          AND DATE(date) = CURRENT_DATE
+        ORDER BY date ASC
+      `;
+
+      res.json({
+        count: tasks.length,
+        tasks,
+      });
+    } catch (error) {
+      console.error('Erro ao buscar tarefas vencendo hoje:', error);
+      res.status(500).json({ error: 'Erro ao buscar tarefas vencendo hoje' });
+    }
+  }
 }
 
 export default new ScheduleController();
