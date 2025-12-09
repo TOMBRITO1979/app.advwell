@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Gavel, Calendar, ChevronLeft, ChevronRight, Edit2, User, LayoutGrid, CalendarDays } from 'lucide-react';
+import { Gavel, Calendar, ChevronLeft, ChevronRight, Edit2, User, List, CalendarDays } from 'lucide-react';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import Layout from '../components/Layout';
@@ -65,7 +65,7 @@ const Hearings: React.FC = () => {
     const today = new Date();
     return today.toISOString().split('T')[0];
   });
-  const [viewMode, setViewMode] = useState<'columns' | 'week'>('columns');
+  const [viewMode, setViewMode] = useState<'list' | 'week'>('list');
   const [weekEvents, setWeekEvents] = useState<ScheduleEvent[]>([]);
 
   // Modal de edição
@@ -108,32 +108,12 @@ const Hearings: React.FC = () => {
     URGENTE: 'Urgente',
   };
 
-  // Paleta de cores foscas, claras e calmas para cada advogado
-  const userColors = [
-    { header: 'bg-slate-400', headerText: 'text-slate-50', subText: 'text-slate-200', count: 'text-slate-200' },
-    { header: 'bg-stone-400', headerText: 'text-stone-50', subText: 'text-stone-200', count: 'text-stone-200' },
-    { header: 'bg-zinc-400', headerText: 'text-zinc-50', subText: 'text-zinc-200', count: 'text-zinc-200' },
-    { header: 'bg-teal-300', headerText: 'text-teal-800', subText: 'text-teal-600', count: 'text-teal-600' },
-    { header: 'bg-cyan-300', headerText: 'text-cyan-800', subText: 'text-cyan-600', count: 'text-cyan-600' },
-    { header: 'bg-sky-300', headerText: 'text-sky-800', subText: 'text-sky-600', count: 'text-sky-600' },
-    { header: 'bg-indigo-300', headerText: 'text-indigo-800', subText: 'text-indigo-600', count: 'text-indigo-600' },
-    { header: 'bg-violet-300', headerText: 'text-violet-800', subText: 'text-violet-600', count: 'text-violet-600' },
-    { header: 'bg-rose-300', headerText: 'text-rose-800', subText: 'text-rose-600', count: 'text-rose-600' },
-    { header: 'bg-amber-300', headerText: 'text-amber-800', subText: 'text-amber-600', count: 'text-amber-600' },
-    { header: 'bg-lime-300', headerText: 'text-lime-800', subText: 'text-lime-600', count: 'text-lime-600' },
-    { header: 'bg-emerald-300', headerText: 'text-emerald-800', subText: 'text-emerald-600', count: 'text-emerald-600' },
-  ];
-
-  const getUserColor = (index: number) => {
-    return userColors[index % userColors.length];
-  };
-
   useEffect(() => {
     fetchCompanyUsers();
   }, []);
 
   useEffect(() => {
-    if (viewMode === 'columns') {
+    if (viewMode === 'list') {
       fetchHearings();
     } else {
       fetchWeekHearings();
@@ -229,53 +209,6 @@ const Hearings: React.FC = () => {
     } catch (error) {
       console.error('Erro ao buscar processos:', error);
     }
-  };
-
-  // Agrupar audiências por usuário/advogado
-  const getHearingsByUser = () => {
-    const userMap = new Map<string, { user: UserData; hearings: ScheduleEvent[] }>();
-
-    // Inicializar todos os usuários da empresa
-    companyUsers.forEach(user => {
-      userMap.set(user.id, { user, hearings: [] });
-    });
-
-    // Adicionar coluna "Sem atribuição"
-    userMap.set('unassigned', {
-      user: { id: 'unassigned', name: 'Sem Atribuição', email: '' },
-      hearings: []
-    });
-
-    // Distribuir audiências
-    events.forEach(event => {
-      if (event.assignedUsers && event.assignedUsers.length > 0) {
-        event.assignedUsers.forEach(assignment => {
-          const existing = userMap.get(assignment.user.id);
-          if (existing) {
-            existing.hearings.push(event);
-          }
-        });
-      } else if (event.user) {
-        const existing = userMap.get(event.user.id);
-        if (existing) {
-          existing.hearings.push(event);
-        }
-      } else {
-        const unassigned = userMap.get('unassigned');
-        if (unassigned) {
-          unassigned.hearings.push(event);
-        }
-      }
-    });
-
-    // Converter para array e ordenar
-    return Array.from(userMap.values())
-      .filter(item => item.hearings.length > 0 || selectedUserId === '' || selectedUserId === item.user.id)
-      .sort((a, b) => {
-        if (a.user.id === 'unassigned') return 1;
-        if (b.user.id === 'unassigned') return -1;
-        return a.user.name.localeCompare(b.user.name);
-      });
   };
 
   const handleEditClick = (event: ScheduleEvent) => {
@@ -480,8 +413,6 @@ const Hearings: React.FC = () => {
     });
   };
 
-  const hearingsByUser = getHearingsByUser();
-
   return (
     <Layout>
       <div className="space-y-6">
@@ -493,22 +424,22 @@ const Hearings: React.FC = () => {
               Audiências
             </h1>
             <p className="text-neutral-600 mt-1">
-              {viewMode === 'columns' ? 'Visualização por advogado' : 'Visualização semanal'}
+              {viewMode === 'list' ? 'Visualização em lista' : 'Visualização semanal'}
             </p>
           </div>
 
           {/* Toggle de Visualização */}
           <div className="flex bg-neutral-100 rounded-lg p-1">
             <button
-              onClick={() => setViewMode('columns')}
+              onClick={() => setViewMode('list')}
               className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                viewMode === 'columns'
+                viewMode === 'list'
                   ? 'bg-white text-primary-700 shadow-sm'
                   : 'text-neutral-600 hover:text-neutral-900'
               }`}
             >
-              <LayoutGrid size={18} />
-              Colunas
+              <List size={18} />
+              Lista
             </button>
             <button
               onClick={() => setViewMode('week')}
@@ -530,9 +461,9 @@ const Hearings: React.FC = () => {
             {/* Navegação de Data */}
             <div className="flex items-center gap-2">
               <button
-                onClick={() => viewMode === 'columns' ? changeDate(-1) : changeWeek(-1)}
+                onClick={() => viewMode === 'list' ? changeDate(-1) : changeWeek(-1)}
                 className="p-2 hover:bg-neutral-100 rounded-lg transition-colors"
-                title={viewMode === 'columns' ? 'Dia anterior' : 'Semana anterior'}
+                title={viewMode === 'list' ? 'Dia anterior' : 'Semana anterior'}
               >
                 <ChevronLeft size={20} />
               </button>
@@ -546,9 +477,9 @@ const Hearings: React.FC = () => {
                 />
               </div>
               <button
-                onClick={() => viewMode === 'columns' ? changeDate(1) : changeWeek(1)}
+                onClick={() => viewMode === 'list' ? changeDate(1) : changeWeek(1)}
                 className="p-2 hover:bg-neutral-100 rounded-lg transition-colors"
-                title={viewMode === 'columns' ? 'Próximo dia' : 'Próxima semana'}
+                title={viewMode === 'list' ? 'Próximo dia' : 'Próxima semana'}
               >
                 <ChevronRight size={20} />
               </button>
@@ -580,7 +511,7 @@ const Hearings: React.FC = () => {
 
           {/* Data selecionada em destaque */}
           <div className="mt-4 text-center">
-            {viewMode === 'columns' ? (
+            {viewMode === 'list' ? (
               <>
                 <p className="text-lg font-semibold text-neutral-800 capitalize">
                   {formatDateDisplay(selectedDate)}
@@ -607,102 +538,143 @@ const Hearings: React.FC = () => {
           <div className="flex items-center justify-center h-64">
             <div className="text-neutral-500">Carregando audiências...</div>
           </div>
-        ) : viewMode === 'columns' ? (
-          /* Visualização em Colunas por Advogado - Grid Responsivo */
-          hearingsByUser.length === 0 ? (
+        ) : viewMode === 'list' ? (
+          /* Visualização em Lista/Tabela */
+          events.length === 0 ? (
             <div className="bg-white rounded-lg shadow p-8 text-center">
               <Gavel size={48} className="text-neutral-300 mx-auto mb-4" />
               <p className="text-neutral-500">Nenhuma audiência encontrada para esta data.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {hearingsByUser.map(({ user, hearings }, index) => {
-                const colors = getUserColor(index);
-                return (
-                <div
-                  key={user.id}
-                  className="bg-white rounded-lg shadow"
-                >
-                  {/* Cabeçalho da Coluna */}
-                  <div className={`${colors.header} p-4 rounded-t-lg`}>
-                    <div className="flex items-center gap-2">
-                      <User size={20} className={colors.headerText} />
-                      <div>
-                        <h3 className={`font-semibold ${colors.headerText}`}>{user.name}</h3>
-                        {user.email && (
-                          <p className={`text-xs ${colors.subText}`}>{user.email}</p>
-                        )}
-                      </div>
-                    </div>
-                    <div className={`mt-2 text-sm ${colors.count}`}>
-                      {hearings.length} audiência(s)
-                    </div>
-                  </div>
-
-                  {/* Lista de Audiências */}
-                  <div className="p-3 space-y-3 max-h-[400px] overflow-y-auto">
-                    {hearings.length === 0 ? (
-                      <div className="text-center py-8 text-neutral-400">
-                        <Calendar size={32} className="mx-auto mb-2 opacity-50" />
-                        <p className="text-sm">Sem audiências</p>
-                      </div>
-                    ) : (
-                      hearings
-                        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-                        .map((hearing) => (
-                          <div
-                            key={hearing.id}
-                            onClick={() => handleEditClick(hearing)}
-                            className={`p-3 rounded-lg border-l-4 cursor-pointer hover:shadow-md transition-all ${
-                              priorityColors[hearing.priority || 'MEDIA']
-                            }`}
-                          >
-                            {/* Horário */}
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="text-lg font-bold text-neutral-800">
-                                {formatTime(hearing.date)}
-                              </span>
-                              <span className={`text-xs px-2 py-1 rounded-full ${
-                                hearing.completed
-                                  ? 'bg-success-100 text-success-700'
-                                  : 'bg-neutral-100 text-neutral-600'
-                              }`}>
-                                {hearing.completed ? 'Concluída' : priorityLabels[hearing.priority || 'MEDIA']}
-                              </span>
-                            </div>
-
-                            {/* Título */}
-                            <h4 className="font-medium text-neutral-900 mb-2 line-clamp-2">
-                              {hearing.title}
-                            </h4>
-
-                            {/* Cliente */}
-                            {hearing.client && (
-                              <div className="flex items-center gap-1 text-sm text-neutral-600 mb-1">
-                                <User size={14} />
-                                <span className="truncate">{hearing.client.name}</span>
+            <div className="bg-white rounded-lg shadow overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-neutral-200">
+                  <thead className="bg-neutral-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                        Horário
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                        Título
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider hidden md:table-cell">
+                        Cliente
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider hidden lg:table-cell">
+                        Processo
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider hidden md:table-cell">
+                        Advogado
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                        Prioridade
+                      </th>
+                      <th className="px-4 py-3 text-center text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                        Ações
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-neutral-200">
+                    {events
+                      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+                      .map((hearing) => (
+                        <tr
+                          key={hearing.id}
+                          className={`hover:bg-neutral-50 cursor-pointer border-l-4 ${
+                            hearing.priority === 'URGENTE' ? 'border-l-red-500' :
+                            hearing.priority === 'ALTA' ? 'border-l-orange-500' :
+                            hearing.priority === 'MEDIA' ? 'border-l-yellow-500' :
+                            'border-l-green-500'
+                          } ${hearing.completed ? 'bg-neutral-50 opacity-60' : ''}`}
+                          onClick={() => handleEditClick(hearing)}
+                        >
+                          <td className="px-4 py-3 whitespace-nowrap">
+                            <span className="text-lg font-bold text-neutral-800">
+                              {formatTime(hearing.date)}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="max-w-xs">
+                              <p className="font-medium text-neutral-900 truncate">
+                                {hearing.title}
+                              </p>
+                              {/* Mobile: mostrar cliente e processo aqui */}
+                              <div className="md:hidden text-sm text-neutral-500 mt-1">
+                                {hearing.client && <span>{hearing.client.name}</span>}
+                                {hearing.case && <span className="block font-mono text-xs">{hearing.case.processNumber}</span>}
                               </div>
-                            )}
-
-                            {/* Processo */}
-                            {hearing.case && (
-                              <div className="text-xs text-neutral-500 font-mono truncate">
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 hidden md:table-cell">
+                            <div className="flex items-center gap-1 text-sm text-neutral-600">
+                              {hearing.client ? (
+                                <>
+                                  <User size={14} />
+                                  <span className="truncate max-w-[150px]">{hearing.client.name}</span>
+                                </>
+                              ) : (
+                                <span className="text-neutral-400">-</span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 hidden lg:table-cell">
+                            {hearing.case ? (
+                              <span className="text-sm text-neutral-600 font-mono truncate max-w-[180px] block">
                                 {hearing.case.processNumber}
-                              </div>
+                              </span>
+                            ) : (
+                              <span className="text-neutral-400">-</span>
                             )}
-
-                            {/* Indicador de edição */}
-                            <div className="mt-2 flex items-center gap-1 text-xs text-primary-600">
-                              <Edit2 size={12} />
-                              <span>Clique para editar</span>
-                            </div>
-                          </div>
-                        ))
-                    )}
-                  </div>
-                </div>
-              );
-              })}
+                          </td>
+                          <td className="px-4 py-3 hidden md:table-cell">
+                            {hearing.assignedUsers && hearing.assignedUsers.length > 0 ? (
+                              <div className="flex items-center gap-1 text-sm text-neutral-600">
+                                <User size={14} />
+                                <span className="truncate max-w-[120px]">
+                                  {hearing.assignedUsers[0].user.name}
+                                </span>
+                              </div>
+                            ) : hearing.user ? (
+                              <div className="flex items-center gap-1 text-sm text-neutral-600">
+                                <User size={14} />
+                                <span className="truncate max-w-[120px]">{hearing.user.name}</span>
+                              </div>
+                            ) : (
+                              <span className="text-neutral-400">-</span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap">
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                              hearing.completed
+                                ? 'bg-success-100 text-success-700'
+                                : hearing.priority === 'URGENTE'
+                                  ? 'bg-red-100 text-red-700'
+                                  : hearing.priority === 'ALTA'
+                                    ? 'bg-orange-100 text-orange-700'
+                                    : hearing.priority === 'MEDIA'
+                                      ? 'bg-yellow-100 text-yellow-700'
+                                      : 'bg-green-100 text-green-700'
+                            }`}>
+                              {hearing.completed ? 'Concluída' : priorityLabels[hearing.priority || 'MEDIA']}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-center whitespace-nowrap">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleEditClick(hearing);
+                              }}
+                              className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-primary-600 hover:bg-primary-50 rounded-md transition-colors"
+                            >
+                              <Edit2 size={14} />
+                              <span className="hidden sm:inline">Editar</span>
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )
         ) : (
