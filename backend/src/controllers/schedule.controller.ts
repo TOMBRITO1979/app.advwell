@@ -633,6 +633,250 @@ export class ScheduleController {
       res.status(500).json({ error: 'Erro ao buscar tarefas vencendo hoje' });
     }
   }
+
+  // Exportar agenda para PDF
+  async exportPDF(req: AuthRequest, res: Response) {
+    try {
+      const { search, type, completed, clientId, caseId, startDate, endDate } = req.query;
+      const companyId = req.user!.companyId;
+
+      if (!companyId) {
+        return res.status(403).json({ error: 'Usuário não possui empresa associada' });
+      }
+
+      const where: any = { companyId };
+
+      if (search) {
+        where.OR = [
+          { title: { contains: String(search), mode: 'insensitive' as const } },
+          { description: { contains: String(search), mode: 'insensitive' as const } },
+          { client: { name: { contains: String(search), mode: 'insensitive' as const } } },
+        ];
+      }
+
+      if (type) where.type = type;
+      if (completed !== undefined) where.completed = completed === 'true';
+      if (clientId) where.clientId = String(clientId);
+      if (caseId) where.caseId = String(caseId);
+
+      if (startDate || endDate) {
+        where.date = {};
+        if (startDate) where.date.gte = new Date(String(startDate));
+        if (endDate) where.date.lte = new Date(String(endDate));
+      }
+
+      // Buscar dados da empresa
+      const company = await prisma.company.findUnique({
+        where: { id: companyId },
+        select: {
+          name: true,
+          email: true,
+          phone: true,
+          address: true,
+          city: true,
+          state: true,
+          zipCode: true,
+        },
+      });
+
+      const events = await prisma.scheduleEvent.findMany({
+        where,
+        orderBy: { date: 'asc' },
+        include: {
+          client: { select: { name: true } },
+          case: { select: { processNumber: true } },
+          assignedUsers: {
+            include: {
+              user: { select: { name: true } }
+            }
+          }
+        },
+      });
+
+      // Mapeamento de tipos e prioridades
+      const typeLabels: Record<string, string> = {
+        'COMPROMISSO': 'Compromisso',
+        'TAREFA': 'Tarefa',
+        'PRAZO': 'Prazo',
+        'AUDIENCIA': 'Audiência',
+        'GOOGLE_MEET': 'Google Meet',
+      };
+
+      const priorityLabels: Record<string, string> = {
+        'BAIXA': 'Baixa',
+        'MEDIA': 'Média',
+        'ALTA': 'Alta',
+        'URGENTE': 'Urgente',
+      };
+
+      // Generate PDF using PDFKit
+      const PDFDocument = require('pdfkit');
+      const doc = new PDFDocument({ margin: 50 });
+
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', 'attachment; filename=agenda.pdf');
+
+      doc.pipe(res);
+
+      // Header com dados da empresa
+      if (company) {
+        doc.fontSize(16).text(company.name, { align: 'center' });
+        doc.moveDown(0.3);
+        doc.fontSize(9);
+
+        if (company.address || company.city || company.state) {
+          const addressParts = [];
+          if (company.address) addressParts.push(company.address);
+          if (company.city) addressParts.push(company.city);
+          if (company.state) addressParts.push(company.state);
+          if (company.zipCode) addressParts.push(`CEP: ${company.zipCode}`);
+          doc.text(addressParts.join(' - '), { align: 'center' });
+        }
+
+        const contactParts = [];
+        if (company.phone) contactParts.push(`Tel: ${company.phone}`);
+        if (company.email) contactParts.push(company.email);
+        if (contactParts.length > 0) {
+          doc.text(contactParts.join(' | '), { align: 'center' });
+        }
+
+        doc.moveDown(1);
+        doc.moveTo(50, doc.y).lineTo(545, doc.y).stroke();
+        doc.moveDown(1);
+      }
+
+      // Título do relatório
+      doc.fontSize(20).text('Agenda', { align: 'center' });
+      doc.moveDown();
+      doc.fontSize(10).text(`Data de Geração: ${new Date().toLocaleDateString('pt-BR')}`, { align: 'center' });
+      doc.moveDown(0.5);
+      doc.fontSize(10).text(`Total de eventos: ${events.length}`, { align: 'center' });
+      doc.moveDown(2);
+
+      // Lista de eventos
+      events.forEach((event, index) => {
+        doc.fontSize(10);
+        const date = new Date(event.date).toLocaleDateString('pt-BR');
+        const time = new Date(event.date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        const typeLabel = typeLabels[event.type] || event.type;
+        const priorityLabel = priorityLabels[event.priority || 'MEDIA'] || 'Média';
+        const status = event.completed ? 'Concluído' : 'Pendente';
+        const clientName = event.client?.name || '-';
+        const processNum = event.case?.processNumber || '-';
+        const assignedNames = event.assignedUsers?.map(a => a.user.name).join(', ') || '-';
+
+        doc.font('Helvetica-Bold').text(`${index + 1}. ${event.title}`, { continued: false });
+        doc.font('Helvetica');
+        doc.text(`   Data: ${date} às ${time}`);
+        doc.text(`   Tipo: ${typeLabel} | Prioridade: ${priorityLabel} | Status: ${status}`);
+        doc.text(`   Cliente: ${clientName}`);
+        doc.text(`   Processo: ${processNum}`);
+        doc.text(`   Responsável(is): ${assignedNames}`);
+        if (event.description) {
+          doc.text(`   Descrição: ${event.description}`);
+        }
+        doc.moveDown(0.8);
+
+        if ((index + 1) % 8 === 0 && index !== events.length - 1) {
+          doc.addPage();
+        }
+      });
+
+      doc.end();
+    } catch (error) {
+      console.error('Erro ao gerar PDF da agenda:', error);
+      res.status(500).json({ error: 'Erro ao gerar PDF' });
+    }
+  }
+
+  // Exportar agenda para CSV
+  async exportCSV(req: AuthRequest, res: Response) {
+    try {
+      const { search, type, completed, clientId, caseId, startDate, endDate } = req.query;
+      const companyId = req.user!.companyId;
+
+      if (!companyId) {
+        return res.status(403).json({ error: 'Usuário não possui empresa associada' });
+      }
+
+      const where: any = { companyId };
+
+      if (search) {
+        where.OR = [
+          { title: { contains: String(search), mode: 'insensitive' as const } },
+          { description: { contains: String(search), mode: 'insensitive' as const } },
+          { client: { name: { contains: String(search), mode: 'insensitive' as const } } },
+        ];
+      }
+
+      if (type) where.type = type;
+      if (completed !== undefined) where.completed = completed === 'true';
+      if (clientId) where.clientId = String(clientId);
+      if (caseId) where.caseId = String(caseId);
+
+      if (startDate || endDate) {
+        where.date = {};
+        if (startDate) where.date.gte = new Date(String(startDate));
+        if (endDate) where.date.lte = new Date(String(endDate));
+      }
+
+      const events = await prisma.scheduleEvent.findMany({
+        where,
+        orderBy: { date: 'asc' },
+        include: {
+          client: { select: { name: true } },
+          case: { select: { processNumber: true } },
+          assignedUsers: {
+            include: {
+              user: { select: { name: true } }
+            }
+          }
+        },
+      });
+
+      // Mapeamento de tipos e prioridades
+      const typeLabels: Record<string, string> = {
+        'COMPROMISSO': 'Compromisso',
+        'TAREFA': 'Tarefa',
+        'PRAZO': 'Prazo',
+        'AUDIENCIA': 'Audiência',
+        'GOOGLE_MEET': 'Google Meet',
+      };
+
+      const priorityLabels: Record<string, string> = {
+        'BAIXA': 'Baixa',
+        'MEDIA': 'Média',
+        'ALTA': 'Alta',
+        'URGENTE': 'Urgente',
+      };
+
+      // Generate CSV
+      const csvHeader = 'Data,Horário,Título,Tipo,Prioridade,Cliente,Processo,Responsável,Status,Descrição\n';
+      const csvRows = events.map(event => {
+        const date = new Date(event.date).toLocaleDateString('pt-BR');
+        const time = new Date(event.date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        const title = `"${(event.title || '').replace(/"/g, '""')}"`;
+        const typeLabel = typeLabels[event.type] || event.type;
+        const priorityLabel = priorityLabels[event.priority || 'MEDIA'] || 'Média';
+        const clientName = `"${(event.client?.name || '').replace(/"/g, '""')}"`;
+        const processNum = event.case?.processNumber || '';
+        const assignedNames = `"${(event.assignedUsers?.map(a => a.user.name).join(', ') || '').replace(/"/g, '""')}"`;
+        const status = event.completed ? 'Concluído' : 'Pendente';
+        const description = `"${(event.description || '').replace(/"/g, '""')}"`;
+
+        return `${date},${time},${title},${typeLabel},${priorityLabel},${clientName},${processNum},${assignedNames},${status},${description}`;
+      }).join('\n');
+
+      const csv = csvHeader + csvRows;
+
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader('Content-Disposition', 'attachment; filename=agenda.csv');
+      res.send('\ufeff' + csv); // BOM for Excel UTF-8 recognition
+    } catch (error) {
+      console.error('Erro ao gerar CSV da agenda:', error);
+      res.status(500).json({ error: 'Erro ao gerar CSV' });
+    }
+  }
 }
 
 export default new ScheduleController();

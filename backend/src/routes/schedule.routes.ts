@@ -39,6 +39,10 @@ const idValidation = [
 router.get('/', scheduleController.list);
 router.get('/upcoming', scheduleController.upcoming); // Próximos eventos (para dashboard)
 router.get('/tasks-today', scheduleController.getTasksDueToday); // Tarefas vencendo hoje (notificação sidebar)
+
+// Export routes - must be before /:id routes
+router.get('/export/pdf', scheduleController.exportPDF);
+router.get('/export/csv', scheduleController.exportCSV);
 router.get('/:id', idValidation, scheduleController.get);
 router.post('/', createValidation, scheduleController.create);
 router.put('/:id', updateValidation, scheduleController.update);

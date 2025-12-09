@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Plus, Search, CheckCircle, Circle, Edit2, Trash2, Eye, List, Grid3X3, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Calendar, Plus, Search, CheckCircle, Circle, Edit2, Trash2, Eye, List, Grid3X3, ChevronLeft, ChevronRight, Download, FileText, FileSpreadsheet } from 'lucide-react';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import Layout from '../components/Layout';
@@ -79,6 +79,10 @@ const Schedule: React.FC = () => {
   // Estado para seleção única de usuário responsável
   const [companyUsers, setCompanyUsers] = useState<User[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string>('');
+
+  // Export states
+  const [showExportMenu, setShowExportMenu] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   // Autocomplete states
   const [clientSearchTerm, setClientSearchTerm] = useState('');
@@ -492,6 +496,40 @@ const Schedule: React.FC = () => {
     });
   };
 
+  const handleExport = async (format: 'pdf' | 'csv') => {
+    try {
+      setExporting(true);
+      setShowExportMenu(false);
+
+      const params: Record<string, string> = {};
+      if (searchTerm) params.search = searchTerm;
+      if (filterType) params.type = filterType;
+      if (filterCompleted) params.completed = filterCompleted;
+
+      const response = await api.get(`/schedule/export/${format}`, {
+        params,
+        responseType: 'blob',
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      const dateStr = new Date().toISOString().split('T')[0];
+      link.setAttribute('download', `agenda_${dateStr}.${format}`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+
+      toast.success(`Agenda exportada com sucesso!`);
+    } catch (error) {
+      console.error('Erro ao exportar:', error);
+      toast.error('Erro ao exportar agenda');
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const handleNewEventForDay = (day: Date) => {
     resetForm();
     // Pré-preenche com a data do dia clicado às 09:00
@@ -546,6 +584,35 @@ const Schedule: React.FC = () => {
               <Grid3X3 size={18} />
               <span className="hidden sm:inline text-sm">Calendário</span>
             </button>
+          </div>
+          {/* Export Button */}
+          <div className="relative">
+            <button
+              onClick={() => setShowExportMenu(!showExportMenu)}
+              disabled={exporting}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-white text-neutral-700 border border-neutral-200 hover:bg-neutral-50 font-medium rounded-lg transition-all duration-200"
+            >
+              <Download size={20} />
+              <span>{exporting ? 'Exportando...' : 'Exportar'}</span>
+            </button>
+            {showExportMenu && (
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-neutral-200 z-50">
+                <button
+                  onClick={() => handleExport('pdf')}
+                  className="w-full flex items-center gap-2 px-4 py-3 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors"
+                >
+                  <FileText size={18} className="text-red-600" />
+                  Exportar PDF
+                </button>
+                <button
+                  onClick={() => handleExport('csv')}
+                  className="w-full flex items-center gap-2 px-4 py-3 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors border-t border-neutral-100"
+                >
+                  <FileSpreadsheet size={18} className="text-green-600" />
+                  Exportar CSV
+                </button>
+              </div>
+            )}
           </div>
           <button
             onClick={() => {
