@@ -41,6 +41,10 @@ interface AccountsDueToday {
   total: number;
 }
 
+interface DeadlinesDueToday {
+  count: number;
+}
+
 interface LayoutProps {
   children: React.ReactNode;
 }
@@ -54,6 +58,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [subscriptionStatus, setSubscriptionStatus] = React.useState<SubscriptionStatus | null>(null);
   const [showSubscriptionBanner, setShowSubscriptionBanner] = React.useState(true);
   const [accountsDueToday, setAccountsDueToday] = React.useState<AccountsDueToday | null>(null);
+  const [deadlinesDueToday, setDeadlinesDueToday] = React.useState<DeadlinesDueToday | null>(null);
 
   // Verificar se a sidebar deve ser escondida para este usuário
   const shouldHideSidebar = user?.hideSidebar === true;
@@ -107,6 +112,27 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       checkAccountsDueToday();
       // Atualizar a cada 5 minutos
       const interval = setInterval(checkAccountsDueToday, 5 * 60 * 1000);
+      return () => clearInterval(interval);
+    }
+  }, [user]);
+
+  // Verificar prazos vencendo hoje
+  React.useEffect(() => {
+    const checkDeadlinesDueToday = async () => {
+      try {
+        const response = await api.get('/cases/deadlines-today');
+        setDeadlinesDueToday({
+          count: response.data.count,
+        });
+      } catch (error) {
+        console.error('Error checking deadlines due today:', error);
+      }
+    };
+
+    if (user) {
+      checkDeadlinesDueToday();
+      // Atualizar a cada 5 minutos
+      const interval = setInterval(checkDeadlinesDueToday, 5 * 60 * 1000);
       return () => clearInterval(interval);
     }
   }, [user]);
@@ -317,7 +343,18 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               {menuItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = location.pathname.startsWith(item.path);
-                const showBadge = item.path === '/accounts-payable' && accountsDueToday && accountsDueToday.count > 0;
+
+                // Badge para Contas a Pagar
+                const showAccountsBadge = item.path === '/accounts-payable' && accountsDueToday && accountsDueToday.count > 0;
+                // Badge para Prazos
+                const showDeadlinesBadge = item.path === '/deadlines' && deadlinesDueToday && deadlinesDueToday.count > 0;
+                // Badge genérico
+                const showBadge = showAccountsBadge || showDeadlinesBadge;
+                const badgeCount = showAccountsBadge ? accountsDueToday?.count : (showDeadlinesBadge ? deadlinesDueToday?.count : 0);
+                const badgeTitle = showAccountsBadge
+                  ? `${item.label} (${accountsDueToday?.count} vencendo hoje)`
+                  : (showDeadlinesBadge ? `${item.label} (${deadlinesDueToday?.count} vencendo hoje)` : item.label);
+
                 return (
                   <Link
                     key={item.path}
@@ -330,13 +367,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                         : 'text-neutral-700 hover:bg-neutral-50 hover:text-primary-600'
                     }`}
                     onClick={() => setSidebarOpen(false)}
-                    title={sidebarCollapsed ? (showBadge ? `${item.label} (${accountsDueToday?.count} vencendo hoje)` : item.label) : ''}
+                    title={sidebarCollapsed ? badgeTitle : ''}
                   >
                     <div className="relative">
                       <Icon size={20} />
                       {showBadge && sidebarCollapsed && (
                         <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center">
-                          {accountsDueToday.count > 9 ? '9+' : accountsDueToday.count}
+                          {badgeCount && badgeCount > 9 ? '9+' : badgeCount}
                         </span>
                       )}
                     </div>
@@ -344,8 +381,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                       <div className="flex items-center justify-between flex-1">
                         <span className="text-sm">{item.label}</span>
                         {showBadge && (
-                          <span className="bg-red-500 text-white text-xs font-bold rounded-full px-2 py-0.5 ml-2" title={`R$ ${accountsDueToday.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} vencendo hoje`}>
-                            {accountsDueToday.count}
+                          <span
+                            className="bg-red-500 text-white text-xs font-bold rounded-full px-2 py-0.5 ml-2"
+                            title={showAccountsBadge ? `R$ ${accountsDueToday?.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} vencendo hoje` : `${deadlinesDueToday?.count} prazo(s) vencendo hoje`}
+                          >
+                            {badgeCount}
                           </span>
                         )}
                       </div>

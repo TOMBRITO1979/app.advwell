@@ -1259,6 +1259,43 @@ export class CaseController {
       res.status(500).json({ error: 'Erro ao buscar logs de auditoria' });
     }
   }
+
+  // Obter prazos vencendo hoje (para notificação no sidebar)
+  async getDeadlinesToday(req: AuthRequest, res: Response) {
+    try {
+      const companyId = req.user!.companyId;
+
+      if (!companyId) {
+        return res.status(403).json({ error: 'Usuário não possui empresa associada' });
+      }
+
+      // Usar query raw SQL para comparar apenas a data (ignorando timezone)
+      const cases = await prisma.$queryRaw<Array<{
+        id: string;
+        processNumber: string;
+        subject: string | null;
+        deadline: Date;
+        clientName: string | null;
+      }>>`
+        SELECT c.id, c."processNumber", c.subject, c.deadline, cl.name as "clientName"
+        FROM cases c
+        LEFT JOIN clients cl ON c."clientId" = cl.id
+        WHERE c."companyId" = ${companyId}
+          AND c."deadlineCompleted" = false
+          AND c.deadline IS NOT NULL
+          AND DATE(c.deadline) = CURRENT_DATE
+        ORDER BY c.deadline ASC
+      `;
+
+      res.json({
+        count: cases.length,
+        cases,
+      });
+    } catch (error) {
+      console.error('Erro ao buscar prazos vencendo hoje:', error);
+      res.status(500).json({ error: 'Erro ao buscar prazos vencendo hoje' });
+    }
+  }
 }
 
 export default new CaseController();
