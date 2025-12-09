@@ -65,7 +65,7 @@ const Hearings: React.FC = () => {
     const today = new Date();
     return today.toISOString().split('T')[0];
   });
-  const [viewMode, setViewMode] = useState<'list' | 'week'>('list');
+  const [viewMode, setViewMode] = useState<'list' | 'week'>('week');
   const [weekEvents, setWeekEvents] = useState<ScheduleEvent[]>([]);
 
   // Modal de edição
