@@ -140,14 +140,11 @@ const Deadlines: React.FC = () => {
     }
   };
 
+  // Formatar data sem problemas de timezone
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    const dateOnly = dateString.split('T')[0];
+    const [year, month, day] = dateOnly.split('-');
+    return `${day}/${month}/${year}`;
   };
 
   const formatCurrency = (value: number) => {
@@ -268,7 +265,7 @@ const Deadlines: React.FC = () => {
                           </div>
                         </td>
                         <td className="px-4 py-3 text-sm text-neutral-600">
-                          {new Date(caseItem.deadline).toLocaleDateString('pt-BR')}
+                          {formatDate(caseItem.deadline)}
                         </td>
                         <td className="px-4 py-3 text-sm">
                           {caseItem.deadlineCompleted ? (
@@ -402,7 +399,7 @@ const Deadlines: React.FC = () => {
                         <span>Prazo</span>
                       </div>
                       <p className="text-neutral-900 font-medium">
-                        {new Date(selectedCase.deadline).toLocaleDateString('pt-BR')}
+                        {formatDate(selectedCase.deadline)}
                       </p>
                       <div className="mt-2">
                         {(() => {

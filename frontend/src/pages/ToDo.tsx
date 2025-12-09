@@ -79,6 +79,13 @@ const ToDo: React.FC = () => {
     }
   };
 
+  // Formatar data sem problemas de timezone
+  const formatDate = (date: string) => {
+    const dateOnly = date.split('T')[0];
+    const [year, month, day] = dateOnly.split('-');
+    return `${day}/${month}/${year}`;
+  };
+
   const loadTodos = async () => {
     try {
       const params: any = {};
@@ -306,7 +313,7 @@ const ToDo: React.FC = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4 text-sm text-neutral-500">
-                        {todo.dueDate ? new Date(todo.dueDate).toLocaleDateString('pt-BR') : '-'}
+                        {todo.dueDate ? formatDate(todo.dueDate) : '-'}
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
