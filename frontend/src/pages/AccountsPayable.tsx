@@ -276,7 +276,12 @@ const AccountsPayable: React.FC = () => {
   };
 
   const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString('pt-BR');
+    // Extrair apenas a parte da data (YYYY-MM-DD) para evitar problemas de timezone
+    // Quando a data vem como "2025-12-08T00:00:00.000Z", new Date() interpreta como UTC
+    // e ao converter para local timezone pode voltar 1 dia
+    const dateOnly = date.split('T')[0]; // "2025-12-08"
+    const [year, month, day] = dateOnly.split('-');
+    return `${day}/${month}/${year}`; // "08/12/2025"
   };
 
   return (
@@ -615,8 +620,8 @@ const AccountsPayable: React.FC = () => {
 
         {/* Modal */}
         {showModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+            <div className="bg-white rounded-lg shadow-xl w-full max-w-md my-8">
               <div className="p-6">
                 <h2 className="text-2xl font-bold text-neutral-900 mb-4">
                   {editingAccount ? 'Editar Conta' : 'Nova Conta'}
