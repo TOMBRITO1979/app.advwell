@@ -61,10 +61,17 @@ const Deadlines: React.FC = () => {
   };
 
   const calculateDaysRemaining = (deadline: string): number => {
+    // Extrair apenas a data (YYYY-MM-DD) para evitar problemas de timezone
+    const deadlineDateOnly = deadline.split('T')[0];
+    const [year, month, day] = deadlineDateOnly.split('-').map(Number);
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const deadlineDate = new Date(deadline);
+
+    // Criar data do prazo usando componentes locais (não UTC)
+    const deadlineDate = new Date(year, month - 1, day);
     deadlineDate.setHours(0, 0, 0, 0);
+
     const diffTime = deadlineDate.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
@@ -102,9 +109,8 @@ const Deadlines: React.FC = () => {
 
   const handleEditClick = (caseItem: Case) => {
     setSelectedCase(caseItem);
-    // Format date for input (YYYY-MM-DD)
-    const deadlineDate = new Date(caseItem.deadline);
-    setEditDeadline(deadlineDate.toISOString().split('T')[0]);
+    // Format date for input (YYYY-MM-DD) - extrair diretamente sem usar Date
+    setEditDeadline(caseItem.deadline.split('T')[0]);
     setShowEditModal(true);
   };
 
