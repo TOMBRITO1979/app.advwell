@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Plus, Search, CheckCircle, Circle, Edit2, Trash2, Eye } from 'lucide-react';
+import { Calendar, Plus, Search, CheckCircle, Circle, Edit2, Trash2, Eye, List, Grid3X3, ChevronLeft, ChevronRight } from 'lucide-react';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import Layout from '../components/Layout';
@@ -66,6 +66,15 @@ const Schedule: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<string>('');
   const [filterCompleted, setFilterCompleted] = useState<string>('');
+
+  // Estado para controle de visualização (tabela ou calendário)
+  const [viewMode, setViewMode] = useState<'table' | 'calendar'>('table');
+  const [currentWeekStart, setCurrentWeekStart] = useState<Date>(() => {
+    const today = new Date();
+    const dayOfWeek = today.getDay(); // 0 = Domingo
+    const diff = today.getDate() - dayOfWeek; // Início da semana (Domingo)
+    return new Date(today.setDate(diff));
+  });
 
   // Estado para seleção única de usuário responsável
   const [companyUsers, setCompanyUsers] = useState<User[]>([]);
@@ -417,6 +426,85 @@ const Schedule: React.FC = () => {
     return `${values.year}-${values.month}-${values.day}T${values.hour}:${values.minute}`;
   };
 
+  // Funções auxiliares para o calendário de 7 dias
+  const getWeekDays = (startDate: Date): Date[] => {
+    const days: Date[] = [];
+    for (let i = 0; i < 7; i++) {
+      const day = new Date(startDate);
+      day.setDate(startDate.getDate() + i);
+      days.push(day);
+    }
+    return days;
+  };
+
+  const getEventsForDay = (day: Date): ScheduleEvent[] => {
+    return events.filter(event => {
+      const eventDate = new Date(event.date);
+      return (
+        eventDate.getFullYear() === day.getFullYear() &&
+        eventDate.getMonth() === day.getMonth() &&
+        eventDate.getDate() === day.getDate()
+      );
+    });
+  };
+
+  const navigateWeek = (direction: 'prev' | 'next') => {
+    const newStart = new Date(currentWeekStart);
+    newStart.setDate(currentWeekStart.getDate() + (direction === 'next' ? 7 : -7));
+    setCurrentWeekStart(newStart);
+  };
+
+  const goToCurrentWeek = () => {
+    const today = new Date();
+    const dayOfWeek = today.getDay();
+    const diff = today.getDate() - dayOfWeek;
+    setCurrentWeekStart(new Date(today.getFullYear(), today.getMonth(), diff));
+  };
+
+  const isToday = (date: Date): boolean => {
+    const today = new Date();
+    return (
+      date.getFullYear() === today.getFullYear() &&
+      date.getMonth() === today.getMonth() &&
+      date.getDate() === today.getDate()
+    );
+  };
+
+  const formatDayHeader = (date: Date): string => {
+    const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+    return dayNames[date.getDay()];
+  };
+
+  const formatDayNumber = (date: Date): string => {
+    return date.getDate().toString().padStart(2, '0');
+  };
+
+  const formatMonthYear = (date: Date): string => {
+    return date.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+  };
+
+  const formatEventTime = (dateString: string): string => {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString('pt-BR', {
+      timeZone: 'America/Sao_Paulo',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  const handleNewEventForDay = (day: Date) => {
+    resetForm();
+    // Pré-preenche com a data do dia clicado às 09:00
+    const year = day.getFullYear();
+    const month = String(day.getMonth() + 1).padStart(2, '0');
+    const dayNum = String(day.getDate()).padStart(2, '0');
+    setFormData(prev => ({
+      ...prev,
+      date: `${year}-${month}-${dayNum}T09:00`,
+    }));
+    setShowModal(true);
+  };
+
   return (
     <Layout>
       <div className="space-y-6">
@@ -431,16 +519,45 @@ const Schedule: React.FC = () => {
             Gerencie seus compromissos, tarefas e prazos
           </p>
         </div>
-        <button
-          onClick={() => {
-            resetForm();
-            setShowModal(true);
-          }}
-          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-primary-100 text-primary-700 border border-primary-200 hover:bg-primary-200 font-medium rounded-lg transition-all duration-200"
-        >
-          <Plus size={20} />
-          <span>Novo Evento</span>
-        </button>
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          {/* Toggle View Mode */}
+          <div className="flex rounded-lg border border-neutral-200 overflow-hidden">
+            <button
+              onClick={() => setViewMode('table')}
+              className={`flex items-center gap-2 px-3 py-2 min-h-[44px] transition-colors ${
+                viewMode === 'table'
+                  ? 'bg-primary-100 text-primary-700'
+                  : 'bg-white text-neutral-600 hover:bg-neutral-50'
+              }`}
+              title="Visualização em Tabela"
+            >
+              <List size={18} />
+              <span className="hidden sm:inline text-sm">Tabela</span>
+            </button>
+            <button
+              onClick={() => setViewMode('calendar')}
+              className={`flex items-center gap-2 px-3 py-2 min-h-[44px] transition-colors border-l border-neutral-200 ${
+                viewMode === 'calendar'
+                  ? 'bg-primary-100 text-primary-700'
+                  : 'bg-white text-neutral-600 hover:bg-neutral-50'
+              }`}
+              title="Visualização em Calendário"
+            >
+              <Grid3X3 size={18} />
+              <span className="hidden sm:inline text-sm">Calendário</span>
+            </button>
+          </div>
+          <button
+            onClick={() => {
+              resetForm();
+              setShowModal(true);
+            }}
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-primary-100 text-primary-700 border border-primary-200 hover:bg-primary-200 font-medium rounded-lg transition-all duration-200"
+          >
+            <Plus size={20} />
+            <span>Novo Evento</span>
+          </button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -484,160 +601,339 @@ const Schedule: React.FC = () => {
         </div>
       </div>
 
-      {/* Events List */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        {loading ? (
-          <div className="p-8 text-center text-neutral-500">Carregando...</div>
-        ) : events.length === 0 ? (
-          <div className="p-8 text-center text-neutral-500">
-            Nenhum evento encontrado. Crie um novo evento para começar.
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-neutral-200">
-              <thead className="bg-neutral-50">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                    Tipo
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                    Prioridade
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                    Título
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                    Data
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                    Cliente
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                    Processo
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                    Atribuído
-                  </th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                    Ações
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-neutral-200">
-                {events.map((event) => (
-                  <tr key={event.id} className="hover:bg-neutral-50">
-                    <td className="px-4 py-3">
-                      <button
-                        onClick={() => handleToggleComplete(event)}
-                        className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-neutral-600 hover:text-success-600 hover:bg-success-50 rounded-md transition-all duration-200"
-                        title={event.completed ? 'Marcar como pendente' : 'Marcar como concluído'}
-                      >
-                        {event.completed ? (
-                          <CheckCircle size={18} className="text-success-600" />
-                        ) : (
-                          <Circle size={18} />
-                        )}
-                      </button>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${eventTypeColors[event.type]}`}>
-                        {eventTypeLabels[event.type]}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${priorityColors[event.priority || 'MEDIA']}`}>
-                        {priorityLabels[event.priority || 'MEDIA']}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className={event.completed ? 'line-through text-neutral-500' : 'text-neutral-900'}>
-                        {event.title}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-neutral-600">
-                      {formatDateTime(event.date)}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-neutral-600">
-                      {event.client?.name || '-'}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-neutral-600">
-                      {event.case?.processNumber || '-'}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-neutral-600">
-                      {event.assignedUsers && event.assignedUsers.length > 0 ? (
-                        <div className="flex flex-wrap gap-1">
-                          {event.assignedUsers.map((assignment) => (
-                            <span
-                              key={assignment.id}
-                              className="px-2 py-1 text-xs font-medium bg-info-100 text-info-700 rounded-full"
-                            >
-                              {assignment.user.name}
-                            </span>
-                          ))}
+      {/* Events Display - Table or Calendar View */}
+      {viewMode === 'table' ? (
+        /* Table View */
+        <div className="bg-white rounded-lg shadow overflow-hidden">
+          {loading ? (
+            <div className="p-8 text-center text-neutral-500">Carregando...</div>
+          ) : events.length === 0 ? (
+            <div className="p-8 text-center text-neutral-500">
+              Nenhum evento encontrado. Crie um novo evento para começar.
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-neutral-200">
+                <thead className="bg-neutral-50">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                      Tipo
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                      Prioridade
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                      Título
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                      Data
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                      Cliente
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                      Processo
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                      Atribuído
+                    </th>
+                    <th className="px-4 py-3 text-right text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                      Ações
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-neutral-200">
+                  {events.map((event) => (
+                    <tr key={event.id} className="hover:bg-neutral-50">
+                      <td className="px-4 py-3">
+                        <button
+                          onClick={() => handleToggleComplete(event)}
+                          className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-neutral-600 hover:text-success-600 hover:bg-success-50 rounded-md transition-all duration-200"
+                          title={event.completed ? 'Marcar como pendente' : 'Marcar como concluído'}
+                        >
+                          {event.completed ? (
+                            <CheckCircle size={18} className="text-success-600" />
+                          ) : (
+                            <Circle size={18} />
+                          )}
+                        </button>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${eventTypeColors[event.type]}`}>
+                          {eventTypeLabels[event.type]}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${priorityColors[event.priority || 'MEDIA']}`}>
+                          {priorityLabels[event.priority || 'MEDIA']}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className={event.completed ? 'line-through text-neutral-500' : 'text-neutral-900'}>
+                          {event.title}
                         </div>
-                      ) : (
-                        '-'
-                      )}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex justify-end gap-2">
-                        {event.type === 'GOOGLE_MEET' && event.googleMeetLink && (
-                          <>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-neutral-600">
+                        {formatDateTime(event.date)}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-neutral-600">
+                        {event.client?.name || '-'}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-neutral-600">
+                        {event.case?.processNumber || '-'}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-neutral-600">
+                        {event.assignedUsers && event.assignedUsers.length > 0 ? (
+                          <div className="flex flex-wrap gap-1">
+                            {event.assignedUsers.map((assignment) => (
+                              <span
+                                key={assignment.id}
+                                className="px-2 py-1 text-xs font-medium bg-info-100 text-info-700 rounded-full"
+                              >
+                                {assignment.user.name}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          '-'
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex justify-end gap-2">
+                          {event.type === 'GOOGLE_MEET' && event.googleMeetLink && (
+                            <>
+                              <button
+                                onClick={() => {
+                                  navigator.clipboard.writeText(event.googleMeetLink!);
+                                  toast.success('Link do Google Meet copiado!');
+                                }}
+                                className="text-orange-600 hover:text-orange-800 transition-colors"
+                                title="Copiar link do Google Meet"
+                              >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                              </button>
+                              <button
+                                onClick={() => window.open(event.googleMeetLink, '_blank')}
+                                className="text-primary-600 hover:text-primary-800 transition-colors"
+                                title="Abrir no Google Calendar"
+                              >
+                                <Calendar size={18} />
+                              </button>
+                            </>
+                          )}
+                          <button
+                            onClick={() => handleView(event)}
+                            className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-info-600 hover:text-info-700 hover:bg-info-50 rounded-md transition-all duration-200"
+                            title="Ver detalhes"
+                          >
+                            <Eye size={18} />
+                          </button>
+                          <button
+                            onClick={() => handleEdit(event)}
+                            className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-md transition-all duration-200"
+                            title="Editar"
+                          >
+                            <Edit2 size={18} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(event.id)}
+                            className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-error-600 hover:text-error-700 hover:bg-error-50 rounded-md transition-all duration-200"
+                            title="Excluir"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      ) : (
+        /* Calendar View - 7 Days */
+        <div className="bg-white rounded-lg shadow overflow-hidden">
+          {/* Calendar Navigation */}
+          <div className="flex items-center justify-between p-4 border-b border-neutral-200 bg-neutral-50">
+            <button
+              onClick={() => navigateWeek('prev')}
+              className="flex items-center gap-1 px-3 py-2 min-h-[44px] text-neutral-600 hover:bg-neutral-100 rounded-lg transition-colors"
+            >
+              <ChevronLeft size={20} />
+              <span className="hidden sm:inline">Semana Anterior</span>
+            </button>
+            <div className="flex items-center gap-2">
+              <h3 className="text-lg font-semibold text-neutral-900 capitalize">
+                {formatMonthYear(currentWeekStart)}
+              </h3>
+              <button
+                onClick={goToCurrentWeek}
+                className="px-3 py-1 text-sm bg-primary-100 text-primary-700 rounded-lg hover:bg-primary-200 transition-colors"
+              >
+                Hoje
+              </button>
+            </div>
+            <button
+              onClick={() => navigateWeek('next')}
+              className="flex items-center gap-1 px-3 py-2 min-h-[44px] text-neutral-600 hover:bg-neutral-100 rounded-lg transition-colors"
+            >
+              <span className="hidden sm:inline">Próxima Semana</span>
+              <ChevronRight size={20} />
+            </button>
+          </div>
+
+          {loading ? (
+            <div className="p-8 text-center text-neutral-500">Carregando...</div>
+          ) : (
+            <>
+              {/* Desktop: Grid horizontal */}
+              <div className="hidden md:grid md:grid-cols-7 divide-x divide-neutral-200">
+                {getWeekDays(currentWeekStart).map((day, index) => {
+                  const dayEvents = getEventsForDay(day);
+                  const isDayToday = isToday(day);
+                  return (
+                    <div key={index} className={`min-h-[300px] ${isDayToday ? 'bg-primary-50/30' : ''}`}>
+                      {/* Day Header */}
+                      <div className={`p-3 text-center border-b border-neutral-200 ${isDayToday ? 'bg-primary-100' : 'bg-neutral-50'}`}>
+                        <div className={`text-xs font-medium uppercase ${isDayToday ? 'text-primary-700' : 'text-neutral-500'}`}>
+                          {formatDayHeader(day)}
+                        </div>
+                        <div className={`text-2xl font-bold ${isDayToday ? 'text-primary-700' : 'text-neutral-900'}`}>
+                          {formatDayNumber(day)}
+                        </div>
+                      </div>
+                      {/* Day Events */}
+                      <div className="p-2 space-y-2">
+                        {dayEvents.length === 0 ? (
+                          <div className="text-center py-4">
                             <button
-                              onClick={() => {
-                                navigator.clipboard.writeText(event.googleMeetLink!);
-                                toast.success('Link do Google Meet copiado!');
-                              }}
-                              className="text-orange-600 hover:text-orange-800 transition-colors"
-                              title="Copiar link do Google Meet"
+                              onClick={() => handleNewEventForDay(day)}
+                              className="text-xs text-neutral-400 hover:text-primary-600 transition-colors"
                             >
-                              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                              </svg>
+                              + Adicionar
                             </button>
+                          </div>
+                        ) : (
+                          <>
+                            {dayEvents.map((event) => (
+                              <button
+                                key={event.id}
+                                onClick={() => handleView(event)}
+                                className={`w-full text-left p-2 rounded-lg transition-all hover:shadow-md ${
+                                  event.completed ? 'opacity-50' : ''
+                                } ${eventTypeColors[event.type].replace('text-', 'border-l-4 border-').split(' ')[0]} bg-white border border-neutral-200`}
+                              >
+                                <div className="flex items-center gap-1 mb-1">
+                                  <span className="text-xs font-medium text-neutral-500">
+                                    {formatEventTime(event.date)}
+                                  </span>
+                                  {event.completed && (
+                                    <CheckCircle size={12} className="text-success-600" />
+                                  )}
+                                </div>
+                                <div className={`text-sm font-medium truncate ${event.completed ? 'line-through text-neutral-500' : 'text-neutral-900'}`}>
+                                  {event.title}
+                                </div>
+                                <div className="flex items-center gap-1 mt-1">
+                                  <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded ${eventTypeColors[event.type]}`}>
+                                    {eventTypeLabels[event.type]}
+                                  </span>
+                                </div>
+                              </button>
+                            ))}
                             <button
-                              onClick={() => window.open(event.googleMeetLink, '_blank')}
-                              className="text-primary-600 hover:text-primary-800 transition-colors"
-                              title="Abrir no Google Calendar"
+                              onClick={() => handleNewEventForDay(day)}
+                              className="w-full text-xs text-center py-1 text-neutral-400 hover:text-primary-600 transition-colors"
                             >
-                              <Calendar size={18} />
+                              + Adicionar
                             </button>
                           </>
                         )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Mobile: Vertical list */}
+              <div className="md:hidden divide-y divide-neutral-200">
+                {getWeekDays(currentWeekStart).map((day, index) => {
+                  const dayEvents = getEventsForDay(day);
+                  const isDayToday = isToday(day);
+                  return (
+                    <div key={index} className={`${isDayToday ? 'bg-primary-50/30' : ''}`}>
+                      {/* Day Header */}
+                      <div className={`p-3 flex items-center justify-between ${isDayToday ? 'bg-primary-100' : 'bg-neutral-50'}`}>
+                        <div className="flex items-center gap-3">
+                          <div className={`text-2xl font-bold ${isDayToday ? 'text-primary-700' : 'text-neutral-900'}`}>
+                            {formatDayNumber(day)}
+                          </div>
+                          <div className={`text-sm font-medium ${isDayToday ? 'text-primary-700' : 'text-neutral-600'}`}>
+                            {formatDayHeader(day)}
+                          </div>
+                        </div>
                         <button
-                          onClick={() => handleView(event)}
-                          className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-info-600 hover:text-info-700 hover:bg-info-50 rounded-md transition-all duration-200"
-                          title="Ver detalhes"
+                          onClick={() => handleNewEventForDay(day)}
+                          className="p-2 min-h-[44px] min-w-[44px] text-primary-600 hover:bg-primary-100 rounded-lg transition-colors"
                         >
-                          <Eye size={18} />
-                        </button>
-                        <button
-                          onClick={() => handleEdit(event)}
-                          className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-md transition-all duration-200"
-                          title="Editar"
-                        >
-                          <Edit2 size={18} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(event.id)}
-                          className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-error-600 hover:text-error-700 hover:bg-error-50 rounded-md transition-all duration-200"
-                          title="Excluir"
-                        >
-                          <Trash2 size={18} />
+                          <Plus size={20} />
                         </button>
                       </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+                      {/* Day Events */}
+                      <div className="p-3 space-y-2">
+                        {dayEvents.length === 0 ? (
+                          <div className="text-center py-2 text-sm text-neutral-400">
+                            Nenhum evento
+                          </div>
+                        ) : (
+                          dayEvents.map((event) => (
+                            <button
+                              key={event.id}
+                              onClick={() => handleView(event)}
+                              className={`w-full text-left p-3 rounded-lg transition-all hover:shadow-md ${
+                                event.completed ? 'opacity-50' : ''
+                              } bg-white border border-neutral-200`}
+                            >
+                              <div className="flex items-center justify-between mb-1">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-sm font-medium text-neutral-500">
+                                    {formatEventTime(event.date)}
+                                  </span>
+                                  <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${eventTypeColors[event.type]}`}>
+                                    {eventTypeLabels[event.type]}
+                                  </span>
+                                </div>
+                                {event.completed && (
+                                  <CheckCircle size={16} className="text-success-600" />
+                                )}
+                              </div>
+                              <div className={`text-base font-medium ${event.completed ? 'line-through text-neutral-500' : 'text-neutral-900'}`}>
+                                {event.title}
+                              </div>
+                              {event.client && (
+                                <div className="text-sm text-neutral-500 mt-1">
+                                  {event.client.name}
+                                </div>
+                              )}
+                            </button>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
+        </div>
+      )}
 
       {/* Create/Edit Modal */}
       {showModal && (
