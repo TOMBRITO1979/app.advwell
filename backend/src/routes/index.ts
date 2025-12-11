@@ -17,6 +17,8 @@ import aiConfigRoutes from './ai-config.routes';
 import legalDocumentRoutes from './legal-document.routes';
 import subscriptionRoutes from './subscription.routes';
 import leadRoutes from './lead.routes';
+import lgpdRoutes from './lgpd.routes';
+import auditLogRoutes from './audit-log.routes';
 // Temporariamente desabilitado - aguardando schema Prisma
 // import stripeConfigRoutes from './stripe-config.routes';
 // import servicePlanRoutes from './service-plan.routes';
@@ -42,6 +44,8 @@ router.use('/ai-config', aiConfigRoutes); // Configuração de IA por empresa
 router.use('/legal-documents', legalDocumentRoutes); // Documentos jurídicos (recibos, contratos, etc.)
 router.use('/subscription', subscriptionRoutes); // Assinatura e pagamentos (Stripe)
 router.use('/leads', leadRoutes); // Gestão de leads (potenciais clientes)
+router.use('/lgpd', lgpdRoutes); // Rotas LGPD (consentimento, direitos do titular)
+router.use('/audit-logs', auditLogRoutes); // Logs de auditoria (CRUD de clientes e processos)
 // router.use('/stripe-config', stripeConfigRoutes); // Configuração Stripe do escritório para cobranças de clientes
 // router.use('/service-plans', servicePlanRoutes); // Planos de serviço do escritório
 // router.use('/client-subscriptions', clientSubscriptionRoutes); // Assinaturas de clientes em planos

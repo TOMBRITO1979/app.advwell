@@ -48,6 +48,10 @@ model Company {
   subscriptionEndsAt    DateTime?          // Data de expiração da assinatura atual
   casesLimit            Int                @default(1000) // Limite de processos do plano
 
+  // LGPD - Dados do DPO (Encarregado de Dados)
+  dpoName               String?                // Nome do DPO/Encarregado
+  dpoEmail              String?                // Email do DPO
+
   users                 User[]
   clients               Client[]
   cases                 Case[]
@@ -63,6 +67,8 @@ model Company {
   servicePlans          ServicePlan[]
   clientSubscriptions   ClientSubscription[]
   leads                 Lead[]
+  dataRequests          DataRequest[]
+  auditLogs             AuditLog[]
 
   @@map("companies")
 }
@@ -116,6 +122,9 @@ model User {
   caseAuditLogs           CaseAuditLog[]
   legalDocumentsSigned    LegalDocument[] @relation("LegalDocumentSigner")
   legalDocumentsCreated   LegalDocument[] @relation("LegalDocumentCreator")
+  consentLogs             ConsentLog[]
+  dataRequests            DataRequest[]
+  auditLogs               AuditLog[]
 
   @@map("users")
 }
@@ -894,4 +903,162 @@ model LegalDocument {
   creator     User?    @relation("LegalDocumentCreator", fields: [createdBy], references: [id], onDelete: SetNull)
 
   @@map("legal_documents")
+}
+
+// ============================================================================
+// LGPD COMPLIANCE SYSTEM
+// ============================================================================
+
+// Enum para tipo de consentimento
+enum ConsentType {
+  PRIVACY_POLICY      // Política de Privacidade
+  TERMS_OF_USE        // Termos de Uso
+  MARKETING_EMAIL     // Consentimento para emails marketing
+  DATA_PROCESSING     // Processamento de dados específico
+}
+
+// Tabela de registro de consentimentos (LGPD Art. 8)
+model ConsentLog {
+  id            String       @id @default(uuid())
+
+  // Quem deu o consentimento
+  userId        String?      // Usuário autenticado (opcional para leads/registro)
+  email         String       // Email para rastreamento
+  ip            String?      // IP do cliente
+  userAgent     String?      // User agent do navegador
+
+  // O que foi consentido
+  consentType   ConsentType
+  version       String       // Versão do documento (ex: "1.0", "2.0")
+
+  // Quando
+  consentedAt   DateTime     @default(now())
+  revokedAt     DateTime?    // Se foi revogado
+
+  // Metadados
+  documentHash  String?      // Hash SHA-256 do documento aceito
+
+  createdAt     DateTime     @default(now())
+
+  // Relations
+  user          User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([email])
+  @@index([consentType])
+  @@map("consent_logs")
+}
+
+// Enum para tipo de solicitação LGPD
+enum DataRequestType {
+  ACCESS          // Acesso aos dados (Art. 18, II)
+  CORRECTION      // Correção de dados (Art. 18, III)
+  DELETION        // Exclusão de dados (Art. 18, VI)
+  PORTABILITY     // Portabilidade (Art. 18, V)
+  REVOKE_CONSENT  // Revogação de consentimento (Art. 18, IX)
+}
+
+// Enum para status de solicitação LGPD
+enum DataRequestStatus {
+  PENDING         // Aguardando processamento
+  IN_PROGRESS     // Em processamento
+  COMPLETED       // Concluído
+  REJECTED        // Rejeitado (com justificativa)
+}
+
+// Tabela de solicitações de direitos do titular (LGPD Art. 18)
+model DataRequest {
+  id            String            @id @default(uuid())
+  userId        String
+  companyId     String
+
+  // Tipo e status
+  requestType   DataRequestType
+  status        DataRequestStatus @default(PENDING)
+
+  // Descrição da solicitação (para correções ou especificações)
+  description   String?           @db.Text
+
+  // Datas
+  requestedAt   DateTime          @default(now())
+  processedAt   DateTime?         // Quando começou a ser processado
+  completedAt   DateTime?         // Quando foi concluído
+
+  // Resultado
+  resultUrl     String?           // URL do arquivo gerado (portabilidade)
+  notes         String?           @db.Text  // Notas do processamento
+  processedBy   String?           // ID do admin que processou
+  rejectionReason String?         @db.Text  // Motivo da rejeição (se aplicável)
+
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  // Relations
+  user          User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company       Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([companyId])
+  @@index([status])
+  @@index([requestType])
+  @@map("data_requests")
+}
+
+// ============================================================================
+// AUDIT LOG SYSTEM (Sistema de Auditoria)
+// ============================================================================
+
+// Enum para tipo de entidade auditada
+enum AuditEntityType {
+  CLIENT    // Clientes
+  CASE      // Processos
+}
+
+// Enum para ação de auditoria
+enum AuditAction {
+  CREATE    // Criação
+  UPDATE    // Atualização
+  DELETE    // Exclusão
+}
+
+// Tabela de logs de auditoria genérica
+model AuditLog {
+  id            String          @id @default(uuid())
+  companyId     String
+
+  // Entidade afetada
+  entityType    AuditEntityType
+  entityId      String
+  entityName    String?         // Nome para exibição (ex: nome do cliente, número do processo)
+
+  // Quem fez
+  userId        String
+  userName      String?         // Snapshot do nome do usuário no momento da ação
+
+  // O que fez
+  action        AuditAction
+  description   String?         // Descrição legível da ação
+
+  // Dados da alteração
+  oldValues     Json?           // Valores antes da alteração
+  newValues     Json?           // Valores depois da alteração
+  changedFields String[]        @default([])  // Lista de campos alterados
+
+  // Contexto da requisição
+  ipAddress     String?
+  userAgent     String?
+
+  createdAt     DateTime        @default(now())
+
+  // Relations
+  company       Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user          User            @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([companyId])
+  @@index([entityType, entityId])
+  @@index([userId])
+  @@index([createdAt])
+  @@index([companyId, entityType])
+  @@index([companyId, createdAt])
+  @@map("audit_logs")
 }

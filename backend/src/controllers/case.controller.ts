@@ -7,6 +7,7 @@ import { sanitizeString } from '../utils/sanitize';
 import { AIService } from '../services/ai/ai.service';
 import { sendCaseUpdateNotification } from '../utils/email';
 import AuditService from '../services/audit.service';
+import { auditLogService } from '../services/audit-log.service';
 
 // Função para corrigir timezone de datas (evita que dia 31 vire dia 30)
 function fixDateTimezone(dateString: string): Date {
@@ -228,12 +229,15 @@ export class CaseController {
         }
       }
 
-      // Log de auditoria: processo criado
+      // Log de auditoria: processo criado (CaseAuditLog)
       await AuditService.logCaseCreated(
         caseData.id,
         req.user!.userId,
         processNumber
       );
+
+      // Log de auditoria genérico (AuditLog com valores completos)
+      await auditLogService.logCaseCreate(caseData, req);
 
       // Retorna o processo com as movimentações
       const caseWithMovements = await prisma.case.findUnique({
@@ -359,7 +363,7 @@ export class CaseController {
       const companyId = req.user!.companyId;
       const { court, subject, value, status, deadline, deadlineResponsibleId, notes, informarCliente, linkProcesso } = req.body;
 
-      const caseData = await prisma.case.findFirst({
+      const oldCaseData = await prisma.case.findFirst({
         where: {
           id,
           companyId: companyId!,
@@ -376,9 +380,12 @@ export class CaseController {
         },
       });
 
-      if (!caseData) {
+      if (!oldCaseData) {
         return res.status(404).json({ error: 'Processo não encontrado' });
       }
+
+      // Guardar referência para compatibilidade
+      const caseData = oldCaseData;
 
       // Converter deadline se fornecido (null para limpar o campo)
       const cleanDeadline = deadline && deadline !== '' ? fixDateTimezone(deadline) : null;
@@ -498,6 +505,9 @@ export class CaseController {
           console.log(`Cliente ${caseData.client.name} não possui email cadastrado. Notificação não enviada.`);
         }
       }
+
+      // Log de auditoria genérico (AuditLog com valores completos)
+      await auditLogService.logCaseUpdate(oldCaseData, updatedCase, req);
 
       res.json(updatedCase);
     } catch (error) {
@@ -1219,6 +1229,9 @@ export class CaseController {
       if (!caseData) {
         return res.status(404).json({ error: 'Processo não encontrado' });
       }
+
+      // Log de auditoria genérico ANTES de excluir (AuditLog com valores completos)
+      await auditLogService.logCaseDelete(caseData, req);
 
       // Excluir o processo (as relações com onDelete: Cascade serão excluídas automaticamente)
       await prisma.case.delete({

@@ -9,7 +9,7 @@ import { securityLogger, appLogger } from '../utils/logger';
 export class AuthController {
   async register(req: Request, res: Response) {
     try {
-      const { name, email, password, companyName, cnpj } = req.body;
+      const { name, email, password, companyName, cnpj, consents } = req.body;
 
       // Verifica se o email já existe
       const existingUser = await prisma.user.findUnique({
@@ -30,6 +30,10 @@ export class AuthController {
       // Calculate trial end date (1 day from now)
       const trialEndsAt = new Date();
       trialEndsAt.setDate(trialEndsAt.getDate() + 1);
+
+      // Captura IP e User-Agent para registro de consentimento LGPD
+      const clientIp = req.ip || req.headers['x-forwarded-for'] as string || 'unknown';
+      const userAgent = req.headers['user-agent'] || 'unknown';
 
       // Cria a empresa e o usuário admin em uma transação
       const result = await prisma.$transaction(async (tx) => {
@@ -56,6 +60,22 @@ export class AuthController {
             emailVerificationExpiry,
           },
         });
+
+        // Registra os consentimentos LGPD se fornecidos
+        if (consents && Array.isArray(consents)) {
+          for (const consent of consents) {
+            await tx.consentLog.create({
+              data: {
+                userId: user.id,
+                email: email,
+                ip: clientIp,
+                userAgent: userAgent,
+                consentType: consent.type,
+                version: consent.version || '1.0',
+              },
+            });
+          }
+        }
 
         return { company, user };
       });

@@ -28,6 +28,8 @@ import {
   Gavel,
   Crown,
   AlertTriangle,
+  Shield,
+  History,
 } from 'lucide-react';
 
 interface SubscriptionStatus {
@@ -198,6 +200,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     menuItems.push({ path: '/smtp-settings', label: 'Config. SMTP', icon: Settings });
     menuItems.push({ path: '/ai-config', label: 'Config. IA', icon: Bot });
     menuItems.push({ path: '/users', label: 'Usuários', icon: UserCog });
+    menuItems.push({ path: '/lgpd-requests', label: 'LGPD Requests', icon: Shield });
+    menuItems.push({ path: '/audit-logs', label: 'Logs de Auditoria', icon: History });
     menuItems.push({ path: '/subscription', label: 'Assinatura', icon: Crown });
   }
 
@@ -206,6 +210,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     menuItems.push({ path: '/subscription-alerts', label: 'Alertas Assinatura', icon: AlertTriangle });
   }
 
+  menuItems.push({ path: '/meus-dados', label: 'Meus Dados', icon: Shield });
+  // Logs de Auditoria para todos os usuários (USER vê apenas seus próprios logs)
+  if (user?.role === 'USER') {
+    menuItems.push({ path: '/audit-logs', label: 'Meus Logs', icon: History });
+  }
   menuItems.push({ path: '/settings', label: 'Configurações', icon: Settings });
 
   // Determinar se deve mostrar o banner de assinatura

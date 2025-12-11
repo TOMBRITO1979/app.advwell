@@ -3,6 +3,7 @@ import { AuthRequest } from '../middleware/auth';
 import prisma from '../utils/prisma';
 import { parse } from 'csv-parse/sync';
 import { sanitizeString } from '../utils/sanitize';
+import { auditLogService } from '../services/audit-log.service';
 
 export class ClientController {
   async create(req: AuthRequest, res: Response) {
@@ -39,6 +40,9 @@ export class ClientController {
           tag: sanitizeString(tag),
         },
       });
+
+      // Registra log de auditoria
+      await auditLogService.logClientCreate(client, req);
 
       res.status(201).json(client);
     } catch (error) {
@@ -122,14 +126,14 @@ export class ClientController {
         profession, maritalStatus, birthDate, representativeName, representativeCpf, notes, tag
       } = req.body;
 
-      const client = await prisma.client.findFirst({
+      const oldClient = await prisma.client.findFirst({
         where: {
           id,
           companyId: companyId!,
         },
       });
 
-      if (!client) {
+      if (!oldClient) {
         return res.status(404).json({ error: 'Cliente não encontrado' });
       }
 
@@ -155,6 +159,9 @@ export class ClientController {
           tag: sanitizeString(tag),
         },
       });
+
+      // Registra log de auditoria
+      await auditLogService.logClientUpdate(oldClient, updatedClient, req);
 
       res.json(updatedClient);
     } catch (error) {
@@ -183,6 +190,9 @@ export class ClientController {
         where: { id },
         data: { active: false },
       });
+
+      // Registra log de auditoria
+      await auditLogService.logClientDelete(client, req);
 
       res.json({ message: 'Cliente desativado com sucesso' });
     } catch (error) {

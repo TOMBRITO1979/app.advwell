@@ -88,3 +88,12 @@ backend/reset_super_admin_password.js
 reset_all_passwords.js
 PLANO_NOTA_10.md
 SECURITY_AUDIT_REPORT.md
+
+# Backup de banco de dados
+backup_migration.sql
+*.sql.backup
+
+# Scripts de teste de API
+test_api_complete.js
+test_api_v2.js
+test_api.js

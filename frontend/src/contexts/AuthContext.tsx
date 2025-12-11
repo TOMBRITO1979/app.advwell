@@ -11,6 +11,11 @@ interface User {
   hideSidebar?: boolean;
 }
 
+interface ConsentData {
+  type: 'PRIVACY_POLICY' | 'TERMS_OF_USE' | 'MARKETING_EMAIL' | 'DATA_PROCESSING';
+  version: string;
+}
+
 interface AuthState {
   user: User | null;
   token: string | null;
@@ -22,6 +27,7 @@ interface AuthState {
     password: string;
     companyName: string;
     cnpj?: string;
+    consents?: ConsentData[];
   }) => Promise<void>;
   logout: () => void;
   checkAuth: () => Promise<void>;

@@ -13,6 +13,7 @@ const Register: React.FC = () => {
     companyName: '',
     cnpj: '',
   });
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const [registered, setRegistered] = useState(false);
   const [userEmail, setUserEmail] = useState('');
@@ -39,6 +40,11 @@ const Register: React.FC = () => {
       return;
     }
 
+    if (!acceptedTerms) {
+      toast.error('Voce precisa aceitar os Termos de Uso e a Politica de Privacidade');
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -48,6 +54,10 @@ const Register: React.FC = () => {
         password: formData.password,
         companyName: formData.companyName,
         cnpj: formData.cnpj || undefined,
+        consents: [
+          { type: 'PRIVACY_POLICY', version: '1.0' },
+          { type: 'TERMS_OF_USE', version: '1.0' },
+        ],
       });
       setUserEmail(formData.email);
       setRegistered(true);
@@ -228,6 +238,41 @@ const Register: React.FC = () => {
               onChange={handleChange}
               className="block w-full border-none rounded-md shadow-sm bg-white/30 appearance-none outline outline-1 focus:outline focus:outline-2 text-neutral-900 placeholder:text-neutral-500 sm:text-sm sm:leading-6 px-3 py-3 outline-primary-400/60 hover:outline-primary-500 focus:outline-primary-500 focus:bg-white/40 min-h-[44px]"
             />
+          </div>
+
+          {/* Checkbox de Consentimento LGPD */}
+          <div className="flex items-start mt-4">
+            <div className="flex items-center h-5">
+              <input
+                id="terms"
+                name="terms"
+                type="checkbox"
+                checked={acceptedTerms}
+                onChange={(e) => setAcceptedTerms(e.target.checked)}
+                className="h-4 w-4 text-primary-600 border-primary-300 rounded focus:ring-primary-500 cursor-pointer"
+                required
+              />
+            </div>
+            <div className="ml-3 text-sm">
+              <label htmlFor="terms" className="text-neutral-700 cursor-pointer">
+                Li e aceito a{' '}
+                <Link
+                  to="/politica-de-privacidade"
+                  target="_blank"
+                  className="text-primary-600 hover:text-primary-700 font-semibold underline"
+                >
+                  Politica de Privacidade
+                </Link>
+                {' '}e os{' '}
+                <Link
+                  to="/termos-de-uso"
+                  target="_blank"
+                  className="text-primary-600 hover:text-primary-700 font-semibold underline"
+                >
+                  Termos de Uso
+                </Link>
+              </label>
+            </div>
           </div>
 
           <button

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
 import api from '../services/api';
 import toast from 'react-hot-toast';
-import { Building2, MapPin, Save, Key, Copy, RefreshCw, Eye, EyeOff, ExternalLink } from 'lucide-react';
+import { Building2, MapPin, Save, Key, Copy, RefreshCw, Eye, EyeOff, ExternalLink, Shield } from 'lucide-react';
 
 interface CompanySettings {
   id: string;
@@ -14,6 +14,8 @@ interface CompanySettings {
   state?: string;
   zipCode?: string;
   logo?: string;
+  dpoName?: string;
+  dpoEmail?: string;
 }
 
 const Settings: React.FC = () => {
@@ -29,6 +31,8 @@ const Settings: React.FC = () => {
     state: '',
     zipCode: '',
     logo: '',
+    dpoName: '',
+    dpoEmail: '',
   });
 
   // API Key states
@@ -105,6 +109,8 @@ const Settings: React.FC = () => {
         state: settings.state,
         zipCode: settings.zipCode,
         logo: settings.logo,
+        dpoName: settings.dpoName,
+        dpoEmail: settings.dpoEmail,
       });
 
       setSettings(response.data);
@@ -270,6 +276,53 @@ const Settings: React.FC = () => {
                     className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   />
                 </div>
+              </div>
+            </div>
+
+            {/* Configuracao DPO/LGPD */}
+            <div className="mb-6">
+              <h2 className="text-lg font-semibold text-neutral-700 mb-4 flex items-center gap-2">
+                <Shield size={20} className="text-primary-600" />
+                Encarregado de Dados (DPO) - LGPD
+              </h2>
+              <p className="text-sm text-neutral-600 mb-4">
+                Conforme a LGPD (Lei 13.709/2018), e recomendado que empresas indiquem um Encarregado de Protecao de Dados (DPO).
+                Estas informacoes serao exibidas na Politica de Privacidade.
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-2">
+                    Nome do Encarregado (DPO)
+                  </label>
+                  <input
+                    type="text"
+                    name="dpoName"
+                    value={settings.dpoName || ''}
+                    onChange={handleChange}
+                    placeholder="Nome completo do responsavel"
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-2">
+                    Email do Encarregado (DPO)
+                  </label>
+                  <input
+                    type="email"
+                    name="dpoEmail"
+                    value={settings.dpoEmail || ''}
+                    onChange={handleChange}
+                    placeholder="dpo@seuescritorio.com.br"
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                  />
+                </div>
+              </div>
+              <div className="mt-3 bg-info-50 border border-info-200 rounded-lg p-3">
+                <p className="text-sm text-info-700">
+                  <strong>O que e o DPO?</strong> O Encarregado de Dados (DPO) e a pessoa responsavel por garantir a conformidade
+                  com a LGPD na sua empresa. Ele e o ponto de contato entre a empresa, os titulares dos dados e a ANPD.
+                </p>
               </div>
             </div>
 

@@ -180,7 +180,7 @@ export class CompanyController {
   async updateOwn(req: AuthRequest, res: Response) {
     try {
       const companyId = req.user!.companyId;
-      const { name, email, phone, address, city, state, zipCode, logo } = req.body;
+      const { name, email, phone, address, city, state, zipCode, logo, dpoName, dpoEmail } = req.body;
 
       if (!companyId) {
         return res.status(404).json({ error: 'Empresa não encontrada' });
@@ -197,6 +197,8 @@ export class CompanyController {
           state,
           zipCode,
           logo,
+          dpoName,
+          dpoEmail,
         },
       });
 

@@ -35,6 +35,11 @@ const SubscriptionAlerts = lazy(() => import('./pages/SubscriptionAlerts'));
 const StripeConfig = lazy(() => import('./pages/StripeConfig'));
 const ClientSubscriptions = lazy(() => import('./pages/ClientSubscriptions'));
 const Embed = lazy(() => import('./pages/Embed'));
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
+const TermsOfUse = lazy(() => import('./pages/TermsOfUse'));
+const MyData = lazy(() => import('./pages/MyData'));
+const LGPDRequests = lazy(() => import('./pages/LGPDRequests'));
+const AuditLogs = lazy(() => import('./pages/AuditLogs'));
 
 // Loading spinner component
 const LoadingSpinner = () => (
@@ -74,6 +79,9 @@ function App() {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/resend-verification" element={<ResendVerification />} />
+          {/* Public LGPD pages */}
+          <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
+          <Route path="/termos-de-uso" element={<TermsOfUse />} />
           {/* Embed route for Chatwell integration - auto-login */}
           <Route path="/embed/:token/*" element={<Embed />} />
           <Route
@@ -193,6 +201,30 @@ function App() {
             element={
               <PrivateRoute>
                 <Profile />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/meus-dados"
+            element={
+              <PrivateRoute>
+                <MyData />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/lgpd-requests"
+            element={
+              <PrivateRoute>
+                <LGPDRequests />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/audit-logs"
+            element={
+              <PrivateRoute>
+                <AuditLogs />
               </PrivateRoute>
             }
           />
