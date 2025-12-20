@@ -18,6 +18,22 @@ export class ClientController {
         return res.status(403).json({ error: 'Usuário não possui empresa associada' });
       }
 
+      // Verificar se CPF já existe na empresa (se foi informado)
+      if (cpf && cpf.trim()) {
+        const existingClient = await prisma.client.findFirst({
+          where: {
+            companyId,
+            cpf: cpf.trim(),
+          },
+        });
+
+        if (existingClient) {
+          return res.status(400).json({
+            error: `Já existe um cliente com este CPF/CNPJ: ${existingClient.name}`
+          });
+        }
+      }
+
       const client = await prisma.client.create({
         data: {
           companyId,
@@ -135,6 +151,23 @@ export class ClientController {
 
       if (!oldClient) {
         return res.status(404).json({ error: 'Cliente não encontrado' });
+      }
+
+      // Verificar se CPF já existe em outro cliente da empresa
+      if (cpf && cpf.trim() && cpf.trim() !== oldClient.cpf) {
+        const existingClient = await prisma.client.findFirst({
+          where: {
+            companyId: companyId!,
+            cpf: cpf.trim(),
+            id: { not: id }, // Excluir o próprio cliente
+          },
+        });
+
+        if (existingClient) {
+          return res.status(400).json({
+            error: `Já existe um cliente com este CPF/CNPJ: ${existingClient.name}`
+          });
+        }
       }
 
       const updatedClient = await prisma.client.update({

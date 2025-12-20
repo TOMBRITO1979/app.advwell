@@ -352,10 +352,11 @@ export const deleteDocument = async (req: AuthRequest, res: Response) => {
       );
     }
 
-    // TODO: Se for upload, excluir arquivo do S3
-    // if (document.storageType === 'upload' && document.fileKey) {
-    //   await deleteFromS3(document.fileKey);
-    // }
+    // Se for upload, excluir arquivo do S3
+    if (document.storageType === 'upload' && document.fileKey) {
+      const { deleteFromS3 } = await import('../utils/s3');
+      await deleteFromS3(document.fileKey);
+    }
 
     await prisma.document.delete({
       where: { id },
@@ -535,28 +536,10 @@ export const uploadDocument = async (req: AuthRequest, res: Response) => {
       }
     }
 
-    // Buscar email do admin da empresa para criar pasta no S3
-    const adminUser = await prisma.user.findFirst({
-      where: {
-        companyId,
-        role: { in: ['ADMIN', 'SUPER_ADMIN'] },
-      },
-      select: {
-        email: true,
-      },
-      orderBy: {
-        createdAt: 'asc', // Pega o primeiro admin (criador da empresa)
-      },
-    });
-
-    if (!adminUser) {
-      return res.status(500).json({ error: 'Admin da empresa não encontrado' });
-    }
-
-    // Upload para S3 usando email do admin como pasta
+    // Upload para S3 usando companyId como pasta
     console.log(`📤 Fazendo upload de arquivo: ${file.originalname} (${file.size} bytes)`);
-    console.log(`📁 Pasta no S3: ${adminUser.email}/documents/`);
-    const { key, url } = await uploadToS3(file, adminUser.email);
+    console.log(`📁 Pasta no S3: companies/${companyId}/documents/`);
+    const { key, url } = await uploadToS3(file, companyId);
     console.log(`✅ Arquivo enviado para S3: ${key}`);
 
     // Criar registro no banco

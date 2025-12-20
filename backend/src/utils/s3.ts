@@ -1,9 +1,9 @@
-import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { config } from '../config';
 import crypto from 'crypto';
 
-// Sanitiza email para usar como nome de pasta no S3
+// Sanitiza email para usar como nome de pasta no S3 (mantido para retrocompatibilidade)
 // Remove caracteres especiais e substitui @ por -at-
 export const sanitizeEmailForS3 = (email: string): string => {
   return email
@@ -22,16 +22,15 @@ export const s3Client = new S3Client({
   },
 });
 
+// Upload usando companyId (novo formato recomendado)
 export const uploadToS3 = async (
   file: Express.Multer.File,
-  adminEmail: string
+  companyId: string
 ): Promise<{ key: string; url: string }> => {
-  // Sanitiza o email para criar pasta segura
-  const sanitizedEmail = sanitizeEmailForS3(adminEmail);
-
   const fileExtension = file.originalname.split('.').pop();
   const fileName = `${crypto.randomUUID()}.${fileExtension}`;
-  const key = `${sanitizedEmail}/documents/${fileName}`;
+  // Novo formato: companies/{companyId}/documents/{uuid}.{ext}
+  const key = `companies/${companyId}/documents/${fileName}`;
 
   const command = new PutObjectCommand({
     Bucket: config.aws.s3BucketName,
@@ -45,6 +44,23 @@ export const uploadToS3 = async (
   const url = `https://${config.aws.s3BucketName}.s3.${config.aws.region}.amazonaws.com/${key}`;
 
   return { key, url };
+};
+
+// Deletar arquivo do S3
+export const deleteFromS3 = async (key: string): Promise<boolean> => {
+  try {
+    const command = new DeleteObjectCommand({
+      Bucket: config.aws.s3BucketName,
+      Key: key,
+    });
+
+    await s3Client.send(command);
+    console.log(`🗑️ Arquivo deletado do S3: ${key}`);
+    return true;
+  } catch (error) {
+    console.error(`❌ Erro ao deletar arquivo do S3: ${key}`, error);
+    return false;
+  }
 };
 
 export const getSignedS3Url = async (key: string): Promise<string> => {
