@@ -209,6 +209,60 @@ export class CompanyController {
     }
   }
 
+  // Admin - Deletar sua própria empresa
+  async deleteOwn(req: AuthRequest, res: Response) {
+    try {
+      const companyId = req.user!.companyId;
+      const { confirmName } = req.body;
+
+      if (!companyId) {
+        return res.status(404).json({ error: 'Empresa não encontrada' });
+      }
+
+      // Busca a empresa com contagem de dados
+      const company = await prisma.company.findUnique({
+        where: { id: companyId },
+        include: {
+          _count: {
+            select: {
+              users: true,
+              clients: true,
+              cases: true,
+            },
+          },
+        },
+      });
+
+      if (!company) {
+        return res.status(404).json({ error: 'Empresa não encontrada' });
+      }
+
+      // Verifica se o nome foi confirmado corretamente
+      if (!confirmName || confirmName.trim().toLowerCase() !== company.name.trim().toLowerCase()) {
+        return res.status(400).json({
+          error: 'Nome da empresa não confere. Digite o nome exatamente como cadastrado para confirmar a exclusão.'
+        });
+      }
+
+      // Deleta a empresa (CASCADE vai deletar tudo relacionado automaticamente)
+      await prisma.company.delete({
+        where: { id: companyId },
+      });
+
+      res.json({
+        message: 'Empresa deletada com sucesso',
+        deletedItems: {
+          users: company._count.users,
+          clients: company._count.clients,
+          cases: company._count.cases,
+        }
+      });
+    } catch (error) {
+      console.error('Erro ao deletar empresa:', error);
+      res.status(500).json({ error: 'Erro ao deletar empresa' });
+    }
+  }
+
   // Super Admin - Deletar empresa
   async delete(req: AuthRequest, res: Response) {
     try {

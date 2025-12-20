@@ -9,6 +9,7 @@ router.use(authenticate);
 // Rotas do Admin (sua própria empresa) - DEVEM VIR ANTES DAS ROTAS COM :id
 router.get('/own', requireAdmin, companyController.getOwn);
 router.put('/own', requireAdmin, companyController.updateOwn);
+router.delete('/own', requireAdmin, companyController.deleteOwn);
 
 // API Key Management (Para integrações WhatsApp, N8N, etc)
 router.get('/own/api-key', requireAdmin, companyController.getApiKey);

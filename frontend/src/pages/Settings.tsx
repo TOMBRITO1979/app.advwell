@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
 import api from '../services/api';
 import toast from 'react-hot-toast';
-import { Building2, MapPin, Save, Key, Copy, RefreshCw, Eye, EyeOff, ExternalLink, Shield } from 'lucide-react';
+import { Building2, MapPin, Save, Key, Copy, RefreshCw, Eye, EyeOff, ExternalLink, Shield, Trash2, AlertTriangle } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 interface CompanySettings {
   id: string;
@@ -39,6 +40,13 @@ const Settings: React.FC = () => {
   const [apiKey, setApiKey] = useState<string | null>(null);
   const [showApiKey, setShowApiKey] = useState(false);
   const [regeneratingKey, setRegeneratingKey] = useState(false);
+
+  // Delete company states
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [confirmName, setConfirmName] = useState('');
+  const [deleting, setDeleting] = useState(false);
+
+  const { logout } = useAuth();
 
   useEffect(() => {
     loadSettings();
@@ -87,6 +95,30 @@ const Settings: React.FC = () => {
     if (apiKey) {
       navigator.clipboard.writeText(apiKey);
       toast.success('API Key copiada!');
+    }
+  };
+
+  const handleDeleteCompany = async () => {
+    if (confirmName.trim().toLowerCase() !== settings.name.trim().toLowerCase()) {
+      toast.error('O nome da empresa não confere');
+      return;
+    }
+
+    setDeleting(true);
+    try {
+      const response = await api.delete('/companies/own', {
+        data: { confirmName: confirmName.trim() }
+      });
+
+      toast.success(response.data.message || 'Empresa excluída com sucesso');
+
+      // Faz logout após excluir a empresa
+      setTimeout(() => {
+        logout();
+      }, 1500);
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Erro ao excluir empresa');
+      setDeleting(false);
     }
   };
 
@@ -499,8 +531,89 @@ const Settings: React.FC = () => {
               </div>
             </div>
           )}
+
+          {/* Zona de Perigo - Excluir Empresa */}
+          <div className="mt-6 bg-white rounded-lg shadow-md p-6 border-2 border-red-200">
+            <h2 className="text-lg font-semibold text-red-700 mb-4 flex items-center gap-2">
+              <AlertTriangle size={20} className="text-red-600" />
+              Zona de Perigo
+            </h2>
+            <p className="text-sm text-neutral-600 mb-4">
+              Ao excluir sua empresa, todos os dados serao permanentemente removidos, incluindo usuarios, clientes, processos, documentos e transacoes financeiras.
+              <strong className="text-red-600"> Esta acao e irreversivel.</strong>
+            </p>
+
+            <button
+              type="button"
+              onClick={() => setShowDeleteModal(true)}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-red-100 text-red-700 border border-red-300 hover:bg-red-200 font-medium rounded-lg transition-all duration-200"
+            >
+              <Trash2 size={18} />
+              Excluir Minha Empresa
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* Modal de Confirmacao de Exclusao */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-md w-full p-6">
+            <div className="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full mb-4">
+              <AlertTriangle className="text-red-600" size={24} />
+            </div>
+
+            <h3 className="text-lg font-semibold text-neutral-900 text-center mb-2">
+              Excluir Empresa?
+            </h3>
+
+            <p className="text-sm text-neutral-600 text-center mb-4">
+              Voce esta prestes a excluir permanentemente a empresa <strong>{settings.name}</strong> e todos os seus dados.
+            </p>
+
+            <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 mb-4">
+              <p className="text-sm text-yellow-800 font-medium mb-2">Esta acao e IRREVERSIVEL!</p>
+              <p className="text-xs text-yellow-700">
+                Todos os usuarios, clientes, processos, documentos, transacoes e demais dados serao permanentemente excluidos.
+              </p>
+            </div>
+
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-neutral-700 mb-2">
+                Para confirmar, digite o nome da empresa: <strong>{settings.name}</strong>
+              </label>
+              <input
+                type="text"
+                value={confirmName}
+                onChange={(e) => setConfirmName(e.target.value)}
+                placeholder="Digite o nome da empresa"
+                className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 min-h-[44px]"
+              />
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setConfirmName('');
+                }}
+                disabled={deleting}
+                className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 bg-white hover:bg-neutral-50 text-neutral-700 font-medium rounded-lg transition-all duration-200 disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleDeleteCompany}
+                disabled={deleting || confirmName.trim().toLowerCase() !== settings.name.trim().toLowerCase()}
+                className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-red-600 text-white hover:bg-red-700 font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Trash2 size={18} />
+                {deleting ? 'Excluindo...' : 'Sim, Excluir'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </Layout>
   );
 };

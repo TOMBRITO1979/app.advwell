@@ -30,19 +30,19 @@ const PrivacyPolicy: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-500 via-primary-600 to-primary-700">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-100 via-green-200 to-teal-200">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-500 via-primary-600 to-primary-700 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-100 via-green-200 to-teal-200 relative overflow-hidden">
       {/* Animated background geometric shapes */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-32 -left-32 w-[500px] h-[500px] bg-primary-300/20 rounded-full blur-3xl animate-blob"></div>
-        <div className="absolute top-1/4 -right-24 w-96 h-96 bg-primary-400/20 rounded-full blur-3xl animate-blob animation-delay-2000"></div>
-        <div className="absolute -bottom-32 left-1/4 w-[600px] h-[600px] bg-primary-200/15 rounded-full blur-3xl animate-blob animation-delay-4000"></div>
+        <div className="absolute -top-32 -left-32 w-[500px] h-[500px] bg-emerald-300/30 rounded-full blur-3xl animate-blob"></div>
+        <div className="absolute top-1/4 -right-24 w-96 h-96 bg-green-300/25 rounded-full blur-3xl animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-32 left-1/4 w-[600px] h-[600px] bg-teal-200/20 rounded-full blur-3xl animate-blob animation-delay-4000"></div>
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImRvdHMiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9IndoaXRlIiBmaWxsLW9wYWNpdHk9IjAuMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNkb3RzKSIvPjwvc3ZnPg==')] opacity-40"></div>
       </div>
 
@@ -51,7 +51,7 @@ const PrivacyPolicy: React.FC = () => {
         <div className="max-w-4xl mx-auto">
           <Link
             to="/login"
-            className="inline-flex items-center text-white/80 hover:text-white transition-colors"
+            className="inline-flex items-center text-neutral-600 hover:text-neutral-900 transition-colors"
           >
             <ArrowLeft className="w-5 h-5 mr-2" />
             Voltar
