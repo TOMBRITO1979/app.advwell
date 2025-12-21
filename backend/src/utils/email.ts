@@ -38,7 +38,7 @@ export const sendPasswordResetEmail = async (
 
                 <!-- Header com gradiente -->
                 <tr>
-                  <td style="background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); padding: 40px 30px; text-align: center;">
+                  <td style="background-color: #2563eb; background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); padding: 40px 30px; text-align: center;">
                     <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 700; letter-spacing: -0.5px;">
                       AdvWell
                     </h1>
@@ -149,7 +149,7 @@ export const sendWelcomeEmail = async (email: string, name: string) => {
 
                 <!-- Header com gradiente -->
                 <tr>
-                  <td style="background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); padding: 40px 30px; text-align: center;">
+                  <td style="background-color: #2563eb; background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); padding: 40px 30px; text-align: center;">
                     <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 700; letter-spacing: -0.5px;">
                       AdvWell
                     </h1>
@@ -286,7 +286,7 @@ export const sendEmailVerification = async (
 
                 <!-- Header com gradiente -->
                 <tr>
-                  <td style="background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); padding: 40px 30px; text-align: center;">
+                  <td style="background-color: #2563eb; background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); padding: 40px 30px; text-align: center;">
                     <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 700; letter-spacing: -0.5px;">
                       AdvWell
                     </h1>
@@ -403,7 +403,7 @@ export const sendCaseUpdateNotification = async (
 
                 <!-- Header com gradiente -->
                 <tr>
-                  <td style="background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); padding: 40px 30px; text-align: center;">
+                  <td style="background-color: #2563eb; background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); padding: 40px 30px; text-align: center;">
                     <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 700; letter-spacing: -0.5px;">
                       ${companyName || 'AdvWell'}
                     </h1>
