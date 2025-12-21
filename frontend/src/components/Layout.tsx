@@ -361,7 +361,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               sidebarOpen ? 'translate-x-0' : '-translate-x-full'
             } lg:translate-x-0 ${
               sidebarCollapsed ? 'lg:w-16' : 'lg:w-64'
-            } w-64 bg-white shadow-lg h-screen fixed lg:sticky top-0 z-30 lg:z-10 transition-all duration-300 ease-in-out border-r border-neutral-200 overflow-y-auto`}
+            } w-64 bg-white shadow-lg h-screen fixed lg:sticky top-0 lg:top-0 z-30 lg:z-10 transition-all duration-300 ease-in-out border-r border-neutral-200 flex flex-col`}
           >
             {/* Botão de recolher (apenas desktop) */}
             <div className="hidden lg:flex justify-end p-2">
@@ -374,7 +374,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               </button>
             </div>
 
-            <nav className={sidebarCollapsed ? 'mt-2' : 'mt-8'}>
+            <nav className={`${sidebarCollapsed ? 'mt-2' : 'mt-8'} flex-1 overflow-y-auto pb-4`}>
               {menuItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = location.pathname.startsWith(item.path);
