@@ -1,4 +1,6 @@
 import { Router } from 'express';
+import { body, param, validationResult } from 'express-validator';
+import { Request, Response, NextFunction } from 'express';
 import companyController from '../controllers/company.controller';
 import { authenticate, requireSuperAdmin, requireAdmin } from '../middleware/auth';
 
@@ -6,9 +8,84 @@ const router = Router();
 
 router.use(authenticate);
 
+// Middleware de validação genérico
+const validate = (req: Request, res: Response, next: NextFunction) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
+      error: 'Dados inválidos',
+      details: errors.array()
+    });
+  }
+  next();
+};
+
+// Validações para atualização de empresa
+const updateCompanyValidation = [
+  body('name')
+    .optional({ checkFalsy: true })
+    .trim()
+    .isLength({ min: 2, max: 200 })
+    .withMessage('Nome deve ter entre 2 e 200 caracteres'),
+  body('email')
+    .optional({ checkFalsy: true })
+    .isEmail()
+    .normalizeEmail()
+    .withMessage('Email inválido'),
+  body('phone')
+    .optional({ checkFalsy: true })
+    .isString()
+    .isLength({ max: 20 })
+    .withMessage('Telefone deve ter no máximo 20 caracteres'),
+  body('address')
+    .optional({ checkFalsy: true })
+    .isString()
+    .isLength({ max: 500 })
+    .withMessage('Endereço deve ter no máximo 500 caracteres'),
+];
+
+// Validações para criação de empresa
+const createCompanyValidation = [
+  body('name')
+    .trim()
+    .isLength({ min: 2, max: 200 })
+    .withMessage('Nome deve ter entre 2 e 200 caracteres'),
+  body('email')
+    .optional({ checkFalsy: true })
+    .isEmail()
+    .normalizeEmail()
+    .withMessage('Email inválido'),
+  body('cnpj')
+    .optional({ checkFalsy: true })
+    .matches(/^(\d{14}|\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2})$/)
+    .withMessage('CNPJ deve ter 14 dígitos'),
+];
+
+// Validação de UUID para parâmetros
+const idParamValidation = [
+  param('id')
+    .isUUID()
+    .withMessage('ID inválido'),
+];
+
+// Validação para subscription update
+const subscriptionValidation = [
+  param('id')
+    .isUUID()
+    .withMessage('ID inválido'),
+  body('subscriptionPlan')
+    .optional({ checkFalsy: true })
+    .isIn(['FREE', 'BRONZE', 'PRATA', 'OURO'])
+    .withMessage('Plano inválido'),
+  body('subscriptionStatus')
+    .optional({ checkFalsy: true })
+    .isIn(['TRIAL', 'ACTIVE', 'INACTIVE', 'CANCELLED', 'PAST_DUE'])
+    .withMessage('Status inválido'),
+];
+
 // Rotas do Admin (sua própria empresa) - DEVEM VIR ANTES DAS ROTAS COM :id
 router.get('/own', requireAdmin, companyController.getOwn);
-router.put('/own', requireAdmin, companyController.updateOwn);
+router.put('/own', requireAdmin, updateCompanyValidation, validate, companyController.updateOwn);
 router.delete('/own', requireAdmin, companyController.deleteOwn);
 
 // API Key Management (Para integrações WhatsApp, N8N, etc)
@@ -18,12 +95,12 @@ router.post('/own/api-key/regenerate', requireAdmin, companyController.regenerat
 // Rotas do Super Admin
 router.get('/subscription-alerts', requireSuperAdmin, companyController.getSubscriptionAlerts);
 router.get('/', requireSuperAdmin, companyController.list);
-router.post('/', requireSuperAdmin, companyController.create);
-router.get('/:id/users', requireSuperAdmin, companyController.getUsers);
+router.post('/', requireSuperAdmin, createCompanyValidation, validate, companyController.create);
+router.get('/:id/users', requireSuperAdmin, idParamValidation, validate, companyController.getUsers);
 router.put('/:companyId/users/:userId/toggle-active', requireSuperAdmin, companyController.toggleUserActive);
-router.put('/:id/subscription', requireSuperAdmin, companyController.updateSubscription);
-router.get('/:id/last-payment', requireSuperAdmin, companyController.getCompanyLastPayment);
-router.put('/:id', requireSuperAdmin, companyController.update);
-router.delete('/:id', requireSuperAdmin, companyController.delete);
+router.put('/:id/subscription', requireSuperAdmin, subscriptionValidation, validate, companyController.updateSubscription);
+router.get('/:id/last-payment', requireSuperAdmin, idParamValidation, validate, companyController.getCompanyLastPayment);
+router.put('/:id', requireSuperAdmin, idParamValidation, updateCompanyValidation, validate, companyController.update);
+router.delete('/:id', requireSuperAdmin, idParamValidation, validate, companyController.delete);
 
 export default router;

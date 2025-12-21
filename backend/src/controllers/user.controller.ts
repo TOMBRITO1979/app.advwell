@@ -100,6 +100,7 @@ export class UserController {
       if (permissions && Array.isArray(permissions)) {
         await prisma.permission.createMany({
           data: permissions.map((perm: any) => ({
+            companyId, // Tenant isolation
             userId: user.id,
             resource: perm.resource,
             canView: perm.canView || false,
@@ -192,6 +193,7 @@ export class UserController {
         // Cria novas permissões
         await prisma.permission.createMany({
           data: permissions.map((perm: any) => ({
+            companyId, // Tenant isolation
             userId: id,
             resource: perm.resource,
             canView: perm.canView || false,

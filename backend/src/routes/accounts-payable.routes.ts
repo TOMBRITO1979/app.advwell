@@ -4,7 +4,7 @@ import { Request, Response, NextFunction } from 'express';
 import accountsPayableController from '../controllers/accounts-payable.controller';
 import { authenticate } from '../middleware/auth';
 import { validateTenant } from '../middleware/tenant';
-import { upload } from '../middleware/upload';
+import { upload, validateUploadContent } from '../middleware/upload';
 
 const router = Router();
 
@@ -97,7 +97,7 @@ router.get('/due-today', accountsPayableController.getDueToday);
 // Rotas de exportação e importação
 router.get('/export/pdf', accountsPayableController.exportPDF);
 router.get('/export/csv', accountsPayableController.exportCSV);
-router.post('/import/csv', upload.single('file'), accountsPayableController.importCSV);
+router.post('/import/csv', upload.single('file'), validateUploadContent, accountsPayableController.importCSV);
 
 // Rotas de extrato (statement)
 router.get('/categories', accountsPayableController.getCategories);

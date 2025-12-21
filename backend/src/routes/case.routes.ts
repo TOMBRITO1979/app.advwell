@@ -4,10 +4,9 @@ import { Request, Response, NextFunction } from 'express';
 import caseController from '../controllers/case.controller';
 import { authenticate } from '../middleware/auth';
 import { validateTenant } from '../middleware/tenant';
-import multer from 'multer';
+import { upload, validateUploadContent } from '../middleware/upload';
 
 const router = Router();
-const upload = multer({ storage: multer.memoryStorage() });
 
 router.use(authenticate);
 router.use(validateTenant);
@@ -127,7 +126,7 @@ router.get('/deadlines-today', caseController.getDeadlinesToday); // Prazos venc
 router.put('/:id/deadline', caseController.updateDeadline); // Atualiza prazo do processo
 router.post('/:id/deadline/toggle', caseController.toggleDeadlineCompleted); // Marca prazo como cumprido/não cumprido
 router.get('/export/csv', caseController.exportCSV);
-router.post('/import/csv', upload.single('file'), caseController.importCSV);
+router.post('/import/csv', upload.single('file'), validateUploadContent, caseController.importCSV);
 router.get('/updates', caseController.getPendingUpdates); // Lista atualizações pendentes
 router.get('/:id/audit-logs', caseController.getAuditLogs); // Busca logs de auditoria
 router.get('/:id', caseController.get);

@@ -865,7 +865,7 @@ export class CaseController {
           results.errors.push({
             line: lineNumber,
             processNumber: record['Número do Processo'] || '(vazio)',
-            error: error.message || 'Erro desconhecido',
+            error: 'Erro ao processar linha', // Safe: no error.message exposure
           });
         }
       }

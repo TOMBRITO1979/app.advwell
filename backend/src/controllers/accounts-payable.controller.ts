@@ -498,7 +498,7 @@ export class AccountsPayableController {
           results.errors.push({
             line: lineNumber,
             supplier: record.Fornecedor || '(vazio)',
-            error: error.message || 'Erro ao processar linha',
+            error: 'Erro ao processar linha', // Safe: no error.message exposure
           });
         }
       }

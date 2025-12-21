@@ -132,6 +132,7 @@ model User {
 // Tabela de permissões
 model Permission {
   id        String   @id @default(uuid())
+  companyId String?  // Para isolamento direto de tenant (será preenchido automaticamente)
   userId    String
   resource  String   // ex: "clients", "cases", "settings"
   canView   Boolean  @default(false)
@@ -143,6 +144,7 @@ model Permission {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, resource])
+  @@index([companyId])
   @@map("permissions")
 }
 
@@ -923,6 +925,9 @@ enum ConsentType {
 model ConsentLog {
   id            String       @id @default(uuid())
 
+  // Tenant (opcional para consentimentos de registro)
+  companyId     String?      // Para isolamento de tenant (preenchido para consentimentos pós-login)
+
   // Quem deu o consentimento
   userId        String?      // Usuário autenticado (opcional para leads/registro)
   email         String       // Email para rastreamento
@@ -945,6 +950,7 @@ model ConsentLog {
   // Relations
   user          User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
 
+  @@index([companyId])
   @@index([userId])
   @@index([email])
   @@index([consentType])

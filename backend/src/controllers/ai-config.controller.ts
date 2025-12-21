@@ -146,7 +146,7 @@ export const testConnection = async (req: AuthRequest, res: Response) => {
     res.json({ message });
   } catch (error: any) {
     console.error('Error testing AI connection:', error);
-    res.status(400).json({ error: error.message || 'Erro ao testar conexão com IA' });
+    res.status(400).json({ error: 'Erro ao testar conexão com IA. Verifique suas credenciais.' });
   }
 };
 
@@ -169,7 +169,7 @@ export const testProviderConnection = async (req: AuthRequest, res: Response) =>
     res.json({ message });
   } catch (error: any) {
     console.error('Error testing provider connection:', error);
-    res.status(400).json({ error: error.message || 'Erro ao testar conexão' });
+    res.status(400).json({ error: 'Erro ao testar conexão. Verifique o provider e API key.' });
   }
 };
 

@@ -108,7 +108,7 @@ export const handleWebhook = async (req: Request, res: Response) => {
     res.json(result);
   } catch (error: any) {
     console.error('Webhook error:', error.message);
-    res.status(400).json({ error: error.message });
+    res.status(400).json({ error: 'Erro ao processar webhook' }); // Safe: no error.message exposure
   }
 };
 

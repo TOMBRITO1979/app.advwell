@@ -3,7 +3,7 @@ import { body, validationResult } from 'express-validator';
 import { Request, Response, NextFunction } from 'express';
 import { authenticate } from '../middleware/auth';
 import { validateTenant } from '../middleware/tenant';
-import { upload } from '../middleware/upload';
+import { upload, validateUploadContent } from '../middleware/upload';
 import {
   listTransactions,
   getTransaction,
@@ -98,7 +98,7 @@ router.get('/', listTransactions);                    // Listar transações com
 router.get('/summary', getFinancialSummary);          // Resumo financeiro
 router.get('/export/pdf', exportPDF);                 // Exportar para PDF
 router.get('/export/csv', exportCSV);                 // Exportar para CSV
-router.post('/import/csv', upload.single('file'), importCSV); // Importar transações via CSV
+router.post('/import/csv', upload.single('file'), validateUploadContent, importCSV); // Importar transações via CSV
 router.get('/:id/receipt', generateTransactionReceipt);  // Gerar recibo/comprovante da transação
 router.get('/:id', getTransaction);                   // Buscar transação por ID
 router.post('/', createTransactionValidation, validate, createTransaction);  // Criar nova transação

@@ -155,8 +155,8 @@ export class SMTPConfigController {
       console.error('Erro ao testar conexão SMTP:', error);
       res.status(400).json({
         success: false,
-        error: 'Falha ao conectar com servidor SMTP',
-        details: error.message,
+        error: 'Falha ao conectar com servidor SMTP. Verifique as configurações.',
+        // details removed to prevent information leakage
       });
     }
   }

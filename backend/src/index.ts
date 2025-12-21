@@ -103,7 +103,7 @@ const globalLimiter = rateLimit({
   legacyHeaders: false,
   message: { error: 'Too many attempts. Please try again later.', retry_after: 15 * 60 },
   validate: {
-    trustProxy: false,
+    trustProxy: true, // FIXED: App is behind Traefik, must trust proxy headers
   },
   skip: (req) => {
     // Skip rate limiting for health checks
@@ -118,11 +118,22 @@ const authLimiter = rateLimit({
   max: 20,
   message: { error: 'Muitas tentativas de login. Tente novamente em 15 minutos.' },
   validate: {
-    trustProxy: false,
+    trustProxy: true, // FIXED: App is behind Traefik
   },
 });
 app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/register', authLimiter);
+
+// Rate limit para password reset (previne email bombing)
+const passwordResetLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hora
+  max: 3, // Máximo 3 tentativas por hora
+  message: { error: 'Muitas tentativas de recuperação de senha. Tente novamente em 1 hora.' },
+  validate: {
+    trustProxy: true,
+  },
+});
+app.use('/api/auth/forgot-password', passwordResetLimiter);
 
 // Stripe webhook (must be BEFORE express.json() to receive raw body)
 // app.use('/api/stripe-webhook', stripeWebhookRoutes);

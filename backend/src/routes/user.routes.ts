@@ -4,10 +4,9 @@ import { Request, Response, NextFunction } from 'express';
 import userController from '../controllers/user.controller';
 import { authenticate, requireAdmin } from '../middleware/auth';
 import { validateTenant } from '../middleware/tenant';
-import multer from 'multer';
+import { profilePhotoUpload, validateUploadContent } from '../middleware/upload';
 
 const router = Router();
-const upload = multer({ storage: multer.memoryStorage() });
 
 router.use(authenticate);
 
@@ -75,7 +74,7 @@ const updateUserValidation = [
 // Rotas de perfil (não requerem admin, apenas autenticação)
 router.get('/profile', userController.getProfile);
 router.put('/profile', userController.updateProfile);
-router.post('/profile/photo', upload.single('photo'), userController.uploadProfilePhoto);
+router.post('/profile/photo', profilePhotoUpload.single('photo'), validateUploadContent, userController.uploadProfilePhoto);
 
 // Rotas administrativas (requerem admin)
 router.use(requireAdmin);

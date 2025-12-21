@@ -383,7 +383,7 @@ export class ClientController {
           results.errors.push({
             line: lineNumber,
             name: record.Nome || '(vazio)',
-            error: error.message || 'Erro desconhecido',
+            error: 'Erro ao processar linha', // Safe: no error.message exposure
           });
         }
       }

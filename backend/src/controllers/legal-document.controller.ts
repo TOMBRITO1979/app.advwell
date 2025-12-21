@@ -513,7 +513,7 @@ Se não houver erros, retorne erros como array vazio e textoCorrigido igual ao o
     });
   } catch (error: any) {
     console.error('Erro ao revisar documento:', error);
-    res.status(500).json({ error: error.message || 'Erro ao revisar documento com IA' });
+    res.status(500).json({ error: 'Erro ao revisar documento com IA. Tente novamente.' });
   }
 };
 

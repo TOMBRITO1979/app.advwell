@@ -40,8 +40,19 @@ export class LGPDController {
         return res.status(400).json({ error: 'Tipo de consentimento inválido' });
       }
 
+      // Buscar companyId do usuário se fornecido
+      let companyId = null;
+      if (userId) {
+        const user = await prisma.user.findUnique({
+          where: { id: userId },
+          select: { companyId: true },
+        });
+        companyId = user?.companyId || null;
+      }
+
       const consent = await prisma.consentLog.create({
         data: {
+          companyId, // Tenant isolation (null para registro inicial)
           userId: userId || null,
           email,
           ip,

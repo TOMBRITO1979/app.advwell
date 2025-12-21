@@ -785,7 +785,7 @@ export const importCSV = async (req: AuthRequest, res: Response) => {
         results.errors.push({
           line: lineNumber,
           description: record['Descrição'] || '(vazio)',
-          error: error.message || 'Erro ao processar linha',
+          error: 'Erro ao processar linha', // Safe: no error.message exposure
         });
       }
     }
