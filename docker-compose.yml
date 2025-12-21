@@ -33,25 +33,9 @@ services:
       timeout: 5s
       retries: 3
 
-  # PgBouncer commented out - can be enabled when needed for higher connection counts
-  # pgbouncer:
-  #   image: bitnami/pgbouncer:1.21.0
-  #   environment:
-  #     - POSTGRESQL_HOST=postgres
-  #     - POSTGRESQL_PORT=5432
-  #     - POSTGRESQL_USERNAME=${POSTGRES_USER:-postgres}
-  #     - POSTGRESQL_PASSWORD=${POSTGRES_PASSWORD}
-  #     - POSTGRESQL_DATABASE=${POSTGRES_DB:-advtom}
-  #     - PGBOUNCER_POOL_MODE=transaction
-  #     - PGBOUNCER_MAX_CLIENT_CONN=500
-  #     - PGBOUNCER_DEFAULT_POOL_SIZE=20
-  #   networks:
-  #     - network_public
-  #   depends_on:
-  #     - postgres
-  #   deploy:
-  #     replicas: 1
-  #   # To enable: change DATABASE_URL to use pgbouncer:6432
+  # NOTE: PgBouncer removed - SCRAM-SHA-256 auth issues with edoburu/pgbouncer
+  # PostgreSQL already configured with max_connections=500 which is sufficient
+  # Consider adding PgBouncer in future with proper auth configuration
 
   postgres:
     image: postgres:16-alpine
@@ -111,7 +95,7 @@ services:
       # Timezone Brasil (São Paulo)
       - TZ=${TZ:-America/Sao_Paulo}
 
-      # Database direct connection (PgBouncer optional)
+      # Database connection (direct to PostgreSQL with connection pooling)
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?connection_limit=10&pool_timeout=10
 
       # Redis for caching and queues
@@ -224,6 +208,72 @@ services:
         - "traefik.http.routers.advwell-frontend.tls.certresolver=letsencryptresolver"
         - "traefik.http.services.advwell-frontend.loadbalancer.server.port=80"
         - "traefik.docker.network=network_public"
+
+  # ===========================================
+  # MONITORING EXPORTERS
+  # ===========================================
+
+  # Node Exporter - System metrics (CPU, memory, disk, network)
+  node-exporter:
+    image: prom/node-exporter:latest
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--path.rootfs=/rootfs'
+      - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)'
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    networks:
+      - network_public
+    deploy:
+      mode: global
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 64M
+        reservations:
+          cpus: '0.05'
+          memory: 32M
+
+  # Redis Exporter - Redis metrics
+  redis-exporter:
+    image: oliver006/redis_exporter:latest
+    environment:
+      - REDIS_ADDR=redis://redis:6379
+    networks:
+      - network_public
+    depends_on:
+      - redis
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 64M
+        reservations:
+          cpus: '0.05'
+          memory: 32M
+
+  # Postgres Exporter - PostgreSQL metrics
+  postgres-exporter:
+    image: wrouesnel/postgres_exporter:latest
+    environment:
+      - DATA_SOURCE_NAME=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-advtom}?sslmode=disable
+    networks:
+      - network_public
+    depends_on:
+      - postgres
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 64M
+        reservations:
+          cpus: '0.05'
+          memory: 32M
 
 networks:
   network_public:
