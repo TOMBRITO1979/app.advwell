@@ -878,7 +878,7 @@ ${COMPANY_INFO.address}
         }
 
         // Se for portabilidade, gerar export de dados
-        if (request.requestType === 'PORTABILITY') {
+        if (request.requestType === 'PORTABILITY' && request.userId) {
           try {
             const exportData = await dataExportService.exportUserData(request.userId, companyId);
             updateData.notes = (notes || '') + '\n\nDados exportados automaticamente pelo sistema.';
@@ -890,7 +890,7 @@ ${COMPANY_INFO.address}
         }
 
         // Se for exclusao, anonimizar dados
-        if (request.requestType === 'DELETION') {
+        if (request.requestType === 'DELETION' && request.userId) {
           try {
             await dataExportService.anonymizeUserData(request.userId, companyId);
             updateData.notes = (notes || '') + '\n\nDados anonimizados conforme LGPD.';

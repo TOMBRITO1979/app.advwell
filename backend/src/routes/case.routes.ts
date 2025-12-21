@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { body, validationResult } from 'express-validator';
+import { body, param, validationResult } from 'express-validator';
 import { Request, Response, NextFunction } from 'express';
 import caseController from '../controllers/case.controller';
 import { authenticate } from '../middleware/auth';
@@ -118,22 +118,45 @@ const updateCaseValidation = [
     .withMessage('Link do processo deve ser uma URL válida'),
 ];
 
+// Validação de UUID para parâmetros de rota
+const idParamValidation = [
+  param('id')
+    .isUUID()
+    .withMessage('ID do processo inválido'),
+];
+
+// Validação para atualização de deadline
+const updateDeadlineValidation = [
+  param('id')
+    .isUUID()
+    .withMessage('ID do processo inválido'),
+  body('deadline')
+    .optional({ checkFalsy: true })
+    .isISO8601()
+    .withMessage('Deadline deve ser uma data válida'),
+  body('deadlineDescription')
+    .optional({ checkFalsy: true })
+    .isString()
+    .isLength({ max: 500 })
+    .withMessage('Descrição deve ter no máximo 500 caracteres'),
+];
+
 router.post('/', createCaseValidation, validate, caseController.create);
 router.get('/', caseController.list);
 router.get('/search', caseController.search); // Busca rápida para autocomplete
 router.get('/deadlines', caseController.getDeadlines); // Lista processos com prazo
 router.get('/deadlines-today', caseController.getDeadlinesToday); // Prazos vencendo hoje (notificação sidebar)
-router.put('/:id/deadline', caseController.updateDeadline); // Atualiza prazo do processo
-router.post('/:id/deadline/toggle', caseController.toggleDeadlineCompleted); // Marca prazo como cumprido/não cumprido
+router.put('/:id/deadline', updateDeadlineValidation, validate, caseController.updateDeadline); // Atualiza prazo do processo
+router.post('/:id/deadline/toggle', idParamValidation, validate, caseController.toggleDeadlineCompleted); // Marca prazo como cumprido/não cumprido
 router.get('/export/csv', caseController.exportCSV);
 router.post('/import/csv', upload.single('file'), validateUploadContent, caseController.importCSV);
 router.get('/updates', caseController.getPendingUpdates); // Lista atualizações pendentes
-router.get('/:id/audit-logs', caseController.getAuditLogs); // Busca logs de auditoria
-router.get('/:id', caseController.get);
+router.get('/:id/audit-logs', idParamValidation, validate, caseController.getAuditLogs); // Busca logs de auditoria
+router.get('/:id', idParamValidation, validate, caseController.get);
 router.put('/:id', updateCaseValidation, validate, caseController.update);
-router.delete('/:id', caseController.delete); // Excluir processo
-router.post('/:id/sync', caseController.syncMovements);
-router.post('/:id/generate-summary', caseController.generateSummary); // Gera resumo com IA
-router.post('/:id/acknowledge', caseController.acknowledgeUpdate); // Marca como ciente
+router.delete('/:id', idParamValidation, validate, caseController.delete); // Excluir processo
+router.post('/:id/sync', idParamValidation, validate, caseController.syncMovements);
+router.post('/:id/generate-summary', idParamValidation, validate, caseController.generateSummary); // Gera resumo com IA
+router.post('/:id/acknowledge', idParamValidation, validate, caseController.acknowledgeUpdate); // Marca como ciente
 
 export default router;

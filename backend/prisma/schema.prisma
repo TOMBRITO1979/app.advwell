@@ -126,6 +126,7 @@ model User {
   dataRequests            DataRequest[]
   auditLogs               AuditLog[]
 
+  @@index([companyId])
   @@map("users")
 }
 
@@ -246,6 +247,8 @@ model Case {
   @@index([companyId])
   @@index([companyId, status])
   @@index([clientId])
+  @@index([deadline])
+  @@index([lastSyncedAt])
   @@map("cases")
 }
 
@@ -279,6 +282,7 @@ model CaseDocument {
 
   case        Case     @relation("CaseDocuments", fields: [caseId], references: [id], onDelete: Cascade)
 
+  @@index([caseId])
   @@map("case_documents")
 }
 
@@ -313,6 +317,7 @@ model CasePart {
 
   case            Case         @relation(fields: [caseId], references: [id], onDelete: Cascade)
 
+  @@index([caseId])
   @@map("case_parts")
 }
 
@@ -320,14 +325,14 @@ model CasePart {
 model CaseAuditLog {
   id          String   @id @default(uuid())
   caseId      String
-  userId      String
+  userId      String?  // Nullable para preservar logs quando usuário é deletado
   action      String   // CREATED, STATUS_CHANGED, PART_ADDED, PART_UPDATED, PART_DELETED, DOCUMENT_ADDED, DEADLINE_SET, DEADLINE_RESPONSIBLE_SET, etc.
   description String   // Descrição legível da ação
   metadata    Json?    // Dados adicionais (valores antigos/novos, etc.)
   createdAt   DateTime @default(now())
 
   case        Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@map("case_audit_logs")
   @@index([caseId])
@@ -977,7 +982,7 @@ enum DataRequestStatus {
 // Tabela de solicitações de direitos do titular (LGPD Art. 18)
 model DataRequest {
   id            String            @id @default(uuid())
-  userId        String
+  userId        String?           // Nullable para preservar requisições quando usuário é deletado
   companyId     String
 
   // Tipo e status
@@ -1002,7 +1007,7 @@ model DataRequest {
   updatedAt     DateTime          @updatedAt
 
   // Relations
-  user          User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user          User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
   company       Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   @@index([userId])

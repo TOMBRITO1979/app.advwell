@@ -7,7 +7,7 @@ export const config = {
   nodeEnv: process.env.NODE_ENV || 'development',
 
   jwt: {
-    secret: process.env.JWT_SECRET || 'default-secret-change-this',
+    secret: process.env.JWT_SECRET || '', // NEVER use default - validated at startup
     expiresIn: '15m', // Access token: 15 minutos
     refreshExpiresIn: '7d', // Refresh token: 7 dias
   },

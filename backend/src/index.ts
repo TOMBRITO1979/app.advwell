@@ -139,8 +139,8 @@ app.use('/api/auth/forgot-password', passwordResetLimiter);
 // app.use('/api/stripe-webhook', stripeWebhookRoutes);
 
 // Body parser com limite de tamanho
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: '2mb' }));
+app.use(express.urlencoded({ extended: true, limit: '2mb' }));
 
 // Rotas
 app.use('/api', routes);
