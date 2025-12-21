@@ -361,7 +361,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               sidebarOpen ? 'translate-x-0' : '-translate-x-full'
             } lg:translate-x-0 ${
               sidebarCollapsed ? 'lg:w-16' : 'lg:w-64'
-            } w-64 bg-white shadow-lg min-h-screen fixed lg:sticky top-0 z-30 lg:z-10 transition-all duration-300 ease-in-out border-r border-neutral-200`}
+            } w-64 bg-white shadow-lg h-screen fixed lg:sticky top-0 z-30 lg:z-10 transition-all duration-300 ease-in-out border-r border-neutral-200 overflow-y-auto`}
           >
             {/* Botão de recolher (apenas desktop) */}
             <div className="hidden lg:flex justify-end p-2">
