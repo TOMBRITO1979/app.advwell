@@ -2,18 +2,29 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+// SEGURANCA: Validar variaveis criticas antes de exportar config
+const nodeEnv = process.env.NODE_ENV || 'development';
+const isDevelopment = nodeEnv === 'development';
+
+// SEGURANCA: DATABASE_URL obrigatoria em staging/production
+if (!process.env.DATABASE_URL && !isDevelopment) {
+  console.error('❌ FATAL: DATABASE_URL must be set in staging/production');
+  process.exit(1);
+}
+
 export const config = {
   port: process.env.PORT || 3000,
-  nodeEnv: process.env.NODE_ENV || 'development',
+  nodeEnv,
 
   jwt: {
-    secret: process.env.JWT_SECRET || '', // NEVER use default - validated at startup
+    secret: process.env.JWT_SECRET || '', // Validated at startup in index.ts
     expiresIn: '15m', // Access token: 15 minutos
     refreshExpiresIn: '7d', // Refresh token: 7 dias
   },
 
   database: {
-    url: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/advtom',
+    // SEGURANCA: Default so permitido em development
+    url: process.env.DATABASE_URL || (isDevelopment ? 'postgresql://postgres:postgres@localhost:5432/advtom' : ''),
   },
 
   aws: {

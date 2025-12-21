@@ -13,32 +13,58 @@ import { enqueueDailySync, getQueueStats } from './queues/sync.queue';
 import { getEmailQueueStats } from './queues/email.queue';
 import crypto from 'crypto';
 
+// SEGURANCA: Lista de padroes conhecidos/fracos que devem ser rejeitados
+const KNOWN_WEAK_PATTERNS = [
+  'default', 'change', 'test', 'example', 'sample',
+  'advwell', 'secret123', 'password', 'development',
+];
+
 // Security validation at startup
 function validateSecurityConfig() {
   const warnings: string[] = [];
   const errors: string[] = [];
+  const isDevelopment = config.nodeEnv === 'development';
 
   // Check JWT_SECRET
   const jwtSecret = process.env.JWT_SECRET || '';
   if (!jwtSecret || jwtSecret.length < 32) {
     errors.push('JWT_SECRET must be at least 32 characters');
-  } else if (jwtSecret.includes('default') || jwtSecret.includes('change')) {
-    warnings.push('JWT_SECRET appears to be a default value - please use a secure random key');
+  } else {
+    // Verificar padroes fracos
+    const lowerSecret = jwtSecret.toLowerCase();
+    for (const pattern of KNOWN_WEAK_PATTERNS) {
+      if (lowerSecret.includes(pattern)) {
+        if (!isDevelopment) {
+          errors.push(`JWT_SECRET contains known weak pattern: ${pattern}`);
+        } else {
+          warnings.push(`JWT_SECRET contains weak pattern: ${pattern}`);
+        }
+        break;
+      }
+    }
   }
 
-  // Check ENCRYPTION_KEY
+  // Check ENCRYPTION_KEY (validacao detalhada feita em encryption.ts)
   const encryptionKey = process.env.ENCRYPTION_KEY || '';
   if (!encryptionKey || encryptionKey.length < 32) {
     errors.push('ENCRYPTION_KEY must be at least 32 characters');
-  } else if (encryptionKey.includes('default') || encryptionKey.includes('change')) {
-    warnings.push('ENCRYPTION_KEY appears to be a default value - please use a secure random key');
+  }
+
+  // Check DATABASE_URL
+  if (!process.env.DATABASE_URL && !isDevelopment) {
+    errors.push('DATABASE_URL must be set in staging/production');
+  }
+
+  // Check REDIS (aviso se nao configurado)
+  if (!process.env.REDIS_HOST && !isDevelopment) {
+    warnings.push('REDIS_HOST not set - using default "redis"');
   }
 
   // Log results
   if (errors.length > 0) {
     console.error('❌ CRITICAL SECURITY ERRORS:');
     errors.forEach(e => console.error(`   - ${e}`));
-    if (config.nodeEnv === 'production') {
+    if (!isDevelopment) {
       console.error('⛔ Server startup blocked due to security configuration errors');
       process.exit(1);
     }
@@ -164,8 +190,49 @@ app.use(express.urlencoded({ extended: true, limit: '2mb' }));
 // Rotas
 app.use('/api', routes);
 
-// Enhanced health check with database, redis and queue metrics
+// SEGURANCA: Health check simplificado (publico) - nao expoe info sensivel
 app.get('/health', async (req, res) => {
+  let status = 'healthy';
+
+  // Verificar apenas conectividade basica
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+  } catch {
+    status = 'unhealthy';
+  }
+
+  try {
+    await redis.ping();
+  } catch {
+    if (status === 'healthy') status = 'degraded';
+  }
+
+  const httpStatus = status === 'unhealthy' ? 503 : 200;
+  res.status(httpStatus).json({
+    status,
+    timestamp: new Date().toISOString(),
+  });
+});
+
+// SEGURANCA: Health check detalhado (protegido por header ou IP interno)
+app.get('/health/detailed', async (req, res) => {
+  // Verificar autorizacao: header X-Health-Key ou IP interno
+  const healthKey = process.env.HEALTH_CHECK_KEY;
+  const requestKey = req.headers['x-health-key'];
+  const clientIp = req.ip || req.socket.remoteAddress || '';
+
+  // IPs internos permitidos (Docker, localhost, redes privadas)
+  const isInternalIp = clientIp === '127.0.0.1' ||
+                       clientIp === '::1' ||
+                       clientIp.startsWith('10.') ||
+                       clientIp.startsWith('172.') ||
+                       clientIp.startsWith('192.168.');
+
+  // Permitir se: tem chave correta OU e IP interno OU nao ha chave configurada (dev)
+  if (healthKey && requestKey !== healthKey && !isInternalIp) {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
+
   const startTime = Date.now();
 
   const health: any = {
@@ -244,12 +311,14 @@ app.get('/health', async (req, res) => {
     rss: `${Math.round(memUsage.rss / 1024 / 1024)}MB`
   };
 
-  // 5. System info
-  health.system = {
-    nodeVersion: process.version,
-    platform: process.platform,
-    environment: process.env.NODE_ENV || 'development'
-  };
+  // 5. System info (apenas em dev ou com autorizacao)
+  if (config.nodeEnv === 'development' || requestKey === healthKey) {
+    health.system = {
+      nodeVersion: process.version,
+      platform: process.platform,
+      environment: config.nodeEnv
+    };
+  }
 
   health.responseTime = `${Date.now() - startTime}ms`;
 
@@ -300,26 +369,54 @@ app.use((err: Error, req: express.Request, res: express.Response, next: express.
   });
 });
 
-// Leader election for cron jobs (only one instance runs cron)
-async function tryBecomeLeader(): Promise<boolean> {
+// SEGURANCA: Leader election com fencing token para evitar split-brain
+const CRON_FENCING_KEY = 'advwell:cron:fencing';
+let currentFencingToken: number | null = null;
+
+async function tryBecomeLeader(): Promise<{ isLeader: boolean; fencingToken: number | null }> {
   try {
+    // Gerar fencing token unico baseado em timestamp
+    const newFencingToken = Date.now();
+
     // Try to set leader key with NX (only if not exists)
     const result = await redis.set(CRON_LEADER_KEY, INSTANCE_ID, 'EX', CRON_LEADER_TTL, 'NX');
     if (result === 'OK') {
-      return true;
+      // Novo lider: definir fencing token
+      await redis.set(CRON_FENCING_KEY, newFencingToken.toString(), 'EX', CRON_LEADER_TTL);
+      currentFencingToken = newFencingToken;
+      return { isLeader: true, fencingToken: newFencingToken };
     }
 
     // Check if we're already the leader
     const currentLeader = await redis.get(CRON_LEADER_KEY);
     if (currentLeader === INSTANCE_ID) {
-      // Refresh TTL
+      // Refresh TTL e manter fencing token
       await redis.expire(CRON_LEADER_KEY, CRON_LEADER_TTL);
-      return true;
+      await redis.expire(CRON_FENCING_KEY, CRON_LEADER_TTL);
+      return { isLeader: true, fencingToken: currentFencingToken };
     }
 
-    return false;
+    currentFencingToken = null;
+    return { isLeader: false, fencingToken: null };
   } catch (error) {
     console.error('Leader election error:', error);
+    currentFencingToken = null;
+    return { isLeader: false, fencingToken: null };
+  }
+}
+
+// SEGURANCA: Verificar se ainda somos o lider valido antes de executar job
+async function validateLeadership(): Promise<boolean> {
+  if (!currentFencingToken) return false;
+
+  try {
+    const storedToken = await redis.get(CRON_FENCING_KEY);
+    const storedLeader = await redis.get(CRON_LEADER_KEY);
+
+    // Validar que somos o lider E nosso fencing token e o atual
+    return storedLeader === INSTANCE_ID &&
+           storedToken === currentFencingToken.toString();
+  } catch {
     return false;
   }
 }
@@ -327,14 +424,20 @@ async function tryBecomeLeader(): Promise<boolean> {
 // Cron job para sincronizar processos - agora usa filas
 // Executa às 2h da manhã, mas apenas no líder
 cron.schedule('0 2 * * *', async () => {
-  const isLeader = await tryBecomeLeader();
+  const { isLeader, fencingToken } = await tryBecomeLeader();
 
   if (!isLeader) {
     console.log(`[${INSTANCE_ID}] Not leader, skipping daily sync`);
     return;
   }
 
-  console.log(`[${INSTANCE_ID}] Leader: Starting daily sync via queue...`);
+  // SEGURANCA: Validar lideranca antes de executar
+  if (!await validateLeadership()) {
+    console.warn(`[${INSTANCE_ID}] Leadership validation failed, aborting sync`);
+    return;
+  }
+
+  console.log(`[${INSTANCE_ID}] Leader (token=${fencingToken}): Starting daily sync via queue...`);
 
   try {
     await enqueueDailySync();
@@ -346,7 +449,7 @@ cron.schedule('0 2 * * *', async () => {
 
 // Refresh leader status every minute
 cron.schedule('* * * * *', async () => {
-  const isLeader = await tryBecomeLeader();
+  const { isLeader } = await tryBecomeLeader();
   if (isLeader) {
     console.log(`[${INSTANCE_ID}] Leader status refreshed`);
   }

@@ -3,12 +3,20 @@ import prisma from '../utils/prisma';
 import datajudService from '../services/datajud.service';
 import { AIService } from '../services/ai/ai.service';
 
+// ESCALABILIDADE: Parametros configuráveis via ambiente
+const SYNC_CONCURRENCY = parseInt(process.env.SYNC_CONCURRENCY || '5');
+const SYNC_BATCH_SIZE = parseInt(process.env.SYNC_BATCH_SIZE || '50');
+const SYNC_INCREMENTAL = process.env.SYNC_INCREMENTAL !== 'false'; // Default: true
+
+console.log(`Sync Queue config: concurrency=${SYNC_CONCURRENCY}, batch=${SYNC_BATCH_SIZE}, incremental=${SYNC_INCREMENTAL}`);
+
 // Queue configuration
 const syncQueue = new Queue('datajud-sync', {
   redis: {
     host: process.env.REDIS_HOST || 'redis',
     port: parseInt(process.env.REDIS_PORT || '6379'),
     password: process.env.REDIS_PASSWORD || undefined,
+    username: process.env.REDIS_USERNAME || undefined,
   },
   defaultJobOptions: {
     attempts: 3,
@@ -34,8 +42,13 @@ function getUltimoAndamento(movimentos: any[]): string | null {
   return `${ultimo.nome} - ${data}`;
 }
 
+// ESCALABILIDADE: Gerar hash unico para movimento (para detecção de duplicatas)
+function generateMovementHash(caseId: string, codigo: number, dataHora: string): string {
+  return `${caseId}-${codigo}-${new Date(dataHora).getTime()}`;
+}
+
 // Process individual case sync
-syncQueue.process('sync-case', 5, async (job) => {
+syncQueue.process('sync-case', SYNC_CONCURRENCY, async (job) => {
   const { caseId, processNumber, companyId } = job.data;
 
   try {
@@ -46,24 +59,66 @@ syncQueue.process('sync-case', 5, async (job) => {
       return { success: false, message: 'Processo não encontrado no DataJud' };
     }
 
-    // Delete old movements
-    await prisma.caseMovement.deleteMany({
-      where: { caseId },
-    });
+    let syncedCount = 0;
+    let skippedCount = 0;
 
-    // Create new movements
-    if (datajudData.movimentos.length > 0) {
-      await prisma.caseMovement.createMany({
-        data: datajudData.movimentos.map((mov) => ({
-          caseId,
-          movementCode: mov.codigo,
-          movementName: mov.nome,
-          movementDate: new Date(mov.dataHora),
-          description: mov.complementosTabelados
-            ?.map((c) => `${c.nome}: ${c.descricao}`)
-            .join('; '),
-        })),
+    if (SYNC_INCREMENTAL) {
+      // ESCALABILIDADE: Sync incremental - upsert em vez de delete all
+      // Buscar movimentos existentes
+      const existingMovements = await prisma.caseMovement.findMany({
+        where: { caseId },
+        select: { movementCode: true, movementDate: true },
       });
+
+      // Criar set de hashes existentes para lookup rapido
+      const existingHashes = new Set(
+        existingMovements.map(m => `${caseId}-${m.movementCode}-${m.movementDate.getTime()}`)
+      );
+
+      // Filtrar apenas movimentos novos
+      const newMovements = datajudData.movimentos.filter((mov) => {
+        const hash = generateMovementHash(caseId, mov.codigo, mov.dataHora);
+        return !existingHashes.has(hash);
+      });
+
+      skippedCount = datajudData.movimentos.length - newMovements.length;
+
+      // Inserir apenas novos movimentos
+      if (newMovements.length > 0) {
+        await prisma.caseMovement.createMany({
+          data: newMovements.map((mov) => ({
+            caseId,
+            movementCode: mov.codigo,
+            movementName: mov.nome,
+            movementDate: new Date(mov.dataHora),
+            description: mov.complementosTabelados
+              ?.map((c) => `${c.nome}: ${c.descricao}`)
+              .join('; '),
+          })),
+          skipDuplicates: true, // Ignorar se houver conflito
+        });
+        syncedCount = newMovements.length;
+      }
+    } else {
+      // Modo legado: delete all + create
+      await prisma.caseMovement.deleteMany({
+        where: { caseId },
+      });
+
+      if (datajudData.movimentos.length > 0) {
+        await prisma.caseMovement.createMany({
+          data: datajudData.movimentos.map((mov) => ({
+            caseId,
+            movementCode: mov.codigo,
+            movementName: mov.nome,
+            movementDate: new Date(mov.dataHora),
+            description: mov.complementosTabelados
+              ?.map((c) => `${c.nome}: ${c.descricao}`)
+              .join('; '),
+          })),
+        });
+        syncedCount = datajudData.movimentos.length;
+      }
     }
 
     // Get ultimo andamento
@@ -103,6 +158,9 @@ syncQueue.process('sync-case', 5, async (job) => {
       success: true,
       processNumber,
       movementsCount: datajudData.movimentos.length,
+      syncedCount,
+      skippedCount,
+      incremental: SYNC_INCREMENTAL,
     };
   } catch (error: any) {
     console.error(`Sync error for case ${caseId}:`, error);
@@ -112,7 +170,8 @@ syncQueue.process('sync-case', 5, async (job) => {
 
 // Process batch sync (enqueues individual jobs)
 syncQueue.process('sync-batch', async (job) => {
-  const { companyId, batchSize = 100, offset = 0 } = job.data;
+  // ESCALABILIDADE: Usar SYNC_BATCH_SIZE como default
+  const { companyId, batchSize = SYNC_BATCH_SIZE, offset = 0 } = job.data;
 
   try {
     const whereClause: any = { status: 'ACTIVE' };

@@ -14,14 +14,52 @@ import crypto from 'crypto';
 
 // Chave de criptografia (deve ter 32 bytes para AES-256)
 const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY;
+const NODE_ENV = process.env.NODE_ENV || 'development';
+const isDevelopment = NODE_ENV === 'development';
 
-// Validação de segurança - ENCRYPTION_KEY é obrigatória em produção
-if (!ENCRYPTION_KEY || ENCRYPTION_KEY.length < 32) {
-  if (process.env.NODE_ENV === 'production') {
-    throw new Error('ENCRYPTION_KEY deve ser definida em produção com pelo menos 32 caracteres');
+// SEGURANCA: Lista de chaves conhecidas/fracas que devem ser rejeitadas
+const KNOWN_WEAK_KEYS = [
+  'advwell-encryption-key-2024',
+  'change-in-production',
+  'default-key',
+  'test-key',
+  'development-key',
+];
+
+// SEGURANCA: Validar ENCRYPTION_KEY
+function validateEncryptionKey(): void {
+  // 1. Verificar se existe
+  if (!ENCRYPTION_KEY) {
+    if (!isDevelopment) {
+      throw new Error('ENCRYPTION_KEY must be set in staging/production');
+    }
+    console.warn('⚠️ AVISO: ENCRYPTION_KEY não definida. Defina em produção.');
+    return;
   }
-  console.warn('⚠️ AVISO: ENCRYPTION_KEY não definida ou muito curta. Defina em produção.');
+
+  // 2. Verificar tamanho minimo
+  if (ENCRYPTION_KEY.length < 32) {
+    if (!isDevelopment) {
+      throw new Error('ENCRYPTION_KEY must be at least 32 characters in staging/production');
+    }
+    console.warn('⚠️ AVISO: ENCRYPTION_KEY muito curta. Use pelo menos 32 caracteres em produção.');
+    return;
+  }
+
+  // 3. Verificar se e uma chave conhecida/fraca
+  const lowerKey = ENCRYPTION_KEY.toLowerCase();
+  for (const weakKey of KNOWN_WEAK_KEYS) {
+    if (lowerKey.includes(weakKey)) {
+      if (!isDevelopment) {
+        throw new Error(`ENCRYPTION_KEY contains known weak pattern: ${weakKey}`);
+      }
+      console.warn(`⚠️ AVISO: ENCRYPTION_KEY contém padrão fraco conhecido: ${weakKey}`);
+      return;
+    }
+  }
 }
+
+validateEncryptionKey();
 
 // Algoritmo de criptografia
 const ALGORITHM = 'aes-256-cbc';

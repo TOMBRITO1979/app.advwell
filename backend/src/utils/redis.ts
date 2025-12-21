@@ -1,16 +1,33 @@
-import Redis from 'ioredis';
+import Redis, { RedisOptions } from 'ioredis';
 
-// Redis connection configuration
-const redisConfig = {
+// SEGURANCA: Configuracao Redis com suporte a TLS e ACL
+const redisConfig: RedisOptions = {
   host: process.env.REDIS_HOST || 'redis',
   port: parseInt(process.env.REDIS_PORT || '6379'),
   password: process.env.REDIS_PASSWORD || undefined,
-  maxRetriesPerRequest: null, // Required for Bull
+  // SEGURANCA: Suporte a Redis ACL (Redis 6+)
+  username: process.env.REDIS_USERNAME || undefined,
+  // SEGURANCA: Suporte a TLS
+  tls: process.env.REDIS_TLS_ENABLED === 'true' ? {
+    rejectUnauthorized: process.env.REDIS_TLS_REJECT_UNAUTHORIZED !== 'false',
+  } : undefined,
+  // Bull queue requirements
+  maxRetriesPerRequest: null,
   enableReadyCheck: false,
-  retryDelayOnFailover: 100,
-  retryDelayOnClusterDown: 100,
-  retryDelayOnTryAgain: 100,
+  // SEGURANCA: Timeout para conexao
+  connectTimeout: 10000,
+  // Reconexao automatica
+  retryStrategy: (times: number) => {
+    if (times > 10) {
+      console.error('Redis: Max retry attempts reached');
+      return null; // Stop retrying
+    }
+    return Math.min(times * 100, 3000);
+  },
 };
+
+// Log configuracao (sem expor senha)
+console.log(`Redis config: ${redisConfig.host}:${redisConfig.port} TLS=${!!redisConfig.tls} ACL=${!!redisConfig.username}`);
 
 // Create Redis client for general caching
 export const redis = new Redis(redisConfig);
