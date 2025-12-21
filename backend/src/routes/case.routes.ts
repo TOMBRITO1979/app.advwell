@@ -5,6 +5,7 @@ import caseController from '../controllers/case.controller';
 import { authenticate } from '../middleware/auth';
 import { validateTenant } from '../middleware/tenant';
 import { upload, validateUploadContent } from '../middleware/upload';
+import { validatePagination } from '../middleware/validation';
 
 const router = Router();
 
@@ -142,15 +143,15 @@ const updateDeadlineValidation = [
 ];
 
 router.post('/', createCaseValidation, validate, caseController.create);
-router.get('/', caseController.list);
-router.get('/search', caseController.search); // Busca rápida para autocomplete
-router.get('/deadlines', caseController.getDeadlines); // Lista processos com prazo
+router.get('/', validatePagination, caseController.list);
+router.get('/search', validatePagination, caseController.search); // Busca rápida para autocomplete
+router.get('/deadlines', validatePagination, caseController.getDeadlines); // Lista processos com prazo
 router.get('/deadlines-today', caseController.getDeadlinesToday); // Prazos vencendo hoje (notificação sidebar)
 router.put('/:id/deadline', updateDeadlineValidation, validate, caseController.updateDeadline); // Atualiza prazo do processo
 router.post('/:id/deadline/toggle', idParamValidation, validate, caseController.toggleDeadlineCompleted); // Marca prazo como cumprido/não cumprido
-router.get('/export/csv', caseController.exportCSV);
+router.get('/export/csv', validatePagination, caseController.exportCSV);
 router.post('/import/csv', upload.single('file'), validateUploadContent, caseController.importCSV);
-router.get('/updates', caseController.getPendingUpdates); // Lista atualizações pendentes
+router.get('/updates', validatePagination, caseController.getPendingUpdates); // Lista atualizações pendentes
 router.get('/:id/audit-logs', idParamValidation, validate, caseController.getAuditLogs); // Busca logs de auditoria
 router.get('/:id', idParamValidation, validate, caseController.get);
 router.put('/:id', updateCaseValidation, validate, caseController.update);

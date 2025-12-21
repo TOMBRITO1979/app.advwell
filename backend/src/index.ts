@@ -93,6 +93,25 @@ app.use(helmet({
   noSniff: true,
   xssFilter: true,
   hidePoweredBy: true,
+  // SEGURANCA: Content-Security-Policy para prevenir XSS
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"], // Permite estilos inline para emails
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'"],
+      fontSrc: ["'self'"],
+      objectSrc: ["'none'"],
+      mediaSrc: ["'self'"],
+      frameSrc: ["'none'"], // Previne clickjacking
+      baseUri: ["'self'"],
+      formAction: ["'self'"],
+      upgradeInsecureRequests: [], // Forca HTTPS
+    },
+  },
+  // SEGURANCA: Previne clickjacking
+  frameguard: { action: 'deny' },
 }));
 
 // Rate limiting global (ajustado para segurança)

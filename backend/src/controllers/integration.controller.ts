@@ -79,7 +79,7 @@ export class IntegrationController {
         });
       }
 
-      // Usuário não existe - cria novo usuário com role ADMIN
+      // Usuário não existe - cria novo usuário com role USER (seguranca: nunca criar ADMIN via API)
       const userPassword = password || this.generateRandomPassword();
       const hashedPassword = await bcrypt.hash(userPassword, 12);
 
@@ -88,7 +88,7 @@ export class IntegrationController {
           name,
           email,
           password: hashedPassword,
-          role: 'ADMIN', // Conforme solicitado, novos usuários são ADMIN
+          role: 'USER', // SEGURANCA: Usuarios via integracao sao sempre USER, nunca ADMIN
           companyId,
           emailVerified: true, // Auto-verifica pois vem do Chatwoot
           active: true,
@@ -816,19 +816,39 @@ export class IntegrationController {
         });
       }
 
+      // SEGURANCA: Whitelist de campos permitidos para update via API
+      const ALLOWED_CLIENT_FIELDS = [
+        'name', 'cpf', 'email', 'phone', 'address', 'city', 'state',
+        'zipCode', 'notes', 'personType', 'profession', 'nationality',
+        'maritalStatus', 'tag', 'birthDate', 'rg', 'stateRegistration',
+        'representativeName', 'representativeCpf', 'active'
+      ];
+
+      // Filtrar apenas campos permitidos
+      const safeUpdateData: any = {};
+      for (const field of ALLOWED_CLIENT_FIELDS) {
+        if (field in updateData) {
+          safeUpdateData[field] = updateData[field];
+        }
+      }
+
+      // SEGURANCA: Nunca permitir alterar companyId via API
+      delete safeUpdateData.companyId;
+      delete safeUpdateData.id;
+
       // Parse da data de nascimento se fornecida
-      if (updateData.birthDate) {
-        if (updateData.birthDate.includes('/')) {
-          const [day, month, year] = updateData.birthDate.split('/');
-          updateData.birthDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+      if (safeUpdateData.birthDate) {
+        if (safeUpdateData.birthDate.includes('/')) {
+          const [day, month, year] = safeUpdateData.birthDate.split('/');
+          safeUpdateData.birthDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
         } else {
-          updateData.birthDate = new Date(updateData.birthDate);
+          safeUpdateData.birthDate = new Date(safeUpdateData.birthDate);
         }
       }
 
       const client = await prisma.client.update({
         where: { id },
-        data: updateData,
+        data: safeUpdateData,
         select: {
           id: true,
           name: true,
@@ -970,14 +990,33 @@ export class IntegrationController {
         });
       }
 
+      // SEGURANCA: Whitelist de campos permitidos para update via API
+      const ALLOWED_CASE_FIELDS = [
+        'processNumber', 'court', 'subject', 'value', 'status',
+        'notes', 'deadline', 'linkProcesso', 'informarCliente'
+      ];
+
+      // Filtrar apenas campos permitidos
+      const safeUpdateData: any = {};
+      for (const field of ALLOWED_CASE_FIELDS) {
+        if (field in updateData) {
+          safeUpdateData[field] = updateData[field];
+        }
+      }
+
+      // SEGURANCA: Nunca permitir alterar companyId ou clientId via API
+      delete safeUpdateData.companyId;
+      delete safeUpdateData.clientId;
+      delete safeUpdateData.id;
+
       // Parse da deadline se fornecida
-      if (updateData.deadline) {
-        updateData.deadline = new Date(updateData.deadline);
+      if (safeUpdateData.deadline) {
+        safeUpdateData.deadline = new Date(safeUpdateData.deadline);
       }
 
       const updatedCase = await prisma.case.update({
         where: { id },
-        data: updateData,
+        data: safeUpdateData,
         select: {
           id: true,
           processNumber: true,

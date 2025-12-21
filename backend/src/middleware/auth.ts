@@ -18,6 +18,16 @@ export const authenticate = (
     }
 
     const decoded = verifyToken(token);
+
+    // SEGURANCA: Validar que usuarios USER e ADMIN devem ter companyId
+    // Apenas SUPER_ADMIN pode operar sem empresa
+    if (decoded.role !== 'SUPER_ADMIN' && !decoded.companyId) {
+      return res.status(403).json({
+        error: 'Usuário sem empresa associada',
+        message: 'Este usuário não possui uma empresa vinculada. Contate o administrador.'
+      });
+    }
+
     req.user = decoded;
     next();
   } catch (error) {

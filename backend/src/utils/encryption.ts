@@ -78,6 +78,16 @@ export function decrypt(encryptedText: string): string {
     const iv = Buffer.from(parts[0], 'hex');
     const encrypted = parts[1];
 
+    // SEGURANCA: Validar tamanho do IV (deve ser exatamente 16 bytes para AES)
+    if (iv.length !== 16) {
+      throw new Error('IV inválido - deve ter exatamente 16 bytes');
+    }
+
+    // SEGURANCA: Validar que o texto criptografado não está vazio
+    if (!encrypted || encrypted.length === 0) {
+      throw new Error('Texto criptografado está vazio');
+    }
+
     // Garantir que a chave tenha exatamente 32 bytes
     const key = Buffer.from(ENCRYPTION_KEY.slice(0, 32));
 

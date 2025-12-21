@@ -1,7 +1,8 @@
 import { PrismaClient } from '@prisma/client';
 
 // Connection pool configuration
-// With 3 backend replicas, 10 connections each = 30 total (max_connections=300 in PostgreSQL)
+// ESCALABILIDADE: 4 backend replicas x 15 connections each = 60 total (max_connections=500 in PostgreSQL)
+// Pool timeout: 20s para evitar timeout em picos de carga
 const prisma = new PrismaClient({
   datasources: {
     db: {

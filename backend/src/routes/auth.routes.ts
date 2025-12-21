@@ -1,10 +1,29 @@
 import { Router } from 'express';
 import { body, validationResult } from 'express-validator';
 import { Request, Response, NextFunction } from 'express';
+import rateLimit from 'express-rate-limit';
 import authController from '../controllers/auth.controller';
 import { authenticate } from '../middleware/auth';
 
 const router = Router();
+
+// SEGURANCA: Rate limiting especifico para embed auth (previne forca bruta em API keys)
+const embedAuthLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 30, // 30 tentativas por IP
+  message: { error: 'Muitas tentativas de embed auth. Tente novamente em 15 minutos.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// SEGURANCA: Rate limiting para verificacao de email
+const emailVerificationLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 10, // 10 tentativas por IP
+  message: { error: 'Muitas tentativas de verificação. Tente novamente em 15 minutos.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 // Middleware de validação genérico
 const validate = (req: Request, res: Response, next: NextFunction) => {
@@ -109,11 +128,12 @@ router.post('/login', loginValidation, validate, authController.login);
 router.post('/refresh', refreshTokenValidation, validate, authController.refreshToken);
 router.post('/forgot-password', forgotPasswordValidation, validate, authController.forgotPassword);
 router.post('/reset-password', resetPasswordValidation, validate, authController.resetPassword);
-router.post('/verify-email', verifyEmailValidation, validate, authController.verifyEmail);
-router.post('/resend-verification', resendVerificationValidation, validate, authController.resendVerificationEmail);
+router.post('/verify-email', emailVerificationLimiter, verifyEmailValidation, validate, authController.verifyEmail);
+router.post('/resend-verification', emailVerificationLimiter, resendVerificationValidation, validate, authController.resendVerificationEmail);
 router.get('/me', authenticate, authController.me);
 
 // Embed authentication - auto-login for Chatwell integration
-router.get('/embed/:token', authController.embedAuth);
+// SEGURANCA: Rate limiting especifico para prevenir forca bruta em API keys
+router.get('/embed/:token', embedAuthLimiter, authController.embedAuth);
 
 export default router;

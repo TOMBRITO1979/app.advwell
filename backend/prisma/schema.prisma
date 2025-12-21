@@ -133,7 +133,7 @@ model User {
 // Tabela de permissões
 model Permission {
   id        String   @id @default(uuid())
-  companyId String?  // Para isolamento direto de tenant (será preenchido automaticamente)
+  companyId String   // OBRIGATORIO: Isolamento de tenant (SEGURANCA)
   userId    String
   resource  String   // ex: "clients", "cases", "settings"
   canView   Boolean  @default(false)
@@ -144,7 +144,7 @@ model Permission {
 
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, resource])
+  @@unique([userId, resource, companyId]) // Unico por usuario, recurso E empresa
   @@index([companyId])
   @@map("permissions")
 }

@@ -4,6 +4,7 @@ import { Request, Response, NextFunction } from 'express';
 import accountsPayableController from '../controllers/accounts-payable.controller';
 import { authenticate } from '../middleware/auth';
 import { validateTenant } from '../middleware/tenant';
+import { validatePagination } from '../middleware/validation';
 import { upload, validateUploadContent } from '../middleware/upload';
 
 const router = Router();

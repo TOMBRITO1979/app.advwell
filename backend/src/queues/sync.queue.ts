@@ -199,13 +199,37 @@ syncQueue.on('stalled', (job) => {
 });
 
 // Helper functions
+// SEGURANCA: Sync diario agora itera por empresa para garantir isolamento de tenant
 export const enqueueDailySync = async () => {
   console.log('Enqueueing daily sync...');
-  await syncQueue.add(
-    'sync-batch',
-    { batchSize: 50, offset: 0 },
-    { jobId: `daily-sync-${Date.now()}` }
-  );
+
+  // SEGURANCA: Buscar todas as empresas ativas com assinatura valida
+  const activeCompanies = await prisma.company.findMany({
+    where: {
+      active: true,
+      subscriptionStatus: { in: ['ACTIVE', 'TRIAL'] },
+    },
+    select: { id: true, name: true },
+  });
+
+  console.log(`Found ${activeCompanies.length} active companies for daily sync`);
+
+  // Enfileirar sync para cada empresa separadamente
+  for (const company of activeCompanies) {
+    await syncQueue.add(
+      'sync-batch',
+      {
+        companyId: company.id, // SEGURANCA: Sempre especificar companyId
+        batchSize: 50,
+        offset: 0,
+      },
+      {
+        jobId: `daily-sync-${company.id}-${Date.now()}`,
+        delay: Math.random() * 5000, // Delay aleatorio para distribuir carga
+      }
+    );
+    console.log(`Enqueued sync for company: ${company.name}`);
+  }
 };
 
 export const enqueueCaseSync = async (caseId: string, processNumber: string, companyId: string) => {

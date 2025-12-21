@@ -3,6 +3,7 @@ import { body, param } from 'express-validator';
 import scheduleController from '../controllers/schedule.controller';
 import { authenticate } from '../middleware/auth';
 import { validateTenant } from '../middleware/tenant';
+import { validatePagination } from '../middleware/validation';
 import { validate } from '../middleware/validation';
 
 const router = Router();

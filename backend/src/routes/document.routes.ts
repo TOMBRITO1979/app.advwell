@@ -3,6 +3,7 @@ import { body, param, validationResult } from 'express-validator';
 import { Request, Response, NextFunction } from 'express';
 import { authenticate } from '../middleware/auth';
 import { validateTenant } from '../middleware/tenant';
+import { validatePagination } from '../middleware/validation';
 import { upload, validateUploadContent } from '../middleware/upload';
 import {
   listDocuments,

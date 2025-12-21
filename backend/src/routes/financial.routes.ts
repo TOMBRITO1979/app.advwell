@@ -4,6 +4,7 @@ import { Request, Response, NextFunction } from 'express';
 import { authenticate } from '../middleware/auth';
 import { validateTenant } from '../middleware/tenant';
 import { upload, validateUploadContent } from '../middleware/upload';
+import { validatePagination } from '../middleware/validation';
 import {
   listTransactions,
   getTransaction,
@@ -94,7 +95,7 @@ const updateTransactionValidation = [
 ];
 
 // Rotas de transações financeiras
-router.get('/', listTransactions);                    // Listar transações com filtros
+router.get('/', validatePagination, listTransactions);                    // Listar transações com filtros
 router.get('/summary', getFinancialSummary);          // Resumo financeiro
 router.get('/export/pdf', exportPDF);                 // Exportar para PDF
 router.get('/export/csv', exportCSV);                 // Exportar para CSV

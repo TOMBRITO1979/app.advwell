@@ -58,12 +58,12 @@ export class UserController {
   // Admin - Criar usuário na sua empresa
   async create(req: AuthRequest, res: Response) {
     try {
-      const companyId = req.user!.companyId;
-      const { name, email, password, permissions, hideSidebar } = req.body;
-
-      if (!companyId) {
+      // SEGURANCA: Validar que admin tem companyId (requerido apos fix de seguranca)
+      if (!req.user!.companyId) {
         return res.status(403).json({ error: 'Usuário não possui empresa associada' });
       }
+      const companyId: string = req.user!.companyId;
+      const { name, email, password, permissions, hideSidebar } = req.body;
 
       // Verifica se o email já existe
       const existingUser = await prisma.user.findUnique({
@@ -145,7 +145,11 @@ export class UserController {
   async update(req: AuthRequest, res: Response) {
     try {
       const { id } = req.params;
-      const companyId = req.user!.companyId;
+      // SEGURANCA: Validar que admin tem companyId (requerido apos fix de seguranca)
+      if (!req.user!.companyId) {
+        return res.status(403).json({ error: 'Usuário sem empresa associada' });
+      }
+      const companyId: string = req.user!.companyId;
       const { name, email, active, permissions, hideSidebar } = req.body;
 
       // Verifica se o usuário pertence à mesma empresa

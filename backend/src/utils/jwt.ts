@@ -60,6 +60,6 @@ export const generateResetToken = (): string => {
   return jwt.sign(
     { type: 'reset' },
     config.jwt.secret,
-    { expiresIn: '1h' }
+    { expiresIn: '30m' } // Reduzido de 1h para 30m por seguranca (OWASP)
   );
 };

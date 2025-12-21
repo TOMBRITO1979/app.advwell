@@ -5,6 +5,7 @@ import clientController from '../controllers/client.controller';
 import { authenticate } from '../middleware/auth';
 import { validateTenant } from '../middleware/tenant';
 import { upload, validateUploadContent } from '../middleware/upload';
+import { validatePagination } from '../middleware/validation';
 
 const router = Router();
 
@@ -117,9 +118,9 @@ const updateClientValidation = [
 ];
 
 router.post('/', createClientValidation, validate, clientController.create);
-router.get('/', clientController.list);
-router.get('/search', clientController.search); // Busca rápida para autocomplete
-router.get('/export/csv', clientController.exportCSV);
+router.get('/', validatePagination, clientController.list);
+router.get('/search', validatePagination, clientController.search); // Busca rápida para autocomplete
+router.get('/export/csv', validatePagination, clientController.exportCSV);
 router.post('/import/csv', upload.single('file'), validateUploadContent, clientController.importCSV);
 router.get('/:id', clientController.get);
 router.put('/:id', updateClientValidation, validate, clientController.update);
