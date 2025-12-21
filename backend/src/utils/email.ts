@@ -42,7 +42,7 @@ export const sendPasswordResetEmail = async (
                     <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 700; letter-spacing: -0.5px;">
                       AdvWell
                     </h1>
-                    <p style="margin: 8px 0 0 0; color: #e0e7ff; font-size: 14px; font-weight: 500;">
+                    <p style="margin: 8px 0 0 0; color: #ffffff; font-size: 14px; font-weight: 500;">
                       Sistema de Gestão para Escritórios de Advocacia
                     </p>
                   </td>
@@ -72,7 +72,7 @@ export const sendPasswordResetEmail = async (
 
                     <!-- Botão principal -->
                     <div style="text-align: center; margin: 32px 0;">
-                      <a href="${resetUrl}" style="display: inline-block; padding: 16px 48px; background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); color: #ffffff; text-decoration: none; border-radius: 8px; font-size: 16px; font-weight: 600; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); transition: transform 0.2s;">
+                      <a href="${resetUrl}" style="display: inline-block; padding: 16px 48px; background-color: #2563eb; background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); color: #ffffff !important; text-decoration: none; border-radius: 8px; font-size: 16px; font-weight: 600; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);">
                         Redefinir Minha Senha
                       </a>
                     </div>
@@ -153,7 +153,7 @@ export const sendWelcomeEmail = async (email: string, name: string) => {
                     <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 700; letter-spacing: -0.5px;">
                       AdvWell
                     </h1>
-                    <p style="margin: 8px 0 0 0; color: #e0e7ff; font-size: 14px; font-weight: 500;">
+                    <p style="margin: 8px 0 0 0; color: #ffffff; font-size: 14px; font-weight: 500;">
                       Sistema de Gestão para Escritórios de Advocacia
                     </p>
                   </td>
@@ -212,7 +212,7 @@ export const sendWelcomeEmail = async (email: string, name: string) => {
 
                     <!-- Botão principal -->
                     <div style="text-align: center; margin: 32px 0;">
-                      <a href="${config.urls.frontend}" style="display: inline-block; padding: 16px 48px; background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); color: #ffffff; text-decoration: none; border-radius: 8px; font-size: 16px; font-weight: 600; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);">
+                      <a href="${config.urls.frontend}" style="display: inline-block; padding: 16px 48px; background-color: #2563eb; background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); color: #ffffff !important; text-decoration: none; border-radius: 8px; font-size: 16px; font-weight: 600; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);">
                         Acessar o Sistema
                       </a>
                     </div>
@@ -290,7 +290,7 @@ export const sendEmailVerification = async (
                     <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 700; letter-spacing: -0.5px;">
                       AdvWell
                     </h1>
-                    <p style="margin: 8px 0 0 0; color: #e0e7ff; font-size: 14px; font-weight: 500;">
+                    <p style="margin: 8px 0 0 0; color: #ffffff; font-size: 14px; font-weight: 500;">
                       Sistema de Gestão para Escritórios de Advocacia
                     </p>
                   </td>
@@ -320,7 +320,7 @@ export const sendEmailVerification = async (
 
                     <!-- Botão principal -->
                     <div style="text-align: center; margin: 32px 0;">
-                      <a href="${verificationUrl}" style="display: inline-block; padding: 16px 48px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; text-decoration: none; border-radius: 8px; font-size: 16px; font-weight: 600; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">
+                      <a href="${verificationUrl}" style="display: inline-block; padding: 16px 48px; background-color: #10b981; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff !important; text-decoration: none; border-radius: 8px; font-size: 16px; font-weight: 600; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">
                         Verificar Meu Email
                       </a>
                     </div>
@@ -407,7 +407,7 @@ export const sendCaseUpdateNotification = async (
                     <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 700; letter-spacing: -0.5px;">
                       ${companyName || 'AdvWell'}
                     </h1>
-                    <p style="margin: 8px 0 0 0; color: #e0e7ff; font-size: 14px; font-weight: 500;">
+                    <p style="margin: 8px 0 0 0; color: #ffffff; font-size: 14px; font-weight: 500;">
                       Atualização do Processo
                     </p>
                   </td>
@@ -460,7 +460,7 @@ ${updateMessage}
 
                     <!-- Botão principal -->
                     <div style="text-align: center; margin: 32px 0;">
-                      <a href="${config.urls.frontend}" style="display: inline-block; padding: 16px 48px; background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); color: #ffffff; text-decoration: none; border-radius: 8px; font-size: 16px; font-weight: 600; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);">
+                      <a href="${config.urls.frontend}" style="display: inline-block; padding: 16px 48px; background-color: #2563eb; background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); color: #ffffff !important; text-decoration: none; border-radius: 8px; font-size: 16px; font-weight: 600; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);">
                         Acessar o Sistema
                       </a>
                     </div>
