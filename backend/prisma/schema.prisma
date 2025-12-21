@@ -213,7 +213,7 @@ model Case {
   processNumber         String     // Número do processo (único por empresa)
   court                 String     // Tribunal
   subject               String     // Assunto
-  value                 Float?     // Valor da causa
+  value                 Decimal?   @db.Decimal(15, 2) // Valor da causa
   status                CaseStatus @default(ACTIVE)
   deadline              DateTime?  // Prazo do processo
   deadlineResponsibleId String?    // ID do usuário responsável pelo prazo
@@ -356,7 +356,7 @@ model FinancialTransaction {
   caseId      String?         // Opcional - pode não estar vinculado a um processo
   type        TransactionType
   description String
-  amount      Float           // Valor total da transação
+  amount      Decimal         @db.Decimal(15, 2) // Valor total da transação
   date        DateTime        @default(now())
 
   // Campos de parcelamento
@@ -394,10 +394,10 @@ model InstallmentPayment {
   id                      String             @id @default(uuid())
   financialTransactionId  String
   installmentNumber       Int                // Número da parcela (1, 2, 3...)
-  amount                  Float              // Valor da parcela
+  amount                  Decimal            @db.Decimal(15, 2) // Valor da parcela
   dueDate                 DateTime           // Data de vencimento
   paidDate                DateTime?          // Data de pagamento (quando pago)
-  paidAmount              Float?             // Valor efetivamente pago (pode diferir do valor da parcela)
+  paidAmount              Decimal?           @db.Decimal(15, 2) // Valor efetivamente pago (pode diferir do valor da parcela)
   status                  InstallmentStatus  @default(PENDING)
   notes                   String?            // Observações sobre a parcela
   receiptUrl              String?            // URL do recibo/comprovante em PDF
@@ -564,7 +564,7 @@ model AccountPayable {
   // Dados da conta
   supplier    String               // Fornecedor/Credor
   description String               // Descrição da conta
-  amount      Float                // Valor
+  amount      Decimal              @db.Decimal(15, 2) // Valor
   dueDate     DateTime             // Data de vencimento
   paidDate    DateTime?            // Data de pagamento (quando pago)
   status      AccountPayableStatus @default(PENDING)
@@ -740,7 +740,7 @@ model ServicePlan {
   companyId         String
   name              String          // Ex: "Assessoria Jurídica Básica"
   description       String?
-  price             Float           // Valor em reais (ex: 500.00)
+  price             Decimal         @db.Decimal(15, 2) // Valor em reais (ex: 500.00)
   interval          BillingInterval @default(MONTHLY)
   stripeProductId   String?         // ID do produto no Stripe (prod_...)
   stripePriceId     String?         // ID do preço no Stripe (price_...)
@@ -801,7 +801,7 @@ model SubscriptionPayment {
   clientSubscriptionId  String
   stripeInvoiceId       String?                // ID da fatura no Stripe (in_...)
   stripePaymentIntentId String?                // ID do pagamento no Stripe (pi_...)
-  amount                Float                  // Valor pago
+  amount                Decimal                @db.Decimal(15, 2) // Valor pago
   currency              String                 @default("brl")
   status                String                 // paid, failed, pending, refunded
   paidAt                DateTime?              // Data do pagamento

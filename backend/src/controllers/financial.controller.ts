@@ -3,6 +3,14 @@ import { AuthRequest } from '../middleware/auth';
 import prisma from '../utils/prisma';
 import { sanitizeString } from '../utils/sanitize';
 import { parse } from 'csv-parse/sync';
+import { Decimal } from '@prisma/client/runtime/library';
+
+// Helper para converter Prisma Decimal para number (necessário após migração Float → Decimal)
+const toNumber = (value: Decimal | number | null | undefined): number => {
+  if (value === null || value === undefined) return 0;
+  if (typeof value === 'number') return value;
+  return value.toNumber();
+};
 
 // Listar transações financeiras com filtros e paginação
 export const listTransactions = async (req: AuthRequest, res: Response) => {
@@ -73,8 +81,8 @@ export const listTransactions = async (req: AuthRequest, res: Response) => {
       }),
     ]);
 
-    const totalIncome = incomeTotal._sum.amount || 0;
-    const totalExpense = expenseTotal._sum.amount || 0;
+    const totalIncome = toNumber(incomeTotal._sum.amount);
+    const totalExpense = toNumber(expenseTotal._sum.amount);
     const balance = totalIncome - totalExpense;
 
     res.json({
@@ -395,8 +403,8 @@ export const getFinancialSummary = async (req: AuthRequest, res: Response) => {
       prisma.financialTransaction.count({ where: { ...where, type: 'EXPENSE' } }),
     ]);
 
-    const totalIncome = incomeTotal._sum.amount || 0;
-    const totalExpense = expenseTotal._sum.amount || 0;
+    const totalIncome = toNumber(incomeTotal._sum.amount);
+    const totalExpense = toNumber(expenseTotal._sum.amount);
     const balance = totalIncome - totalExpense;
 
     res.json({
@@ -470,8 +478,8 @@ export const exportPDF = async (req: AuthRequest, res: Response) => {
       }),
     ]);
 
-    const totalIncome = incomeTotal._sum.amount || 0;
-    const totalExpense = expenseTotal._sum.amount || 0;
+    const totalIncome = toNumber(incomeTotal._sum.amount);
+    const totalExpense = toNumber(expenseTotal._sum.amount);
     const balance = totalIncome - totalExpense;
 
     // Generate PDF using PDFKit
@@ -909,13 +917,13 @@ export const generateTransactionReceipt = async (req: AuthRequest, res: Response
 
     // Calcular valores para parcelamento
     let totalPaid = 0;
-    let valorDevido = transaction.amount;
+    let valorDevido = toNumber(transaction.amount);
 
     if (transaction.isInstallment && transaction.installments.length > 0) {
       totalPaid = transaction.installments.reduce((sum, inst) => {
-        return sum + (inst.paidAmount || 0);
+        return sum + toNumber(inst.paidAmount);
       }, 0);
-      valorDevido = transaction.amount - totalPaid;
+      valorDevido = toNumber(transaction.amount) - totalPaid;
     }
 
     // Gerar PDF usando PDFKit
@@ -1029,8 +1037,8 @@ export const generateTransactionReceipt = async (req: AuthRequest, res: Response
       }
       doc.moveDown(0.5);
       doc.fontSize(12).font('Helvetica-Bold');
-      doc.text(`Valor Total: R$ ${transaction.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
-      doc.text(`Valor por Parcela: R$ ${(transaction.amount / transaction.installmentCount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
+      doc.text(`Valor Total: R$ ${toNumber(transaction.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
+      doc.text(`Valor por Parcela: R$ ${(toNumber(transaction.amount) / (transaction.installmentCount || 1)).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
       doc.moveDown(0.5);
       doc.text(`Total Pago: R$ ${totalPaid.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
       doc.text(`Valor Devido: R$ ${valorDevido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
@@ -1049,18 +1057,18 @@ export const generateTransactionReceipt = async (req: AuthRequest, res: Response
             OVERDUE: 'Atrasado',
             CANCELLED: 'Cancelado',
           };
-          const status = inst.paidAmount && inst.paidAmount >= inst.amount ? 'Pago' : statusLabels[inst.status] || 'Pendente';
+          const status = inst.paidAmount && toNumber(inst.paidAmount) >= toNumber(inst.amount) ? 'Pago' : statusLabels[inst.status] || 'Pendente';
           const dueDate = new Date(inst.dueDate).toLocaleDateString('pt-BR');
-          const paidInfo = inst.paidAmount ? ` (Pago: R$ ${inst.paidAmount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })})` : '';
+          const paidInfo = inst.paidAmount ? ` (Pago: R$ ${toNumber(inst.paidAmount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })})` : '';
 
-          doc.text(`  ${inst.installmentNumber}ª Parcela - R$ ${inst.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} - Venc: ${dueDate} - ${status}${paidInfo}`);
+          doc.text(`  ${inst.installmentNumber}ª Parcela - R$ ${toNumber(inst.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })} - Venc: ${dueDate} - ${status}${paidInfo}`);
         }
       }
     } else {
       doc.text(`Tipo de Pagamento: À Vista`);
       doc.moveDown(0.5);
       doc.fontSize(14).font('Helvetica-Bold');
-      doc.text(`Valor Total: R$ ${transaction.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
+      doc.text(`Valor Total: R$ ${toNumber(transaction.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
     }
 
     doc.moveDown(2);
@@ -1135,11 +1143,11 @@ export const generateInstallmentReceipt = async (req: AuthRequest, res: Response
 
     // Calcular total já pago (soma de todos os paidAmount)
     const totalPaid = allInstallments.reduce((sum, inst) => {
-      return sum + (inst.paidAmount || 0);
+      return sum + toNumber(inst.paidAmount);
     }, 0);
 
     // Saldo Devedor = Valor Total - Total Já Pago
-    const saldoDevedor = installment.financialTransaction.amount - totalPaid;
+    const saldoDevedor = toNumber(installment.financialTransaction.amount) - totalPaid;
 
     // Buscar dados da empresa
     const company = await prisma.company.findUnique({
@@ -1253,16 +1261,16 @@ export const generateInstallmentReceipt = async (req: AuthRequest, res: Response
 
     const dueDate = new Date(installment.dueDate).toLocaleDateString('pt-BR');
     doc.text(`Parcela: ${installment.installmentNumber} de ${installment.financialTransaction.installmentCount}`);
-    doc.text(`Valor da Parcela: R$ ${installment.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
+    doc.text(`Valor da Parcela: R$ ${toNumber(installment.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
     doc.text(`Data de Vencimento: ${dueDate}`);
 
     // Status da parcela
     let statusText = '';
     if (installment.status === 'CANCELLED') {
       statusText = 'Cancelado';
-    } else if (installment.paidAmount && installment.paidAmount >= installment.amount) {
+    } else if (installment.paidAmount && toNumber(installment.paidAmount) >= toNumber(installment.amount)) {
       statusText = 'Pago';
-    } else if (installment.paidAmount && installment.paidAmount > 0) {
+    } else if (installment.paidAmount && toNumber(installment.paidAmount) > 0) {
       statusText = 'Pago Parcialmente';
     } else {
       const statusLabels: Record<string, string> = {
@@ -1281,7 +1289,7 @@ export const generateInstallmentReceipt = async (req: AuthRequest, res: Response
     }
 
     if (installment.paidAmount) {
-      doc.text(`Valor Pago nesta Parcela: R$ ${installment.paidAmount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
+      doc.text(`Valor Pago nesta Parcela: R$ ${toNumber(installment.paidAmount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
     }
 
     if (installment.notes) {
@@ -1297,7 +1305,7 @@ export const generateInstallmentReceipt = async (req: AuthRequest, res: Response
     doc.moveDown(0.5);
     doc.fontSize(12).font('Helvetica');
 
-    doc.text(`Valor Total do Contrato: R$ ${installment.financialTransaction.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
+    doc.text(`Valor Total do Contrato: R$ ${toNumber(installment.financialTransaction.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
     doc.font('Helvetica-Bold').text(`Total Já Pago: R$ ${totalPaid.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
     doc.font('Helvetica-Bold').fillColor(saldoDevedor > 0 ? 'red' : 'green').text(`Saldo Devedor: R$ ${saldoDevedor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
     doc.fillColor('black');
@@ -1309,13 +1317,13 @@ export const generateInstallmentReceipt = async (req: AuthRequest, res: Response
     doc.fontSize(10).font('Helvetica');
 
     for (const inst of allInstallments) {
-      const instStatus = inst.paidAmount && inst.paidAmount >= inst.amount ? '✓ Pago' :
-                         inst.paidAmount && inst.paidAmount > 0 ? '◐ Parcial' : '○ Pendente';
+      const instStatus = inst.paidAmount && toNumber(inst.paidAmount) >= toNumber(inst.amount) ? '✓ Pago' :
+                         inst.paidAmount && toNumber(inst.paidAmount) > 0 ? '◐ Parcial' : '○ Pendente';
       const instDueDate = new Date(inst.dueDate).toLocaleDateString('pt-BR');
-      const paidInfo = inst.paidAmount ? ` (R$ ${inst.paidAmount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })})` : '';
+      const paidInfo = inst.paidAmount ? ` (R$ ${toNumber(inst.paidAmount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })})` : '';
       const isCurrent = inst.id === installment.id ? ' ← ESTA PARCELA' : '';
 
-      doc.text(`  ${inst.installmentNumber}ª - R$ ${inst.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} - Venc: ${instDueDate} - ${instStatus}${paidInfo}${isCurrent}`);
+      doc.text(`  ${inst.installmentNumber}ª - R$ ${toNumber(inst.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })} - Venc: ${instDueDate} - ${instStatus}${paidInfo}${isCurrent}`);
     }
 
     doc.moveDown(2);

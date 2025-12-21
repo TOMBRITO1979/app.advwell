@@ -68,8 +68,13 @@ const CRON_LEADER_TTL = 120; // 2 minutes
 app.set('trust proxy', 1);
 
 // CORS deve vir antes do helmet
+// Em produção, apenas o frontend configurado é permitido
+const allowedOrigins = config.nodeEnv === 'production'
+  ? [config.urls.frontend]
+  : [config.urls.frontend, 'http://localhost:5173'];
+
 app.use(cors({
-  origin: [config.urls.frontend, 'http://localhost:5173'],
+  origin: allowedOrigins,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
@@ -237,6 +242,32 @@ app.get('/', (req, res) => {
 // Erro 404
 app.use((req, res) => {
   res.status(404).json({ error: 'Rota não encontrada' });
+});
+
+// Global Error Handler - deve ser o último middleware
+app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  // Log do erro (estruturado para produção)
+  const errorLog = {
+    timestamp: new Date().toISOString(),
+    method: req.method,
+    path: req.path,
+    error: err.message,
+    stack: config.nodeEnv === 'development' ? err.stack : undefined,
+    instanceId: INSTANCE_ID
+  };
+
+  console.error('Unhandled error:', JSON.stringify(errorLog));
+
+  // Não expor detalhes do erro em produção
+  const statusCode = (err as any).statusCode || 500;
+  const message = config.nodeEnv === 'production'
+    ? 'Erro interno do servidor'
+    : err.message;
+
+  res.status(statusCode).json({
+    error: message,
+    ...(config.nodeEnv === 'development' && { stack: err.stack })
+  });
 });
 
 // Leader election for cron jobs (only one instance runs cron)

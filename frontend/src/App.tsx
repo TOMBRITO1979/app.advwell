@@ -2,6 +2,7 @@ import React, { useEffect, Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { useAuth } from './contexts/AuthContext';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // Lazy load all pages for better performance
 const Login = lazy(() => import('./pages/Login'));
@@ -69,10 +70,11 @@ function App() {
   }, []);
 
   return (
-    <BrowserRouter>
-      <Toaster position="top-right" />
-      <Suspense fallback={<LoadingSpinner />}>
-        <Routes>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <Toaster position="top-right" />
+        <Suspense fallback={<LoadingSpinner />}>
+          <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -304,6 +306,7 @@ function App() {
         </Routes>
       </Suspense>
     </BrowserRouter>
+  </ErrorBoundary>
   );
 }
 

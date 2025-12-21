@@ -8,6 +8,14 @@ import { AIService } from '../services/ai/ai.service';
 import { sendCaseUpdateNotification } from '../utils/email';
 import AuditService from '../services/audit.service';
 import { auditLogService } from '../services/audit-log.service';
+import { Decimal } from '@prisma/client/runtime/library';
+
+// Helper para converter Prisma Decimal para number
+const toNumber = (value: Decimal | number | null | undefined): number => {
+  if (value === null || value === undefined) return 0;
+  if (typeof value === 'number') return value;
+  return value.toNumber();
+};
 
 // Função para corrigir timezone de datas (evita que dia 31 vire dia 30)
 function fixDateTimezone(dateString: string): Date {
@@ -714,7 +722,7 @@ export class CaseController {
         const clientCpf = `"${caseItem.client?.cpf || ''}"`;
         const court = `"${caseItem.court || ''}"`;
         const subject = `"${caseItem.subject || ''}"`;
-        const value = caseItem.value ? `"R$ ${caseItem.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}"` : '""';
+        const value = caseItem.value ? `"R$ ${toNumber(caseItem.value).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}"` : '""';
         const status = `"${caseItem.status || ''}"`;
         const lastSyncedAt = caseItem.lastSyncedAt ? `"${new Date(caseItem.lastSyncedAt).toLocaleString('pt-BR')}"` : '""';
         const createdAt = `"${new Date(caseItem.createdAt).toLocaleDateString('pt-BR')}"`;

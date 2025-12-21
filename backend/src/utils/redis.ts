@@ -48,10 +48,15 @@ export const cache = {
 
   async delPattern(pattern: string): Promise<void> {
     try {
-      const keys = await redis.keys(pattern);
-      if (keys.length > 0) {
-        await redis.del(...keys);
-      }
+      // Usar SCAN em vez de KEYS para não bloquear o Redis
+      let cursor = '0';
+      do {
+        const [nextCursor, keys] = await redis.scan(cursor, 'MATCH', pattern, 'COUNT', 100);
+        cursor = nextCursor;
+        if (keys.length > 0) {
+          await redis.del(...keys);
+        }
+      } while (cursor !== '0');
     } catch (error) {
       console.error('Redis DEL pattern error:', error);
     }
