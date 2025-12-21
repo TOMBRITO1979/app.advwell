@@ -38,7 +38,7 @@ export const sendPasswordResetEmail = async (
 
                 <!-- Header com gradiente -->
                 <tr>
-                  <td style="background-color: #2563eb; background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); padding: 40px 30px; text-align: center;">
+                  <td style="background-color: #43A047; background: linear-gradient(135deg, #43A047 0%, #2E7D32 100%); padding: 40px 30px; text-align: center;">
                     <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 700; letter-spacing: -0.5px;">
                       AdvWell
                     </h1>
@@ -53,7 +53,7 @@ export const sendPasswordResetEmail = async (
                   <td style="padding: 40px 30px;">
                     <!-- Ícone de cadeado -->
                     <div style="text-align: center; margin-bottom: 24px;">
-                      <div style="display: inline-block; width: 64px; height: 64px; background-color: #dbeafe; border-radius: 50%; line-height: 64px; font-size: 32px;">
+                      <div style="display: inline-block; width: 64px; height: 64px; background-color: #C8E6C9; border-radius: 50%; line-height: 64px; font-size: 32px;">
                         🔐
                       </div>
                     </div>
@@ -72,7 +72,7 @@ export const sendPasswordResetEmail = async (
 
                     <!-- Botão principal -->
                     <div style="text-align: center; margin: 32px 0;">
-                      <a href="${resetUrl}" style="display: inline-block; padding: 16px 48px; background-color: #2563eb; background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); color: #ffffff !important; text-decoration: none; border-radius: 8px; font-size: 16px; font-weight: 600; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);">
+                      <a href="${resetUrl}" style="display: inline-block; padding: 16px 48px; background-color: #43A047; background: linear-gradient(135deg, #43A047 0%, #2E7D32 100%); color: #ffffff !important; text-decoration: none; border-radius: 8px; font-size: 16px; font-weight: 600; box-shadow: 0 4px 12px rgba(67, 160, 71, 0.3);">
                         Redefinir Minha Senha
                       </a>
                     </div>
@@ -84,7 +84,7 @@ export const sendPasswordResetEmail = async (
                     <p style="margin: 0 0 8px 0; color: #6b7280; font-size: 13px; text-align: center;">
                       Ou copie e cole este link no seu navegador:
                     </p>
-                    <p style="margin: 0 0 32px 0; padding: 12px; background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; color: #2563eb; font-size: 12px; word-break: break-all; text-align: center;">
+                    <p style="margin: 0 0 32px 0; padding: 12px; background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; color: #43A047; font-size: 12px; word-break: break-all; text-align: center;">
                       ${resetUrl}
                     </p>
 
@@ -149,7 +149,7 @@ export const sendWelcomeEmail = async (email: string, name: string) => {
 
                 <!-- Header com gradiente -->
                 <tr>
-                  <td style="background-color: #2563eb; background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); padding: 40px 30px; text-align: center;">
+                  <td style="background-color: #43A047; background: linear-gradient(135deg, #43A047 0%, #2E7D32 100%); padding: 40px 30px; text-align: center;">
                     <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 700; letter-spacing: -0.5px;">
                       AdvWell
                     </h1>
@@ -212,7 +212,7 @@ export const sendWelcomeEmail = async (email: string, name: string) => {
 
                     <!-- Botão principal -->
                     <div style="text-align: center; margin: 32px 0;">
-                      <a href="${config.urls.frontend}" style="display: inline-block; padding: 16px 48px; background-color: #2563eb; background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); color: #ffffff !important; text-decoration: none; border-radius: 8px; font-size: 16px; font-weight: 600; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);">
+                      <a href="${config.urls.frontend}" style="display: inline-block; padding: 16px 48px; background-color: #43A047; background: linear-gradient(135deg, #43A047 0%, #2E7D32 100%); color: #ffffff !important; text-decoration: none; border-radius: 8px; font-size: 16px; font-weight: 600; box-shadow: 0 4px 12px rgba(67, 160, 71, 0.3);">
                         Acessar o Sistema
                       </a>
                     </div>
@@ -220,14 +220,14 @@ export const sendWelcomeEmail = async (email: string, name: string) => {
                     <!-- Link alternativo -->
                     <p style="margin: 32px 0 0 0; color: #6b7280; font-size: 13px; text-align: center;">
                       Ou acesse diretamente em:<br>
-                      <a href="${config.urls.frontend}" style="color: #2563eb; text-decoration: none; font-weight: 500;">${config.urls.frontend}</a>
+                      <a href="${config.urls.frontend}" style="color: #43A047; text-decoration: none; font-weight: 500;">${config.urls.frontend}</a>
                     </p>
 
                     <div style="margin: 32px 0; border-top: 1px solid #e5e7eb;"></div>
 
                     <p style="margin: 0; color: #6b7280; font-size: 14px; line-height: 1.6; text-align: center;">
                       Atenciosamente,<br>
-                      <strong style="color: #2563eb;">Equipe AdvWell</strong>
+                      <strong style="color: #43A047;">Equipe AdvWell</strong>
                     </p>
                   </td>
                 </tr>
@@ -286,7 +286,7 @@ export const sendEmailVerification = async (
 
                 <!-- Header com gradiente -->
                 <tr>
-                  <td style="background-color: #2563eb; background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); padding: 40px 30px; text-align: center;">
+                  <td style="background-color: #43A047; background: linear-gradient(135deg, #43A047 0%, #2E7D32 100%); padding: 40px 30px; text-align: center;">
                     <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 700; letter-spacing: -0.5px;">
                       AdvWell
                     </h1>
@@ -301,7 +301,7 @@ export const sendEmailVerification = async (
                   <td style="padding: 40px 30px;">
                     <!-- Ícone de verificação -->
                     <div style="text-align: center; margin-bottom: 24px;">
-                      <div style="display: inline-block; width: 64px; height: 64px; background-color: #dbeafe; border-radius: 50%; line-height: 64px; font-size: 32px;">
+                      <div style="display: inline-block; width: 64px; height: 64px; background-color: #C8E6C9; border-radius: 50%; line-height: 64px; font-size: 32px;">
                         ✉️
                       </div>
                     </div>
@@ -332,7 +332,7 @@ export const sendEmailVerification = async (
                     <p style="margin: 0 0 8px 0; color: #6b7280; font-size: 13px; text-align: center;">
                       Ou copie e cole este link no seu navegador:
                     </p>
-                    <p style="margin: 0 0 32px 0; padding: 12px; background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; color: #2563eb; font-size: 12px; word-break: break-all; text-align: center;">
+                    <p style="margin: 0 0 32px 0; padding: 12px; background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; color: #43A047; font-size: 12px; word-break: break-all; text-align: center;">
                       ${verificationUrl}
                     </p>
 
@@ -403,7 +403,7 @@ export const sendCaseUpdateNotification = async (
 
                 <!-- Header com gradiente -->
                 <tr>
-                  <td style="background-color: #2563eb; background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); padding: 40px 30px; text-align: center;">
+                  <td style="background-color: #43A047; background: linear-gradient(135deg, #43A047 0%, #2E7D32 100%); padding: 40px 30px; text-align: center;">
                     <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 700; letter-spacing: -0.5px;">
                       ${companyName || 'AdvWell'}
                     </h1>
@@ -418,7 +418,7 @@ export const sendCaseUpdateNotification = async (
                   <td style="padding: 40px 30px;">
                     <!-- Ícone de notificação -->
                     <div style="text-align: center; margin-bottom: 24px;">
-                      <div style="display: inline-block; width: 64px; height: 64px; background-color: #dbeafe; border-radius: 50%; line-height: 64px; font-size: 32px;">
+                      <div style="display: inline-block; width: 64px; height: 64px; background-color: #C8E6C9; border-radius: 50%; line-height: 64px; font-size: 32px;">
                         ⚖️
                       </div>
                     </div>
@@ -446,11 +446,11 @@ export const sendCaseUpdateNotification = async (
                     </div>
 
                     <!-- Informação para o Cliente -->
-                    <div style="background-color: #eff6ff; border-left: 4px solid #2563eb; border-radius: 6px; padding: 20px; margin-bottom: 24px;">
-                      <p style="margin: 0 0 12px 0; color: #1e40af; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">
+                    <div style="background-color: #E8F5E9; border-left: 4px solid #43A047; border-radius: 6px; padding: 20px; margin-bottom: 24px;">
+                      <p style="margin: 0 0 12px 0; color: #2E7D32; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">
                         📋 Informação para o Cliente
                       </p>
-                      <p style="margin: 0; color: #1e3a8a; font-size: 15px; line-height: 1.6; white-space: pre-wrap;">
+                      <p style="margin: 0; color: #1B5E20; font-size: 15px; line-height: 1.6; white-space: pre-wrap;">
 ${updateMessage}
                       </p>
                     </div>
@@ -460,7 +460,7 @@ ${updateMessage}
 
                     <!-- Botão principal -->
                     <div style="text-align: center; margin: 32px 0;">
-                      <a href="${config.urls.frontend}" style="display: inline-block; padding: 16px 48px; background-color: #2563eb; background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); color: #ffffff !important; text-decoration: none; border-radius: 8px; font-size: 16px; font-weight: 600; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);">
+                      <a href="${config.urls.frontend}" style="display: inline-block; padding: 16px 48px; background-color: #43A047; background: linear-gradient(135deg, #43A047 0%, #2E7D32 100%); color: #ffffff !important; text-decoration: none; border-radius: 8px; font-size: 16px; font-weight: 600; box-shadow: 0 4px 12px rgba(67, 160, 71, 0.3);">
                         Acessar o Sistema
                       </a>
                     </div>
@@ -474,7 +474,7 @@ ${updateMessage}
 
                     <p style="margin: 24px 0 0 0; color: #6b7280; font-size: 14px; line-height: 1.6; text-align: center;">
                       Atenciosamente,<br>
-                      <strong style="color: #2563eb;">${companyName || 'AdvWell'}</strong>
+                      <strong style="color: #43A047;">${companyName || 'AdvWell'}</strong>
                     </p>
                   </td>
                 </tr>
