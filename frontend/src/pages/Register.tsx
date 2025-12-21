@@ -104,6 +104,7 @@ const Register: React.FC = () => {
               </p>
               <ol className="text-sm text-warning-600 space-y-1 list-decimal list-inside">
                 <li>Verifique sua caixa de entrada</li>
+                <li>Verifique também a pasta de spam e marque como "não é spam"</li>
                 <li>Clique no link de verificação</li>
                 <li>Faça login no sistema</li>
               </ol>
