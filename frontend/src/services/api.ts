@@ -1,7 +1,7 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 
 // A URL da API será configurável via variável de ambiente
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.advtom.com/api';
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.advwell.pro/api';
 
 const api = axios.create({
   baseURL: API_URL,
