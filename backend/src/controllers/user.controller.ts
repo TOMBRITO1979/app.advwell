@@ -12,24 +12,31 @@ export class UserController {
   // Admin - Listar usuários da sua empresa
   async list(req: AuthRequest, res: Response) {
     try {
-      const companyId = req.user!.companyId;
       const { page = 1, limit = 10, search = '' } = req.query;
+      const skip = (Number(page) - 1) * Number(limit);
 
-      if (!companyId) {
+      // SUPER_ADMIN pode listar todos os usuários, outros precisam de companyId
+      const isSuperAdmin = req.user!.role === 'SUPER_ADMIN';
+      const companyId = req.user!.companyId;
+
+      if (!isSuperAdmin && !companyId) {
         return res.status(403).json({ error: 'Usuário não possui empresa associada' });
       }
 
-      const skip = (Number(page) - 1) * Number(limit);
+      const where: any = {};
 
-      const where = {
-        companyId,
-        ...(search && {
-          OR: [
-            { name: { contains: String(search), mode: 'insensitive' as const } },
-            { email: { contains: String(search), mode: 'insensitive' as const } },
-          ],
-        }),
-      };
+      // Se não for SUPER_ADMIN, filtrar por companyId
+      if (!isSuperAdmin) {
+        where.companyId = companyId;
+      }
+
+      // Adicionar filtro de busca
+      if (search) {
+        where.OR = [
+          { name: { contains: String(search), mode: 'insensitive' as const } },
+          { email: { contains: String(search), mode: 'insensitive' as const } },
+        ];
+      }
 
       const users = await prisma.user.findMany({
           where,
@@ -45,6 +52,12 @@ export class UserController {
             hideSidebar: true,
             createdAt: true,
             permissions: true,
+            companyId: true,
+            company: {
+              select: {
+                name: true,
+              },
+            },
           },
         });
 
