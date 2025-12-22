@@ -190,12 +190,13 @@ export class ScheduleController {
         companyId,
       };
 
-      // Filtro de busca unificada: título, descrição, nome do cliente ou nome do advogado
+      // Filtro de busca unificada: título, descrição, nome do cliente, telefone do cliente ou nome do advogado
       if (search) {
         where.OR = [
           { title: { contains: String(search), mode: 'insensitive' as const } },
           { description: { contains: String(search), mode: 'insensitive' as const } },
           { client: { name: { contains: String(search), mode: 'insensitive' as const } } },
+          { client: { phone: { contains: String(search), mode: 'insensitive' as const } } },
           { assignedUsers: { some: { user: { name: { contains: String(search), mode: 'insensitive' as const } } } } },
         ];
       }

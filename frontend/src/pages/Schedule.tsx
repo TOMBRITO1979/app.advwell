@@ -630,12 +630,12 @@ const Schedule: React.FC = () => {
       {/* Filters */}
       <div className="bg-white rounded-lg shadow p-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Search - busca unificada por título, cliente ou advogado */}
+          {/* Search - busca unificada por título, cliente, telefone ou advogado */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-500" size={20} />
             <input
               type="text"
-              placeholder="Buscar por título, cliente ou advogado..."
+              placeholder="Buscar por título, cliente, telefone ou advogado..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
