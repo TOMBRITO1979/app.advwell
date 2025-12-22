@@ -52,6 +52,9 @@ model Company {
   dpoName               String?                // Nome do DPO/Encarregado
   dpoEmail              String?                // Email do DPO
 
+  // Backup automático por email
+  backupEmail           String?                // Email para receber backup diário (12h e 18h)
+
   users                 User[]
   clients               Client[]
   cases                 Case[]

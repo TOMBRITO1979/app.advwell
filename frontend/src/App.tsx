@@ -41,6 +41,7 @@ const TermsOfUse = lazy(() => import('./pages/TermsOfUse'));
 const MyData = lazy(() => import('./pages/MyData'));
 const LGPDRequests = lazy(() => import('./pages/LGPDRequests'));
 const AuditLogs = lazy(() => import('./pages/AuditLogs'));
+const BackupSettings = lazy(() => import('./pages/BackupSettings'));
 
 // Loading spinner component
 const LoadingSpinner = () => (
@@ -235,6 +236,14 @@ function App() {
             element={
               <PrivateRoute>
                 <SMTPSettings />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/backup-settings"
+            element={
+              <PrivateRoute>
+                <BackupSettings />
               </PrivateRoute>
             }
           />

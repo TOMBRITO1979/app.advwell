@@ -12,6 +12,7 @@ import { redis, cache } from './utils/redis';
 import { enqueueDailySync, getQueueStats } from './queues/sync.queue';
 import { getEmailQueueStats } from './queues/email.queue';
 import crypto from 'crypto';
+import backupEmailService from './services/backup-email.service';
 
 // SEGURANCA: Lista de padroes conhecidos/fracos que devem ser rejeitados
 const KNOWN_WEAK_PATTERNS = [
@@ -444,6 +445,31 @@ cron.schedule('0 2 * * *', async () => {
     console.log(`[${INSTANCE_ID}] Daily sync jobs enqueued successfully`);
   } catch (error) {
     console.error(`[${INSTANCE_ID}] Error enqueueing daily sync:`, error);
+  }
+});
+
+// Cron job para enviar backup por email - às 12h e 18h
+cron.schedule('0 12,18 * * *', async () => {
+  const { isLeader, fencingToken } = await tryBecomeLeader();
+
+  if (!isLeader) {
+    console.log(`[${INSTANCE_ID}] Not leader, skipping backup email`);
+    return;
+  }
+
+  // Validar lideranca antes de executar
+  if (!await validateLeadership()) {
+    console.warn(`[${INSTANCE_ID}] Leadership validation failed, aborting backup email`);
+    return;
+  }
+
+  console.log(`[${INSTANCE_ID}] Leader (token=${fencingToken}): Starting backup email job...`);
+
+  try {
+    await backupEmailService.sendBackupToAllCompanies();
+    console.log(`[${INSTANCE_ID}] Backup email job completed`);
+  } catch (error) {
+    console.error(`[${INSTANCE_ID}] Error in backup email job:`, error);
   }
 });
 
