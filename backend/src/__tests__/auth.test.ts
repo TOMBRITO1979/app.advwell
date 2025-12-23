@@ -164,7 +164,7 @@ describe('Input Validation', () => {
       .set('Content-Type', 'application/json')
       .send('{ invalid json }');
 
-    // Express should handle this as a parsing error or empty body
-    expect([400, 200]).not.toContain(response.status);
+    // Express should return 400 for malformed JSON (parsing error)
+    expect(response.status).toBe(400);
   });
 });
