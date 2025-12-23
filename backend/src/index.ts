@@ -5,6 +5,7 @@ import rateLimit from 'express-rate-limit';
 import RedisStore from 'rate-limit-redis';
 import { config } from './config';
 import routes from './routes';
+import { correlationIdMiddleware, requestLoggerMiddleware } from './middleware/request-logger';
 // Temporariamente desabilitado - aguardando schema Prisma
 // import stripeWebhookRoutes from './routes/stripe-webhook.routes';
 import cron from 'node-cron';
@@ -113,8 +114,12 @@ app.use(cors({
   origin: allowedOrigins,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-correlation-id'],
 }));
+
+// Correlation ID e Request Logging (deve vir antes de outros middlewares)
+app.use(correlationIdMiddleware);
+app.use(requestLoggerMiddleware);
 
 // Middlewares de segurança com headers reforçados
 app.use(helmet({
@@ -361,17 +366,22 @@ app.use((req, res) => {
 
 // Global Error Handler - deve ser o último middleware
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  // Log do erro (estruturado para produção)
-  const errorLog = {
-    timestamp: new Date().toISOString(),
+  // Import logger (evita circular dependency)
+  const logger = require('./utils/logger').default;
+
+  // Log estruturado com correlation ID
+  logger.error('Unhandled error', {
+    category: 'error',
+    event: 'unhandled_exception',
+    correlationId: req.correlationId,
     method: req.method,
     path: req.path,
     error: err.message,
-    stack: config.nodeEnv === 'development' ? err.stack : undefined,
-    instanceId: INSTANCE_ID
-  };
-
-  console.error('Unhandled error:', JSON.stringify(errorLog));
+    stack: err.stack,
+    instanceId: INSTANCE_ID,
+    userId: (req as any).user?.userId,
+    companyId: (req as any).user?.companyId,
+  });
 
   // Não expor detalhes do erro em produção
   const statusCode = (err as any).statusCode || 500;
@@ -381,6 +391,7 @@ app.use((err: Error, req: express.Request, res: express.Response, next: express.
 
   res.status(statusCode).json({
     error: message,
+    correlationId: req.correlationId, // Para referência em suporte
     ...(config.nodeEnv === 'development' && { stack: err.stack })
   });
 });
