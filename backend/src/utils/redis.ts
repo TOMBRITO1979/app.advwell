@@ -1,6 +1,7 @@
 import Redis, { RedisOptions } from 'ioredis';
 
-// ALTA DISPONIBILIDADE: Detectar modo Sentinel
+// ALTA DISPONIBILIDADE: Redis Sentinel para failover automatico
+// Detectar modo Sentinel
 const isSentinelMode = process.env.REDIS_SENTINEL_ENABLED === 'true';
 
 // Configuracao comum para ambos os modos
