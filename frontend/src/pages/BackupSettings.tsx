@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Database, Save, Send, Clock, AlertTriangle } from 'lucide-react';
+import { Database, Save, Send, Clock } from 'lucide-react';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import Layout from '../components/Layout';
@@ -91,23 +91,6 @@ const BackupSettings: React.FC = () => {
           <Database size={32} className="text-primary-600" />
         </div>
 
-        {/* Alerta SMTP */}
-        {!hasSmtpConfig && (
-          <div className="bg-warning-50 border border-warning-200 rounded-lg p-4">
-            <div className="flex items-start gap-3">
-              <AlertTriangle className="text-warning-600 flex-shrink-0 mt-0.5" size={20} />
-              <div>
-                <h3 className="font-semibold text-warning-700">
-                  Configuracao SMTP necessaria
-                </h3>
-                <p className="text-sm text-warning-600 mt-1">
-                  Para enviar backups por email, voce precisa primeiro configurar o SMTP da sua empresa.
-                  Acesse "Configuracoes SMTP" no menu lateral.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Info Box */}
         <div className="bg-info-50 border border-info-200 rounded-lg p-4">

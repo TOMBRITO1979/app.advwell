@@ -19,9 +19,6 @@ export class BackupEmailController {
         where: { id: companyId },
         select: {
           backupEmail: true,
-          smtpConfig: {
-            select: { isActive: true },
-          },
         },
       });
 
@@ -31,7 +28,7 @@ export class BackupEmailController {
 
       res.json({
         backupEmail: company.backupEmail || '',
-        hasSmtpConfig: !!company.smtpConfig?.isActive,
+        hasSmtpConfig: true, // Usa SMTP do sistema, sempre disponível
       });
     } catch (error) {
       console.error('Erro ao buscar configuração de backup:', error);

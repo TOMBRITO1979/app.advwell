@@ -1,6 +1,14 @@
 import prisma from '../utils/prisma';
-import { decrypt } from '../utils/encryption';
 import nodemailer from 'nodemailer';
+
+// Configuração SMTP do sistema (variáveis de ambiente)
+const SYSTEM_SMTP = {
+  host: process.env.SMTP_HOST || '',
+  port: parseInt(process.env.SMTP_PORT || '587'),
+  user: process.env.SMTP_USER || '',
+  password: process.env.SMTP_PASSWORD || '',
+  from: process.env.SMTP_FROM || 'noreply@advwell.pro',
+};
 
 // Tipos de tradução
 const PERSON_TYPE_LABELS: { [key: string]: string } = {
@@ -144,14 +152,18 @@ class BackupEmailService {
   }
 
   /**
-   * Envia email de backup para uma empresa
+   * Envia email de backup para uma empresa usando SMTP do sistema
    */
   async sendBackupEmail(companyId: string): Promise<{ success: boolean; message: string }> {
     try {
-      // Buscar empresa e configuração SMTP
+      // Verificar se SMTP do sistema está configurado
+      if (!SYSTEM_SMTP.host || !SYSTEM_SMTP.user || !SYSTEM_SMTP.password) {
+        return { success: false, message: 'SMTP do sistema não configurado' };
+      }
+
+      // Buscar empresa
       const company = await prisma.company.findUnique({
         where: { id: companyId },
-        include: { smtpConfig: true },
       });
 
       if (!company) {
@@ -162,10 +174,6 @@ class BackupEmailService {
         return { success: false, message: 'Email de backup não configurado' };
       }
 
-      if (!company.smtpConfig) {
-        return { success: false, message: 'Configuração SMTP não encontrada. Configure o SMTP primeiro.' };
-      }
-
       // Gerar os CSVs
       const [clientCSV, caseCSV, scheduleCSV] = await Promise.all([
         this.generateClientCSV(companyId),
@@ -173,14 +181,14 @@ class BackupEmailService {
         this.generateScheduleCSV(companyId),
       ]);
 
-      // Criar transporter
+      // Criar transporter com SMTP do sistema
       const transporter = nodemailer.createTransport({
-        host: company.smtpConfig.host,
-        port: company.smtpConfig.port,
-        secure: company.smtpConfig.port === 465,
+        host: SYSTEM_SMTP.host,
+        port: SYSTEM_SMTP.port,
+        secure: SYSTEM_SMTP.port === 465,
         auth: {
-          user: company.smtpConfig.user,
-          pass: decrypt(company.smtpConfig.password),
+          user: SYSTEM_SMTP.user,
+          pass: SYSTEM_SMTP.password,
         },
       });
 
@@ -190,7 +198,7 @@ class BackupEmailService {
 
       // Enviar email com anexos
       await transporter.sendMail({
-        from: `"${company.smtpConfig.fromName || company.name}" <${company.smtpConfig.fromEmail}>`,
+        from: `"AdvWell Backup" <${SYSTEM_SMTP.from}>`,
         to: company.backupEmail,
         subject: `Backup AdvWell - ${company.name} - ${dateStr} ${timeStr}`,
         html: `
@@ -244,14 +252,17 @@ class BackupEmailService {
    */
   async sendBackupToAllCompanies(): Promise<void> {
     try {
-      // Buscar todas as empresas com backupEmail configurado e SMTP ativo
+      // Verificar se SMTP do sistema está configurado
+      if (!SYSTEM_SMTP.host || !SYSTEM_SMTP.user || !SYSTEM_SMTP.password) {
+        console.error('[BackupEmail] SMTP do sistema não configurado, abortando');
+        return;
+      }
+
+      // Buscar todas as empresas ativas com backupEmail configurado
       const companies = await prisma.company.findMany({
         where: {
           backupEmail: { not: null },
           active: true,
-          smtpConfig: {
-            isActive: true,
-          },
         },
         select: { id: true, name: true, backupEmail: true },
       });
