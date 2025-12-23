@@ -1,7 +1,7 @@
 import Redis, { RedisOptions } from 'ioredis';
 
 // ALTA DISPONIBILIDADE: Redis Sentinel para failover automatico
-// Detectar modo Sentinel
+// Build: v2 - Force rebuild with Sentinel support
 const isSentinelMode = process.env.REDIS_SENTINEL_ENABLED === 'true';
 
 // Configuracao comum para ambos os modos
