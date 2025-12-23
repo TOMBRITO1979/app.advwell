@@ -2,10 +2,19 @@ import { Router } from 'express';
 import { body, validationResult } from 'express-validator';
 import { Request, Response, NextFunction } from 'express';
 import rateLimit from 'express-rate-limit';
+import RedisStore from 'rate-limit-redis';
 import authController from '../controllers/auth.controller';
 import { authenticate } from '../middleware/auth';
+import { redis } from '../utils/redis';
 
 const router = Router();
+
+// SEGURANCA: Redis store para rate limiting distribuido
+const createRedisStore = (prefix: string) => new RedisStore({
+  // @ts-expect-error - ioredis sendCommand é compatível
+  sendCommand: (...args: string[]) => redis.call(...args),
+  prefix: `ratelimit:auth:${prefix}:`,
+});
 
 // SEGURANCA: Rate limiting especifico para embed auth (previne forca bruta em API keys)
 const embedAuthLimiter = rateLimit({
@@ -14,6 +23,7 @@ const embedAuthLimiter = rateLimit({
   message: { error: 'Muitas tentativas de embed auth. Tente novamente em 15 minutos.' },
   standardHeaders: true,
   legacyHeaders: false,
+  store: createRedisStore('embed'),
 });
 
 // SEGURANCA: Rate limiting para verificacao de email
@@ -23,6 +33,7 @@ const emailVerificationLimiter = rateLimit({
   message: { error: 'Muitas tentativas de verificação. Tente novamente em 15 minutos.' },
   standardHeaders: true,
   legacyHeaders: false,
+  store: createRedisStore('email-verify'),
 });
 
 // Middleware de validação genérico

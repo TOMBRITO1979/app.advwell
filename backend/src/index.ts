@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
+import RedisStore from 'rate-limit-redis';
 import { config } from './config';
 import routes from './routes';
 // Temporariamente desabilitado - aguardando schema Prisma
@@ -14,6 +15,13 @@ import { getEmailQueueStats } from './queues/email.queue';
 import crypto from 'crypto';
 import backupEmailService from './services/backup-email.service';
 import databaseBackupService from './services/database-backup.service';
+
+// SEGURANCA: Redis store para rate limiting distribuido (compartilhado entre replicas)
+const createRedisStore = (prefix: string) => new RedisStore({
+  // @ts-expect-error - ioredis sendCommand é compatível
+  sendCommand: (...args: string[]) => redis.call(...args),
+  prefix: `ratelimit:${prefix}:`,
+});
 
 // SEGURANCA: Lista de padroes conhecidos/fracos que devem ser rejeitados
 const KNOWN_WEAK_PATTERNS = [
@@ -143,6 +151,7 @@ app.use(helmet({
 }));
 
 // Rate limiting global (ajustado para segurança)
+// SEGURANCA: Usa Redis store para compartilhar contadores entre replicas
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
   max: 200, // Ajustado de 500 para 200 (mais seguro contra DDoS)
@@ -156,10 +165,12 @@ const globalLimiter = rateLimit({
     // Skip rate limiting for health checks
     return req.path === '/health';
   },
+  store: createRedisStore('global'),
 });
 app.use('/api/', globalLimiter);
 
 // Rate limit mais restritivo para auth (previne brute force)
+// SEGURANCA: Usa Redis store - limite compartilhado entre todas as replicas
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 20,
@@ -167,11 +178,13 @@ const authLimiter = rateLimit({
   validate: {
     trustProxy: true, // FIXED: App is behind Traefik
   },
+  store: createRedisStore('auth'),
 });
 app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/register', authLimiter);
 
 // Rate limit para password reset (previne email bombing)
+// SEGURANCA: Usa Redis store - limite compartilhado entre todas as replicas
 const passwordResetLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hora
   max: 3, // Máximo 3 tentativas por hora
@@ -179,6 +192,7 @@ const passwordResetLimiter = rateLimit({
   validate: {
     trustProxy: true,
   },
+  store: createRedisStore('password-reset'),
 });
 app.use('/api/auth/forgot-password', passwordResetLimiter);
 
