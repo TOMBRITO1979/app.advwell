@@ -2,6 +2,7 @@ import Queue from 'bull';
 import prisma from '../utils/prisma';
 import datajudService from '../services/datajud.service';
 import { AIService } from '../services/ai/ai.service';
+import { createRedisClient } from '../utils/redis';
 
 // ESCALABILIDADE: Parametros configuráveis via ambiente
 const SYNC_CONCURRENCY = parseInt(process.env.SYNC_CONCURRENCY || '5');
@@ -10,13 +11,11 @@ const SYNC_INCREMENTAL = process.env.SYNC_INCREMENTAL !== 'false'; // Default: t
 
 console.log(`Sync Queue config: concurrency=${SYNC_CONCURRENCY}, batch=${SYNC_BATCH_SIZE}, incremental=${SYNC_INCREMENTAL}`);
 
-// Queue configuration
+// TAREFA 4.1: Queue configuration usando createRedisClient (suporta Sentinel)
 const syncQueue = new Queue('datajud-sync', {
-  redis: {
-    host: process.env.REDIS_HOST || 'redis',
-    port: parseInt(process.env.REDIS_PORT || '6379'),
-    password: process.env.REDIS_PASSWORD || undefined,
-    username: process.env.REDIS_USERNAME || undefined,
+  createClient: (type) => {
+    // Bull requer clients separados para subscriber e client
+    return createRedisClient();
   },
   defaultJobOptions: {
     attempts: 3,
@@ -88,6 +87,7 @@ syncQueue.process('sync-case', SYNC_CONCURRENCY, async (job) => {
         await prisma.caseMovement.createMany({
           data: newMovements.map((mov) => ({
             caseId,
+            companyId, // TAREFA 4.3: Isolamento de tenant direto
             movementCode: mov.codigo,
             movementName: mov.nome,
             movementDate: new Date(mov.dataHora),
@@ -109,6 +109,7 @@ syncQueue.process('sync-case', SYNC_CONCURRENCY, async (job) => {
         await prisma.caseMovement.createMany({
           data: datajudData.movimentos.map((mov) => ({
             caseId,
+            companyId, // TAREFA 4.3: Isolamento de tenant direto
             movementCode: mov.codigo,
             movementName: mov.nome,
             movementDate: new Date(mov.dataHora),

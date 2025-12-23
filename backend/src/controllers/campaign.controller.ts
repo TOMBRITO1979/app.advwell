@@ -138,6 +138,7 @@ export class CampaignController {
       await prisma.campaignRecipient.createMany({
         data: recipients.map((r: any) => ({
           campaignId: campaign.id,
+          companyId, // TAREFA 4.3: Isolamento de tenant direto
           recipientEmail: r.email,
           recipientName: r.name || null,
         })),

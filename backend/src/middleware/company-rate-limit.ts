@@ -152,4 +152,54 @@ export const sensitiveRateLimit = async (
   }
 };
 
+/**
+ * Rate limit muito restritivo para operacoes de backup
+ * 5 operacoes por hora - operacoes criticas e pesadas
+ */
+export const backupRateLimit = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    if (!req.user) {
+      return next();
+    }
+
+    const BACKUP_LIMIT = 5; // 5 operacoes por hora
+    const BACKUP_WINDOW = 3600; // 1 hora em segundos
+    const identifier = req.user.companyId || `superadmin:${req.user.userId}`;
+    const key = `${RATE_LIMIT_PREFIX}backup:${identifier}`;
+
+    const currentCount = await redis.get(key);
+    const count = currentCount ? parseInt(currentCount, 10) : 0;
+
+    const ttl = await redis.ttl(key);
+    const reset = ttl > 0 ? Math.ceil(Date.now() / 1000) + ttl : Math.ceil(Date.now() / 1000) + BACKUP_WINDOW;
+
+    if (count >= BACKUP_LIMIT) {
+      setRateLimitHeaders(res, { remaining: 0, limit: BACKUP_LIMIT, reset });
+
+      return res.status(429).json({
+        error: 'Too Many Requests',
+        message: 'Limite de operações de backup excedido. Máximo de 5 operações por hora.',
+        retryAfter: ttl > 0 ? ttl : BACKUP_WINDOW,
+      });
+    }
+
+    if (count === 0) {
+      await redis.setex(key, BACKUP_WINDOW, '1');
+    } else {
+      await redis.incr(key);
+    }
+
+    setRateLimitHeaders(res, { remaining: BACKUP_LIMIT - (count + 1), limit: BACKUP_LIMIT, reset });
+
+    next();
+  } catch (error) {
+    console.error('[RateLimit] Erro no backupRateLimit:', error);
+    next();
+  }
+};
+
 export default companyRateLimit;

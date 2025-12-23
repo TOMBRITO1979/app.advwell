@@ -73,6 +73,16 @@ model Company {
   dataRequests          DataRequest[]
   auditLogs             AuditLog[]
 
+  // TAREFA 4.3: Relações diretas para isolamento de tenant
+  caseMovements         CaseMovement[]
+  caseDocuments         CaseDocument[]
+  caseParts             CasePart[]
+  caseAuditLogs         CaseAuditLog[]
+  installmentPayments   InstallmentPayment[]
+  eventAssignments      EventAssignment[]
+  campaignRecipients    CampaignRecipient[]
+  subscriptionPayments  SubscriptionPayment[]
+
   @@map("companies")
 }
 
@@ -259,6 +269,7 @@ model Case {
 model CaseMovement {
   id              String   @id @default(uuid())
   caseId          String
+  companyId       String   // TAREFA 4.3: Isolamento de tenant direto
   movementCode    Int
   movementName    String
   movementDate    DateTime
@@ -266,8 +277,10 @@ model CaseMovement {
   createdAt       DateTime @default(now())
 
   case            Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  company         Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   @@index([caseId])
+  @@index([companyId])
   @@index([movementDate])
   @@map("case_movements")
 }
@@ -276,6 +289,7 @@ model CaseMovement {
 model CaseDocument {
   id          String   @id @default(uuid())
   caseId      String
+  companyId   String   // TAREFA 4.3: Isolamento de tenant direto
   name        String
   s3Key       String   // Chave do arquivo no S3
   s3Url       String   // URL do arquivo no S3
@@ -284,8 +298,10 @@ model CaseDocument {
   createdAt   DateTime @default(now())
 
   case        Case     @relation("CaseDocuments", fields: [caseId], references: [id], onDelete: Cascade)
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   @@index([caseId])
+  @@index([companyId])
   @@map("case_documents")
 }
 
@@ -300,6 +316,7 @@ enum CasePartType {
 model CasePart {
   id              String       @id @default(uuid())
   caseId          String
+  companyId       String       // TAREFA 4.3: Isolamento de tenant direto
   type            CasePartType
 
   // Campos comuns
@@ -319,8 +336,10 @@ model CasePart {
   updatedAt       DateTime     @updatedAt
 
   case            Case         @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  company         Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   @@index([caseId])
+  @@index([companyId])
   @@map("case_parts")
 }
 
@@ -328,6 +347,7 @@ model CasePart {
 model CaseAuditLog {
   id          String   @id @default(uuid())
   caseId      String
+  companyId   String   // TAREFA 4.3: Isolamento de tenant direto
   userId      String?  // Nullable para preservar logs quando usuário é deletado
   action      String   // CREATED, STATUS_CHANGED, PART_ADDED, PART_UPDATED, PART_DELETED, DOCUMENT_ADDED, DEADLINE_SET, DEADLINE_RESPONSIBLE_SET, etc.
   description String   // Descrição legível da ação
@@ -335,10 +355,12 @@ model CaseAuditLog {
   createdAt   DateTime @default(now())
 
   case        Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
   user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@map("case_audit_logs")
   @@index([caseId])
+  @@index([companyId])
 }
 
 // Tabela de configurações do sistema
@@ -403,6 +425,7 @@ enum InstallmentStatus {
 model InstallmentPayment {
   id                      String             @id @default(uuid())
   financialTransactionId  String
+  companyId               String             // TAREFA 4.3: Isolamento de tenant direto
   installmentNumber       Int                // Número da parcela (1, 2, 3...)
   amount                  Decimal            @db.Decimal(15, 2) // Valor da parcela
   dueDate                 DateTime           // Data de vencimento
@@ -415,7 +438,9 @@ model InstallmentPayment {
   updatedAt               DateTime           @updatedAt
 
   financialTransaction    FinancialTransaction @relation(fields: [financialTransactionId], references: [id], onDelete: Cascade)
+  company                 Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
+  @@index([companyId])
   @@map("installment_payments")
 }
 
@@ -542,12 +567,15 @@ model EventAssignment {
   id        String        @id @default(uuid())
   eventId   String
   userId    String
+  companyId String        // TAREFA 4.3: Isolamento de tenant direto
   createdAt DateTime      @default(now())
 
   event     ScheduleEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
   user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company   Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   @@unique([eventId, userId])
+  @@index([companyId])
   @@map("event_assignments")
 }
 
@@ -704,6 +732,7 @@ enum RecipientStatus {
 model CampaignRecipient {
   id             String          @id @default(uuid())
   campaignId     String
+  companyId      String          // TAREFA 4.3: Isolamento de tenant direto
   recipientEmail String
   recipientName  String?
   status         RecipientStatus @default(pending)
@@ -713,7 +742,9 @@ model CampaignRecipient {
 
   // Relations
   campaign       EmailCampaign   @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  company        Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
+  @@index([companyId])
   @@map("campaign_recipients")
 }
 
@@ -809,6 +840,7 @@ model ClientSubscription {
 model SubscriptionPayment {
   id                    String                 @id @default(uuid())
   clientSubscriptionId  String
+  companyId             String                 // TAREFA 4.3: Isolamento de tenant direto
   stripeInvoiceId       String?                // ID da fatura no Stripe (in_...)
   stripePaymentIntentId String?                // ID do pagamento no Stripe (pi_...)
   amount                Decimal                @db.Decimal(15, 2) // Valor pago
@@ -821,7 +853,9 @@ model SubscriptionPayment {
   createdAt             DateTime               @default(now())
 
   clientSubscription    ClientSubscription     @relation(fields: [clientSubscriptionId], references: [id], onDelete: Cascade)
+  company               Company                @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
+  @@index([companyId])
   @@map("subscription_payments")
 }
 

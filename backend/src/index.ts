@@ -16,6 +16,7 @@ import { getEmailQueueStats } from './queues/email.queue';
 import crypto from 'crypto';
 import backupEmailService from './services/backup-email.service';
 import databaseBackupService from './services/database-backup.service';
+import { errorHandler, notFoundHandler } from './middleware/error-handler';
 
 // SEGURANCA: Redis store para rate limiting distribuido (compartilhado entre replicas)
 const createRedisStore = (prefix: string) => new RedisStore({
@@ -359,42 +360,9 @@ app.get('/', (req, res) => {
   });
 });
 
-// Erro 404
-app.use((req, res) => {
-  res.status(404).json({ error: 'Rota não encontrada' });
-});
-
-// Global Error Handler - deve ser o último middleware
-app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  // Import logger (evita circular dependency)
-  const logger = require('./utils/logger').default;
-
-  // Log estruturado com correlation ID
-  logger.error('Unhandled error', {
-    category: 'error',
-    event: 'unhandled_exception',
-    correlationId: req.correlationId,
-    method: req.method,
-    path: req.path,
-    error: err.message,
-    stack: err.stack,
-    instanceId: INSTANCE_ID,
-    userId: (req as any).user?.userId,
-    companyId: (req as any).user?.companyId,
-  });
-
-  // Não expor detalhes do erro em produção
-  const statusCode = (err as any).statusCode || 500;
-  const message = config.nodeEnv === 'production'
-    ? 'Erro interno do servidor'
-    : err.message;
-
-  res.status(statusCode).json({
-    error: message,
-    correlationId: req.correlationId, // Para referência em suporte
-    ...(config.nodeEnv === 'development' && { stack: err.stack })
-  });
-});
+// TAREFA 3.1: Error handlers centralizados
+app.use(notFoundHandler);
+app.use(errorHandler);
 
 // SEGURANCA: Leader election com fencing token para evitar split-brain
 const CRON_FENCING_KEY = 'advwell:cron:fencing';
@@ -448,9 +416,16 @@ async function validateLeadership(): Promise<boolean> {
   }
 }
 
+// TAREFA 4.2: Flag para desabilitar cron jobs (util para workers dedicados)
+const CRON_ENABLED = process.env.ENABLE_CRON !== 'false';
+
+if (!CRON_ENABLED) {
+  console.log(`[${INSTANCE_ID}] Cron jobs DISABLED via ENABLE_CRON=false`);
+}
+
 // Cron job para sincronizar processos - agora usa filas
 // Executa às 2h da manhã, mas apenas no líder
-cron.schedule('0 2 * * *', async () => {
+CRON_ENABLED && cron.schedule('0 2 * * *', async () => {
   const { isLeader, fencingToken } = await tryBecomeLeader();
 
   if (!isLeader) {
@@ -475,7 +450,7 @@ cron.schedule('0 2 * * *', async () => {
 });
 
 // Cron job para enviar backup por email - às 12h e 18h
-cron.schedule('0 12,18 * * *', async () => {
+CRON_ENABLED && cron.schedule('0 12,18 * * *', async () => {
   const { isLeader, fencingToken } = await tryBecomeLeader();
 
   if (!isLeader) {
@@ -500,7 +475,7 @@ cron.schedule('0 12,18 * * *', async () => {
 });
 
 // Cron job para backup do banco de dados - às 03:00 (após sync diário às 02:00)
-cron.schedule('0 3 * * *', async () => {
+CRON_ENABLED && cron.schedule('0 3 * * *', async () => {
   const { isLeader, fencingToken } = await tryBecomeLeader();
 
   if (!isLeader) {
@@ -525,7 +500,7 @@ cron.schedule('0 3 * * *', async () => {
 });
 
 // Refresh leader status every minute
-cron.schedule('* * * * *', async () => {
+CRON_ENABLED && cron.schedule('* * * * *', async () => {
   const { isLeader } = await tryBecomeLeader();
   if (isLeader) {
     console.log(`[${INSTANCE_ID}] Leader status refreshed`);

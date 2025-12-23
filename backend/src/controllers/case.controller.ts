@@ -78,7 +78,7 @@ async function syncDeadlineToSchedule(
               assignedUsers: {
                 deleteMany: {},
                 ...(deadlineResponsibleId && {
-                  create: [{ userId: deadlineResponsibleId }],
+                  create: [{ userId: deadlineResponsibleId, companyId }], // TAREFA 4.3
                 }),
               },
             }),
@@ -100,7 +100,7 @@ async function syncDeadlineToSchedule(
             // Adicionar usuário atribuído se houver responsável pelo prazo
             ...(deadlineResponsibleId && {
               assignedUsers: {
-                create: [{ userId: deadlineResponsibleId }],
+                create: [{ userId: deadlineResponsibleId, companyId }], // TAREFA 4.3
               },
             }),
           },
@@ -199,6 +199,7 @@ export class CaseController {
         await prisma.caseMovement.createMany({
           data: datajudData.movimentos.map((mov) => ({
             caseId: caseData.id,
+            companyId, // TAREFA 4.3: Isolamento de tenant direto
             movementCode: mov.codigo,
             movementName: mov.nome,
             movementDate: new Date(mov.dataHora),
@@ -559,6 +560,7 @@ export class CaseController {
         await prisma.caseMovement.createMany({
           data: datajudData.movimentos.map((mov) => ({
             caseId: id,
+            companyId, // TAREFA 4.3: Isolamento de tenant direto
             movementCode: mov.codigo,
             movementName: mov.nome,
             movementDate: new Date(mov.dataHora),

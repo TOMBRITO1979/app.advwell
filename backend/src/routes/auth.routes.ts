@@ -143,6 +143,10 @@ router.post('/verify-email', emailVerificationLimiter, verifyEmailValidation, va
 router.post('/resend-verification', emailVerificationLimiter, resendVerificationValidation, validate, authController.resendVerificationEmail);
 router.get('/me', authenticate, authController.me);
 
+// TAREFA 2.1: Logout seguro com blacklist de token
+router.post('/logout', authenticate, authController.logout);
+router.post('/logout-all', authenticate, authController.logoutAll);
+
 // Embed authentication - auto-login for Chatwell integration
 // SEGURANCA: Rate limiting especifico para prevenir forca bruta em API keys
 router.get('/embed/:token', embedAuthLimiter, authController.embedAuth);

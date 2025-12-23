@@ -570,8 +570,9 @@ export class CompanyController {
         return res.status(404).json({ error: 'Empresa não encontrada' });
       }
 
-      // Gera nova API Key usando UUID
-      const newApiKey = crypto.randomUUID();
+      // TAREFA 5.3: Gera nova API Key com 256 bits de entropia (32 bytes)
+      // Formato: prefixo + 64 caracteres hex = 70 caracteres total
+      const newApiKey = `adw_${crypto.randomBytes(32).toString('hex')}`;
 
       const company = await prisma.company.update({
         where: { id: companyId },

@@ -239,6 +239,21 @@ export const securityLogger = {
       newValue: newValue ? '[REDACTED]' : undefined,
     });
   },
+
+  // TAREFA 3.2: Metodos genericos para logs de seguranca
+  info: (message: string, meta?: any) => {
+    logger.info(message, {
+      category: 'security',
+      ...meta,
+    });
+  },
+
+  warn: (message: string, meta?: any) => {
+    logger.warn(message, {
+      category: 'security',
+      ...meta,
+    });
+  },
 };
 
 export const appLogger = {

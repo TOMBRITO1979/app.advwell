@@ -1,23 +1,36 @@
 import { Router } from 'express';
 import { body, param } from 'express-validator';
 import rateLimit from 'express-rate-limit';
+import RedisStore from 'rate-limit-redis';
 import integrationController from '../controllers/integration.controller';
 import { authenticateApiKey } from '../middleware/apikey';
 import { validate } from '../middleware/validation';
+import { redis } from '../utils/redis';
 
 const router = Router();
+
+/**
+ * SEGURANCA: Cria Redis store para rate limiting distribuido
+ * Compartilhado entre todas as replicas do backend
+ */
+const createRedisStore = (prefix: string) => new RedisStore({
+  // @ts-expect-error - ioredis sendCommand é compatível
+  sendCommand: (...args: string[]) => redis.call(...args),
+  prefix: `ratelimit:integration:${prefix}:`,
+});
 
 /**
  * Rate Limiter dedicado para rotas de integração
  * - Limite: 20 requisições por 15 minutos
  * - Identificação: Por API Key (header X-API-Key)
- * - Mais restritivo que o rate limit geral (100/15min por IP)
+ * - SEGURANCA: Usa Redis store - limite compartilhado entre todas as replicas
  */
 const integrationRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
   max: 20, // máximo 20 requisições por API Key
   standardHeaders: true,
   legacyHeaders: false,
+  store: createRedisStore('apikey'),
   keyGenerator: (req) => {
     // Usa API Key como identificador único
     // Se não houver API Key, usa IP como fallback

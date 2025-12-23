@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import prisma from '../utils/prisma';
-import { generateToken, generateResetToken, generateTokenPair, verifyRefreshToken } from '../utils/jwt';
+import { generateToken, generateResetToken, generateSimpleToken, generateTokenPair, verifyRefreshToken, blacklistToken, invalidateAllUserTokens } from '../utils/jwt';
 import { sendPasswordResetEmail, sendWelcomeEmail, sendEmailVerification } from '../utils/email';
 import { AuthRequest } from '../middleware/auth';
 import { securityLogger, appLogger } from '../utils/logger';
@@ -24,7 +24,7 @@ export class AuthController {
       const hashedPassword = await bcrypt.hash(password, 12);
 
       // Gera token de verificação de email (válido por 24 horas)
-      const emailVerificationToken = generateResetToken();
+      const emailVerificationToken = generateSimpleToken();
       const emailVerificationExpiry = new Date(Date.now() + 86400000); // 24 horas
 
       // Calculate trial end date (1 day from now)
@@ -235,7 +235,8 @@ export class AuthController {
         return res.json({ message: 'Se o email existir, um link de redefinição foi enviado' });
       }
 
-      const resetToken = generateResetToken();
+      // TAREFA 2.2: Token com userId e nonce para seguranca
+      const resetToken = generateResetToken(user.id);
       const resetTokenExpiry = new Date(Date.now() + 1800000); // 30 minutos (OWASP recomenda 15-30min)
 
       await prisma.user.update({
@@ -396,7 +397,7 @@ export class AuthController {
       }
 
       // Gera novo token de verificação
-      const emailVerificationToken = generateResetToken();
+      const emailVerificationToken = generateSimpleToken();
       const emailVerificationExpiry = new Date(Date.now() + 86400000); // 24 horas
 
       await prisma.user.update({
@@ -573,6 +574,59 @@ export class AuthController {
     } catch (error) {
       appLogger.error('Erro ao renovar token:', error as Error);
       res.status(500).json({ error: 'Erro ao renovar token' });
+    }
+  }
+
+  /**
+   * TAREFA 2.1: Logout seguro com blacklist de token
+   * POST /api/auth/logout
+   *
+   * Adiciona o token atual a blacklist no Redis
+   * Tokens na blacklist sao rejeitados pelo middleware de autenticacao
+   */
+  async logout(req: AuthRequest, res: Response) {
+    try {
+      const token = req.headers.authorization?.replace('Bearer ', '');
+
+      if (!token) {
+        return res.status(400).json({ error: 'Token não fornecido' });
+      }
+
+      // Adiciona token a blacklist
+      await blacklistToken(token);
+
+      // Log de seguranca
+      securityLogger.info(`Logout: usuario ${req.user?.email} (${req.user?.userId})`);
+
+      res.json({ message: 'Logout realizado com sucesso' });
+    } catch (error) {
+      appLogger.error('Erro no logout:', error as Error);
+      res.status(500).json({ error: 'Erro ao realizar logout' });
+    }
+  }
+
+  /**
+   * Logout de todas as sessoes do usuario
+   * POST /api/auth/logout-all
+   *
+   * Invalida todos os tokens do usuario (util para "logout de todos os dispositivos")
+   */
+  async logoutAll(req: AuthRequest, res: Response) {
+    try {
+      if (!req.user?.userId) {
+        return res.status(401).json({ error: 'Usuário não autenticado' });
+      }
+
+      // Invalida todos os tokens do usuario
+      await invalidateAllUserTokens(req.user.userId);
+
+      // Log de seguranca
+      securityLogger.info(`Logout de todas as sessoes: usuario ${req.user.email} (${req.user.userId})`);
+
+      res.json({ message: 'Logout de todas as sessões realizado com sucesso' });
+    } catch (error) {
+      appLogger.error('Erro no logout-all:', error as Error);
+      res.status(500).json({ error: 'Erro ao realizar logout de todas as sessões' });
     }
   }
 }

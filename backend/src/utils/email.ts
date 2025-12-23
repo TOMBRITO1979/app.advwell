@@ -1,5 +1,24 @@
 import nodemailer from 'nodemailer';
+import DOMPurify from 'isomorphic-dompurify';
 import { config } from '../config';
+
+/**
+ * TAREFA 2.3: Sanitiza conteudo do usuario para templates de email
+ * Remove qualquer HTML/JS potencialmente malicioso
+ * Escapa caracteres especiais HTML
+ */
+const sanitizeForEmail = (input: string | undefined): string => {
+  if (!input) return '';
+  // Remove qualquer HTML/script tags
+  const sanitized = DOMPurify.sanitize(input, { ALLOWED_TAGS: [] });
+  // Escapa caracteres HTML restantes para prevenir XSS
+  return sanitized
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+};
 
 const transporter = nodemailer.createTransport({
   host: config.smtp.host,
@@ -128,6 +147,9 @@ export const sendPasswordResetEmail = async (
 };
 
 export const sendWelcomeEmail = async (email: string, name: string) => {
+  // TAREFA 2.3: Sanitizar nome do usuario
+  const safeName = sanitizeForEmail(name);
+
   const mailOptions = {
     from: config.smtp.from,
     to: email,
@@ -174,7 +196,7 @@ export const sendWelcomeEmail = async (email: string, name: string) => {
                     </h2>
 
                     <p style="margin: 0 0 24px 0; color: #4b5563; font-size: 16px; line-height: 1.6; text-align: center;">
-                      Olá <strong>${name}</strong>,
+                      Olá <strong>${safeName}</strong>,
                     </p>
 
                     <p style="margin: 0 0 32px 0; color: #6b7280; font-size: 15px; line-height: 1.6; text-align: center;">
@@ -263,6 +285,8 @@ export const sendEmailVerification = async (
   name: string,
   verificationToken: string
 ) => {
+  // TAREFA 2.3: Sanitizar nome do usuario
+  const safeName = sanitizeForEmail(name);
   const verificationUrl = `${config.urls.frontend}/verify-email?token=${verificationToken}`;
 
   const mailOptions = {
@@ -311,7 +335,7 @@ export const sendEmailVerification = async (
                     </h2>
 
                     <p style="margin: 0 0 16px 0; color: #4b5563; font-size: 16px; line-height: 1.6; text-align: center;">
-                      Olá <strong>${name}</strong>,
+                      Olá <strong>${safeName}</strong>,
                     </p>
 
                     <p style="margin: 0 0 32px 0; color: #6b7280; font-size: 15px; line-height: 1.6; text-align: center;">
@@ -382,17 +406,23 @@ export const sendCaseUpdateNotification = async (
   updateMessage: string,
   companyName?: string
 ) => {
+  // TAREFA 2.3: Sanitizar todos os dados de usuario
+  const safeClientName = sanitizeForEmail(clientName);
+  const safeProcessNumber = sanitizeForEmail(processNumber);
+  const safeUpdateMessage = sanitizeForEmail(updateMessage);
+  const safeCompanyName = sanitizeForEmail(companyName);
+
   const mailOptions = {
     from: config.smtp.from,
     to: clientEmail,
-    subject: `Atualização do Processo ${processNumber} - ${companyName || 'AdvWell'}`,
+    subject: `Atualização do Processo ${safeProcessNumber} - ${safeCompanyName || 'AdvWell'}`,
     html: `
       <!DOCTYPE html>
       <html lang="pt-BR">
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Atualização do Processo - ${companyName || 'AdvWell'}</title>
+        <title>Atualização do Processo - ${safeCompanyName || 'AdvWell'}</title>
       </head>
       <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f3f4f6;">
         <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #f3f4f6;">
@@ -405,7 +435,7 @@ export const sendCaseUpdateNotification = async (
                 <tr>
                   <td style="background-color: #43A047; background: linear-gradient(135deg, #43A047 0%, #2E7D32 100%); padding: 40px 30px; text-align: center;">
                     <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 700; letter-spacing: -0.5px;">
-                      ${companyName || 'AdvWell'}
+                      ${safeCompanyName || 'AdvWell'}
                     </h1>
                     <p style="margin: 8px 0 0 0; color: #ffffff; font-size: 14px; font-weight: 500;">
                       Atualização do Processo
@@ -428,7 +458,7 @@ export const sendCaseUpdateNotification = async (
                     </h2>
 
                     <p style="margin: 0 0 16px 0; color: #4b5563; font-size: 16px; line-height: 1.6; text-align: center;">
-                      Olá <strong>${clientName}</strong>,
+                      Olá <strong>${safeClientName}</strong>,
                     </p>
 
                     <p style="margin: 0 0 24px 0; color: #6b7280; font-size: 15px; line-height: 1.6; text-align: center;">
@@ -441,7 +471,7 @@ export const sendCaseUpdateNotification = async (
                         Número do Processo
                       </p>
                       <p style="margin: 8px 0 0 0; color: #111827; font-size: 18px; font-weight: 700; font-family: 'Courier New', monospace;">
-                        ${processNumber}
+                        ${safeProcessNumber}
                       </p>
                     </div>
 
@@ -451,7 +481,7 @@ export const sendCaseUpdateNotification = async (
                         📋 Informação para o Cliente
                       </p>
                       <p style="margin: 0; color: #1B5E20; font-size: 15px; line-height: 1.6; white-space: pre-wrap;">
-${updateMessage}
+${safeUpdateMessage}
                       </p>
                     </div>
 
@@ -474,7 +504,7 @@ ${updateMessage}
 
                     <p style="margin: 24px 0 0 0; color: #6b7280; font-size: 14px; line-height: 1.6; text-align: center;">
                       Atenciosamente,<br>
-                      <strong style="color: #43A047;">${companyName || 'AdvWell'}</strong>
+                      <strong style="color: #43A047;">${safeCompanyName || 'AdvWell'}</strong>
                     </p>
                   </td>
                 </tr>
@@ -486,10 +516,10 @@ ${updateMessage}
                       Este é um email automático, por favor não responda.
                     </p>
                     <p style="margin: 0 0 16px 0; color: #6b7280; font-size: 13px; text-align: center;">
-                      <strong>${companyName || 'AdvWell'}</strong> - Sistema de Gestão para Escritórios de Advocacia
+                      <strong>${safeCompanyName || 'AdvWell'}</strong> - Sistema de Gestão para Escritórios de Advocacia
                     </p>
                     <p style="margin: 0; color: #9ca3af; font-size: 12px; text-align: center;">
-                      © 2025 ${companyName || 'AdvWell'}. Todos os direitos reservados.
+                      © 2025 ${safeCompanyName || 'AdvWell'}. Todos os direitos reservados.
                     </p>
                   </td>
                 </tr>

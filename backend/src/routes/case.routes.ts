@@ -1,14 +1,52 @@
 import { Router } from 'express';
 import { body, param, validationResult } from 'express-validator';
 import { Request, Response, NextFunction } from 'express';
+import rateLimit from 'express-rate-limit';
+import RedisStore from 'rate-limit-redis';
 import caseController from '../controllers/case.controller';
-import { authenticate } from '../middleware/auth';
+import { authenticate, AuthRequest } from '../middleware/auth';
 import { validateTenant } from '../middleware/tenant';
 import { upload, validateUploadContent } from '../middleware/upload';
 import { validatePagination } from '../middleware/validation';
 import { companyRateLimit } from '../middleware/company-rate-limit';
+import { redis } from '../utils/redis';
 
 const router = Router();
+
+// TAREFA 2.5: Rate limiting Redis-backed para AI e DataJud
+const createRedisStore = (prefix: string) => new RedisStore({
+  // @ts-expect-error - ioredis sendCommand é compatível
+  sendCommand: (...args: string[]) => redis.call(...args),
+  prefix: `ratelimit:case:${prefix}:`,
+});
+
+// Rate limit para sincronizacao DataJud (API externa com limites proprios)
+const datajudSyncRateLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hora
+  max: 50, // 50 syncs por hora por empresa
+  standardHeaders: true,
+  legacyHeaders: false,
+  store: createRedisStore('datajud'),
+  keyGenerator: (req) => {
+    const authReq = req as AuthRequest;
+    return authReq.user?.companyId || req.ip || 'unknown';
+  },
+  message: { error: 'Limite de sincronização DataJud atingido. Máximo de 50 por hora.' },
+});
+
+// Rate limit para geracao de resumo com IA (operacao custosa)
+const aiSummaryRateLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hora
+  max: 30, // 30 resumos por hora por empresa
+  standardHeaders: true,
+  legacyHeaders: false,
+  store: createRedisStore('ai-summary'),
+  keyGenerator: (req) => {
+    const authReq = req as AuthRequest;
+    return authReq.user?.companyId || req.ip || 'unknown';
+  },
+  message: { error: 'Limite de geração de resumos IA atingido. Máximo de 30 por hora.' },
+});
 
 router.use(authenticate);
 router.use(companyRateLimit);
@@ -158,8 +196,9 @@ router.get('/:id/audit-logs', idParamValidation, validate, caseController.getAud
 router.get('/:id', idParamValidation, validate, caseController.get);
 router.put('/:id', updateCaseValidation, validate, caseController.update);
 router.delete('/:id', idParamValidation, validate, caseController.delete); // Excluir processo
-router.post('/:id/sync', idParamValidation, validate, caseController.syncMovements);
-router.post('/:id/generate-summary', idParamValidation, validate, caseController.generateSummary); // Gera resumo com IA
+// TAREFA 2.5: Rate limits especificos para operacoes externas
+router.post('/:id/sync', datajudSyncRateLimiter, idParamValidation, validate, caseController.syncMovements);
+router.post('/:id/generate-summary', aiSummaryRateLimiter, idParamValidation, validate, caseController.generateSummary); // Gera resumo com IA
 router.post('/:id/acknowledge', idParamValidation, validate, caseController.acknowledgeUpdate); // Marca como ciente
 
 export default router;

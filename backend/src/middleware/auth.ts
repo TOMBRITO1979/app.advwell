@@ -1,11 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
-import { verifyToken, JwtPayload } from '../utils/jwt';
+import { verifyToken, JwtPayload, isTokenBlacklisted, areUserTokensInvalidated } from '../utils/jwt';
 
 export interface AuthRequest extends Request {
   user?: JwtPayload;
 }
 
-export const authenticate = (
+export const authenticate = async (
   req: AuthRequest,
   res: Response,
   next: NextFunction
@@ -18,6 +18,24 @@ export const authenticate = (
     }
 
     const decoded = verifyToken(token);
+
+    // TAREFA 2.1: Verificar se o token esta na blacklist (logout)
+    if (decoded.jti) {
+      const blacklisted = await isTokenBlacklisted(decoded.jti);
+      if (blacklisted) {
+        return res.status(401).json({ error: 'Token revogado - por favor, faça login novamente' });
+      }
+    }
+
+    // TAREFA 2.1: Verificar se todos os tokens do usuario foram invalidados
+    // Isso acontece quando o usuario faz "logout de todas as sessoes"
+    const tokenPayload = decoded as JwtPayload & { iat?: number };
+    if (tokenPayload.iat) {
+      const invalidated = await areUserTokensInvalidated(decoded.userId, tokenPayload.iat);
+      if (invalidated) {
+        return res.status(401).json({ error: 'Sessão expirada - por favor, faça login novamente' });
+      }
+    }
 
     // SEGURANCA: Validar que usuarios USER e ADMIN devem ter companyId
     // Apenas SUPER_ADMIN pode operar sem empresa

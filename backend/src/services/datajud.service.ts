@@ -1,6 +1,41 @@
 import axios from 'axios';
 import { config } from '../config';
 
+/**
+ * TAREFA 5.2: Whitelist de tribunais validos do DataJud
+ * Previne SSRF e garante que apenas endpoints legitimos sejam acessados
+ * Lista baseada na documentacao oficial do CNJ: https://datajud-wiki.cnj.jus.br/
+ */
+const VALID_TRIBUNALS = new Set([
+  // Tribunais de Justica Estaduais
+  'tjac', 'tjal', 'tjam', 'tjap', 'tjba', 'tjce', 'tjdft', 'tjes', 'tjgo',
+  'tjma', 'tjmg', 'tjms', 'tjmt', 'tjpa', 'tjpb', 'tjpe', 'tjpi', 'tjpr',
+  'tjrj', 'tjrn', 'tjro', 'tjrr', 'tjrs', 'tjsc', 'tjse', 'tjsp', 'tjto',
+  // Tribunais Regionais Federais
+  'trf1', 'trf2', 'trf3', 'trf4', 'trf5', 'trf6',
+  // Tribunais do Trabalho
+  'trt1', 'trt2', 'trt3', 'trt4', 'trt5', 'trt6', 'trt7', 'trt8', 'trt9',
+  'trt10', 'trt11', 'trt12', 'trt13', 'trt14', 'trt15', 'trt16', 'trt17',
+  'trt18', 'trt19', 'trt20', 'trt21', 'trt22', 'trt23', 'trt24',
+  // Tribunais Superiores
+  'stf', 'stj', 'tst', 'stm', 'tse',
+  // Tribunais Eleitorais
+  'tre-ac', 'tre-al', 'tre-am', 'tre-ap', 'tre-ba', 'tre-ce', 'tre-df',
+  'tre-es', 'tre-go', 'tre-ma', 'tre-mg', 'tre-ms', 'tre-mt', 'tre-pa',
+  'tre-pb', 'tre-pe', 'tre-pi', 'tre-pr', 'tre-rj', 'tre-rn', 'tre-ro',
+  'tre-rr', 'tre-rs', 'tre-sc', 'tre-se', 'tre-sp', 'tre-to',
+  // Tribunais Militares
+  'tjmsp', 'tjmmg', 'tjmrs',
+]);
+
+/**
+ * Valida se o codigo do tribunal e valido
+ */
+const isValidTribunal = (tribunal: string): boolean => {
+  if (!tribunal || typeof tribunal !== 'string') return false;
+  return VALID_TRIBUNALS.has(tribunal.toLowerCase().trim());
+};
+
 export interface DatajudMovement {
   codigo: number;
   nome: string;
@@ -43,8 +78,15 @@ export class DatajudService {
   }
 
   async searchCase(processNumber: string, tribunal: string = 'tjrj'): Promise<DatajudCase | null> {
+    // TAREFA 5.2: Validar tribunal contra whitelist para prevenir SSRF
+    const normalizedTribunal = tribunal.toLowerCase().trim();
+    if (!isValidTribunal(normalizedTribunal)) {
+      console.warn(`[DataJud] Tribunal invalido rejeitado: ${tribunal}`);
+      throw new Error(`Tribunal inválido: ${tribunal}`);
+    }
+
     try {
-      const url = `${this.baseUrl}/api_publica_${tribunal}/_search`;
+      const url = `${this.baseUrl}/api_publica_${normalizedTribunal}/_search`;
 
       const response = await axios.post(
         url,

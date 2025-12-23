@@ -237,6 +237,7 @@ export const createTransaction = async (req: AuthRequest, res: Response) => {
         installments.push({
           id: require('crypto').randomUUID(),
           financialTransactionId: transaction.id,
+          companyId, // TAREFA 4.3: Isolamento de tenant direto
           installmentNumber: i,
           amount: installmentAmount,
           dueDate,

@@ -1,12 +1,13 @@
 import { Router, Response } from 'express';
 import { authenticate, requireSuperAdmin } from '../middleware/auth';
 import { AuthRequest } from '../middleware/auth';
+import { backupRateLimit } from '../middleware/company-rate-limit';
 import databaseBackupService from '../services/database-backup.service';
 
 const router = Router();
 
-// Todas as rotas requerem SUPER_ADMIN
-router.use(authenticate, requireSuperAdmin);
+// Todas as rotas requerem SUPER_ADMIN + rate limit especifico para backup
+router.use(authenticate, requireSuperAdmin, backupRateLimit);
 
 // POST /api/database-backup/test - Executa backup de teste
 router.post('/test', async (req: AuthRequest, res: Response) => {

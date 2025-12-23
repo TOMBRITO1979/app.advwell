@@ -1,11 +1,51 @@
 import { Router } from 'express';
 import { body, param, validationResult } from 'express-validator';
 import { Request, Response, NextFunction } from 'express';
+import rateLimit from 'express-rate-limit';
+import RedisStore from 'rate-limit-redis';
 import lgpdController from '../controllers/lgpd.controller';
 import { authenticate, requireAdmin } from '../middleware/auth';
 import { validateTenant } from '../middleware/tenant';
+import { redis } from '../utils/redis';
 
 const router = Router();
+
+// TAREFA 2.4: Rate limiting Redis-backed para LGPD
+const createRedisStore = (prefix: string) => new RedisStore({
+  // @ts-expect-error - ioredis sendCommand é compatível
+  sendCommand: (...args: string[]) => redis.call(...args),
+  prefix: `ratelimit:lgpd:${prefix}:`,
+});
+
+// Rate limit para registro de consentimento (previne flood)
+const consentRateLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hora
+  max: 20, // 20 registros por hora por IP
+  standardHeaders: true,
+  legacyHeaders: false,
+  store: createRedisStore('consent'),
+  message: { error: 'Muitos registros de consentimento. Tente novamente mais tarde.' },
+});
+
+// Rate limit para solicitações LGPD (muito restritivo)
+const lgpdRequestRateLimiter = rateLimit({
+  windowMs: 24 * 60 * 60 * 1000, // 24 horas
+  max: 5, // 5 solicitações por dia por IP
+  standardHeaders: true,
+  legacyHeaders: false,
+  store: createRedisStore('request'),
+  message: { error: 'Limite de solicitações LGPD atingido. Máximo de 5 por dia.' },
+});
+
+// Rate limit para visualização de dados (operação pesada)
+const myDataRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 10, // 10 consultas por 15 min
+  standardHeaders: true,
+  legacyHeaders: false,
+  store: createRedisStore('mydata'),
+  message: { error: 'Muitas consultas de dados. Aguarde alguns minutos.' },
+});
 
 // Middleware de validação genérico
 const validate = (req: Request, res: Response, next: NextFunction) => {
@@ -47,7 +87,7 @@ const recordConsentValidation = [
     .isString()
     .withMessage('Hash do documento deve ser uma string'),
 ];
-router.post('/consent', recordConsentValidation, validate, lgpdController.recordConsent);
+router.post('/consent', consentRateLimiter, recordConsentValidation, validate, lgpdController.recordConsent);
 
 // ==========================================
 // ROTAS AUTENTICADAS (usuário logado)
@@ -64,8 +104,8 @@ const revokeConsentValidation = [
 ];
 router.post('/revoke-consent', authenticate, validateTenant, revokeConsentValidation, validate, lgpdController.revokeConsent);
 
-// Ver meus dados
-router.get('/my-data', authenticate, validateTenant, lgpdController.getMyData);
+// Ver meus dados (TAREFA 2.4: Rate limit para operação pesada)
+router.get('/my-data', myDataRateLimiter, authenticate, validateTenant, lgpdController.getMyData);
 
 // Criar solicitação LGPD
 const createRequestValidation = [
@@ -78,7 +118,8 @@ const createRequestValidation = [
     .isLength({ max: 2000 })
     .withMessage('Descrição deve ter no máximo 2000 caracteres'),
 ];
-router.post('/request', authenticate, validateTenant, createRequestValidation, validate, lgpdController.createRequest);
+// TAREFA 2.4: Rate limit restritivo para criacao de solicitacoes
+router.post('/request', lgpdRequestRateLimiter, authenticate, validateTenant, createRequestValidation, validate, lgpdController.createRequest);
 
 // Listar minhas solicitações
 router.get('/requests', authenticate, validateTenant, lgpdController.listMyRequests);

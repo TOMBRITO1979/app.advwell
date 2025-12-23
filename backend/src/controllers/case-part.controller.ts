@@ -59,6 +59,7 @@ export class CasePartController {
       const part = await prisma.casePart.create({
         data: {
           caseId,
+          companyId, // TAREFA 4.3: Isolamento de tenant direto
           type,
           name,
           cpfCnpj,

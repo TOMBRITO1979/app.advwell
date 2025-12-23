@@ -21,9 +21,21 @@ export class AuditService {
     metadata?: AuditLogMetadata
   ): Promise<void> {
     try {
+      // TAREFA 4.3: Buscar companyId do processo para isolamento de tenant
+      const caseData = await prisma.case.findUnique({
+        where: { id: caseId },
+        select: { companyId: true },
+      });
+
+      if (!caseData) {
+        console.error('Erro ao criar log de auditoria: processo não encontrado');
+        return;
+      }
+
       await prisma.caseAuditLog.create({
         data: {
           caseId,
+          companyId: caseData.companyId, // TAREFA 4.3: Isolamento de tenant direto
           userId,
           action,
           description,

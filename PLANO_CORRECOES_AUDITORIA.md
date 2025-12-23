@@ -1,186 +1,101 @@
-# PLANO DE CORREÇÕES - AUDITORIA ADVWELL
+# PLANO DE CORRECOES - AUDITORIA DE PRODUCAO
+## AdvWell SaaS - Sistema 100% Seguro e Funcional
 
-**Data:** 2025-12-21
-**Backup:** /root/backups/advwell-20251221_004632/
-**Status:** CONCLUÍDO ✅
-
----
-
-## FASES DO PLANO
-
-### FASE 1: CORREÇÕES CRÍTICAS DE SEGURANÇA
-- [x] 1.1 Remover localhost do CORS em produção ✅ FEITO
-- [x] 1.2 Adicionar Error Handler global no Express ✅ FEITO
-- [ ] TESTE FASE 1: Será testado após rebuild na FASE 5
-
-### FASE 2: CORREÇÕES DE BANCO DE DADOS
-- [x] 2.1 Tabelas verificadas - todas 30 existem ✅ FEITO
-- [x] 2.2 Corrigir Float → Decimal em 7 campos monetários ✅ FEITO
-- [x] 2.3 Tenant isolation verificada - modelos herdam companyId via relações ✅ OK
-- [ ] TESTE FASE 2: Será testado após rebuild na FASE 5
-
-### FASE 3: MELHORIAS DE CÓDIGO
-- [x] 3.1 Substituir redis.keys() por SCAN ✅ FEITO
-- [x] 3.2 Adicionar React Error Boundary no frontend ✅ FEITO
-- [ ] TESTE FASE 3: Será testado após rebuild na FASE 5
-
-### FASE 4: INFRAESTRUTURA
-- [x] 4.1 Logger Winston estruturado já existe (utils/logger.ts) ✅ JÁ EXISTIA
-- [ ] TESTE FASE 4: Será testado junto com FASE 5
-
-### FASE 5: BUILD E DEPLOY
-- [x] 5.1 Rebuild backend Docker image ✅ FEITO
-- [x] 5.2 Rebuild frontend Docker image ✅ FEITO
-- [x] 5.3 Deploy no Docker Swarm ✅ FEITO
-- [x] TESTE FASE 5: Health check completo - todos serviços saudáveis ✅
-
-### FASE 6: VALIDAÇÃO FINAL
-- [x] 6.1 Health check API - HEALTHY ✅
-- [x] 6.2 Database conectado - OK ✅
-- [x] 6.3 Redis conectado - OK ✅
-- [x] 6.4 CORS bloqueando localhost em prod - OK ✅
-- [x] 6.5 Error Handler retornando JSON - OK ✅
-- [x] 6.6 Frontend acessível (HTTP 200) - OK ✅
-
-### FASE 7: COMMIT E PUSH
-- [x] 7.1 Verificar .gitignore (sem secrets) ✅
-- [x] 7.2 Commit das alterações ✅ (af13862)
-- [x] 7.3 Push para GitHub ✅
+**Data de Inicio:** 2025-12-23
+**Objetivo:** Implementar todas as correcoes da auditoria de seguranca
+**Meta:** Sistema com 100% de capacidade e seguranca
 
 ---
 
-## PROGRESSO DETALHADO
+## PROTOCOLO DE VERIFICACAO (Executar apos CADA tarefa)
 
-### FASE 1: CORREÇÕES CRÍTICAS DE SEGURANÇA
-
-#### 1.1 Remover localhost do CORS
-**Arquivo:** backend/src/index.ts
-**Status:** PENDENTE
-**Antes:** origin: [config.urls.frontend, 'http://localhost:5173']
-**Depois:** origin: config.urls.frontend
-
-#### 1.2 Error Handler Global
-**Arquivo:** backend/src/index.ts
-**Status:** PENDENTE
-**Implementação:** Middleware de erro após todas as rotas
-
----
-
-### FASE 2: CORREÇÕES DE BANCO DE DADOS
-
-#### 2.1 Migrations Faltantes
-**Status:** PENDENTE
-**Tabelas que precisam migration:**
-- accounts_payable
-- financial_transactions
-- installment_payments
-- schedule_events
-- email_campaigns
-- campaign_recipients
-- documents
-- case_parts
-- legal_documents
-- smtp_configs
-- stripe_configs
-- service_plans
-- client_subscriptions
-- subscription_payments
-- case_audit_logs
-
-**NOTA:** Verificar se tabelas já existem no banco antes de criar migrations.
-
-#### 2.2 Float → Decimal
-**Status:** PENDENTE
-**Campos a corrigir:**
-- Case.value
-- FinancialTransaction.amount
-- InstallmentPayment.amount
-- InstallmentPayment.paidAmount
-- AccountPayable.amount
-- ServicePlan.price
-- SubscriptionPayment.amount
-
-#### 2.3 Tenant Isolation
-**Status:** PENDENTE
-**Modelos sem companyId:**
-- Permission (verificar se precisa)
-- SystemConfig (global, OK)
-- ConsentLog (precisa companyId)
-- EventAssignment (herda do event)
-- CaseMovement (herda do case)
-
----
-
-### FASE 3-7: [Detalhes serão preenchidos conforme execução]
-
----
-
-## CHECKLIST DE TESTES POR FASE
-
-### Teste Fase 1
 ```bash
-# 1. Health check
-curl -k https://api.advwell.pro/health
+# 1. Verificar banco de dados e tabelas
+docker exec $(docker ps -q -f name=advtom_postgres) psql -U advtom -d advtom -c "\dt"
 
-# 2. CORS test (deve falhar de localhost em prod)
-# 3. Error handler test (endpoint inexistente deve retornar JSON)
-curl -k https://api.advwell.pro/api/nao-existe
-```
+# 2. Verificar Prisma e migracoes
+cd backend && npx prisma migrate status
 
-### Teste Fase 2
-```bash
-# 1. Prisma validate
-npx prisma validate
+# 3. Verificar servicos Docker
+docker stack ps advtom
 
-# 2. Verificar tabelas existem
-docker exec postgres psql -U postgres -d advtom -c "\dt"
-```
+# 4. Testar API health
+curl -s https://api.advwell.pro/health
 
-### Teste Fase 5
-```bash
-# 1. Verificar serviços
-docker service ls | grep advtom
+# 5. Testar CORS
+curl -s -X OPTIONS https://api.advwell.pro/api/auth/login -H "Origin: https://app.advwell.pro"
 
-# 2. Health check completo
-curl -k https://api.advwell.pro/health | jq .
+# 6. Verificar Redis
+docker exec $(docker ps -q -f name=advtom_redis) redis-cli ping
 
-# 3. Frontend acessível
-curl -k -o /dev/null -w "%{http_code}" https://app.advwell.pro
-```
-
-### Teste Fase 6
-```bash
-# Testes manuais via API com token válido
-# Login, CRUD clientes, CRUD casos, Atualizações
+# 7. Verificar logs de erro
+docker service logs advtom_backend --tail 20 2>&1 | grep -i error
 ```
 
 ---
 
-## NOTAS IMPORTANTES
+## FASE 1: CORRECOES CRITICAS
 
-1. **NUNCA commitar secrets** - Verificar .gitignore antes de push
-2. **Backup antes de cada fase** - Já feito em /root/backups/
-3. **Testar após cada mudança** - Não acumular mudanças sem teste
-4. **Documentar erros encontrados** - Adicionar neste arquivo
+### TAREFA 1.1: Atualizar Axios
+- **Status:** [ ] PENDENTE
+
+### TAREFA 1.2: Rate Limiting Database Backup
+- **Status:** [ ] PENDENTE
+
+### TAREFA 1.3: Integration Rate Limit Redis
+- **Status:** [ ] PENDENTE
 
 ---
 
-## LOG DE EXECUÇÃO
+## FASE 2: AUTENTICACAO
 
-### 2025-12-21 00:46
-- Backup criado: /root/backups/advwell-20251221_004632/
-- Plano criado: PLANO_CORRECOES_AUDITORIA.md
-- Iniciando FASE 1...
+### TAREFA 2.1: Endpoint Logout
+- **Status:** [ ] PENDENTE
 
-### 2025-12-21 01:04
-- FASE 1-7 CONCLUÍDAS COM SUCESSO
-- Correções aplicadas:
-  - CORS: localhost removido em produção
-  - Error Handler: middleware global adicionado
-  - Database: Float → Decimal em 7 campos monetários
-  - Redis: keys() substituído por SCAN
-  - Frontend: ErrorBoundary adicionado
-- Docker: Backend e Frontend rebuild e deploy OK
-- Health check: Todos serviços healthy
-- GitHub: Commit af13862 pushed
-- PLANO CONCLUÍDO!
+### TAREFA 2.2: Reset Token Seguro
+- **Status:** [ ] PENDENTE
+
+### TAREFA 2.3: Sanitizar Emails
+- **Status:** [ ] PENDENTE
+
+### TAREFA 2.4: Rate Limit LGPD
+- **Status:** [ ] PENDENTE
+
+### TAREFA 2.5: Rate Limit AI/DataJud
+- **Status:** [ ] PENDENTE
+
+---
+
+## FASE 3: LOGGING
+
+### TAREFA 3.1: Exception Handlers
+- **Status:** [ ] PENDENTE
+
+### TAREFA 3.2: Logger Estruturado
+- **Status:** [ ] PENDENTE
+
+---
+
+## FASE 4: ESCALABILIDADE
+
+### TAREFA 4.1: Bull Sentinel
+- **Status:** [ ] PENDENTE
+
+### TAREFA 4.2: Cron Flag
+- **Status:** [ ] PENDENTE
+
+### TAREFA 4.3: CompanyId Tabelas
+- **Status:** [X] CONCLUIDO
+
+---
+
+## FASE 5: PROTECAO
+
+### TAREFA 5.1: Webhook Rate Limit
+- **Status:** [ ] PENDENTE
+
+### TAREFA 5.2: Tribunal Whitelist
+- **Status:** [ ] PENDENTE
+
+### TAREFA 5.3: API Key 256 bits
+- **Status:** [ ] PENDENTE

@@ -3,13 +3,13 @@ import nodemailer from 'nodemailer';
 import prisma from '../utils/prisma';
 import { decrypt } from '../utils/encryption';
 import { replaceTemplateVariables } from '../utils/email-templates';
+import { createRedisClient } from '../utils/redis';
 
-// Queue configuration
+// TAREFA 4.1: Queue configuration usando createRedisClient (suporta Sentinel)
 const emailQueue = new Queue('email-campaign', {
-  redis: {
-    host: process.env.REDIS_HOST || 'redis',
-    port: parseInt(process.env.REDIS_PORT || '6379'),
-    password: process.env.REDIS_PASSWORD || undefined,
+  createClient: (type) => {
+    // Bull requer clients separados para subscriber e client
+    return createRedisClient();
   },
   defaultJobOptions: {
     attempts: 3,
