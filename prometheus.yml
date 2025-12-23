@@ -66,12 +66,23 @@ scrape_configs:
       - targets: ['node-exporter:9100']
 
   # ============================================
-  # Backend API Health Checks
+  # Backend API Health Checks (via blackbox probe)
   # ============================================
-  - job_name: 'backend-health'
-    metrics_path: '/health'
-    scheme: 'https'
-    static_configs:
-      - targets: ['api.advwell.pro']
-    tls_config:
-      insecure_skip_verify: true
+  # Note: For proper health monitoring, we rely on:
+  # 1. Docker Swarm built-in health checks (configured in docker-compose)
+  # 2. Traefik load balancer health checks
+  # 3. External uptime monitoring (e.g., UptimeRobot, Pingdom)
+  #
+  # The /health endpoint returns JSON, not Prometheus metrics.
+  # To add probe monitoring, deploy blackbox_exporter and configure:
+  # - job_name: 'blackbox-http'
+  #   metrics_path: /probe
+  #   params:
+  #     module: [http_2xx]
+  #   static_configs:
+  #     - targets: ['https://api.advwell.pro/health']
+  #   relabel_configs:
+  #     - source_labels: [__address__]
+  #       target_label: __param_target
+  #     - target_label: __address__
+  #       replacement: blackbox-exporter:9115

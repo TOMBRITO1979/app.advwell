@@ -1,5 +1,7 @@
 # =============================================
 # Prometheus Alert Rules - AdvWell Production
+# Configurado para servidor 4 vCPU / 16GB RAM
+# Baseado em testes de carga: ~3000 req/s capacidade
 # =============================================
 
 groups:
@@ -8,7 +10,7 @@ groups:
   # ============================================
   - name: infrastructure
     rules:
-      # CPU Alto por mais de 5 minutos
+      # CPU Alto por mais de 5 minutos (warning)
       - alert: HighCPUUsage
         expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
         for: 5m
@@ -18,41 +20,113 @@ groups:
           summary: "CPU alta no servidor"
           description: "CPU acima de 80% por mais de 5 minutos (atual: {{ $value | printf \"%.1f\" }}%)"
 
-      # Memoria Alta por mais de 5 minutos
+      # CPU Critico por mais de 2 minutos
+      - alert: CriticalCPUUsage
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[2m])) * 100) > 95
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "CPU CRITICA no servidor"
+          description: "CPU acima de 95% por mais de 2 minutos (atual: {{ $value | printf \"%.1f\" }}%). Considere escalar!"
+
+      # Load Average alto (baseado em 4 cores)
+      # Warning: load > 4 (100% dos cores)
+      - alert: HighLoadAverage
+        expr: node_load5 > 4
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Load average alto"
+          description: "Load average 5min acima de 4 (100% capacidade). Atual: {{ $value | printf \"%.2f\" }}"
+
+      # Load Average critico (baseado em 4 cores)
+      # Critical: load > 8 (200% dos cores - muita fila)
+      - alert: CriticalLoadAverage
+        expr: node_load5 > 8
+        for: 3m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Load average CRITICO"
+          description: "Load average 5min acima de 8 (200% capacidade). Atual: {{ $value | printf \"%.2f\" }}. Sistema sobrecarregado!"
+
+      # Memoria Alta por mais de 5 minutos (warning 70%)
       - alert: HighMemoryUsage
-        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 85
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 70
         for: 5m
         labels:
           severity: warning
         annotations:
           summary: "Memoria alta no servidor"
-          description: "Memoria acima de 85% por mais de 5 minutos (atual: {{ $value | printf \"%.1f\" }}%)"
+          description: "Memoria acima de 70% por mais de 5 minutos (atual: {{ $value | printf \"%.1f\" }}%). Disponivel: {{ with query \"node_memory_MemAvailable_bytes / 1024 / 1024 / 1024\" }}{{ . | first | value | printf \"%.1f\" }}{{ end }}GB"
 
-      # Disco Cheio
-      - alert: DiskSpaceLow
-        expr: (1 - (node_filesystem_avail_bytes{fstype!~"tmpfs|overlay"} / node_filesystem_size_bytes{fstype!~"tmpfs|overlay"})) * 100 > 85
-        for: 10m
+      # Memoria Critica (85%)
+      - alert: CriticalMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 85
+        for: 2m
         labels:
           severity: critical
         annotations:
+          summary: "Memoria CRITICA no servidor"
+          description: "Memoria acima de 85% por mais de 2 minutos (atual: {{ $value | printf \"%.1f\" }}%). Risco de OOM!"
+
+      # Swap em uso (indica pressao de memoria)
+      - alert: SwapInUse
+        expr: node_memory_SwapTotal_bytes > 0 and (node_memory_SwapTotal_bytes - node_memory_SwapFree_bytes) / node_memory_SwapTotal_bytes * 100 > 20
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Swap em uso"
+          description: "Sistema usando mais de 20% do swap ({{ $value | printf \"%.1f\" }}%). Indica pressao de memoria."
+
+      # Swap critico
+      - alert: SwapCritical
+        expr: node_memory_SwapTotal_bytes > 0 and (node_memory_SwapTotal_bytes - node_memory_SwapFree_bytes) / node_memory_SwapTotal_bytes * 100 > 50
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Swap CRITICO"
+          description: "Sistema usando mais de 50% do swap ({{ $value | printf \"%.1f\" }}%). Performance degradada!"
+
+      # Disco Cheio
+      - alert: DiskSpaceLow
+        expr: (1 - (node_filesystem_avail_bytes{fstype!~"tmpfs|overlay"} / node_filesystem_size_bytes{fstype!~"tmpfs|overlay"})) * 100 > 80
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
           summary: "Disco quase cheio"
-          description: "Disco acima de 85% de uso (atual: {{ $value | printf \"%.1f\" }}%)"
+          description: "Disco acima de 80% de uso (atual: {{ $value | printf \"%.1f\" }}%)"
+
+      # Disco Critico
+      - alert: DiskSpaceCritical
+        expr: (1 - (node_filesystem_avail_bytes{fstype!~"tmpfs|overlay"} / node_filesystem_size_bytes{fstype!~"tmpfs|overlay"})) * 100 > 90
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Disco CRITICO"
+          description: "Disco acima de 90% de uso (atual: {{ $value | printf \"%.1f\" }}%). Limpe logs/backups antigos!"
+
+      # Network errors
+      - alert: NetworkErrors
+        expr: rate(node_network_receive_errs_total[5m]) + rate(node_network_transmit_errs_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Erros de rede detectados"
+          description: "Taxa de erros de rede acima de 10/s"
 
   # ============================================
   # PostgreSQL Alerts
   # ============================================
   - name: postgresql
     rules:
-      # Muitas conexoes ativas
-      - alert: PostgresTooManyConnections
-        expr: pg_stat_activity_count > 400
-        for: 5m
-        labels:
-          severity: warning
-        annotations:
-          summary: "PostgreSQL com muitas conexoes"
-          description: "PostgreSQL tem {{ $value }} conexoes ativas (limite: 500)"
-
       # PostgreSQL Down
       - alert: PostgresDown
         expr: pg_up == 0
@@ -61,59 +135,149 @@ groups:
           severity: critical
         annotations:
           summary: "PostgreSQL esta fora do ar"
-          description: "PostgreSQL nao esta respondendo"
+          description: "PostgreSQL nao esta respondendo ha mais de 1 minuto"
 
-      # Queries lentas (se exporter suportar)
-      - alert: PostgresSlowQueries
-        expr: rate(pg_stat_statements_seconds_total[5m]) > 1
+      # Conexoes em warning (300 de 500)
+      - alert: PostgresConnectionsHigh
+        expr: pg_stat_activity_count > 300
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "PostgreSQL com muitas conexoes"
+          description: "PostgreSQL tem {{ $value }} conexoes ativas (limite: 500)"
+
+      # Conexoes criticas (400 de 500)
+      - alert: PostgresConnectionsCritical
+        expr: pg_stat_activity_count > 400
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "PostgreSQL conexoes CRITICAS"
+          description: "PostgreSQL tem {{ $value }} conexoes ativas (limite: 500). Risco de rejeicao de novas conexoes!"
+
+      # Cache hit ratio baixo (deve ser > 99% normalmente)
+      - alert: PostgresCacheHitLow
+        expr: pg_stat_database_blks_hit / (pg_stat_database_blks_hit + pg_stat_database_blks_read) * 100 < 95
         for: 10m
         labels:
           severity: warning
         annotations:
-          summary: "Queries lentas no PostgreSQL"
-          description: "Tempo medio de query acima de 1 segundo"
+          summary: "PostgreSQL cache hit ratio baixo"
+          description: "Cache hit ratio abaixo de 95% ({{ $value | printf \"%.1f\" }}%). Considere aumentar shared_buffers."
+
+      # Deadlocks detectados
+      - alert: PostgresDeadlocks
+        expr: rate(pg_stat_database_deadlocks[5m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Deadlocks no PostgreSQL"
+          description: "Deadlocks detectados no banco de dados"
 
   # ============================================
   # Redis Alerts
   # ============================================
   - name: redis
     rules:
-      # Redis Down
+      # Redis Master Down
       - alert: RedisDown
         expr: redis_up == 0
         for: 1m
         labels:
           severity: critical
         annotations:
-          summary: "Redis esta fora do ar"
-          description: "Redis nao esta respondendo"
+          summary: "Redis Master esta fora do ar"
+          description: "Redis Master nao esta respondendo. Sentinel deve promover replica."
 
-      # Redis Memoria Alta
+      # Redis Memoria Alta (2GB de 3GB configurado)
       - alert: RedisHighMemory
-        expr: redis_memory_used_bytes / 1024 / 1024 > 1500
+        expr: redis_memory_used_bytes / 1024 / 1024 > 2000
         for: 10m
         labels:
           severity: warning
         annotations:
           summary: "Redis usando muita memoria"
-          description: "Redis usando {{ $value | printf \"%.0f\" }}MB (limite recomendado: 1.5GB)"
+          description: "Redis usando {{ $value | printf \"%.0f\" }}MB (limite: 3GB)"
+
+      # Redis Memoria Critica (2.5GB de 3GB)
+      - alert: RedisMemoryCritical
+        expr: redis_memory_used_bytes / 1024 / 1024 > 2500
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Redis memoria CRITICA"
+          description: "Redis usando {{ $value | printf \"%.0f\" }}MB. Proximo do limite de 3GB!"
+
+      # Redis conexoes altas
+      - alert: RedisConnectionsHigh
+        expr: redis_connected_clients > 500
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Redis com muitas conexoes"
+          description: "Redis tem {{ $value }} clientes conectados"
+
+      # Redis replicacao quebrada
+      - alert: RedisReplicationBroken
+        expr: redis_connected_slaves < 1
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Redis sem replica conectada"
+          description: "Redis Master sem replicas conectadas. Alta disponibilidade comprometida!"
+
+      # Redis replica lag alto
+      - alert: RedisReplicationLag
+        expr: redis_connected_slaves > 0 and redis_replication_lag > 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Redis replica com lag"
+          description: "Replica Redis com lag de {{ $value }} segundos"
+
+      # Redis evictions (indica memoria insuficiente)
+      - alert: RedisEvictions
+        expr: rate(redis_evicted_keys_total[5m]) > 100
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Redis removendo chaves"
+          description: "Redis evicting {{ $value | printf \"%.0f\" }} keys/s. Considere aumentar maxmemory."
 
   # ============================================
   # Backend API Alerts
   # ============================================
   - name: backend
     rules:
-      # Backend Unhealthy
-      - alert: BackendUnhealthy
-        expr: probe_success{job="backend-health"} == 0
-        for: 2m
+      # Backend containers restarting frequently
+      - alert: BackendContainerRestarting
+        expr: increase(container_restart_count{name=~".*backend.*"}[15m]) > 3
+        for: 5m
         labels:
-          severity: critical
+          severity: warning
         annotations:
-          summary: "Backend API nao esta healthy"
-          description: "O endpoint /health do backend nao esta respondendo"
+          summary: "Backend reiniciando frequentemente"
+          description: "Container backend reiniciou mais de 3 vezes em 15 minutos"
 
-      # Alta taxa de erros 5xx
+      # Backend container memory high
+      - alert: BackendMemoryHigh
+        expr: container_memory_usage_bytes{name=~".*backend.*"} / container_spec_memory_limit_bytes{name=~".*backend.*"} * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Backend usando muita memoria"
+          description: "Container backend usando mais de 85% da memoria alocada"
+
+      # Alta taxa de erros HTTP 5xx (se tiver metricas)
       - alert: HighErrorRate
         expr: sum(rate(http_requests_total{status=~"5.."}[5m])) / sum(rate(http_requests_total[5m])) * 100 > 5
         for: 5m
@@ -122,6 +286,16 @@ groups:
         annotations:
           summary: "Taxa alta de erros 5xx"
           description: "Mais de 5% das requisicoes retornando erro 500 (atual: {{ $value | printf \"%.1f\" }}%)"
+
+      # Taxa de erros critica
+      - alert: CriticalErrorRate
+        expr: sum(rate(http_requests_total{status=~"5.."}[5m])) / sum(rate(http_requests_total[5m])) * 100 > 15
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Taxa CRITICA de erros 5xx"
+          description: "Mais de 15% das requisicoes retornando erro 500 (atual: {{ $value | printf \"%.1f\" }}%)"
 
   # ============================================
   # Docker Swarm Alerts
@@ -136,4 +310,40 @@ groups:
           severity: warning
         annotations:
           summary: "Servico com replicas faltando"
-          description: "Servico {{ $labels.service }} tem menos replicas que o configurado"
+          description: "Servico {{ $labels.service }} tem {{ $value }} replicas rodando mas deveria ter mais"
+
+      # Servico completamente down
+      - alert: ServiceDown
+        expr: docker_swarm_service_replicas_running == 0 and docker_swarm_service_replicas > 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Servico completamente fora do ar"
+          description: "Servico {{ $labels.service }} nao tem nenhuma replica rodando!"
+
+  # ============================================
+  # Capacity Planning Alerts
+  # ============================================
+  - name: capacity
+    rules:
+      # Aproximando limite de capacidade (baseado em teste de carga)
+      # Load > 14 por 5 minutos indica que estamos perto do limite
+      - alert: ApproachingCapacity
+        expr: node_load5 > 12
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Sistema aproximando limite de capacidade"
+          description: "Load average de {{ $value | printf \"%.1f\" }} por 10+ minutos. Nos testes, o maximo sustentavel foi ~14. Considere escalar."
+
+      # Backend replicas podem nao ser suficientes
+      - alert: BackendScaleNeeded
+        expr: avg(node_load1) > 3 and count(container_memory_usage_bytes{name=~".*backend.*"}) < 6
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Considere aumentar replicas do backend"
+          description: "Carga alta sustentada. Considere aumentar de 4 para 6 replicas do backend."
