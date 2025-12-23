@@ -25,8 +25,11 @@ sentinel parallel-syncs mymaster 1
 # Failover timeout in milliseconds (3 minutes)
 sentinel failover-timeout mymaster 180000
 
-# Sentinel password (optional, for Sentinel-to-Sentinel auth)
-# requirepass ${REDIS_PASSWORD}
+# Sentinel password (required for client auth to Sentinel)
+requirepass ${REDIS_PASSWORD}
+
+# Sentinel-to-Sentinel authentication
+sentinel sentinel-pass ${REDIS_PASSWORD}
 
 # Log level
 loglevel notice

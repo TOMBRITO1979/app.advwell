@@ -9,10 +9,11 @@ services:
     command: >
       redis-server
       --appendonly yes
-      --maxmemory 2gb
+      --maxmemory 3gb
       --maxmemory-policy allkeys-lru
       --tcp-keepalive 300
       --requirepass ${REDIS_PASSWORD}
+      --tcp-backlog 511
     environment:
       - TZ=${TZ:-America/Sao_Paulo}
     volumes:
@@ -27,9 +28,9 @@ services:
       resources:
         limits:
           cpus: '1'
-          memory: 2G
+          memory: 3.5G
         reservations:
-          cpus: '0.5'
+          cpus: '0.25'
           memory: 1G
       restart_policy:
         condition: on-failure
@@ -51,12 +52,13 @@ services:
     command: >
       redis-server
       --appendonly yes
-      --maxmemory 512mb
+      --maxmemory 2gb
       --maxmemory-policy allkeys-lru
       --tcp-keepalive 300
       --requirepass ${REDIS_PASSWORD}
       --masterauth ${REDIS_PASSWORD}
       --replicaof redis 6379
+      --tcp-backlog 511
     environment:
       - TZ=${TZ:-America/Sao_Paulo}
     volumes:
@@ -69,7 +71,10 @@ services:
       replicas: 1
       resources:
         limits:
-          cpus: '0.25'
+          cpus: '0.5'
+          memory: 2.5G
+        reservations:
+          cpus: '0.1'
           memory: 512M
       restart_policy:
         condition: on-failure
@@ -108,7 +113,7 @@ services:
         delay: 5s
         max_attempts: 3
     healthcheck:
-      test: ["CMD", "redis-cli", "-p", "26379", "ping"]
+      test: ["CMD", "redis-cli", "-p", "26379", "-a", "${REDIS_PASSWORD}", "ping"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -140,7 +145,7 @@ services:
         delay: 5s
         max_attempts: 3
     healthcheck:
-      test: ["CMD", "redis-cli", "-p", "26379", "ping"]
+      test: ["CMD", "redis-cli", "-p", "26379", "-a", "${REDIS_PASSWORD}", "ping"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -172,7 +177,7 @@ services:
         delay: 5s
         max_attempts: 3
     healthcheck:
-      test: ["CMD", "redis-cli", "-p", "26379", "ping"]
+      test: ["CMD", "redis-cli", "-p", "26379", "-a", "${REDIS_PASSWORD}", "ping"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -194,21 +199,24 @@ services:
     command: >
       postgres
       -c max_connections=500
-      -c shared_buffers=512MB
-      -c effective_cache_size=2GB
-      -c work_mem=16MB
-      -c maintenance_work_mem=256MB
+      -c shared_buffers=2GB
+      -c effective_cache_size=8GB
+      -c work_mem=32MB
+      -c maintenance_work_mem=512MB
       -c random_page_cost=1.1
       -c effective_io_concurrency=200
-      -c wal_buffers=16MB
+      -c wal_buffers=64MB
       -c min_wal_size=1GB
-      -c max_wal_size=2GB
+      -c max_wal_size=4GB
       -c max_worker_processes=4
       -c max_parallel_workers_per_gather=2
       -c max_parallel_workers=4
       -c log_min_duration_statement=1000
       -c log_connections=on
       -c log_disconnections=on
+      -c checkpoint_completion_target=0.9
+      -c default_statistics_target=100
+      -c huge_pages=try
     networks:
       - network_public
     deploy:
@@ -219,10 +227,10 @@ services:
       resources:
         limits:
           cpus: '2'
-          memory: 1.5G
+          memory: 4G
         reservations:
-          cpus: '1'
-          memory: 1G
+          cpus: '0.5'
+          memory: 2.5G
       restart_policy:
         condition: on-failure
         delay: 5s
@@ -290,8 +298,8 @@ services:
       # Security: Health check protection
       - HEALTH_CHECK_KEY=${HEALTH_CHECK_KEY}
 
-      # Performance tuning
-      - NODE_OPTIONS=--max-old-space-size=1024
+      # Performance tuning (optimized for 16GB server)
+      - NODE_OPTIONS=--max-old-space-size=1536
     networks:
       - network_public
     depends_on:
@@ -320,7 +328,10 @@ services:
       resources:
         limits:
           cpus: '1'
-          memory: 1G
+          memory: 2G
+        reservations:
+          cpus: '0.25'
+          memory: 512M
       restart_policy:
         condition: on-failure
         delay: 5s
@@ -363,7 +374,10 @@ services:
       resources:
         limits:
           cpus: '0.5'
-          memory: 256M
+          memory: 512M
+        reservations:
+          cpus: '0.1'
+          memory: 128M
       restart_policy:
         condition: on-failure
         delay: 5s
@@ -456,7 +470,7 @@ services:
       - '--storage.tsdb.path=/prometheus'
       - '--web.console.libraries=/usr/share/prometheus/console_libraries'
       - '--web.console.templates=/usr/share/prometheus/consoles'
-      - '--storage.tsdb.retention.time=15d'
+      - '--storage.tsdb.retention.time=30d'
       - '--web.enable-lifecycle'
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
@@ -470,9 +484,9 @@ services:
       resources:
         limits:
           cpus: '0.5'
-          memory: 512M
+          memory: 1G
         reservations:
-          cpus: '0.25'
+          cpus: '0.1'
           memory: 256M
       labels:
         - "traefik.enable=false"
