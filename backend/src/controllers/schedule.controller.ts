@@ -27,6 +27,24 @@ export class ScheduleController {
         return res.status(400).json({ error: 'Prioridade inválida. Use: BAIXA, MEDIA, ALTA ou URGENTE' });
       }
 
+      // SEGURANCA: Validar que todos os assignedUserIds pertencem à mesma empresa
+      if (assignedUserIds && Array.isArray(assignedUserIds) && assignedUserIds.length > 0) {
+        const validUsers = await prisma.user.count({
+          where: {
+            id: { in: assignedUserIds },
+            companyId: companyId,
+            active: true,
+          },
+        });
+
+        if (validUsers !== assignedUserIds.length) {
+          return res.status(400).json({
+            error: 'Usuário inválido',
+            message: 'Um ou mais usuários selecionados não pertencem a esta empresa'
+          });
+        }
+      }
+
       // Verificar conflito de horário para os usuários atribuídos
       if (assignedUserIds && Array.isArray(assignedUserIds) && assignedUserIds.length > 0) {
         const eventStart = new Date(date);
@@ -337,6 +355,24 @@ export class ScheduleController {
       const validPriorities = ['BAIXA', 'MEDIA', 'ALTA', 'URGENTE'];
       if (priority && !validPriorities.includes(priority)) {
         return res.status(400).json({ error: 'Prioridade inválida. Use: BAIXA, MEDIA, ALTA ou URGENTE' });
+      }
+
+      // SEGURANCA: Validar que todos os assignedUserIds pertencem à mesma empresa
+      if (assignedUserIds && Array.isArray(assignedUserIds) && assignedUserIds.length > 0) {
+        const validUsers = await prisma.user.count({
+          where: {
+            id: { in: assignedUserIds },
+            companyId: companyId!,
+            active: true,
+          },
+        });
+
+        if (validUsers !== assignedUserIds.length) {
+          return res.status(400).json({
+            error: 'Usuário inválido',
+            message: 'Um ou mais usuários selecionados não pertencem a esta empresa'
+          });
+        }
       }
 
       // Verificar conflito de horário se está alterando data/horário ou usuários atribuídos
