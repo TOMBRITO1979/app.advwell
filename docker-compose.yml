@@ -3,9 +3,16 @@ version: '3.8'
 services:
   # Redis for caching and job queues
   # ESCALABILIDADE: Aumentado para 2GB para suportar 200 escritorios
+  # SEGURANCA: Autenticacao por senha habilitada
   redis:
     image: redis:7-alpine
-    command: redis-server --appendonly yes --maxmemory 2gb --maxmemory-policy allkeys-lru --tcp-keepalive 300
+    command: >
+      redis-server
+      --appendonly yes
+      --maxmemory 2gb
+      --maxmemory-policy allkeys-lru
+      --tcp-keepalive 300
+      --requirepass ${REDIS_PASSWORD}
     environment:
       - TZ=${TZ:-America/Sao_Paulo}
     volumes:
@@ -29,7 +36,7 @@ services:
         delay: 5s
         max_attempts: 3
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -100,14 +107,10 @@ services:
       # ESCALABILIDADE: 15 conexoes x 4 replicas = 60 conexoes (max_connections=500)
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?connection_limit=15&pool_timeout=20
 
-      # Redis for caching and queues
+      # Redis for caching and queues (with authentication)
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-      # Optional Redis security (TLS/ACL) - uncomment to enable:
-      # - REDIS_PASSWORD=${REDIS_PASSWORD}
-      # - REDIS_USERNAME=${REDIS_USERNAME}
-      # - REDIS_TLS_ENABLED=true
-      # - REDIS_TLS_REJECT_UNAUTHORIZED=true
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
 
       # JWT
       - JWT_SECRET=${JWT_SECRET}
@@ -262,6 +265,7 @@ services:
     image: oliver006/redis_exporter:latest
     environment:
       - REDIS_ADDR=redis://redis:6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
     networks:
       - network_public
     depends_on:
