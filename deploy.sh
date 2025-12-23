@@ -7,7 +7,7 @@ set -e  # Exit on error
 echo "🚀 Starting AdvWell deployment..."
 
 # Change to project directory
-cd /root/advtom
+cd /root/app.advwell
 
 # Export environment variables from .env file
 echo "📦 Loading environment variables..."

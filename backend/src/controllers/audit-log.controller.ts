@@ -29,12 +29,19 @@ export const list = async (req: AuthRequest, res: Response) => {
       limit: Math.min(parseInt(limit as string, 10) || 20, 100), // Max 100
     };
 
+    // Ajustar endDate para incluir o final do dia (23:59:59.999)
+    let parsedEndDate: Date | undefined;
+    if (endDate) {
+      parsedEndDate = new Date(endDate as string);
+      parsedEndDate.setHours(23, 59, 59, 999);
+    }
+
     const filters = {
       entityType: entityType as AuditEntityType | undefined,
       action: action as AuditAction | undefined,
       userId: filterUserId as string | undefined,
       startDate: startDate ? new Date(startDate as string) : undefined,
-      endDate: endDate ? new Date(endDate as string) : undefined,
+      endDate: parsedEndDate,
       search: search as string | undefined,
     };
 

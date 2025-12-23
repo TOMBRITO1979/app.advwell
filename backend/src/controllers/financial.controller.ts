@@ -380,7 +380,12 @@ export const getFinancialSummary = async (req: AuthRequest, res: Response) => {
     if (startDate || endDate) {
       where.date = {};
       if (startDate) where.date.gte = new Date(String(startDate));
-      if (endDate) where.date.lte = new Date(String(endDate));
+      if (endDate) {
+        // Ajustar endDate para incluir o final do dia (23:59:59.999)
+        const parsedEndDate = new Date(String(endDate));
+        parsedEndDate.setHours(23, 59, 59, 999);
+        where.date.lte = parsedEndDate;
+      }
     }
 
     // Filtro por cliente
