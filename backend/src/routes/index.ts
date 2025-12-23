@@ -20,6 +20,7 @@ import leadRoutes from './lead.routes';
 import lgpdRoutes from './lgpd.routes';
 import auditLogRoutes from './audit-log.routes';
 import backupEmailRoutes from './backup-email.routes';
+import databaseBackupRoutes from './database-backup.routes';
 // Temporariamente desabilitado - aguardando schema Prisma
 // import stripeConfigRoutes from './stripe-config.routes';
 // import servicePlanRoutes from './service-plan.routes';
@@ -48,6 +49,7 @@ router.use('/leads', leadRoutes); // Gestão de leads (potenciais clientes)
 router.use('/lgpd', lgpdRoutes); // Rotas LGPD (consentimento, direitos do titular)
 router.use('/audit-logs', auditLogRoutes); // Logs de auditoria (CRUD de clientes e processos)
 router.use('/backup-email', backupEmailRoutes); // Configuração de backup por email
+router.use('/database-backup', databaseBackupRoutes); // Backup do banco de dados para S3 (SUPER_ADMIN only)
 // router.use('/stripe-config', stripeConfigRoutes); // Configuração Stripe do escritório para cobranças de clientes
 // router.use('/service-plans', servicePlanRoutes); // Planos de serviço do escritório
 // router.use('/client-subscriptions', clientSubscriptionRoutes); // Assinaturas de clientes em planos
