@@ -196,7 +196,7 @@ services:
       retries: 3
       start_period: 20s
     deploy:
-      replicas: 2
+      replicas: 1
       update_config:
         parallelism: 1
         delay: 10s
@@ -208,9 +208,6 @@ services:
         limits:
           cpus: '0.5'
           memory: 256M
-        reservations:
-          cpus: '0.25'
-          memory: 128M
       restart_policy:
         condition: on-failure
         delay: 5s
