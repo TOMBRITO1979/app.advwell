@@ -19,6 +19,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Globe,
+  CalendarDays,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -84,6 +85,17 @@ const FIELD_LABELS: Record<string, string> = {
   ultimoAndamento: 'Ultimo Andamento',
   informarCliente: 'Informar Cliente',
   linkProcesso: 'Link do Processo',
+  // Campos de eventos da agenda
+  title: 'Titulo',
+  description: 'Descricao',
+  type: 'Tipo',
+  priority: 'Prioridade',
+  date: 'Data',
+  endDate: 'Data Final',
+  completed: 'Concluido',
+  googleMeetLink: 'Link Google Meet',
+  clientId: 'Cliente',
+  caseId: 'Processo',
 };
 
 const AuditLogs: React.FC = () => {
@@ -209,6 +221,7 @@ const AuditLogs: React.FC = () => {
     const configs: Record<string, { color: string; icon: React.ReactNode; label: string }> = {
       CLIENT: { color: 'bg-blue-100 text-blue-700', icon: <Users className="w-4 h-4" />, label: 'Cliente' },
       CASE: { color: 'bg-purple-100 text-purple-700', icon: <Briefcase className="w-4 h-4" />, label: 'Processo' },
+      SCHEDULE_EVENT: { color: 'bg-green-100 text-green-700', icon: <CalendarDays className="w-4 h-4" />, label: 'Agenda' },
     };
     return configs[entityType] || { color: 'bg-neutral-100 text-neutral-700', icon: <History className="w-4 h-4" />, label: entityType };
   };
@@ -253,8 +266,8 @@ const AuditLogs: React.FC = () => {
                 <h1 className="text-2xl font-bold text-neutral-800">Logs de Auditoria</h1>
                 <p className="text-neutral-600">
                   {isAdmin
-                    ? 'Historico de todas as acoes em clientes e processos'
-                    : 'Historico das suas acoes em clientes e processos'}
+                    ? 'Historico de todas as acoes em clientes, processos e agenda'
+                    : 'Historico das suas acoes em clientes, processos e agenda'}
                 </p>
               </div>
             </div>
@@ -296,6 +309,7 @@ const AuditLogs: React.FC = () => {
               <option value="">Todas Entidades</option>
               <option value="CLIENT">Clientes</option>
               <option value="CASE">Processos</option>
+              <option value="SCHEDULE_EVENT">Agenda</option>
             </select>
 
             <select

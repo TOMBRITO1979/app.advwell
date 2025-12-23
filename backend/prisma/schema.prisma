@@ -1026,8 +1026,9 @@ model DataRequest {
 
 // Enum para tipo de entidade auditada
 enum AuditEntityType {
-  CLIENT    // Clientes
-  CASE      // Processos
+  CLIENT          // Clientes
+  CASE            // Processos
+  SCHEDULE_EVENT  // Eventos da Agenda
 }
 
 // Enum para ação de auditoria

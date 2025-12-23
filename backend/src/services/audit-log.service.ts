@@ -1,6 +1,6 @@
 import { Request } from 'express';
 import prisma from '../utils/prisma';
-import { AuditEntityType, AuditAction, Client, Case, Prisma } from '@prisma/client';
+import { AuditEntityType, AuditAction, Client, Case, ScheduleEvent, Prisma } from '@prisma/client';
 
 interface AuditLogData {
   companyId: string;
@@ -69,6 +69,17 @@ const FIELD_LABELS: Record<string, string> = {
   informarCliente: 'Informar Cliente',
   linkProcesso: 'Link do Processo',
   aiSummary: 'Resumo IA',
+  // Schedule Event fields
+  title: 'Título',
+  description: 'Descrição',
+  type: 'Tipo',
+  priority: 'Prioridade',
+  date: 'Data',
+  endDate: 'Data Final',
+  completed: 'Concluído',
+  googleMeetLink: 'Link Google Meet',
+  clientId: 'Cliente',
+  caseId: 'Processo',
 };
 
 class AuditLogService {
@@ -282,6 +293,100 @@ class AuditLogService {
       action: AuditAction.DELETE,
       description: `Processo "${caseData.processNumber}" excluído`,
       oldValues: this.caseToRecord(caseData),
+      ipAddress,
+      userAgent,
+    });
+  }
+
+  // ============================================
+  // Helpers para Eventos da Agenda
+  // ============================================
+
+  private getEventTypeLabel(type: string): string {
+    const labels: Record<string, string> = {
+      'COMPROMISSO': 'Compromisso',
+      'TAREFA': 'Tarefa',
+      'PRAZO': 'Prazo',
+      'AUDIENCIA': 'Audiência',
+      'GOOGLE_MEET': 'Google Meet',
+    };
+    return labels[type] || type;
+  }
+
+  async logScheduleEventCreate(event: ScheduleEvent, req: Request): Promise<void> {
+    const { ipAddress, userAgent } = this.getRequestContext(req);
+    const user = (req as any).user;
+    const userName = await this.getUserName(user.userId);
+    const typeLabel = this.getEventTypeLabel(event.type);
+
+    await this.log({
+      companyId: event.companyId,
+      entityType: AuditEntityType.SCHEDULE_EVENT,
+      entityId: event.id,
+      entityName: event.title,
+      userId: user.userId,
+      userName,
+      action: AuditAction.CREATE,
+      description: `${typeLabel} "${event.title}" criado`,
+      newValues: this.scheduleEventToRecord(event),
+      ipAddress,
+      userAgent,
+    });
+  }
+
+  async logScheduleEventUpdate(
+    oldEvent: ScheduleEvent,
+    newEvent: ScheduleEvent,
+    req: Request
+  ): Promise<void> {
+    const { ipAddress, userAgent } = this.getRequestContext(req);
+    const user = (req as any).user;
+
+    const oldValues = this.scheduleEventToRecord(oldEvent);
+    const newValues = this.scheduleEventToRecord(newEvent);
+    const changedFields = this.calculateChangedFields(oldValues, newValues);
+
+    if (changedFields.length === 0) return; // Nenhuma alteração
+
+    const userName = await this.getUserName(user.userId);
+    const fieldDescriptions = changedFields
+      .map(f => FIELD_LABELS[f] || f)
+      .join(', ');
+    const typeLabel = this.getEventTypeLabel(newEvent.type);
+
+    await this.log({
+      companyId: newEvent.companyId,
+      entityType: AuditEntityType.SCHEDULE_EVENT,
+      entityId: newEvent.id,
+      entityName: newEvent.title,
+      userId: user.userId,
+      userName,
+      action: AuditAction.UPDATE,
+      description: `${typeLabel} "${newEvent.title}" atualizado. Campos: ${fieldDescriptions}`,
+      oldValues,
+      newValues,
+      changedFields,
+      ipAddress,
+      userAgent,
+    });
+  }
+
+  async logScheduleEventDelete(event: ScheduleEvent, req: Request): Promise<void> {
+    const { ipAddress, userAgent } = this.getRequestContext(req);
+    const user = (req as any).user;
+    const userName = await this.getUserName(user.userId);
+    const typeLabel = this.getEventTypeLabel(event.type);
+
+    await this.log({
+      companyId: event.companyId,
+      entityType: AuditEntityType.SCHEDULE_EVENT,
+      entityId: event.id,
+      entityName: event.title,
+      userId: user.userId,
+      userName,
+      action: AuditAction.DELETE,
+      description: `${typeLabel} "${event.title}" excluído`,
+      oldValues: this.scheduleEventToRecord(event),
       ipAddress,
       userAgent,
     });
@@ -564,6 +669,24 @@ class AuditLogService {
       ultimoAndamento: caseData.ultimoAndamento,
       informarCliente: caseData.informarCliente,
       linkProcesso: caseData.linkProcesso,
+    };
+  }
+
+  /**
+   * Converte evento da agenda para record simples
+   */
+  private scheduleEventToRecord(event: ScheduleEvent): Record<string, any> {
+    return {
+      title: event.title,
+      description: event.description,
+      type: event.type,
+      priority: event.priority,
+      date: event.date,
+      endDate: event.endDate,
+      completed: event.completed,
+      googleMeetLink: event.googleMeetLink,
+      clientId: event.clientId,
+      caseId: event.caseId,
     };
   }
 }

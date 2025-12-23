@@ -2,6 +2,7 @@ import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import prisma from '../utils/prisma';
 import { generateGoogleMeetLink } from '../utils/googleMeet';
+import { auditLogService } from '../services/audit-log.service';
 
 export class ScheduleController {
   async create(req: AuthRequest, res: Response) {
@@ -174,6 +175,9 @@ export class ScheduleController {
           }
         }
       });
+
+      // Log de auditoria
+      await auditLogService.logScheduleEventCreate(event, req);
 
       res.status(201).json(event);
     } catch (error) {
@@ -500,6 +504,9 @@ export class ScheduleController {
         }
       }
 
+      // Guardar estado antigo para auditoria
+      const oldEvent = { ...event };
+
       const updatedEvent = await prisma.scheduleEvent.update({
         where: { id },
         data: {
@@ -534,6 +541,9 @@ export class ScheduleController {
         }
       });
 
+      // Log de auditoria
+      await auditLogService.logScheduleEventUpdate(oldEvent, updatedEvent, req);
+
       res.json(updatedEvent);
     } catch (error) {
       console.error('Erro ao atualizar evento:', error);
@@ -556,6 +566,9 @@ export class ScheduleController {
       if (!event) {
         return res.status(404).json({ error: 'Evento não encontrado' });
       }
+
+      // Log de auditoria antes de deletar
+      await auditLogService.logScheduleEventDelete(event, req);
 
       await prisma.scheduleEvent.delete({
         where: { id },
@@ -585,12 +598,18 @@ export class ScheduleController {
         return res.status(404).json({ error: 'Evento não encontrado' });
       }
 
+      // Guardar estado antigo para auditoria
+      const oldEvent = { ...event };
+
       const updatedEvent = await prisma.scheduleEvent.update({
         where: { id },
         data: {
           completed: !event.completed,
         },
       });
+
+      // Log de auditoria
+      await auditLogService.logScheduleEventUpdate(oldEvent, updatedEvent, req);
 
       res.json(updatedEvent);
     } catch (error) {

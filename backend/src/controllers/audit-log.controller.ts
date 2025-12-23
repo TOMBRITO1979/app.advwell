@@ -180,6 +180,7 @@ export const exportCSV = async (req: AuthRequest, res: Response) => {
     const entityLabels: Record<string, string> = {
       CLIENT: 'Cliente',
       CASE: 'Processo',
+      SCHEDULE_EVENT: 'Agenda',
     };
 
     const rows = result.logs.map((log) => {
