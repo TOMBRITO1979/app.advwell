@@ -13,6 +13,7 @@ services:
       --maxmemory-policy allkeys-lru
       --tcp-keepalive 300
       --requirepass ${REDIS_PASSWORD}
+      --masterauth ${REDIS_PASSWORD}
       --tcp-backlog 511
     environment:
       - TZ=${TZ:-America/Sao_Paulo}
@@ -47,22 +48,16 @@ services:
   # ===========================================
 
   # Redis Replica - syncs from master for failover
+  # Uses custom entrypoint to set replica-announce-ip for proper Sentinel discovery
   redis-replica:
     image: redis:7-alpine
-    command: >
-      redis-server
-      --appendonly yes
-      --maxmemory 2gb
-      --maxmemory-policy allkeys-lru
-      --tcp-keepalive 300
-      --requirepass ${REDIS_PASSWORD}
-      --masterauth ${REDIS_PASSWORD}
-      --replicaof redis 6379
-      --tcp-backlog 511
+    entrypoint: ["/bin/sh", "/etc/redis/replica-entrypoint.sh"]
     environment:
       - TZ=${TZ:-America/Sao_Paulo}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
     volumes:
       - redis_replica_data:/data
+      - ./redis/replica-entrypoint.sh:/etc/redis/replica-entrypoint.sh:ro
     networks:
       - network_public
     depends_on:
