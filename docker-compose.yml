@@ -333,13 +333,16 @@ services:
         - "traefik.enable=false"
 
   # Alertmanager - Alert routing and notification
+  # Uses envsubst to substitute environment variables in config
   alertmanager:
     image: prom/alertmanager:latest
+    entrypoint: ["/bin/sh", "/alertmanager-entrypoint.sh"]
     command:
       - '--config.file=/etc/alertmanager/alertmanager.yml'
       - '--storage.path=/alertmanager'
     volumes:
-      - ./monitoring/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - ./monitoring/alertmanager.yml.tmpl:/etc/alertmanager/alertmanager.yml.tmpl:ro
+      - ./monitoring/alertmanager-entrypoint.sh:/alertmanager-entrypoint.sh:ro
       - alertmanager_data:/alertmanager
     environment:
       - SMTP_HOST=${SMTP_HOST:-smtp.gmail.com}
