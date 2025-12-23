@@ -1,0 +1,103 @@
+# =============================================
+# Alertmanager Configuration - AdvWell Production
+# =============================================
+
+global:
+  # Timeout para resolver alertas
+  resolve_timeout: 5m
+
+  # Configuracao SMTP (usar variaveis de ambiente)
+  smtp_smarthost: '${SMTP_HOST}:${SMTP_PORT}'
+  smtp_from: '${SMTP_FROM_EMAIL}'
+  smtp_auth_username: '${SMTP_USER}'
+  smtp_auth_password: '${SMTP_PASSWORD}'
+  smtp_require_tls: true
+
+# Roteamento de alertas
+route:
+  # Grupo por severidade e alerta
+  group_by: ['alertname', 'severity']
+
+  # Tempo antes de enviar primeiro alerta do grupo
+  group_wait: 30s
+
+  # Tempo entre notificacoes do mesmo grupo
+  group_interval: 5m
+
+  # Tempo antes de reenviar alerta ativo
+  repeat_interval: 4h
+
+  # Receiver padrao
+  receiver: 'email-notifications'
+
+  # Rotas especificas por severidade
+  routes:
+    # Alertas criticos: notificar imediatamente
+    - match:
+        severity: critical
+      receiver: 'email-critical'
+      group_wait: 10s
+      repeat_interval: 1h
+
+    # Alertas de warning: agrupar e notificar
+    - match:
+        severity: warning
+      receiver: 'email-notifications'
+      group_wait: 1m
+      repeat_interval: 4h
+
+# Receivers (destinos de notificacao)
+receivers:
+  # Email padrao para warnings
+  - name: 'email-notifications'
+    email_configs:
+      - to: '${ALERT_EMAIL}'
+        send_resolved: true
+        headers:
+          Subject: '[AdvWell] {{ .Status | toUpper }} - {{ .CommonLabels.alertname }}'
+        html: |
+          {{ range .Alerts }}
+          <h2>{{ .Status | toUpper }}: {{ .Labels.alertname }}</h2>
+          <p><strong>Severidade:</strong> {{ .Labels.severity }}</p>
+          <p><strong>Sumario:</strong> {{ .Annotations.summary }}</p>
+          <p><strong>Descricao:</strong> {{ .Annotations.description }}</p>
+          <p><strong>Inicio:</strong> {{ .StartsAt }}</p>
+          {{ if .EndsAt }}<p><strong>Fim:</strong> {{ .EndsAt }}</p>{{ end }}
+          <hr>
+          {{ end }}
+
+  # Email para alertas criticos
+  - name: 'email-critical'
+    email_configs:
+      - to: '${ALERT_EMAIL}'
+        send_resolved: true
+        headers:
+          Subject: '[AdvWell] CRITICO - {{ .CommonLabels.alertname }}'
+        html: |
+          <h1 style="color: red;">ALERTA CRITICO</h1>
+          {{ range .Alerts }}
+          <h2>{{ .Labels.alertname }}</h2>
+          <p><strong>Sumario:</strong> {{ .Annotations.summary }}</p>
+          <p><strong>Descricao:</strong> {{ .Annotations.description }}</p>
+          <p><strong>Inicio:</strong> {{ .StartsAt }}</p>
+          <hr>
+          {{ end }}
+
+# Templates customizados (opcional)
+templates: []
+
+# Inibicao de alertas
+inhibit_rules:
+  # Se PostgreSQL down, inibir alertas de conexao
+  - source_match:
+      alertname: 'PostgresDown'
+    target_match:
+      alertname: 'PostgresTooManyConnections'
+    equal: ['instance']
+
+  # Se Redis down, inibir alertas de memoria Redis
+  - source_match:
+      alertname: 'RedisDown'
+    target_match:
+      alertname: 'RedisHighMemory'
+    equal: ['instance']

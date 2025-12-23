@@ -1,0 +1,139 @@
+# =============================================
+# Prometheus Alert Rules - AdvWell Production
+# =============================================
+
+groups:
+  # ============================================
+  # Infrastructure Alerts
+  # ============================================
+  - name: infrastructure
+    rules:
+      # CPU Alto por mais de 5 minutos
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "CPU alta no servidor"
+          description: "CPU acima de 80% por mais de 5 minutos (atual: {{ $value | printf \"%.1f\" }}%)"
+
+      # Memoria Alta por mais de 5 minutos
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Memoria alta no servidor"
+          description: "Memoria acima de 85% por mais de 5 minutos (atual: {{ $value | printf \"%.1f\" }}%)"
+
+      # Disco Cheio
+      - alert: DiskSpaceLow
+        expr: (1 - (node_filesystem_avail_bytes{fstype!~"tmpfs|overlay"} / node_filesystem_size_bytes{fstype!~"tmpfs|overlay"})) * 100 > 85
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Disco quase cheio"
+          description: "Disco acima de 85% de uso (atual: {{ $value | printf \"%.1f\" }}%)"
+
+  # ============================================
+  # PostgreSQL Alerts
+  # ============================================
+  - name: postgresql
+    rules:
+      # Muitas conexoes ativas
+      - alert: PostgresTooManyConnections
+        expr: pg_stat_activity_count > 400
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "PostgreSQL com muitas conexoes"
+          description: "PostgreSQL tem {{ $value }} conexoes ativas (limite: 500)"
+
+      # PostgreSQL Down
+      - alert: PostgresDown
+        expr: pg_up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "PostgreSQL esta fora do ar"
+          description: "PostgreSQL nao esta respondendo"
+
+      # Queries lentas (se exporter suportar)
+      - alert: PostgresSlowQueries
+        expr: rate(pg_stat_statements_seconds_total[5m]) > 1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Queries lentas no PostgreSQL"
+          description: "Tempo medio de query acima de 1 segundo"
+
+  # ============================================
+  # Redis Alerts
+  # ============================================
+  - name: redis
+    rules:
+      # Redis Down
+      - alert: RedisDown
+        expr: redis_up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Redis esta fora do ar"
+          description: "Redis nao esta respondendo"
+
+      # Redis Memoria Alta
+      - alert: RedisHighMemory
+        expr: redis_memory_used_bytes / 1024 / 1024 > 1500
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Redis usando muita memoria"
+          description: "Redis usando {{ $value | printf \"%.0f\" }}MB (limite recomendado: 1.5GB)"
+
+  # ============================================
+  # Backend API Alerts
+  # ============================================
+  - name: backend
+    rules:
+      # Backend Unhealthy
+      - alert: BackendUnhealthy
+        expr: probe_success{job="backend-health"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Backend API nao esta healthy"
+          description: "O endpoint /health do backend nao esta respondendo"
+
+      # Alta taxa de erros 5xx
+      - alert: HighErrorRate
+        expr: sum(rate(http_requests_total{status=~"5.."}[5m])) / sum(rate(http_requests_total[5m])) * 100 > 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Taxa alta de erros 5xx"
+          description: "Mais de 5% das requisicoes retornando erro 500 (atual: {{ $value | printf \"%.1f\" }}%)"
+
+  # ============================================
+  # Docker Swarm Alerts
+  # ============================================
+  - name: docker
+    rules:
+      # Servico com menos replicas que o desejado
+      - alert: ServiceReplicasMismatch
+        expr: docker_swarm_service_replicas_running < docker_swarm_service_replicas
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Servico com replicas faltando"
+          description: "Servico {{ $labels.service }} tem menos replicas que o configurado"
