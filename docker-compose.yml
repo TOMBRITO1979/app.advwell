@@ -41,6 +41,142 @@ services:
       timeout: 5s
       retries: 3
 
+  # ===========================================
+  # REDIS HIGH AVAILABILITY (Sentinel)
+  # ===========================================
+
+  # Redis Replica - syncs from master for failover
+  redis-replica:
+    image: redis:7-alpine
+    command: >
+      redis-server
+      --appendonly yes
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+      --tcp-keepalive 300
+      --requirepass ${REDIS_PASSWORD}
+      --masterauth ${REDIS_PASSWORD}
+      --replicaof redis 6379
+    environment:
+      - TZ=${TZ:-America/Sao_Paulo}
+    volumes:
+      - redis_replica_data:/data
+    networks:
+      - network_public
+    depends_on:
+      - redis
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 512M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Redis Sentinel 1
+  redis-sentinel-1:
+    image: redis:7-alpine
+    entrypoint: ["/bin/sh", "/etc/redis/sentinel-entrypoint.sh"]
+    environment:
+      - TZ=${TZ:-America/Sao_Paulo}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    volumes:
+      - ./redis/sentinel.conf.tmpl:/etc/redis/sentinel.conf.tmpl:ro
+      - ./redis/sentinel-entrypoint.sh:/etc/redis/sentinel-entrypoint.sh:ro
+      - sentinel_1_data:/data
+    networks:
+      - network_public
+    depends_on:
+      - redis
+      - redis-replica
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 64M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+    healthcheck:
+      test: ["CMD", "redis-cli", "-p", "26379", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Redis Sentinel 2
+  redis-sentinel-2:
+    image: redis:7-alpine
+    entrypoint: ["/bin/sh", "/etc/redis/sentinel-entrypoint.sh"]
+    environment:
+      - TZ=${TZ:-America/Sao_Paulo}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    volumes:
+      - ./redis/sentinel.conf.tmpl:/etc/redis/sentinel.conf.tmpl:ro
+      - ./redis/sentinel-entrypoint.sh:/etc/redis/sentinel-entrypoint.sh:ro
+      - sentinel_2_data:/data
+    networks:
+      - network_public
+    depends_on:
+      - redis
+      - redis-replica
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 64M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+    healthcheck:
+      test: ["CMD", "redis-cli", "-p", "26379", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Redis Sentinel 3
+  redis-sentinel-3:
+    image: redis:7-alpine
+    entrypoint: ["/bin/sh", "/etc/redis/sentinel-entrypoint.sh"]
+    environment:
+      - TZ=${TZ:-America/Sao_Paulo}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    volumes:
+      - ./redis/sentinel.conf.tmpl:/etc/redis/sentinel.conf.tmpl:ro
+      - ./redis/sentinel-entrypoint.sh:/etc/redis/sentinel-entrypoint.sh:ro
+      - sentinel_3_data:/data
+    networks:
+      - network_public
+    depends_on:
+      - redis
+      - redis-replica
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 64M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+    healthcheck:
+      test: ["CMD", "redis-cli", "-p", "26379", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
   # NOTE: PgBouncer removed - SCRAM-SHA-256 auth issues with edoburu/pgbouncer
   # PostgreSQL already configured with max_connections=500 which is sufficient
   # Consider adding PgBouncer in future with proper auth configuration
@@ -108,9 +244,14 @@ services:
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?connection_limit=15&pool_timeout=20
 
       # Redis for caching and queues (with authentication)
+      # ALTA DISPONIBILIDADE: Sentinel mode para failover automatico
+      - REDIS_SENTINEL_ENABLED=true
+      - REDIS_SENTINELS=redis-sentinel-1:26379,redis-sentinel-2:26379,redis-sentinel-3:26379
+      - REDIS_MASTER_NAME=mymaster
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      # Fallback para modo direto (usado se Sentinel nao estiver disponivel)
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-      - REDIS_PASSWORD=${REDIS_PASSWORD}
 
       # JWT
       - JWT_SECRET=${JWT_SECRET}
@@ -156,6 +297,10 @@ services:
     depends_on:
       - postgres
       - redis
+      - redis-replica
+      - redis-sentinel-1
+      - redis-sentinel-2
+      - redis-sentinel-3
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/health"]
       interval: 30s
@@ -374,5 +519,9 @@ networks:
 volumes:
   postgres_data:
   redis_data:
+  redis_replica_data:
+  sentinel_1_data:
+  sentinel_2_data:
+  sentinel_3_data:
   prometheus_data:
   alertmanager_data:

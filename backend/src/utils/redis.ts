@@ -1,16 +1,13 @@
 import Redis, { RedisOptions } from 'ioredis';
 
-// SEGURANCA: Configuracao Redis com suporte a TLS e ACL
-const redisConfig: RedisOptions = {
-  host: process.env.REDIS_HOST || 'redis',
-  port: parseInt(process.env.REDIS_PORT || '6379'),
+// ALTA DISPONIBILIDADE: Detectar modo Sentinel
+const isSentinelMode = process.env.REDIS_SENTINEL_ENABLED === 'true';
+
+// Configuracao comum para ambos os modos
+const commonConfig: Partial<RedisOptions> = {
   password: process.env.REDIS_PASSWORD || undefined,
   // SEGURANCA: Suporte a Redis ACL (Redis 6+)
   username: process.env.REDIS_USERNAME || undefined,
-  // SEGURANCA: Suporte a TLS
-  tls: process.env.REDIS_TLS_ENABLED === 'true' ? {
-    rejectUnauthorized: process.env.REDIS_TLS_REJECT_UNAUTHORIZED !== 'false',
-  } : undefined,
   // Bull queue requirements
   maxRetriesPerRequest: null,
   enableReadyCheck: false,
@@ -26,8 +23,51 @@ const redisConfig: RedisOptions = {
   },
 };
 
-// Log configuracao (sem expor senha)
-console.log(`Redis config: ${redisConfig.host}:${redisConfig.port} TLS=${!!redisConfig.tls} ACL=${!!redisConfig.username}`);
+// Parse sentinels string: "host1:port1,host2:port2,host3:port3"
+const parseSentinels = (sentinelsStr: string) => {
+  return sentinelsStr.split(',').map(s => {
+    const [host, port] = s.trim().split(':');
+    return { host, port: parseInt(port) || 26379 };
+  });
+};
+
+// Configuracao baseada no modo
+let redisConfig: RedisOptions;
+
+if (isSentinelMode) {
+  // ALTA DISPONIBILIDADE: Modo Sentinel para failover automatico
+  const sentinelsStr = process.env.REDIS_SENTINELS || 'redis-sentinel-1:26379,redis-sentinel-2:26379,redis-sentinel-3:26379';
+  const masterName = process.env.REDIS_MASTER_NAME || 'mymaster';
+
+  redisConfig = {
+    ...commonConfig,
+    sentinels: parseSentinels(sentinelsStr),
+    name: masterName,
+    // Senha dos Sentinels (pode ser diferente do Redis)
+    sentinelPassword: process.env.REDIS_SENTINEL_PASSWORD || process.env.REDIS_PASSWORD || undefined,
+    // SEGURANCA: Suporte a TLS nos Sentinels
+    enableTLSForSentinelMode: process.env.REDIS_TLS_ENABLED === 'true',
+    // Preferir replica para leituras (load balancing)
+    preferredSlaves: process.env.REDIS_PREFER_REPLICA === 'true' ? [{ ip: '*', port: '*', prio: 1 }] : undefined,
+    // Failover automatico
+    failoverDetector: true,
+  } as RedisOptions;
+
+  console.log(`Redis Sentinel mode: master=${masterName} sentinels=${sentinelsStr}`);
+} else {
+  // Modo direto (atual)
+  redisConfig = {
+    ...commonConfig,
+    host: process.env.REDIS_HOST || 'redis',
+    port: parseInt(process.env.REDIS_PORT || '6379'),
+    // SEGURANCA: Suporte a TLS
+    tls: process.env.REDIS_TLS_ENABLED === 'true' ? {
+      rejectUnauthorized: process.env.REDIS_TLS_REJECT_UNAUTHORIZED !== 'false',
+    } : undefined,
+  };
+
+  console.log(`Redis direct mode: ${redisConfig.host}:${redisConfig.port} TLS=${!!redisConfig.tls} ACL=${!!redisConfig.username}`);
+}
 
 // Create Redis client for general caching
 export const redis = new Redis(redisConfig);

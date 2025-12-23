@@ -1,0 +1,35 @@
+# Redis Sentinel Configuration Template
+# Environment variables are substituted at runtime
+
+# Port for this Sentinel
+port 26379
+
+# Enable hostname resolution (required for Docker/Swarm)
+SENTINEL resolve-hostnames yes
+SENTINEL announce-hostnames yes
+
+# Monitor the master
+# sentinel monitor <master-name> <ip> <port> <quorum>
+# quorum = number of Sentinels that must agree the master is down
+sentinel monitor mymaster redis 6379 2
+
+# Master password (required if Redis has requirepass)
+sentinel auth-pass mymaster ${REDIS_PASSWORD}
+
+# Time in milliseconds before considering master down (30 seconds)
+sentinel down-after-milliseconds mymaster 30000
+
+# Number of replicas that can be reconfigured simultaneously during failover
+sentinel parallel-syncs mymaster 1
+
+# Failover timeout in milliseconds (3 minutes)
+sentinel failover-timeout mymaster 180000
+
+# Sentinel password (optional, for Sentinel-to-Sentinel auth)
+# requirepass ${REDIS_PASSWORD}
+
+# Log level
+loglevel notice
+
+# Announce IP for proper discovery in Docker Swarm
+# These are set dynamically by the entrypoint script
