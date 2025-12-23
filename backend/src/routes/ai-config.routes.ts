@@ -4,11 +4,12 @@ import * as controller from '../controllers/ai-config.controller';
 import { authenticate, requireAdmin } from '../middleware/auth';
 import { validateTenant } from '../middleware/tenant';
 import { validate } from '../middleware/validation';
+import { companyRateLimit } from '../middleware/company-rate-limit';
 
 const router = Router();
 
-// Apply authentication and tenant validation to all routes
-router.use(authenticate, validateTenant);
+// Apply authentication, rate limit and tenant validation to all routes
+router.use(authenticate, companyRateLimit, validateTenant);
 
 // All AI config routes require ADMIN or SUPER_ADMIN role
 router.use(requireAdmin);

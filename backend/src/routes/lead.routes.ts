@@ -4,10 +4,12 @@ import { Request, Response, NextFunction } from 'express';
 import leadController from '../controllers/lead.controller';
 import { authenticate } from '../middleware/auth';
 import { validateTenant } from '../middleware/tenant';
+import { companyRateLimit } from '../middleware/company-rate-limit';
 
 const router = Router();
 
 router.use(authenticate);
+router.use(companyRateLimit);
 router.use(validateTenant);
 
 // Middleware de validação genérico

@@ -2,12 +2,13 @@ import { Router } from 'express';
 import { body } from 'express-validator';
 import { authenticate, requireAdmin } from '../middleware/auth';
 import { validateTenant } from '../middleware/tenant';
+import { companyRateLimit } from '../middleware/company-rate-limit';
 import backupEmailController from '../controllers/backup-email.controller';
 
 const router = Router();
 
-// Todas as rotas requerem autenticação, tenant e ADMIN
-router.use(authenticate, validateTenant, requireAdmin);
+// Todas as rotas requerem autenticação, rate limit, tenant e ADMIN
+router.use(authenticate, companyRateLimit, validateTenant, requireAdmin);
 
 // Validação do email
 const backupEmailValidation = [

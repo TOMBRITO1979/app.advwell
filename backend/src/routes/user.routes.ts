@@ -5,10 +5,12 @@ import userController from '../controllers/user.controller';
 import { authenticate, requireAdmin } from '../middleware/auth';
 import { validateTenant } from '../middleware/tenant';
 import { profilePhotoUpload, validateUploadContent } from '../middleware/upload';
+import { companyRateLimit } from '../middleware/company-rate-limit';
 
 const router = Router();
 
 router.use(authenticate);
+router.use(companyRateLimit);
 
 // Middleware de validação genérico
 const validate = (req: Request, res: Response, next: NextFunction) => {

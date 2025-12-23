@@ -3,10 +3,12 @@ import { body, param, validationResult } from 'express-validator';
 import { Request, Response, NextFunction } from 'express';
 import companyController from '../controllers/company.controller';
 import { authenticate, requireSuperAdmin, requireAdmin } from '../middleware/auth';
+import { companyRateLimit } from '../middleware/company-rate-limit';
 
 const router = Router();
 
 router.use(authenticate);
+router.use(companyRateLimit);
 
 // Middleware de validação genérico
 const validate = (req: Request, res: Response, next: NextFunction) => {

@@ -28,7 +28,12 @@ import databaseBackupRoutes from './database-backup.routes';
 
 const router = Router();
 
+// Auth routes (sem rate limit por empresa - nao autenticado)
 router.use('/auth', authRoutes);
+
+// Nota: companyRateLimit é aplicado em cada route file após authenticate
+// para garantir que req.user esteja disponível
+
 router.use('/clients', clientRoutes);
 router.use('/cases', caseRoutes);
 router.use('/cases', casePartRoutes); // Rotas de partes do processo (/cases/:caseId/parts)

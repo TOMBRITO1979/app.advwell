@@ -5,11 +5,12 @@ import { authenticate } from '../middleware/auth';
 import { validateTenant } from '../middleware/tenant';
 import { validatePagination } from '../middleware/validation';
 import { validate } from '../middleware/validation';
+import { companyRateLimit } from '../middleware/company-rate-limit';
 
 const router = Router();
 
-// Aplicar middleware de autenticação e validação de tenant
-router.use(authenticate, validateTenant);
+// Aplicar middleware de autenticação, rate limit e validação de tenant
+router.use(authenticate, companyRateLimit, validateTenant);
 
 // Validações
 const createValidation = [

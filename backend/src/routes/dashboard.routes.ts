@@ -1,12 +1,13 @@
 import { Router } from 'express';
 import { authenticate } from '../middleware/auth';
 import { validateTenant } from '../middleware/tenant';
+import { companyRateLimit } from '../middleware/company-rate-limit';
 import * as controller from '../controllers/dashboard.controller';
 
 const router = Router();
 
-// Aplicar middleware de autenticação e validação de tenant
-router.use(authenticate, validateTenant);
+// Aplicar middleware de autenticação, rate limit e validação de tenant
+router.use(authenticate, companyRateLimit, validateTenant);
 
 // Rotas
 router.get('/stats', controller.getStats);

@@ -6,10 +6,12 @@ import { authenticate } from '../middleware/auth';
 import { validateTenant } from '../middleware/tenant';
 import { validatePagination } from '../middleware/validation';
 import { upload, validateUploadContent } from '../middleware/upload';
+import { companyRateLimit } from '../middleware/company-rate-limit';
 
 const router = Router();
 
 router.use(authenticate);
+router.use(companyRateLimit);
 router.use(validateTenant);
 
 // Middleware de validação genérico

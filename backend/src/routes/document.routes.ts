@@ -5,6 +5,7 @@ import { authenticate } from '../middleware/auth';
 import { validateTenant } from '../middleware/tenant';
 import { validatePagination } from '../middleware/validation';
 import { upload, validateUploadContent } from '../middleware/upload';
+import { companyRateLimit } from '../middleware/company-rate-limit';
 import {
   listDocuments,
   getDocument,
@@ -18,8 +19,8 @@ import {
 
 const router = Router();
 
-// Aplicar autenticação e validação de tenant em todas as rotas
-router.use(authenticate, validateTenant);
+// Aplicar autenticação, rate limit e validação de tenant em todas as rotas
+router.use(authenticate, companyRateLimit, validateTenant);
 
 // Middleware de validação genérico
 const validate = (req: Request, res: Response, next: NextFunction) => {

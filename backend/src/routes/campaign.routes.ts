@@ -2,12 +2,13 @@ import { Router } from 'express';
 import { body } from 'express-validator';
 import { authenticate, requireAdmin } from '../middleware/auth';
 import { validateTenant } from '../middleware/tenant';
+import { companyRateLimit } from '../middleware/company-rate-limit';
 import campaignController from '../controllers/campaign.controller';
 
 const router = Router();
 
-// Todas as rotas requerem autenticação e ADMIN
-router.use(authenticate, validateTenant, requireAdmin);
+// Todas as rotas requerem autenticação, rate limit e ADMIN
+router.use(authenticate, companyRateLimit, validateTenant, requireAdmin);
 
 // Validações
 const campaignValidation = [

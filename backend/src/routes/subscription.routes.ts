@@ -3,6 +3,7 @@ import express from 'express';
 import * as subscriptionController from '../controllers/subscription.controller';
 import { authenticate } from '../middleware/auth';
 import { validateTenant } from '../middleware/tenant';
+import { companyRateLimit } from '../middleware/company-rate-limit';
 
 const router = Router();
 
@@ -17,8 +18,9 @@ router.post(
   subscriptionController.handleWebhook
 );
 
-// Protected routes - require authentication
+// Protected routes - require authentication and rate limit
 router.use(authenticate);
+router.use(companyRateLimit);
 router.use(validateTenant);
 
 // Get subscription info for current company
