@@ -127,6 +127,7 @@ export const getRecentActivities = async (req: AuthRequest, res: Response) => {
       }),
       prisma.caseMovement.findMany({
         where: {
+          companyId, // SEGURANCA: Filtro direto por tenant
           case: { companyId }
         },
         include: {
