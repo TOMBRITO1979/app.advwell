@@ -2,6 +2,7 @@ import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import prisma from '../utils/prisma';
 import { sanitizeString } from '../utils/sanitize';
+import { appLogger } from '../utils/logger';
 
 // Listar documentos jurídicos
 export const listLegalDocuments = async (req: AuthRequest, res: Response) => {
@@ -82,7 +83,7 @@ export const listLegalDocuments = async (req: AuthRequest, res: Response) => {
       },
     });
   } catch (error) {
-    console.error('Erro ao listar documentos:', error);
+    appLogger.error('Erro ao listar documentos:', error as Error);
     res.status(500).json({ error: 'Erro ao listar documentos jurídicos' });
   }
 };
@@ -136,7 +137,7 @@ export const getLegalDocument = async (req: AuthRequest, res: Response) => {
 
     res.json(document);
   } catch (error) {
-    console.error('Erro ao buscar documento:', error);
+    appLogger.error('Erro ao buscar documento:', error as Error);
     res.status(500).json({ error: 'Erro ao buscar documento' });
   }
 };
@@ -205,7 +206,7 @@ export const createLegalDocument = async (req: AuthRequest, res: Response) => {
 
     res.status(201).json(document);
   } catch (error) {
-    console.error('Erro ao criar documento:', error);
+    appLogger.error('Erro ao criar documento:', error as Error);
     res.status(500).json({ error: 'Erro ao criar documento jurídico' });
   }
 };
@@ -273,7 +274,7 @@ export const updateLegalDocument = async (req: AuthRequest, res: Response) => {
 
     res.json(document);
   } catch (error) {
-    console.error('Erro ao atualizar documento:', error);
+    appLogger.error('Erro ao atualizar documento:', error as Error);
     res.status(500).json({ error: 'Erro ao atualizar documento' });
   }
 };
@@ -298,7 +299,7 @@ export const deleteLegalDocument = async (req: AuthRequest, res: Response) => {
 
     res.json({ message: 'Documento excluído com sucesso' });
   } catch (error) {
-    console.error('Erro ao excluir documento:', error);
+    appLogger.error('Erro ao excluir documento:', error as Error);
     res.status(500).json({ error: 'Erro ao excluir documento' });
   }
 };
@@ -420,7 +421,7 @@ export const generatePDF = async (req: AuthRequest, res: Response) => {
 
     doc.end();
   } catch (error) {
-    console.error('Erro ao gerar PDF:', error);
+    appLogger.error('Erro ao gerar PDF:', error as Error);
     res.status(500).json({ error: 'Erro ao gerar PDF do documento' });
   }
 };
@@ -512,7 +513,7 @@ Se não houver erros, retorne erros como array vazio e textoCorrigido igual ao o
       review,
     });
   } catch (error: any) {
-    console.error('Erro ao revisar documento:', error);
+    appLogger.error('Erro ao revisar documento:', error as Error);
     res.status(500).json({ error: 'Erro ao revisar documento com IA. Tente novamente.' });
   }
 };
@@ -577,7 +578,7 @@ export const getClientQualification = async (req: AuthRequest, res: Response) =>
       qualification,
     });
   } catch (error) {
-    console.error('Erro ao buscar qualificação:', error);
+    appLogger.error('Erro ao buscar qualificação:', error as Error);
     res.status(500).json({ error: 'Erro ao buscar qualificação do cliente' });
   }
 };

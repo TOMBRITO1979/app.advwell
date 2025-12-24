@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import prisma from '../utils/prisma';
+import { appLogger } from '../utils/logger';
 
 export interface ApiKeyRequest extends Request {
   company?: {
@@ -54,7 +55,7 @@ export const authenticateApiKey = async (
     req.company = company;
     next();
   } catch (error) {
-    console.error('Erro ao autenticar API Key:', error);
+    appLogger.error('Erro ao autenticar API Key', error as Error);
     return res.status(500).json({ error: 'Erro ao processar autenticação' });
   }
 };

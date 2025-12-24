@@ -1,5 +1,6 @@
 import prisma from '../../utils/prisma';
 import { decrypt } from '../../utils/encryption';
+import { appLogger } from '../../utils/logger';
 import { OpenAIProvider } from './providers/openai.provider';
 import { GeminiProvider } from './providers/gemini.provider';
 import { IAIProvider, CaseMovementData, CaseInfo, SummaryResult } from '../../types/ai.types';
@@ -52,7 +53,7 @@ export class AIService {
           throw new Error(`Provider não suportado: ${config.provider}`);
       }
     } catch (error) {
-      console.error('Error getting AI provider:', error);
+      appLogger.error('Error getting AI provider', error as Error);
       throw error;
     }
   }
@@ -127,7 +128,7 @@ export class AIService {
         model: config?.model,
       };
     } catch (error: any) {
-      console.error('Error generating case summary:', error);
+      appLogger.error('Error generating case summary', error as Error);
       return {
         success: false,
         error: error.message || 'Erro ao gerar resumo',

@@ -1,5 +1,6 @@
 import prisma from '../utils/prisma';
 import nodemailer from 'nodemailer';
+import { appLogger } from '../utils/logger';
 
 // Configuração SMTP do sistema (variáveis de ambiente)
 const SYSTEM_SMTP = {
@@ -238,10 +239,18 @@ class BackupEmailService {
         ],
       });
 
-      console.log(`[BackupEmail] Backup enviado com sucesso para ${company.backupEmail} (empresa: ${company.name})`);
+      appLogger.info('Backup enviado com sucesso', {
+        service: 'BackupEmail',
+        email: company.backupEmail,
+        companyName: company.name,
+        companyId,
+      });
       return { success: true, message: 'Backup enviado com sucesso!' };
     } catch (error: any) {
-      console.error(`[BackupEmail] Erro ao enviar backup para empresa ${companyId}:`, error);
+      appLogger.error('Erro ao enviar backup', error as Error, {
+        service: 'BackupEmail',
+        companyId,
+      });
       return { success: false, message: `Erro ao enviar backup: ${error.message}` };
     }
   }
@@ -254,7 +263,9 @@ class BackupEmailService {
     try {
       // Verificar se SMTP do sistema está configurado
       if (!SYSTEM_SMTP.host || !SYSTEM_SMTP.user || !SYSTEM_SMTP.password) {
-        console.error('[BackupEmail] SMTP do sistema não configurado, abortando');
+        appLogger.error('SMTP do sistema nao configurado, abortando backup', undefined, {
+          service: 'BackupEmail',
+        });
         return;
       }
 
@@ -267,18 +278,31 @@ class BackupEmailService {
         select: { id: true, name: true, backupEmail: true },
       });
 
-      console.log(`[BackupEmail] Iniciando envio de backup para ${companies.length} empresa(s)`);
+      appLogger.info('Iniciando envio de backup para empresas', {
+        service: 'BackupEmail',
+        companiesCount: companies.length,
+      });
 
       for (const company of companies) {
         const result = await this.sendBackupEmail(company.id);
         if (!result.success) {
-          console.error(`[BackupEmail] Falha no backup da empresa ${company.name}: ${result.message}`);
+          appLogger.error('Falha no backup da empresa', undefined, {
+            service: 'BackupEmail',
+            companyName: company.name,
+            companyId: company.id,
+            message: result.message,
+          });
         }
       }
 
-      console.log(`[BackupEmail] Processo de backup concluído`);
+      appLogger.info('Processo de backup concluido', {
+        service: 'BackupEmail',
+        companiesCount: companies.length,
+      });
     } catch (error) {
-      console.error('[BackupEmail] Erro no processo de backup:', error);
+      appLogger.error('Erro no processo de backup', error as Error, {
+        service: 'BackupEmail',
+      });
     }
   }
 }

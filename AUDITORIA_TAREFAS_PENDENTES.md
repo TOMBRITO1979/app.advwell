@@ -116,15 +116,17 @@ docker exec $(docker ps -q -f name=advtom_redis | head -1) redis-cli ping
 | 3 | 3.1 Rate Limit Fail-Closed | BAIXA | [X] CONCLUÍDO |
 | 4 | 4.1 Testes E2E Tenant | MÉDIA | [X] CONCLUÍDO |
 | 4 | 4.2 Teste Restore Backup | MÉDIA | [X] CONCLUÍDO |
+| 5 | 5.1 CSRF Protection | MÉDIA | [X] CONCLUÍDO |
+| 5 | 5.2 Migrar console.* para logger | MÉDIA | [X] CONCLUÍDO |
 
-**Total: 7/7 tarefas CONCLUÍDAS (100%)**
+**Total: 9/9 tarefas CONCLUÍDAS (100%)**
 **Data de Conclusão: 2025-12-24**
 
 ---
 
 ## CHECKLIST DE VERIFICAÇÃO FINAL
 
-- [X] Todas as tarefas concluídas (7/7)
+- [X] Todas as tarefas concluídas (9/9)
 - [X] Build TypeScript sem erros
 - [X] Todas as migrações aplicadas (17 migrations)
 - [X] Todos os serviços Docker rodando (14 services)
@@ -135,5 +137,7 @@ docker exec $(docker ps -q -f name=advtom_redis | head -1) redis-cli ping
 - [X] Stripe webhook ativo (/api/subscription/webhook - retorna erro de assinatura esperado)
 - [X] Backups sendo criados com SSE (ServerSideEncryption: 'AES256')
 - [X] Logs de auditoria com cleanup agendado (Domingos 04:00 - 365 dias retenção)
+- [X] CSRF Protection implementado (Double Submit Cookie + Origin validation)
+- [X] Logger estruturado (360/362 console.* migrados para appLogger)
 
 ## SISTEMA PRONTO PARA PRODUÇÃO COM 200 ESCRITÓRIOS

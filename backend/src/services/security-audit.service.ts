@@ -1,4 +1,5 @@
 import prisma from '../utils/prisma';
+import { appLogger } from '../utils/logger';
 
 /**
  * Security Audit Service
@@ -37,12 +38,12 @@ class SecurityAuditService {
       };
 
       if (event.success) {
-        console.log('[SECURITY_AUDIT]', JSON.stringify(logEntry));
+        appLogger.info('[SECURITY_AUDIT]', logEntry);
       } else {
-        console.warn('[SECURITY_AUDIT_FAILED]', JSON.stringify(logEntry));
+        appLogger.warn('[SECURITY_AUDIT_FAILED]', logEntry);
       }
     } catch (error) {
-      console.error('[SECURITY_AUDIT_ERROR]', error);
+      appLogger.error('[SECURITY_AUDIT_ERROR]', error as Error);
     }
   }
 

@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import * as stripeService from '../services/stripe.service';
+import { appLogger } from '../utils/logger';
 
 /**
  * Get subscription info for current company
@@ -14,7 +15,7 @@ export const getSubscriptionInfo = async (req: AuthRequest, res: Response) => {
     const info = await stripeService.getSubscriptionInfo(companyId);
     res.json(info);
   } catch (error) {
-    console.error('Error getting subscription info:', error);
+    appLogger.error('Error getting subscription info', error as Error);
     res.status(500).json({ error: 'Failed to get subscription info' });
   }
 };
@@ -29,7 +30,7 @@ export const getPlans = async (req: Request, res: Response) => {
       trialDuration: stripeService.TRIAL_DURATION_DAYS,
     });
   } catch (error) {
-    console.error('Error getting plans:', error);
+    appLogger.error('Error getting plans', error as Error);
     res.status(500).json({ error: 'Failed to get plans' });
   }
 };
@@ -63,7 +64,7 @@ export const createCheckoutSession = async (req: AuthRequest, res: Response) => 
 
     res.json({ url: checkoutUrl });
   } catch (error) {
-    console.error('Error creating checkout session:', error);
+    appLogger.error('Error creating checkout session', error as Error);
     res.status(500).json({ error: 'Failed to create checkout session' });
   }
 };
@@ -83,7 +84,7 @@ export const createBillingPortal = async (req: AuthRequest, res: Response) => {
     const portalUrl = await stripeService.createBillingPortalSession(companyId, returnUrl);
     res.json({ url: portalUrl });
   } catch (error: any) {
-    console.error('Error creating billing portal:', error);
+    appLogger.error('Error creating billing portal', error as Error);
 
     if (error.message === 'No Stripe customer found for this company') {
       return res.status(400).json({ error: 'No active subscription found' });
@@ -107,7 +108,7 @@ export const handleWebhook = async (req: Request, res: Response) => {
     const result = await stripeService.handleWebhook(req.body, signature);
     res.json(result);
   } catch (error: any) {
-    console.error('Webhook error:', error.message);
+    appLogger.error('Webhook error', error as Error);
     res.status(400).json({ error: 'Erro ao processar webhook' }); // Safe: no error.message exposure
   }
 };
@@ -124,7 +125,7 @@ export const checkStatus = async (req: AuthRequest, res: Response) => {
     const status = await stripeService.checkSubscriptionStatus(companyId);
     res.json(status);
   } catch (error) {
-    console.error('Error checking subscription status:', error);
+    appLogger.error('Error checking subscription status', error as Error);
     res.status(500).json({ error: 'Failed to check subscription status' });
   }
 };

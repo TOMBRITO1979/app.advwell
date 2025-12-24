@@ -1,4 +1,5 @@
 import Redis, { RedisOptions } from 'ioredis';
+import { appLogger } from './logger';
 
 // ALTA DISPONIBILIDADE: Redis Sentinel para failover automatico
 // Build: v2 - Force rebuild with Sentinel support
@@ -17,7 +18,7 @@ const commonConfig: Partial<RedisOptions> = {
   // Reconexao automatica
   retryStrategy: (times: number) => {
     if (times > 10) {
-      console.error('Redis: Max retry attempts reached');
+      appLogger.error('Redis: Max retry attempts reached');
       return null; // Stop retrying
     }
     return Math.min(times * 100, 3000);
@@ -54,7 +55,7 @@ if (isSentinelMode) {
     failoverDetector: true,
   } as RedisOptions;
 
-  console.log(`Redis Sentinel mode: master=${masterName} sentinels=${sentinelsStr}`);
+  appLogger.info('Redis Sentinel mode', { masterName, sentinels: sentinelsStr });
 } else {
   // Modo direto (atual)
   redisConfig = {
@@ -67,7 +68,7 @@ if (isSentinelMode) {
     } : undefined,
   };
 
-  console.log(`Redis direct mode: ${redisConfig.host}:${redisConfig.port} TLS=${!!redisConfig.tls} ACL=${!!redisConfig.username}`);
+  appLogger.info('Redis direct mode', { host: redisConfig.host, port: redisConfig.port, tls: !!redisConfig.tls, acl: !!redisConfig.username });
 }
 
 // Create Redis client for general caching
@@ -83,7 +84,7 @@ export const cache = {
       const data = await redis.get(key);
       return data ? JSON.parse(data) : null;
     } catch (error) {
-      console.error('Redis GET error:', error);
+      appLogger.error('Redis GET error', error as Error);
       return null;
     }
   },
@@ -92,7 +93,7 @@ export const cache = {
     try {
       await redis.setex(key, ttlSeconds, JSON.stringify(value));
     } catch (error) {
-      console.error('Redis SET error:', error);
+      appLogger.error('Redis SET error', error as Error);
     }
   },
 
@@ -100,7 +101,7 @@ export const cache = {
     try {
       await redis.del(key);
     } catch (error) {
-      console.error('Redis DEL error:', error);
+      appLogger.error('Redis DEL error', error as Error);
     }
   },
 
@@ -116,14 +117,14 @@ export const cache = {
         }
       } while (cursor !== '0');
     } catch (error) {
-      console.error('Redis DEL pattern error:', error);
+      appLogger.error('Redis DEL pattern error', error as Error);
     }
   },
 };
 
 // Graceful shutdown
 const shutdown = async () => {
-  console.log('Closing Redis connection...');
+  appLogger.info('Closing Redis connection...');
   await redis.quit();
 };
 

@@ -3,6 +3,7 @@ import { AuthRequest } from '../middleware/auth';
 import prisma from '../utils/prisma';
 import { encrypt, decrypt } from '../utils/encryption';
 import { AIService } from '../services/ai/ai.service';
+import { appLogger } from '../utils/logger';
 
 /**
  * AI Configuration Controller
@@ -38,7 +39,7 @@ export const getConfig = async (req: AuthRequest, res: Response) => {
 
     res.json(config);
   } catch (error) {
-    console.error('Error fetching AI config:', error);
+    appLogger.error('Error fetching AI config:', error as Error);
     res.status(500).json({ error: 'Erro ao buscar configuração de IA' });
   }
 };
@@ -103,7 +104,7 @@ export const upsertConfig = async (req: AuthRequest, res: Response) => {
       config,
     });
   } catch (error) {
-    console.error('Error upserting AI config:', error);
+    appLogger.error('Error upserting AI config:', error as Error);
     res.status(500).json({ error: 'Erro ao salvar configuração de IA' });
   }
 };
@@ -129,7 +130,7 @@ export const deleteConfig = async (req: AuthRequest, res: Response) => {
 
     res.json({ message: 'Configuração de IA removida com sucesso' });
   } catch (error) {
-    console.error('Error deleting AI config:', error);
+    appLogger.error('Error deleting AI config:', error as Error);
     res.status(500).json({ error: 'Erro ao remover configuração de IA' });
   }
 };
@@ -145,7 +146,7 @@ export const testConnection = async (req: AuthRequest, res: Response) => {
 
     res.json({ message });
   } catch (error: any) {
-    console.error('Error testing AI connection:', error);
+    appLogger.error('Error testing AI connection:', error as Error);
     res.status(400).json({ error: 'Erro ao testar conexão com IA. Verifique suas credenciais.' });
   }
 };
@@ -168,7 +169,7 @@ export const testProviderConnection = async (req: AuthRequest, res: Response) =>
 
     res.json({ message });
   } catch (error: any) {
-    console.error('Error testing provider connection:', error);
+    appLogger.error('Error testing provider connection:', error as Error);
     res.status(400).json({ error: 'Erro ao testar conexão. Verifique o provider e API key.' });
   }
 };
@@ -204,7 +205,7 @@ export const getAvailableModels = async (req: AuthRequest, res: Response) => {
 
     res.json(models);
   } catch (error) {
-    console.error('Error getting available models:', error);
+    appLogger.error('Error getting available models:', error as Error);
     res.status(500).json({ error: 'Erro ao buscar modelos disponíveis' });
   }
 };

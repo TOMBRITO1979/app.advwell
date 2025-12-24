@@ -4,6 +4,7 @@ import prisma from '../utils/prisma';
 import { parse } from 'csv-parse/sync';
 import { sanitizeString } from '../utils/sanitize';
 import { auditLogService } from '../services/audit-log.service';
+import { appLogger } from '../utils/logger';
 
 export class ClientController {
   async create(req: AuthRequest, res: Response) {
@@ -62,7 +63,7 @@ export class ClientController {
 
       res.status(201).json(client);
     } catch (error) {
-      console.error('Erro ao criar cliente:', error);
+      appLogger.error('Erro ao criar cliente', error as Error);
       res.status(500).json({ error: 'Erro ao criar cliente' });
     }
   }
@@ -100,7 +101,7 @@ export class ClientController {
 
       res.json({ data: clients });
     } catch (error) {
-      console.error('Erro ao listar clientes:', error);
+      appLogger.error('Erro ao listar clientes', error as Error);
       res.status(500).json({ error: 'Erro ao listar clientes' });
     }
   }
@@ -128,7 +129,7 @@ export class ClientController {
 
       res.json(client);
     } catch (error) {
-      console.error('Erro ao buscar cliente:', error);
+      appLogger.error('Erro ao buscar cliente', error as Error);
       res.status(500).json({ error: 'Erro ao buscar cliente' });
     }
   }
@@ -198,7 +199,7 @@ export class ClientController {
 
       res.json(updatedClient);
     } catch (error) {
-      console.error('Erro ao atualizar cliente:', error);
+      appLogger.error('Erro ao atualizar cliente', error as Error);
       res.status(500).json({ error: 'Erro ao atualizar cliente' });
     }
   }
@@ -229,7 +230,7 @@ export class ClientController {
 
       res.json({ message: 'Cliente desativado com sucesso' });
     } catch (error) {
-      console.error('Erro ao deletar cliente:', error);
+      appLogger.error('Erro ao deletar cliente', error as Error);
       res.status(500).json({ error: 'Erro ao deletar cliente' });
     }
   }
@@ -286,7 +287,7 @@ export class ClientController {
       // Adicionar BOM para Excel reconhecer UTF-8
       res.send('\ufeff' + csv);
     } catch (error) {
-      console.error('Erro ao exportar clientes:', error);
+      appLogger.error('Erro ao exportar clientes', error as Error);
       res.status(500).json({ error: 'Erro ao exportar clientes' });
     }
   }
@@ -393,7 +394,7 @@ export class ClientController {
         results,
       });
     } catch (error) {
-      console.error('Erro ao importar clientes:', error);
+      appLogger.error('Erro ao importar clientes', error as Error);
       res.status(500).json({ error: 'Erro ao importar clientes' });
     }
   }
@@ -430,7 +431,7 @@ export class ClientController {
 
       res.json(clients);
     } catch (error) {
-      console.error('Erro ao buscar clientes:', error);
+      appLogger.error('Erro ao buscar clientes', error as Error);
       res.status(500).json({ error: 'Erro ao buscar clientes' });
     }
   }

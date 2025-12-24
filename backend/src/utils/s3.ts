@@ -1,6 +1,7 @@
 import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { config } from '../config';
+import { appLogger } from './logger';
 import crypto from 'crypto';
 
 // Sanitiza email para usar como nome de pasta no S3 (mantido para retrocompatibilidade)
@@ -57,10 +58,10 @@ export const deleteFromS3 = async (key: string): Promise<boolean> => {
     });
 
     await s3Client.send(command);
-    console.log(`🗑️ Arquivo deletado do S3: ${key}`);
+    appLogger.info('Arquivo deletado do S3', { key });
     return true;
   } catch (error) {
-    console.error(`❌ Erro ao deletar arquivo do S3: ${key}`, error);
+    appLogger.error('Erro ao deletar arquivo do S3', error as Error, { key });
     return false;
   }
 };

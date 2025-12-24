@@ -3,6 +3,7 @@ import { AuthRequest } from '../middleware/auth';
 import prisma from '../utils/prisma';
 import { generateGoogleMeetLink } from '../utils/googleMeet';
 import { auditLogService } from '../services/audit-log.service';
+import { appLogger } from '../utils/logger';
 
 export class ScheduleController {
   async create(req: AuthRequest, res: Response) {
@@ -182,7 +183,7 @@ export class ScheduleController {
 
       res.status(201).json(event);
     } catch (error) {
-      console.error('Erro ao criar evento:', error);
+      appLogger.error('Erro ao criar evento', error as Error);
       res.status(500).json({ error: 'Erro ao criar evento' });
     }
   }
@@ -291,7 +292,7 @@ export class ScheduleController {
         totalPages: Math.ceil(total / Number(limit))
       });
     } catch (error) {
-      console.error('Erro ao listar eventos:', error);
+      appLogger.error('Erro ao listar eventos', error as Error);
       res.status(500).json({ error: 'Erro ao listar eventos' });
     }
   }
@@ -332,7 +333,7 @@ export class ScheduleController {
 
       res.json(event);
     } catch (error) {
-      console.error('Erro ao buscar evento:', error);
+      appLogger.error('Erro ao buscar evento', error as Error);
       res.status(500).json({ error: 'Erro ao buscar evento' });
     }
   }
@@ -548,7 +549,7 @@ export class ScheduleController {
 
       res.json(updatedEvent);
     } catch (error) {
-      console.error('Erro ao atualizar evento:', error);
+      appLogger.error('Erro ao atualizar evento', error as Error);
       res.status(500).json({ error: 'Erro ao atualizar evento' });
     }
   }
@@ -578,7 +579,7 @@ export class ScheduleController {
 
       res.json({ message: 'Evento excluído com sucesso' });
     } catch (error) {
-      console.error('Erro ao deletar evento:', error);
+      appLogger.error('Erro ao deletar evento', error as Error);
       res.status(500).json({ error: 'Erro ao deletar evento' });
     }
   }
@@ -615,7 +616,7 @@ export class ScheduleController {
 
       res.json(updatedEvent);
     } catch (error) {
-      console.error('Erro ao atualizar status do evento:', error);
+      appLogger.error('Erro ao atualizar status do evento', error as Error);
       res.status(500).json({ error: 'Erro ao atualizar status do evento' });
     }
   }
@@ -652,7 +653,7 @@ export class ScheduleController {
 
       res.json(events);
     } catch (error) {
-      console.error('Erro ao buscar próximos eventos:', error);
+      appLogger.error('Erro ao buscar próximos eventos', error as Error);
       res.status(500).json({ error: 'Erro ao buscar próximos eventos' });
     }
   }
@@ -687,7 +688,7 @@ export class ScheduleController {
         tasks,
       });
     } catch (error) {
-      console.error('Erro ao buscar tarefas vencendo hoje:', error);
+      appLogger.error('Erro ao buscar tarefas vencendo hoje', error as Error);
       res.status(500).json({ error: 'Erro ao buscar tarefas vencendo hoje' });
     }
   }
@@ -847,7 +848,7 @@ export class ScheduleController {
 
       doc.end();
     } catch (error) {
-      console.error('Erro ao gerar PDF da agenda:', error);
+      appLogger.error('Erro ao gerar PDF da agenda', error as Error);
       res.status(500).json({ error: 'Erro ao gerar PDF' });
     }
   }
@@ -941,7 +942,7 @@ export class ScheduleController {
       res.setHeader('Content-Disposition', 'attachment; filename=agenda.csv');
       res.send('\ufeff' + csv); // BOM for Excel UTF-8 recognition
     } catch (error) {
-      console.error('Erro ao gerar CSV da agenda:', error);
+      appLogger.error('Erro ao gerar CSV da agenda', error as Error);
       res.status(500).json({ error: 'Erro ao gerar CSV' });
     }
   }

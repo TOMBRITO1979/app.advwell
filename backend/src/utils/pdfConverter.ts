@@ -2,9 +2,10 @@ import PDFDocument from 'pdfkit';
 import { GetObjectCommand } from '@aws-sdk/client-s3';
 import { s3Client } from './s3';
 import { config } from '../config';
+import { appLogger } from './logger';
 
 export const convertToPdf = async (fileKey: string, fileName: string): Promise<Buffer> => {
-  console.log(`🔍 [convertToPdf] Iniciando conversão - fileName: ${fileName}, fileKey: ${fileKey}`);
+  appLogger.info('[convertToPdf] Iniciando conversão', { fileName, fileKey });
 
   // Get file from S3
   const command = new GetObjectCommand({
@@ -15,28 +16,31 @@ export const convertToPdf = async (fileKey: string, fileName: string): Promise<B
   const response = await s3Client.send(command);
   const fileBuffer = await streamToBuffer(response.Body as any);
 
-  console.log(`📦 [convertToPdf] Arquivo baixado do S3 - Tamanho: ${fileBuffer.length} bytes`);
+  appLogger.info('[convertToPdf] Arquivo baixado do S3', { size: fileBuffer.length });
 
   // Detect file type from extension (use fileKey, not fileName, as fileName may not have extension)
   const extension = fileKey.split('.').pop()?.toLowerCase();
-  console.log(`🔎 [convertToPdf] Extensão detectada: "${extension}" (de fileKey: ${fileKey})`);
+  appLogger.info('[convertToPdf] Extensão detectada', { extension, fileKey });
 
   // If already PDF, return as is
   if (extension === 'pdf') {
-    console.log(`✅ [convertToPdf] Arquivo já é PDF, retornando original (${fileBuffer.length} bytes)`);
+    appLogger.info('[convertToPdf] Arquivo já é PDF, retornando original', { size: fileBuffer.length });
     return fileBuffer;
   }
 
   // Convert images to PDF
   if (['jpg', 'jpeg', 'png', 'gif'].includes(extension || '')) {
-    console.log(`🖼️  [convertToPdf] Arquivo é imagem (${extension}), convertendo para PDF...`);
+    appLogger.info('[convertToPdf] Arquivo é imagem, convertendo para PDF', { extension });
     const pdfBuffer = await imageToPdf(fileBuffer, fileName);
-    console.log(`✅ [convertToPdf] Conversão concluída - Buffer original: ${fileBuffer.length} bytes → Buffer PDF: ${pdfBuffer.length} bytes`);
+    appLogger.info('[convertToPdf] Conversão concluída', {
+      originalSize: fileBuffer.length,
+      pdfSize: pdfBuffer.length
+    });
     return pdfBuffer;
   }
 
   // For other formats, return original for now
-  console.log(`⚠️  [convertToPdf] Extensão não suportada (${extension}), retornando arquivo original`);
+  appLogger.warn('[convertToPdf] Extensão não suportada, retornando arquivo original', { extension });
   return fileBuffer;
 };
 
@@ -50,11 +54,11 @@ const streamToBuffer = async (stream: any): Promise<Buffer> => {
 };
 
 const imageToPdf = async (imageBuffer: Buffer, fileName: string): Promise<Buffer> => {
-  console.log(`📝 [imageToPdf] INÍCIO - fileName: ${fileName}, imageBuffer: ${imageBuffer.length} bytes`);
+  appLogger.info('[imageToPdf] INÍCIO', { fileName, bufferSize: imageBuffer.length });
 
   return new Promise((resolve, reject) => {
     try {
-      console.log(`🔧 [imageToPdf] Criando PDFDocument...`);
+      appLogger.info('[imageToPdf] Criando PDFDocument');
 
       const doc = new PDFDocument({
         size: 'A4',
@@ -62,7 +66,7 @@ const imageToPdf = async (imageBuffer: Buffer, fileName: string): Promise<Buffer
         bufferPages: true,
       });
 
-      console.log(`✅ [imageToPdf] PDFDocument criado com sucesso`);
+      appLogger.info('[imageToPdf] PDFDocument criado com sucesso');
 
       const chunks: Buffer[] = [];
       let chunkCount = 0;
@@ -70,18 +74,21 @@ const imageToPdf = async (imageBuffer: Buffer, fileName: string): Promise<Buffer
       doc.on('data', (chunk: Buffer) => {
         chunkCount++;
         chunks.push(chunk);
-        console.log(`📦 [imageToPdf] Chunk ${chunkCount} recebido - Tamanho: ${chunk.length} bytes`);
+        appLogger.info('[imageToPdf] Chunk recebido', { chunkNumber: chunkCount, chunkSize: chunk.length });
       });
 
       doc.on('end', () => {
         const pdfBuffer = Buffer.concat(chunks);
-        console.log(`✅ [imageToPdf] PDF FINALIZADO - Total de chunks: ${chunkCount}, Buffer final: ${pdfBuffer.length} bytes`);
-        console.log(`🎉 [imageToPdf] RESOLVENDO PROMISE com buffer de ${pdfBuffer.length} bytes`);
+        appLogger.info('[imageToPdf] PDF FINALIZADO', {
+          totalChunks: chunkCount,
+          finalBufferSize: pdfBuffer.length
+        });
+        appLogger.info('[imageToPdf] RESOLVENDO PROMISE', { bufferSize: pdfBuffer.length });
         resolve(pdfBuffer);
       });
 
       doc.on('error', (error) => {
-        console.error(`❌ [imageToPdf] ERRO no PDFDocument:`, error);
+        appLogger.error('[imageToPdf] ERRO no PDFDocument', error as Error);
         reject(error);
       });
 
@@ -90,8 +97,12 @@ const imageToPdf = async (imageBuffer: Buffer, fileName: string): Promise<Buffer
       const pageHeight = 841.89; // A4 height in points
       const margin = 50;
 
-      console.log(`🖼️  [imageToPdf] Adicionando imagem ao PDF - Tamanho da imagem: ${imageBuffer.length} bytes`);
-      console.log(`📐 [imageToPdf] Página A4: ${pageWidth}x${pageHeight} pts, Margem: ${margin} pts`);
+      appLogger.info('[imageToPdf] Adicionando imagem ao PDF', { imageSize: imageBuffer.length });
+      appLogger.info('[imageToPdf] Configuração de página A4', {
+        pageWidth,
+        pageHeight,
+        margin
+      });
 
       doc.image(imageBuffer, margin, margin, {
         fit: [pageWidth - 2 * margin, pageHeight - 2 * margin],
@@ -99,14 +110,14 @@ const imageToPdf = async (imageBuffer: Buffer, fileName: string): Promise<Buffer
         valign: 'center',
       });
 
-      console.log(`✅ [imageToPdf] Imagem adicionada com sucesso, finalizando documento...`);
+      appLogger.info('[imageToPdf] Imagem adicionada com sucesso, finalizando documento');
 
       // Finalize PDF
       doc.end();
 
-      console.log(`🔄 [imageToPdf] doc.end() chamado, aguardando evento 'end'...`);
+      appLogger.info('[imageToPdf] doc.end() chamado, aguardando evento end');
     } catch (error) {
-      console.error(`❌ [imageToPdf] ERRO CAPTURADO no try-catch:`, error);
+      appLogger.error('[imageToPdf] ERRO CAPTURADO no try-catch', error as Error);
       reject(error);
     }
   });

@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import prisma from '../utils/prisma';
 import { generateToken } from '../utils/jwt';
 import { ApiKeyRequest } from '../middleware/apikey';
+import { appLogger } from '../utils/logger';
 
 /**
  * Controller para integração com sistemas externos (Chatwoot, etc)
@@ -111,7 +112,7 @@ export class IntegrationController {
       });
 
     } catch (error) {
-      console.error('Erro ao sincronizar usuário:', error);
+      appLogger.error('Erro ao sincronizar usuário:', error as Error);
       return res.status(500).json({ error: 'Erro ao sincronizar usuário' });
     }
   }
@@ -178,7 +179,7 @@ export class IntegrationController {
       });
 
     } catch (error) {
-      console.error('Erro ao atualizar senha:', error);
+      appLogger.error('Erro ao atualizar senha:', error as Error);
       return res.status(500).json({ error: 'Erro ao atualizar senha' });
     }
   }
@@ -264,7 +265,7 @@ export class IntegrationController {
       });
 
     } catch (error) {
-      console.error('Erro ao gerar token SSO:', error);
+      appLogger.error('Erro ao gerar token SSO:', error as Error);
       return res.status(500).json({ error: 'Erro ao gerar token SSO' });
     }
   }
@@ -392,7 +393,7 @@ export class IntegrationController {
       });
 
     } catch (error) {
-      console.error('Erro ao validar cliente:', error);
+      appLogger.error('Erro ao validar cliente:', error as Error);
       return res.status(500).json({ valid: false, error: 'Erro ao validar cliente' });
     }
   }
@@ -466,7 +467,7 @@ export class IntegrationController {
       });
 
     } catch (error) {
-      console.error('Erro ao buscar processos do cliente:', error);
+      appLogger.error('Erro ao buscar processos do cliente:', error as Error);
       return res.status(500).json({ error: 'Erro ao buscar processos' });
     }
   }
@@ -532,7 +533,7 @@ export class IntegrationController {
       });
 
     } catch (error) {
-      console.error('Erro ao buscar movimentações:', error);
+      appLogger.error('Erro ao buscar movimentações:', error as Error);
       return res.status(500).json({ error: 'Erro ao buscar movimentações' });
     }
   }
@@ -642,7 +643,7 @@ export class IntegrationController {
       });
 
     } catch (error) {
-      console.error('Erro ao buscar agenda do cliente:', error);
+      appLogger.error('Erro ao buscar agenda do cliente:', error as Error);
       return res.status(500).json({ error: 'Erro ao buscar agenda' });
     }
   }
@@ -789,7 +790,7 @@ export class IntegrationController {
       });
 
     } catch (error) {
-      console.error('Erro ao criar cliente:', error);
+      appLogger.error('Erro ao criar cliente:', error as Error);
       return res.status(500).json({ error: 'Erro ao criar cliente' });
     }
   }
@@ -866,7 +867,7 @@ export class IntegrationController {
       });
 
     } catch (error) {
-      console.error('Erro ao atualizar cliente:', error);
+      appLogger.error('Erro ao atualizar cliente:', error as Error);
       return res.status(500).json({ error: 'Erro ao atualizar cliente' });
     }
   }
@@ -963,7 +964,7 @@ export class IntegrationController {
       });
 
     } catch (error) {
-      console.error('Erro ao criar processo:', error);
+      appLogger.error('Erro ao criar processo:', error as Error);
       return res.status(500).json({ error: 'Erro ao criar processo' });
     }
   }
@@ -1034,7 +1035,7 @@ export class IntegrationController {
       });
 
     } catch (error) {
-      console.error('Erro ao atualizar processo:', error);
+      appLogger.error('Erro ao atualizar processo:', error as Error);
       return res.status(500).json({ error: 'Erro ao atualizar processo' });
     }
   }
@@ -1134,7 +1135,7 @@ export class IntegrationController {
       });
 
     } catch (error) {
-      console.error('Erro ao criar evento:', error);
+      appLogger.error('Erro ao criar evento:', error as Error);
       return res.status(500).json({ error: 'Erro ao criar evento' });
     }
   }
@@ -1237,7 +1238,7 @@ export class IntegrationController {
       });
 
     } catch (error) {
-      console.error('Erro ao criar lead:', error);
+      appLogger.error('Erro ao criar lead:', error as Error);
       return res.status(500).json({ error: 'Erro ao criar lead' });
     }
   }
@@ -1298,7 +1299,7 @@ export class IntegrationController {
       });
 
     } catch (error) {
-      console.error('Erro ao buscar estatísticas:', error);
+      appLogger.error('Erro ao buscar estatísticas:', error as Error);
       return res.status(500).json({ error: 'Erro ao buscar estatísticas' });
     }
   }
@@ -1365,7 +1366,7 @@ export class IntegrationController {
       });
 
     } catch (error) {
-      console.error('Erro ao buscar cliente:', error);
+      appLogger.error('Erro ao buscar cliente:', error as Error);
       return res.status(500).json({ error: 'Erro ao buscar cliente' });
     }
   }

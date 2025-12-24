@@ -2,6 +2,7 @@ import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import { auditLogService } from '../services/audit-log.service';
 import { AuditEntityType, AuditAction } from '@prisma/client';
+import { appLogger } from '../utils/logger';
 
 /**
  * Lista logs de auditoria
@@ -55,7 +56,7 @@ export const list = async (req: AuthRequest, res: Response) => {
     const result = await auditLogService.getByCompany(companyId, filters, pagination);
     res.json(result);
   } catch (error) {
-    console.error('Error listing audit logs:', error);
+    appLogger.error('Error listing audit logs:', error as Error);
     res.status(500).json({ error: 'Failed to list audit logs' });
   }
 };
@@ -91,7 +92,7 @@ export const getMyLogs = async (req: AuthRequest, res: Response) => {
     const result = await auditLogService.getByUser(userId, companyId, filters, pagination);
     res.json(result);
   } catch (error) {
-    console.error('Error fetching my audit logs:', error);
+    appLogger.error('Error fetching my audit logs:', error as Error);
     res.status(500).json({ error: 'Failed to fetch audit logs' });
   }
 };
@@ -123,7 +124,7 @@ export const getByEntity = async (req: AuthRequest, res: Response) => {
 
     res.json(logs);
   } catch (error) {
-    console.error('Error fetching entity audit logs:', error);
+    appLogger.error('Error fetching entity audit logs:', error as Error);
     res.status(500).json({ error: 'Failed to fetch audit logs' });
   }
 };
@@ -212,7 +213,7 @@ export const exportCSV = async (req: AuthRequest, res: Response) => {
     );
     res.send('\ufeff' + csv); // BOM para Excel
   } catch (error) {
-    console.error('Error exporting audit logs:', error);
+    appLogger.error('Error exporting audit logs:', error as Error);
     res.status(500).json({ error: 'Failed to export audit logs' });
   }
 };
@@ -233,7 +234,7 @@ export const getUsersForFilter = async (req: AuthRequest, res: Response) => {
     const users = await auditLogService.getUsersForFilter(companyId);
     res.json(users);
   } catch (error) {
-    console.error('Error fetching users for filter:', error);
+    appLogger.error('Error fetching users for filter:', error as Error);
     res.status(500).json({ error: 'Failed to fetch users' });
   }
 };

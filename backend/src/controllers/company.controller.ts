@@ -4,6 +4,7 @@ import { AuthRequest } from '../middleware/auth';
 import prisma from '../utils/prisma';
 import bcrypt from 'bcryptjs';
 import { getLastPayment } from '../services/stripe.service';
+import { appLogger } from '../utils/logger';
 
 export class CompanyController {
   // Super Admin - Listar todas as empresas
@@ -58,7 +59,7 @@ export class CompanyController {
 
       res.json({ data: companies });
     } catch (error) {
-      console.error('Erro ao listar empresas:', error);
+      appLogger.error('Erro ao listar empresas', error as Error);
       res.status(500).json({ error: 'Erro ao listar empresas' });
     }
   }
@@ -114,7 +115,7 @@ export class CompanyController {
 
       res.status(201).json(result);
     } catch (error) {
-      console.error('Erro ao criar empresa:', error);
+      appLogger.error('Erro ao criar empresa', error as Error);
       res.status(500).json({ error: 'Erro ao criar empresa' });
     }
   }
@@ -143,7 +144,7 @@ export class CompanyController {
 
       res.json(company);
     } catch (error) {
-      console.error('Erro ao atualizar empresa:', error);
+      appLogger.error('Erro ao atualizar empresa', error as Error);
       res.status(500).json({ error: 'Erro ao atualizar empresa' });
     }
   }
@@ -172,7 +173,7 @@ export class CompanyController {
 
       res.json(company);
     } catch (error) {
-      console.error('Erro ao buscar empresa:', error);
+      appLogger.error('Erro ao buscar empresa', error as Error);
       res.status(500).json({ error: 'Erro ao buscar empresa' });
     }
   }
@@ -205,7 +206,7 @@ export class CompanyController {
 
       res.json(company);
     } catch (error) {
-      console.error('Erro ao atualizar empresa:', error);
+      appLogger.error('Erro ao atualizar empresa', error as Error);
       res.status(500).json({ error: 'Erro ao atualizar empresa' });
     }
   }
@@ -259,7 +260,7 @@ export class CompanyController {
         }
       });
     } catch (error) {
-      console.error('Erro ao deletar empresa:', error);
+      appLogger.error('Erro ao deletar empresa', error as Error);
       res.status(500).json({ error: 'Erro ao deletar empresa' });
     }
   }
@@ -301,7 +302,7 @@ export class CompanyController {
         }
       });
     } catch (error) {
-      console.error('Erro ao deletar empresa:', error);
+      appLogger.error('Erro ao deletar empresa', error as Error);
       res.status(500).json({ error: 'Erro ao deletar empresa' });
     }
   }
@@ -352,7 +353,7 @@ export class CompanyController {
         },
       });
     } catch (error) {
-      console.error('Erro ao listar usuários da empresa:', error);
+      appLogger.error('Erro ao listar usuários da empresa', error as Error);
       res.status(500).json({ error: 'Erro ao listar usuários da empresa' });
     }
   }
@@ -394,7 +395,7 @@ export class CompanyController {
 
       res.json(updatedUser);
     } catch (error) {
-      console.error('Erro ao alterar status do usuário:', error);
+      appLogger.error('Erro ao alterar status do usuário', error as Error);
       res.status(500).json({ error: 'Erro ao alterar status do usuário' });
     }
   }
@@ -469,7 +470,7 @@ export class CompanyController {
 
       res.json(updatedCompany);
     } catch (error) {
-      console.error('Erro ao atualizar assinatura:', error);
+      appLogger.error('Erro ao atualizar assinatura', error as Error);
       res.status(500).json({ error: 'Erro ao atualizar assinatura' });
     }
   }
@@ -514,7 +515,7 @@ export class CompanyController {
         lastPayment,
       });
     } catch (error) {
-      console.error('Erro ao buscar último pagamento:', error);
+      appLogger.error('Erro ao buscar último pagamento', error as Error);
       res.status(500).json({ error: 'Erro ao buscar último pagamento' });
     }
   }
@@ -554,7 +555,7 @@ export class CompanyController {
         hasApiKey: !!company.apiKey,
       });
     } catch (error) {
-      console.error('Erro ao buscar API Key:', error);
+      appLogger.error('Erro ao buscar API Key', error as Error);
       res.status(500).json({ error: 'Erro ao buscar API Key' });
     }
   }
@@ -591,7 +592,7 @@ export class CompanyController {
         apiKey: company.apiKey,
       });
     } catch (error) {
-      console.error('Erro ao regenerar API Key:', error);
+      appLogger.error('Erro ao regenerar API Key', error as Error);
       res.status(500).json({ error: 'Erro ao regenerar API Key' });
     }
   }
@@ -708,7 +709,7 @@ export class CompanyController {
         expiringTrials,
       });
     } catch (error) {
-      console.error('Erro ao buscar alertas de assinatura:', error);
+      appLogger.error('Erro ao buscar alertas de assinatura', error as Error);
       res.status(500).json({ error: 'Erro ao buscar alertas de assinatura' });
     }
   }

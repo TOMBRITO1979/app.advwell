@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { config } from '../config';
+import { appLogger } from '../utils/logger';
 
 /**
  * TAREFA 5.2: Whitelist de tribunais validos do DataJud
@@ -81,7 +82,7 @@ export class DatajudService {
     // TAREFA 5.2: Validar tribunal contra whitelist para prevenir SSRF
     const normalizedTribunal = tribunal.toLowerCase().trim();
     if (!isValidTribunal(normalizedTribunal)) {
-      console.warn(`[DataJud] Tribunal invalido rejeitado: ${tribunal}`);
+      appLogger.warn('DataJud: Tribunal invalido rejeitado', { tribunal });
       throw new Error(`Tribunal inválido: ${tribunal}`);
     }
 
@@ -131,7 +132,12 @@ export class DatajudService {
 
           firstCase.movimentos = uniqueMovements;
 
-          console.log(`Processo ${processNumber}: Combinados ${hits.length} graus (${allMovements.length} movimentos totais, ${uniqueMovements.length} únicos)`);
+          appLogger.info('DataJud: Processo com multiplos graus combinados', {
+            processNumber,
+            gradesCount: hits.length,
+            totalMovements: allMovements.length,
+            uniqueMovements: uniqueMovements.length,
+          });
         }
 
         return firstCase;
@@ -139,7 +145,7 @@ export class DatajudService {
 
       return null;
     } catch (error) {
-      console.error('Erro ao consultar DataJud:', error);
+      appLogger.error('Erro ao consultar DataJud', error as Error);
       throw new Error('Erro ao consultar processo no DataJud');
     }
   }

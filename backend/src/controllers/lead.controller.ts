@@ -2,6 +2,7 @@ import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import prisma from '../utils/prisma';
 import { sanitizeString } from '../utils/sanitize';
+import { appLogger } from '../utils/logger';
 
 export class LeadController {
   /**
@@ -40,7 +41,7 @@ export class LeadController {
 
       res.status(201).json(lead);
     } catch (error) {
-      console.error('Erro ao criar lead:', error);
+      appLogger.error('Erro ao criar lead:', error as Error);
       res.status(500).json({ error: 'Erro ao criar lead' });
     }
   }
@@ -97,7 +98,7 @@ export class LeadController {
         totalPages: Math.ceil(total / Number(limit)),
       });
     } catch (error) {
-      console.error('Erro ao listar leads:', error);
+      appLogger.error('Erro ao listar leads:', error as Error);
       res.status(500).json({ error: 'Erro ao listar leads' });
     }
   }
@@ -133,7 +134,7 @@ export class LeadController {
 
       res.json(lead);
     } catch (error) {
-      console.error('Erro ao buscar lead:', error);
+      appLogger.error('Erro ao buscar lead:', error as Error);
       res.status(500).json({ error: 'Erro ao buscar lead' });
     }
   }
@@ -187,7 +188,7 @@ export class LeadController {
 
       res.json(updatedLead);
     } catch (error) {
-      console.error('Erro ao atualizar lead:', error);
+      appLogger.error('Erro ao atualizar lead:', error as Error);
       res.status(500).json({ error: 'Erro ao atualizar lead' });
     }
   }
@@ -217,7 +218,7 @@ export class LeadController {
 
       res.json({ message: 'Lead deletado com sucesso' });
     } catch (error) {
-      console.error('Erro ao deletar lead:', error);
+      appLogger.error('Erro ao deletar lead:', error as Error);
       res.status(500).json({ error: 'Erro ao deletar lead' });
     }
   }
@@ -290,7 +291,7 @@ export class LeadController {
         existingLead: existingLead || null,
       });
     } catch (error) {
-      console.error('Erro ao verificar telefone:', error);
+      appLogger.error('Erro ao verificar telefone:', error as Error);
       res.status(500).json({ error: 'Erro ao verificar telefone' });
     }
   }
@@ -406,7 +407,7 @@ export class LeadController {
         lead: result.lead,
       });
     } catch (error) {
-      console.error('Erro ao converter lead para cliente:', error);
+      appLogger.error('Erro ao converter lead para cliente:', error as Error);
       res.status(500).json({ error: 'Erro ao converter lead para cliente' });
     }
   }
@@ -443,7 +444,7 @@ export class LeadController {
         conversionRate: total > 0 ? ((convertido / total) * 100).toFixed(1) : '0',
       });
     } catch (error) {
-      console.error('Erro ao buscar estatísticas de leads:', error);
+      appLogger.error('Erro ao buscar estatísticas de leads:', error as Error);
       res.status(500).json({ error: 'Erro ao buscar estatísticas' });
     }
   }

@@ -7,6 +7,7 @@ import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { config } from '../config';
 import crypto from 'crypto';
 import { securityAudit } from '../services/security-audit.service';
+import { appLogger } from '../utils/logger';
 
 export class UserController {
   // Admin - Listar usuários da sua empresa
@@ -63,7 +64,7 @@ export class UserController {
 
       res.json({ data: users });
     } catch (error) {
-      console.error('Erro ao listar usuários:', error);
+      appLogger.error('Erro ao listar usuários', error as Error);
       res.status(500).json({ error: 'Erro ao listar usuários' });
     }
   }
@@ -149,7 +150,7 @@ export class UserController {
 
       res.status(201).json(userWithPermissions);
     } catch (error) {
-      console.error('Erro ao criar usuário:', error);
+      appLogger.error('Erro ao criar usuário', error as Error);
       res.status(500).json({ error: 'Erro ao criar usuário' });
     }
   }
@@ -247,7 +248,7 @@ export class UserController {
 
       res.json(userWithPermissions);
     } catch (error) {
-      console.error('Erro ao atualizar usuário:', error);
+      appLogger.error('Erro ao atualizar usuário', error as Error);
       res.status(500).json({ error: 'Erro ao atualizar usuário' });
     }
   }
@@ -283,7 +284,7 @@ export class UserController {
 
       res.json({ message: 'Usuário desativado com sucesso' });
     } catch (error) {
-      console.error('Erro ao deletar usuário:', error);
+      appLogger.error('Erro ao deletar usuário', error as Error);
       res.status(500).json({ error: 'Erro ao deletar usuário' });
     }
   }
@@ -321,7 +322,7 @@ export class UserController {
 
       res.json(user);
     } catch (error) {
-      console.error('Erro ao buscar perfil:', error);
+      appLogger.error('Erro ao buscar perfil', error as Error);
       res.status(500).json({ error: 'Erro ao buscar perfil' });
     }
   }
@@ -355,7 +356,7 @@ export class UserController {
 
       res.json(updatedUser);
     } catch (error) {
-      console.error('Erro ao atualizar perfil:', error);
+      appLogger.error('Erro ao atualizar perfil', error as Error);
       res.status(500).json({ error: 'Erro ao atualizar perfil' });
     }
   }
@@ -429,7 +430,7 @@ export class UserController {
 
       res.json(updatedUser);
     } catch (error) {
-      console.error('Erro ao fazer upload da foto:', error);
+      appLogger.error('Erro ao fazer upload da foto', error as Error);
       res.status(500).json({ error: 'Erro ao fazer upload da foto' });
     }
   }

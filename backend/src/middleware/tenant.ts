@@ -2,6 +2,7 @@ import { Response, NextFunction } from 'express';
 import { AuthRequest } from './auth';
 import prisma from '../utils/prisma';
 import { cache } from '../utils/redis';
+import { appLogger } from '../utils/logger';
 
 // Cache TTL for company validation (5 minutes)
 const COMPANY_CACHE_TTL = 300;
@@ -89,7 +90,7 @@ export const validateTenant = async (
 
     next();
   } catch (error) {
-    console.error('Error validating tenant:', error);
+    appLogger.error('Error validating tenant', error as Error);
     // On Redis error, fall back to direct database query
     try {
       const company = await prisma.company.findUnique({

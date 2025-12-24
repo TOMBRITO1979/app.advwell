@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import { appLogger } from './logger';
 
 /**
  * Encryption Utility for SMTP Passwords
@@ -33,7 +34,7 @@ function validateEncryptionKey(): void {
     if (!isDevelopment) {
       throw new Error('ENCRYPTION_KEY must be set in staging/production');
     }
-    console.warn('⚠️ AVISO: ENCRYPTION_KEY não definida. Defina em produção.');
+    appLogger.warn('AVISO: ENCRYPTION_KEY não definida. Defina em produção.');
     return;
   }
 
@@ -42,7 +43,7 @@ function validateEncryptionKey(): void {
     if (!isDevelopment) {
       throw new Error('ENCRYPTION_KEY must be at least 32 characters in staging/production');
     }
-    console.warn('⚠️ AVISO: ENCRYPTION_KEY muito curta. Use pelo menos 32 caracteres em produção.');
+    appLogger.warn('AVISO: ENCRYPTION_KEY muito curta. Use pelo menos 32 caracteres em produção.');
     return;
   }
 
@@ -53,7 +54,7 @@ function validateEncryptionKey(): void {
       if (!isDevelopment) {
         throw new Error(`ENCRYPTION_KEY contains known weak pattern: ${weakKey}`);
       }
-      console.warn(`⚠️ AVISO: ENCRYPTION_KEY contém padrão fraco conhecido: ${weakKey}`);
+      appLogger.warn('AVISO: ENCRYPTION_KEY contém padrão fraco conhecido', { weakKey });
       return;
     }
   }
@@ -91,7 +92,7 @@ export function encrypt(text: string): string {
     // Retornar IV + dados criptografados (separados por :)
     return `${iv.toString('hex')}:${encrypted}`;
   } catch (error) {
-    console.error('Erro ao criptografar:', error);
+    appLogger.error('Erro ao criptografar', error as Error);
     throw new Error('Falha na criptografia');
   }
 }
@@ -138,7 +139,7 @@ export function decrypt(encryptedText: string): string {
 
     return decrypted;
   } catch (error) {
-    console.error('Erro ao descriptografar:', error);
+    appLogger.error('Erro ao descriptografar', error as Error);
     throw new Error('Falha na descriptografia');
   }
 }
@@ -154,14 +155,14 @@ export function testEncryption(): boolean {
     const decrypted = decrypt(encrypted);
 
     if (decrypted !== testString) {
-      console.error('❌ Teste de criptografia falhou: texto descriptografado não corresponde ao original');
+      appLogger.error('Teste de criptografia falhou: texto descriptografado não corresponde ao original');
       return false;
     }
 
-    console.log('✅ Teste de criptografia bem-sucedido');
+    appLogger.info('Teste de criptografia bem-sucedido');
     return true;
   } catch (error) {
-    console.error('❌ Teste de criptografia falhou:', error);
+    appLogger.error('Teste de criptografia falhou', error as Error);
     return false;
   }
 }

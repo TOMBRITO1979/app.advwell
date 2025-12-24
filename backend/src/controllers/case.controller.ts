@@ -9,6 +9,7 @@ import { sendCaseUpdateNotification } from '../utils/email';
 import AuditService from '../services/audit.service';
 import { auditLogService } from '../services/audit-log.service';
 import { Decimal } from '@prisma/client/runtime/library';
+import { appLogger } from '../utils/logger';
 
 // Helper para converter Prisma Decimal para number
 const toNumber = (value: Decimal | number | null | undefined): number => {
@@ -115,7 +116,7 @@ async function syncDeadlineToSchedule(
       }
     }
   } catch (error) {
-    console.error('Erro ao sincronizar prazo com agenda:', error);
+    appLogger.error('Erro ao sincronizar prazo com agenda', error as Error);
     // Não lança erro para não interromper o fluxo principal
   }
 }
@@ -166,7 +167,7 @@ export class CaseController {
       try {
         datajudData = await datajudService.searchCaseAllTribunals(processNumber);
       } catch (error) {
-        console.error('Erro ao buscar no DataJud:', error);
+        appLogger.error('Erro ao buscar no DataJud', error as Error);
       }
 
       // Formata o último andamento se houver dados do DataJud
@@ -224,16 +225,20 @@ export class CaseController {
                     where: { id: caseData.id },
                     data: { informarCliente: result.summary },
                   });
-                  console.log(`Resumo gerado automaticamente para novo processo ${caseData.id} usando ${result.provider}/${result.model}`);
+                  appLogger.info('Resumo gerado automaticamente para novo processo', {
+                    caseId: caseData.id,
+                    provider: result.provider,
+                    model: result.model
+                  });
                 }
               })
               .catch((error) => {
-                console.error('Erro ao gerar resumo automático:', error);
+                appLogger.error('Erro ao gerar resumo automático', error as Error);
                 // Não impede a criação, apenas loga o erro
               });
           }
         } catch (error) {
-          console.error('Erro ao verificar configuração de IA:', error);
+          appLogger.error('Erro ao verificar configuração de IA', error as Error);
           // Não impede a criação, apenas loga o erro
         }
       }
@@ -261,7 +266,7 @@ export class CaseController {
 
       res.status(201).json(caseWithMovements);
     } catch (error) {
-      console.error('Erro ao criar processo:', error);
+      appLogger.error('Erro ao criar processo', error as Error);
       res.status(500).json({ error: 'Erro ao criar processo' });
     }
   }
@@ -319,7 +324,7 @@ export class CaseController {
 
       res.json({ data: cases });
     } catch (error) {
-      console.error('Erro ao listar processos:', error);
+      appLogger.error('Erro ao listar processos', error as Error);
       res.status(500).json({ error: 'Erro ao listar processos' });
     }
   }
@@ -361,7 +366,7 @@ export class CaseController {
 
       res.json(caseData);
     } catch (error) {
-      console.error('Erro ao buscar processo:', error);
+      appLogger.error('Erro ao buscar processo', error as Error);
       res.status(500).json({ error: 'Erro ao buscar processo' });
     }
   }
@@ -505,13 +510,18 @@ export class CaseController {
               sanitizedInformarCliente,
               caseData.company.name
             );
-            console.log(`Email de atualização enviado para ${caseData.client.email} sobre processo ${caseData.processNumber}`);
+            appLogger.info('Email de atualização enviado para cliente sobre processo', {
+              clientEmail: caseData.client.email,
+              processNumber: caseData.processNumber
+            });
           } catch (emailError) {
-            console.error('Erro ao enviar email de notificação:', emailError);
+            appLogger.error('Erro ao enviar email de notificação', emailError as Error);
             // Não bloqueia a atualização se o email falhar
           }
         } else {
-          console.log(`Cliente ${caseData.client.name} não possui email cadastrado. Notificação não enviada.`);
+          appLogger.info('Cliente não possui email cadastrado - Notificação não enviada', {
+            clientName: caseData.client.name
+          });
         }
       }
 
@@ -520,7 +530,7 @@ export class CaseController {
 
       res.json(updatedCase);
     } catch (error) {
-      console.error('Erro ao atualizar processo:', error);
+      appLogger.error('Erro ao atualizar processo', error as Error);
       res.status(500).json({ error: 'Erro ao atualizar processo' });
     }
   }
@@ -608,16 +618,20 @@ export class CaseController {
                   where: { id },
                   data: { informarCliente: result.summary },
                 });
-                console.log(`Resumo gerado automaticamente para processo ${id} usando ${result.provider}/${result.model}`);
+                appLogger.info('Resumo gerado automaticamente para processo', {
+                  caseId: id,
+                  provider: result.provider,
+                  model: result.model
+                });
               }
             })
             .catch((error) => {
-              console.error('Erro ao gerar resumo automático:', error);
+              appLogger.error('Erro ao gerar resumo automático', error as Error);
               // Não impede a sincronização, apenas loga o erro
             });
         }
       } catch (error) {
-        console.error('Erro ao verificar configuração de IA:', error);
+        appLogger.error('Erro ao verificar configuração de IA', error as Error);
         // Não impede a sincronização, apenas loga o erro
       }
 
@@ -633,7 +647,7 @@ export class CaseController {
 
       res.json(updatedCase);
     } catch (error) {
-      console.error('Erro ao sincronizar movimentações:', error);
+      appLogger.error('Erro ao sincronizar movimentações', error as Error);
       res.status(500).json({ error: 'Erro ao sincronizar movimentações' });
     }
   }
@@ -685,7 +699,7 @@ export class CaseController {
         model: result.model,
       });
     } catch (error) {
-      console.error('Erro ao gerar resumo:', error);
+      appLogger.error('Erro ao gerar resumo', error as Error);
       res.status(500).json({ error: 'Erro ao gerar resumo' });
     }
   }
@@ -742,7 +756,7 @@ export class CaseController {
       // Adicionar BOM para Excel reconhecer UTF-8
       res.send('\ufeff' + csv);
     } catch (error) {
-      console.error('Erro ao exportar processos:', error);
+      appLogger.error('Erro ao exportar processos', error as Error);
       res.status(500).json({ error: 'Erro ao exportar processos' });
     }
   }
@@ -877,7 +891,7 @@ export class CaseController {
         results,
       });
     } catch (error) {
-      console.error('Erro ao importar processos:', error);
+      appLogger.error('Erro ao importar processos', error as Error);
       res.status(500).json({ error: 'Erro ao importar processos' });
     }
   }
@@ -937,7 +951,7 @@ export class CaseController {
 
       res.json(filtered);
     } catch (error) {
-      console.error('Erro ao buscar atualizações pendentes:', error);
+      appLogger.error('Erro ao buscar atualizações pendentes', error as Error);
       res.status(500).json({ error: 'Erro ao buscar atualizações pendentes' });
     }
   }
@@ -985,7 +999,7 @@ export class CaseController {
         case: updatedCase,
       });
     } catch (error) {
-      console.error('Erro ao reconhecer atualização:', error);
+      appLogger.error('Erro ao reconhecer atualização', error as Error);
       res.status(500).json({ error: 'Erro ao reconhecer atualização' });
     }
   }
@@ -1025,7 +1039,7 @@ export class CaseController {
 
       res.json(cases);
     } catch (error) {
-      console.error('Erro ao buscar processos:', error);
+      appLogger.error('Erro ao buscar processos', error as Error);
       res.status(500).json({ error: 'Erro ao buscar processos' });
     }
   }
@@ -1093,7 +1107,7 @@ export class CaseController {
 
       res.json(cases);
     } catch (error) {
-      console.error('Erro ao buscar prazos:', error);
+      appLogger.error('Erro ao buscar prazos', error as Error);
       res.status(500).json({ error: 'Erro ao buscar prazos' });
     }
   }
@@ -1141,7 +1155,7 @@ export class CaseController {
 
       res.json(updatedCase);
     } catch (error) {
-      console.error('Erro ao atualizar status do prazo:', error);
+      appLogger.error('Erro ao atualizar status do prazo', error as Error);
       res.status(500).json({ error: 'Erro ao atualizar status do prazo' });
     }
   }
@@ -1213,7 +1227,7 @@ export class CaseController {
 
       res.json(updatedCase);
     } catch (error) {
-      console.error('Erro ao atualizar prazo:', error);
+      appLogger.error('Erro ao atualizar prazo', error as Error);
       res.status(500).json({ error: 'Erro ao atualizar prazo' });
     }
   }
@@ -1250,7 +1264,7 @@ export class CaseController {
 
       res.json({ message: 'Processo excluído com sucesso' });
     } catch (error) {
-      console.error('Erro ao excluir processo:', error);
+      appLogger.error('Erro ao excluir processo', error as Error);
       res.status(500).json({ error: 'Erro ao excluir processo' });
     }
   }
@@ -1278,7 +1292,7 @@ export class CaseController {
 
       res.json(auditLogs);
     } catch (error) {
-      console.error('Erro ao buscar logs de auditoria:', error);
+      appLogger.error('Erro ao buscar logs de auditoria', error as Error);
       res.status(500).json({ error: 'Erro ao buscar logs de auditoria' });
     }
   }
@@ -1315,7 +1329,7 @@ export class CaseController {
         cases,
       });
     } catch (error) {
-      console.error('Erro ao buscar prazos vencendo hoje:', error);
+      appLogger.error('Erro ao buscar prazos vencendo hoje', error as Error);
       res.status(500).json({ error: 'Erro ao buscar prazos vencendo hoje' });
     }
   }

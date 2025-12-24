@@ -1,4 +1,5 @@
 import prisma from '../utils/prisma';
+import { appLogger } from '../utils/logger';
 
 export interface AuditLogMetadata {
   [key: string]: any;
@@ -28,7 +29,7 @@ export class AuditService {
       });
 
       if (!caseData) {
-        console.error('Erro ao criar log de auditoria: processo não encontrado');
+        appLogger.error('Erro ao criar log de auditoria: processo não encontrado', new Error('Case not found'));
         return;
       }
 
@@ -43,7 +44,7 @@ export class AuditService {
         },
       });
     } catch (error) {
-      console.error('Erro ao criar log de auditoria:', error);
+      appLogger.error('Erro ao criar log de auditoria', error as Error);
       // Não lançamos erro para não quebrar a operação principal
     }
   }

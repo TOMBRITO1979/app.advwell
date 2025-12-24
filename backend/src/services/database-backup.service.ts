@@ -4,6 +4,7 @@ import { PutObjectCommand, ListObjectsV2Command, DeleteObjectsCommand, GetObject
 import { config } from '../config';
 import zlib from 'zlib';
 import { promisify } from 'util';
+import { appLogger } from '../utils/logger';
 
 const gzip = promisify(zlib.gzip);
 const gunzip = promisify(zlib.gunzip);
@@ -48,7 +49,7 @@ class DatabaseBackupService {
    */
   async generateBackup(): Promise<BackupResult> {
     const startTime = Date.now();
-    console.log('[DatabaseBackup] Iniciando backup do banco de dados...');
+    appLogger.info('[DatabaseBackup] Iniciando backup do banco de dados...');
 
     try {
       // Verificar configuracao S3
@@ -106,7 +107,7 @@ class DatabaseBackupService {
       const duration = ((Date.now() - startTime) / 1000).toFixed(2);
       const sizeMB = (compressedData.length / 1024 / 1024).toFixed(2);
 
-      console.log(`[DatabaseBackup] Backup concluido: ${s3Key} (${sizeMB}MB) em ${duration}s`);
+      appLogger.info('[DatabaseBackup] Backup concluido', { s3Key, sizeMB, duration });
 
       return {
         success: true,
@@ -115,7 +116,7 @@ class DatabaseBackupService {
         size: compressedData.length,
       };
     } catch (error: any) {
-      console.error('[DatabaseBackup] Erro ao criar backup:', error);
+      appLogger.error('[DatabaseBackup] Erro ao criar backup', error as Error);
       return { success: false, message: `Erro ao criar backup: ${error.message}` };
     }
   }
@@ -223,7 +224,7 @@ class DatabaseBackupService {
    * Remove backups antigos (mais de RETENTION_DAYS dias)
    */
   async cleanupOldBackups(): Promise<{ deleted: number; errors: number }> {
-    console.log(`[DatabaseBackup] Limpando backups com mais de ${RETENTION_DAYS} dias...`);
+    appLogger.info('[DatabaseBackup] Limpando backups antigos', { retentionDays: RETENTION_DAYS });
 
     try {
       // Listar objetos no prefixo de backup
@@ -236,7 +237,7 @@ class DatabaseBackupService {
       const objects = response.Contents || [];
 
       if (objects.length === 0) {
-        console.log('[DatabaseBackup] Nenhum backup encontrado para limpeza');
+        appLogger.info('[DatabaseBackup] Nenhum backup encontrado para limpeza');
         return { deleted: 0, errors: 0 };
       }
 
@@ -250,7 +251,7 @@ class DatabaseBackupService {
       });
 
       if (oldObjects.length === 0) {
-        console.log('[DatabaseBackup] Nenhum backup antigo para remover');
+        appLogger.info('[DatabaseBackup] Nenhum backup antigo para remover');
         return { deleted: 0, errors: 0 };
       }
 
@@ -266,11 +267,11 @@ class DatabaseBackupService {
       const deleted = deleteResponse.Deleted?.length || 0;
       const errors = deleteResponse.Errors?.length || 0;
 
-      console.log(`[DatabaseBackup] Limpeza concluida: ${deleted} removidos, ${errors} erros`);
+      appLogger.info('[DatabaseBackup] Limpeza concluida', { deleted, errors });
 
       return { deleted, errors };
     } catch (error: any) {
-      console.error('[DatabaseBackup] Erro na limpeza de backups:', error);
+      appLogger.error('[DatabaseBackup] Erro na limpeza de backups', error as Error);
       return { deleted: 0, errors: 1 };
     }
   }
@@ -279,26 +280,26 @@ class DatabaseBackupService {
    * Executa backup e limpeza (chamado pelo cron)
    */
   async runDailyBackup(): Promise<void> {
-    console.log('[DatabaseBackup] ===== INICIO DO BACKUP DIARIO =====');
+    appLogger.info('[DatabaseBackup] ===== INICIO DO BACKUP DIARIO =====');
 
     // 1. Criar novo backup
     const backupResult = await this.generateBackup();
     if (!backupResult.success) {
-      console.error('[DatabaseBackup] Falha ao criar backup:', backupResult.message);
+      appLogger.error('[DatabaseBackup] Falha ao criar backup', new Error(backupResult.message));
       return;
     }
 
     // 2. Limpar backups antigos
     await this.cleanupOldBackups();
 
-    console.log('[DatabaseBackup] ===== FIM DO BACKUP DIARIO =====');
+    appLogger.info('[DatabaseBackup] ===== FIM DO BACKUP DIARIO =====');
   }
 
   /**
    * Lista todos os backups disponiveis no S3
    */
   async listBackups(): Promise<BackupInfo[]> {
-    console.log('[DatabaseBackup] Listando backups disponiveis...');
+    appLogger.info('[DatabaseBackup] Listando backups disponiveis...');
 
     try {
       const listCommand = new ListObjectsV2Command({
@@ -319,10 +320,10 @@ class DatabaseBackupService {
         }))
         .sort((a, b) => b.lastModified.getTime() - a.lastModified.getTime());
 
-      console.log(`[DatabaseBackup] Encontrados ${backups.length} backups`);
+      appLogger.info('[DatabaseBackup] Encontrados backups', { count: backups.length });
       return backups;
     } catch (error: any) {
-      console.error('[DatabaseBackup] Erro ao listar backups:', error);
+      appLogger.error('[DatabaseBackup] Erro ao listar backups', error as Error);
       return [];
     }
   }
@@ -331,7 +332,7 @@ class DatabaseBackupService {
    * Obtem informacoes detalhadas de um backup especifico
    */
   async getBackupInfo(backupKey: string): Promise<BackupInfo | null> {
-    console.log(`[DatabaseBackup] Obtendo informacoes do backup: ${backupKey}`);
+    appLogger.info('[DatabaseBackup] Obtendo informacoes do backup', { backupKey });
 
     try {
       // Baixar e descomprimir o backup para obter metadata
@@ -352,7 +353,7 @@ class DatabaseBackupService {
         metadata: backupData.metadata,
       };
     } catch (error: any) {
-      console.error('[DatabaseBackup] Erro ao obter informacoes do backup:', error);
+      appLogger.error('[DatabaseBackup] Erro ao obter informacoes do backup', error as Error);
       return null;
     }
   }
@@ -370,7 +371,7 @@ class DatabaseBackupService {
       const response = await s3Client.send(command);
 
       if (!response.Body) {
-        console.error('[DatabaseBackup] Backup vazio');
+        appLogger.error('[DatabaseBackup] Backup vazio', new Error('Empty backup body'));
         return null;
       }
 
@@ -387,7 +388,7 @@ class DatabaseBackupService {
 
       return JSON.parse(jsonData);
     } catch (error: any) {
-      console.error('[DatabaseBackup] Erro ao baixar backup:', error);
+      appLogger.error('[DatabaseBackup] Erro ao baixar backup', error as Error);
       return null;
     }
   }
@@ -407,7 +408,7 @@ class DatabaseBackupService {
     const { dryRun = false, tables } = options;
     const startTime = Date.now();
 
-    console.log(`[DatabaseBackup] ${dryRun ? '[DRY-RUN] ' : ''}Iniciando restauracao do backup: ${backupKey}`);
+    appLogger.info('[DatabaseBackup] Iniciando restauracao do backup', { backupKey, dryRun });
 
     try {
       // 1. Validar backup key
@@ -459,7 +460,7 @@ class DatabaseBackupService {
       }
 
       // 7. Executar restauracao em transacao
-      console.log(`[DatabaseBackup] Restaurando ${tablesToRestore.length} tabelas...`);
+      appLogger.info('[DatabaseBackup] Restaurando tabelas', { count: tablesToRestore.length });
 
       const errors: string[] = [];
       const recordsRestored: Record<string, number> = {};
@@ -514,10 +515,10 @@ class DatabaseBackupService {
             const insertedCount = await this.insertTableData(tx, tableName, records);
             recordsRestored[tableName] = insertedCount;
 
-            console.log(`[DatabaseBackup] Restaurado ${tableName}: ${insertedCount} registros`);
+            appLogger.info('[DatabaseBackup] Restaurado tabela', { tableName, insertedCount });
           } catch (error: any) {
             const errorMsg = `Erro ao restaurar ${tableName}: ${error.message}`;
-            console.error(`[DatabaseBackup] ${errorMsg}`);
+            appLogger.error('[DatabaseBackup] Erro ao restaurar tabela', error as Error, { tableName });
             errors.push(errorMsg);
             throw error; // Aborta transacao
           }
@@ -527,7 +528,7 @@ class DatabaseBackupService {
       const duration = ((Date.now() - startTime) / 1000).toFixed(2);
       const totalRecords = Object.values(recordsRestored).reduce((a, b) => a + b, 0);
 
-      console.log(`[DatabaseBackup] Restauracao concluida em ${duration}s. Total: ${totalRecords} registros`);
+      appLogger.info('[DatabaseBackup] Restauracao concluida', { duration, totalRecords });
 
       return {
         success: true,
@@ -537,7 +538,7 @@ class DatabaseBackupService {
         errors: errors.length > 0 ? errors : undefined,
       };
     } catch (error: any) {
-      console.error('[DatabaseBackup] Erro na restauracao:', error);
+      appLogger.error('[DatabaseBackup] Erro na restauracao', error as Error);
       return {
         success: false,
         message: `Erro na restauracao: ${error.message}`,

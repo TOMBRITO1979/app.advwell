@@ -2,6 +2,7 @@ import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import prisma from '../utils/prisma';
 import { cache } from '../utils/redis';
+import { appLogger } from '../utils/logger';
 
 // Cache TTL constants (in seconds)
 const CACHE_TTL = {
@@ -74,7 +75,7 @@ export const getStats = async (req: AuthRequest, res: Response) => {
 
     res.json(stats);
   } catch (error: any) {
-    console.error('Erro ao buscar estatísticas:', error);
+    appLogger.error('Erro ao buscar estatísticas:', error as Error);
     res.status(500).json({ error: 'Erro ao buscar estatísticas' });
   }
 };
@@ -241,7 +242,7 @@ export const getRecentActivities = async (req: AuthRequest, res: Response) => {
 
     res.json(result);
   } catch (error: any) {
-    console.error('Erro ao buscar atividades recentes:', error);
+    appLogger.error('Erro ao buscar atividades recentes:', error as Error);
     res.status(500).json({ error: 'Erro ao buscar atividades recentes' });
   }
 };
@@ -290,7 +291,7 @@ export const getEventsPerWeekday = async (req: AuthRequest, res: Response) => {
 
     res.json(chartData);
   } catch (error: any) {
-    console.error('Erro ao buscar eventos por dia da semana:', error);
+    appLogger.error('Erro ao buscar eventos por dia da semana:', error as Error);
     res.status(500).json({ error: 'Erro ao buscar dados' });
   }
 };
@@ -329,7 +330,7 @@ export const getCasesByStatus = async (req: AuthRequest, res: Response) => {
 
     res.json(chartData);
   } catch (error: any) {
-    console.error('Erro ao buscar processos por status:', error);
+    appLogger.error('Erro ao buscar processos por status:', error as Error);
     res.status(500).json({ error: 'Erro ao buscar dados' });
   }
 };
@@ -378,7 +379,7 @@ export const getMovementsTimeline = async (req: AuthRequest, res: Response) => {
 
     res.json(chartData);
   } catch (error: any) {
-    console.error('Erro ao buscar timeline de andamentos:', error);
+    appLogger.error('Erro ao buscar timeline de andamentos:', error as Error);
     res.status(500).json({ error: 'Erro ao buscar dados' });
   }
 };
@@ -427,7 +428,7 @@ export const getUpcomingDeadlines = async (req: AuthRequest, res: Response) => {
 
     res.json(formattedDeadlines);
   } catch (error: any) {
-    console.error('Erro ao buscar prazos próximos:', error);
+    appLogger.error('Erro ao buscar prazos próximos:', error as Error);
     res.status(500).json({ error: 'Erro ao buscar dados' });
   }
 };
@@ -484,7 +485,7 @@ export const getNewClientsTimeline = async (req: AuthRequest, res: Response) => 
 
     res.json(chartData);
   } catch (error: any) {
-    console.error('Erro ao buscar clientes novos:', error);
+    appLogger.error('Erro ao buscar clientes novos:', error as Error);
     res.status(500).json({ error: 'Erro ao buscar dados' });
   }
 };
@@ -542,7 +543,7 @@ export const getUpcomingHearings = async (req: AuthRequest, res: Response) => {
 
     res.json(chartData);
   } catch (error: any) {
-    console.error('Erro ao buscar audiências próximas:', error);
+    appLogger.error('Erro ao buscar audiências próximas:', error as Error);
     res.status(500).json({ error: 'Erro ao buscar dados' });
   }
 };

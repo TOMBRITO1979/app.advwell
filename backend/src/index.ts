@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import RedisStore from 'rate-limit-redis';
@@ -16,6 +17,7 @@ import backupEmailService from './services/backup-email.service';
 import databaseBackupService from './services/database-backup.service';
 import auditCleanupService from './services/audit-cleanup.service';
 import { errorHandler, notFoundHandler } from './middleware/error-handler';
+import { csrfProtection, getCsrfToken } from './middleware/csrf';
 import { appLogger } from './utils/logger';
 
 // ============================================
@@ -137,21 +139,19 @@ function validateSecurityConfig() {
 
   // Log results
   if (errors.length > 0) {
-    console.error('❌ CRITICAL SECURITY ERRORS:');
-    errors.forEach(e => console.error(`   - ${e}`));
+    appLogger.error('CRITICAL SECURITY ERRORS', undefined, { errors });
     if (!isDevelopment) {
-      console.error('⛔ Server startup blocked due to security configuration errors');
+      appLogger.error('Server startup blocked due to security configuration errors');
       process.exit(1);
     }
   }
 
   if (warnings.length > 0) {
-    console.warn('⚠️  SECURITY WARNINGS:');
-    warnings.forEach(w => console.warn(`   - ${w}`));
+    appLogger.warn('Security warnings detected', { warnings });
   }
 
   if (errors.length === 0 && warnings.length === 0) {
-    console.log('✅ Security configuration validated');
+    appLogger.info('Security configuration validated');
   }
 }
 
@@ -178,8 +178,11 @@ app.use(cors({
   origin: allowedOrigins,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-correlation-id'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-correlation-id', 'x-csrf-token'],
 }));
+
+// Cookie parser (necessario para CSRF Double Submit Cookie)
+app.use(cookieParser());
 
 // Correlation ID e Request Logging (deve vir antes de outros middlewares)
 app.use(correlationIdMiddleware);
@@ -273,6 +276,13 @@ app.use('/api/subscription/webhook', express.raw({ type: 'application/json' }));
 // Body parser com limite de tamanho (exceto para webhook que já foi tratado acima)
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true, limit: '2mb' }));
+
+// TAREFA 12: CSRF Protection
+// Valida Origin/Referer + Double Submit Cookie para operacoes de escrita
+app.use(csrfProtection);
+
+// Endpoint para obter token CSRF (SPAs devem chamar antes de operacoes de escrita)
+app.get('/api/csrf-token', getCsrfToken);
 
 // Rotas
 app.use('/api', routes);
@@ -459,7 +469,7 @@ async function tryBecomeLeader(): Promise<{ isLeader: boolean; fencingToken: num
     currentFencingToken = null;
     return { isLeader: false, fencingToken: null };
   } catch (error) {
-    console.error('Leader election error:', error);
+    appLogger.error('Leader election error', error as Error);
     currentFencingToken = null;
     return { isLeader: false, fencingToken: null };
   }
@@ -485,7 +495,7 @@ async function validateLeadership(): Promise<boolean> {
 const CRON_ENABLED = process.env.ENABLE_CRON !== 'false';
 
 if (!CRON_ENABLED) {
-  console.log(`[${INSTANCE_ID}] Cron jobs DISABLED via ENABLE_CRON=false`);
+  appLogger.info('Cron jobs DISABLED via ENABLE_CRON=false', { instanceId: INSTANCE_ID });
 }
 
 // Cron job para sincronizar processos - agora usa filas
@@ -494,23 +504,23 @@ CRON_ENABLED && cron.schedule('0 2 * * *', async () => {
   const { isLeader, fencingToken } = await tryBecomeLeader();
 
   if (!isLeader) {
-    console.log(`[${INSTANCE_ID}] Not leader, skipping daily sync`);
+    appLogger.debug('Not leader, skipping daily sync', { instanceId: INSTANCE_ID });
     return;
   }
 
   // SEGURANCA: Validar lideranca antes de executar
   if (!await validateLeadership()) {
-    console.warn(`[${INSTANCE_ID}] Leadership validation failed, aborting sync`);
+    appLogger.warn('Leadership validation failed, aborting sync', { instanceId: INSTANCE_ID });
     return;
   }
 
-  console.log(`[${INSTANCE_ID}] Leader (token=${fencingToken}): Starting daily sync via queue...`);
+  appLogger.info('Starting daily sync via queue', { instanceId: INSTANCE_ID, fencingToken });
 
   try {
     await enqueueDailySync();
-    console.log(`[${INSTANCE_ID}] Daily sync jobs enqueued successfully`);
+    appLogger.info('Daily sync jobs enqueued successfully', { instanceId: INSTANCE_ID });
   } catch (error) {
-    console.error(`[${INSTANCE_ID}] Error enqueueing daily sync:`, error);
+    appLogger.error('Error enqueueing daily sync', error as Error, { instanceId: INSTANCE_ID });
   }
 });
 
@@ -519,23 +529,23 @@ CRON_ENABLED && cron.schedule('0 12,18 * * *', async () => {
   const { isLeader, fencingToken } = await tryBecomeLeader();
 
   if (!isLeader) {
-    console.log(`[${INSTANCE_ID}] Not leader, skipping backup email`);
+    appLogger.debug('Not leader, skipping backup email', { instanceId: INSTANCE_ID });
     return;
   }
 
   // Validar lideranca antes de executar
   if (!await validateLeadership()) {
-    console.warn(`[${INSTANCE_ID}] Leadership validation failed, aborting backup email`);
+    appLogger.warn('Leadership validation failed, aborting backup email', { instanceId: INSTANCE_ID });
     return;
   }
 
-  console.log(`[${INSTANCE_ID}] Leader (token=${fencingToken}): Starting backup email job...`);
+  appLogger.info('Starting backup email job', { instanceId: INSTANCE_ID, fencingToken });
 
   try {
     await backupEmailService.sendBackupToAllCompanies();
-    console.log(`[${INSTANCE_ID}] Backup email job completed`);
+    appLogger.info('Backup email job completed', { instanceId: INSTANCE_ID });
   } catch (error) {
-    console.error(`[${INSTANCE_ID}] Error in backup email job:`, error);
+    appLogger.error('Error in backup email job', error as Error, { instanceId: INSTANCE_ID });
   }
 });
 
@@ -544,23 +554,23 @@ CRON_ENABLED && cron.schedule('0 3 * * *', async () => {
   const { isLeader, fencingToken } = await tryBecomeLeader();
 
   if (!isLeader) {
-    console.log(`[${INSTANCE_ID}] Not leader, skipping database backup`);
+    appLogger.debug('Not leader, skipping database backup', { instanceId: INSTANCE_ID });
     return;
   }
 
   // Validar lideranca antes de executar
   if (!await validateLeadership()) {
-    console.warn(`[${INSTANCE_ID}] Leadership validation failed, aborting database backup`);
+    appLogger.warn('Leadership validation failed, aborting database backup', { instanceId: INSTANCE_ID });
     return;
   }
 
-  console.log(`[${INSTANCE_ID}] Leader (token=${fencingToken}): Starting database backup job...`);
+  appLogger.info('Starting database backup job', { instanceId: INSTANCE_ID, fencingToken });
 
   try {
     await databaseBackupService.runDailyBackup();
-    console.log(`[${INSTANCE_ID}] Database backup job completed`);
+    appLogger.info('Database backup job completed', { instanceId: INSTANCE_ID });
   } catch (error) {
-    console.error(`[${INSTANCE_ID}] Error in database backup job:`, error);
+    appLogger.error('Error in database backup job', error as Error, { instanceId: INSTANCE_ID });
   }
 });
 
@@ -570,22 +580,22 @@ CRON_ENABLED && cron.schedule('0 4 * * 0', async () => {
   const { isLeader, fencingToken } = await tryBecomeLeader();
 
   if (!isLeader) {
-    console.log(`[${INSTANCE_ID}] Not leader, skipping audit cleanup`);
+    appLogger.debug('Not leader, skipping audit cleanup', { instanceId: INSTANCE_ID });
     return;
   }
 
   if (!await validateLeadership()) {
-    console.warn(`[${INSTANCE_ID}] Leadership validation failed, aborting audit cleanup`);
+    appLogger.warn('Leadership validation failed, aborting audit cleanup', { instanceId: INSTANCE_ID });
     return;
   }
 
-  console.log(`[${INSTANCE_ID}] Leader (token=${fencingToken}): Starting audit log cleanup...`);
+  appLogger.info('Starting audit log cleanup', { instanceId: INSTANCE_ID, fencingToken });
 
   try {
     const result = await auditCleanupService.cleanupOldLogs();
-    console.log(`[${INSTANCE_ID}] Audit cleanup completed: ${result.deletedCount} logs removed`);
+    appLogger.info('Audit cleanup completed', { instanceId: INSTANCE_ID, deletedCount: result.deletedCount });
   } catch (error) {
-    console.error(`[${INSTANCE_ID}] Error in audit cleanup:`, error);
+    appLogger.error('Error in audit cleanup', error as Error, { instanceId: INSTANCE_ID });
   }
 });
 
@@ -593,7 +603,7 @@ CRON_ENABLED && cron.schedule('0 4 * * 0', async () => {
 CRON_ENABLED && cron.schedule('* * * * *', async () => {
   const { isLeader } = await tryBecomeLeader();
   if (isLeader) {
-    console.log(`[${INSTANCE_ID}] Leader status refreshed`);
+    appLogger.debug('Leader status refreshed', { instanceId: INSTANCE_ID });
   }
 });
 
@@ -601,10 +611,12 @@ CRON_ENABLED && cron.schedule('* * * * *', async () => {
 const PORT = config.port;
 
 app.listen(PORT, () => {
-  console.log(`🚀 Servidor rodando na porta ${PORT}`);
-  console.log(`📍 Ambiente: ${config.nodeEnv}`);
-  console.log(`🔗 API URL: ${config.urls.api}`);
-  console.log(`🆔 Instance ID: ${INSTANCE_ID}`);
+  appLogger.info('Server started', {
+    port: PORT,
+    environment: config.nodeEnv,
+    apiUrl: config.urls.api,
+    instanceId: INSTANCE_ID,
+  });
 });
 
 export default app;

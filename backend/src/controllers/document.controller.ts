@@ -3,6 +3,7 @@ import { AuthRequest } from '../middleware/auth';
 import prisma from '../utils/prisma';
 import { uploadToS3 } from '../utils/s3';
 import AuditService from '../services/audit.service';
+import { appLogger } from '../utils/logger';
 
 // Listar documentos com filtros e paginação
 export const listDocuments = async (req: AuthRequest, res: Response) => {
@@ -81,7 +82,7 @@ export const listDocuments = async (req: AuthRequest, res: Response) => {
 
     res.json({ data: documentsWithSignedUrls });
   } catch (error: any) {
-    console.error('Erro ao listar documentos:', error);
+    appLogger.error('Erro ao listar documentos', error as Error);
     res.status(500).json({ error: 'Erro ao listar documentos' });
   }
 };
@@ -136,7 +137,7 @@ export const getDocument = async (req: AuthRequest, res: Response) => {
 
     res.json(document);
   } catch (error: any) {
-    console.error('Erro ao buscar documento:', error);
+    appLogger.error('Erro ao buscar documento', error as Error);
     res.status(500).json({ error: 'Erro ao buscar documento' });
   }
 };
@@ -260,7 +261,7 @@ export const createDocument = async (req: AuthRequest, res: Response) => {
 
     res.status(201).json(document);
   } catch (error: any) {
-    console.error('Erro ao criar documento:', error);
+    appLogger.error('Erro ao criar documento', error as Error);
     res.status(500).json({ error: 'Erro ao criar documento' });
   }
 };
@@ -323,7 +324,7 @@ export const updateDocument = async (req: AuthRequest, res: Response) => {
 
     res.json(document);
   } catch (error: any) {
-    console.error('Erro ao atualizar documento:', error);
+    appLogger.error('Erro ao atualizar documento', error as Error);
     res.status(500).json({ error: 'Erro ao atualizar documento' });
   }
 };
@@ -364,7 +365,7 @@ export const deleteDocument = async (req: AuthRequest, res: Response) => {
 
     res.json({ message: 'Documento excluído com sucesso' });
   } catch (error: any) {
-    console.error('Erro ao excluir documento:', error);
+    appLogger.error('Erro ao excluir documento', error as Error);
     res.status(500).json({ error: 'Erro ao excluir documento' });
   }
 };
@@ -434,7 +435,7 @@ export const searchDocuments = async (req: AuthRequest, res: Response) => {
 
     res.json(documentsWithSignedUrls);
   } catch (error: any) {
-    console.error('Erro ao buscar documentos:', error);
+    appLogger.error('Erro ao buscar documentos', error as Error);
     res.status(500).json({ error: 'Erro ao buscar documentos' });
   }
 };
@@ -462,7 +463,7 @@ export const getDownloadUrl = async (req: AuthRequest, res: Response) => {
     if (document.storageType === 'upload' && document.fileKey) {
       const { convertToPdf } = await import('../utils/pdfConverter');
 
-      console.log(`🔄 Convertendo documento para PDF: ${document.name}`);
+      appLogger.info('Convertendo documento para PDF', { documentName: document.name });
       const pdfBuffer = await convertToPdf(document.fileKey, document.name);
 
       // Define o nome do arquivo PDF
@@ -473,13 +474,13 @@ export const getDownloadUrl = async (req: AuthRequest, res: Response) => {
       res.setHeader('Content-Disposition', `attachment; filename="${pdfFileName}"`);
       res.setHeader('Content-Length', pdfBuffer.length);
 
-      console.log(`✅ PDF gerado: ${pdfFileName} (${pdfBuffer.length} bytes)`);
+      appLogger.info('PDF gerado com sucesso', { fileName: pdfFileName, sizeBytes: pdfBuffer.length });
       return res.send(pdfBuffer);
     }
 
     res.status(400).json({ error: 'Documento sem arquivo válido' });
   } catch (error: any) {
-    console.error('❌ Erro ao converter documento para PDF:', error);
+    appLogger.error('Erro ao converter documento para PDF', error as Error);
     res.status(500).json({ error: 'Erro ao converter documento para PDF' });
   }
 };
@@ -537,10 +538,13 @@ export const uploadDocument = async (req: AuthRequest, res: Response) => {
     }
 
     // Upload para S3 usando companyId como pasta
-    console.log(`📤 Fazendo upload de arquivo: ${file.originalname} (${file.size} bytes)`);
-    console.log(`📁 Pasta no S3: companies/${companyId}/documents/`);
+    appLogger.info('Fazendo upload de arquivo', {
+      fileName: file.originalname,
+      sizeBytes: file.size,
+      s3Path: `companies/${companyId}/documents/`
+    });
     const { key, url } = await uploadToS3(file, companyId);
-    console.log(`✅ Arquivo enviado para S3: ${key}`);
+    appLogger.info('Arquivo enviado para S3 com sucesso', { s3Key: key });
 
     // Criar registro no banco
     const document = await prisma.document.create({
@@ -584,12 +588,11 @@ export const uploadDocument = async (req: AuthRequest, res: Response) => {
       },
     });
 
-    console.log(`📄 Documento criado no banco: ${document.id}`);
+    appLogger.info('Documento criado no banco', { documentId: document.id });
 
     res.status(201).json(document);
   } catch (error: any) {
-    console.error('❌ Erro ao fazer upload de documento:', error);
-    console.error('Stack:', error.stack);
+    appLogger.error('Erro ao fazer upload de documento', error as Error);
     res.status(500).json({ error: 'Erro ao fazer upload do documento' });
   }
 };

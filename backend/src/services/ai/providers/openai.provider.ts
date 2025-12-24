@@ -1,4 +1,5 @@
 import OpenAI from 'openai';
+import { appLogger } from '../../../utils/logger';
 import { IAIProvider, CaseMovementData, CaseInfo } from '../../../types/ai.types';
 import { SYSTEM_PROMPT, generateUserPrompt, formatMovementsForAI } from '../prompts';
 
@@ -64,7 +65,7 @@ export class OpenAIProvider implements IAIProvider {
 
       return summary;
     } catch (error: any) {
-      console.error('OpenAI Provider Error:', error);
+      appLogger.error('OpenAI Provider Error', error as Error);
 
       // Handle specific OpenAI errors
       if (error.status === 401) {
@@ -104,7 +105,7 @@ export class OpenAIProvider implements IAIProvider {
 
       return text;
     } catch (error: any) {
-      console.error('OpenAI generateText Error:', error);
+      appLogger.error('OpenAI generateText Error', error as Error);
 
       if (error.status === 401) {
         throw new Error('API Key inválida. Verifique sua configuração.');
@@ -139,7 +140,7 @@ export class OpenAIProvider implements IAIProvider {
 
       throw new Error('Resposta inválida da API');
     } catch (error: any) {
-      console.error('OpenAI Connection Test Error:', error);
+      appLogger.error('OpenAI Connection Test Error', error as Error);
 
       if (error.status === 401) {
         throw new Error('❌ API Key inválida. Verifique sua configuração.');

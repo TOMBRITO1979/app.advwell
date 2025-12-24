@@ -65,7 +65,7 @@ export const companyRateLimit = async (
 
       setRateLimitHeaders(res, rateLimitInfo);
 
-      console.warn(`[RateLimit] Limite excedido para ${identifier}: ${count}/${limit} req/min`);
+      appLogger.warn('Rate limit exceeded', { identifier, count, limit });
 
       return res.status(429).json({
         error: 'Too Many Requests',
@@ -201,7 +201,7 @@ export const sensitiveRateLimit = async (
 
     next();
   } catch (error) {
-    console.error('[RateLimit] Erro no sensitiveRateLimit:', error);
+    appLogger.error('Erro no sensitiveRateLimit', error as Error);
     next();
   }
 };
@@ -251,7 +251,7 @@ export const backupRateLimit = async (
 
     next();
   } catch (error) {
-    console.error('[RateLimit] Erro no backupRateLimit:', error);
+    appLogger.error('Erro no backupRateLimit', error as Error);
     next();
   }
 };

@@ -1,5 +1,6 @@
 import prisma from '../utils/prisma';
 import { enqueueCampaignEmails } from '../queues/email.queue';
+import { appLogger } from '../utils/logger';
 
 /**
  * Envia campanha de email usando fila Bull para processamento em background.
@@ -43,7 +44,7 @@ export async function sendCampaign(campaignId: string) {
     const pendingCount = campaign._count.recipients;
 
     if (pendingCount === 0) {
-      console.log(`Campaign ${campaignId} has no pending recipients`);
+      appLogger.info('Campaign has no pending recipients', { campaignId });
 
       // Mark as completed if no recipients
       await prisma.emailCampaign.update({
@@ -60,15 +61,19 @@ export async function sendCampaign(campaignId: string) {
     // Enqueue all emails for processing
     const result = await enqueueCampaignEmails(campaignId);
 
-    console.log(`📧 Campaign ${campaign.name} started: ${result.enqueued} emails queued`);
+    appLogger.info('Campaign started successfully', {
+      campaignId,
+      campaignName: campaign.name,
+      emailsQueued: result.enqueued,
+    });
   } catch (error: any) {
-    console.error('Error starting campaign:', error);
+    appLogger.error('Error starting campaign', error as Error, { campaignId });
 
     // Mark campaign as failed
     await prisma.emailCampaign.update({
       where: { id: campaignId },
       data: { status: 'failed' },
-    }).catch(console.error);
+    }).catch((err) => appLogger.error('Failed to mark campaign as failed', err as Error, { campaignId }));
 
     throw error;
   }

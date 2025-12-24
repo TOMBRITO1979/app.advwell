@@ -1,5 +1,6 @@
 import Stripe from 'stripe';
 import prisma from '../utils/prisma';
+import { appLogger } from '../utils/logger';
 
 // Initialize Stripe with secret key
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '');
@@ -192,7 +193,7 @@ export async function handleWebhook(
     }
 
     default:
-      console.log(`Unhandled event type: ${event.type}`);
+      appLogger.info('Unhandled Stripe event type', { eventType: event.type });
   }
 
   return { received: true, event: event.type };
@@ -206,7 +207,7 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
   const plan = session.metadata?.plan as 'BRONZE' | 'PRATA' | 'OURO';
 
   if (!companyId || !plan) {
-    console.error('Missing metadata in checkout session');
+    appLogger.error('Missing metadata in checkout session', new Error('Missing metadata'));
     return;
   }
 
@@ -224,7 +225,7 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
     },
   });
 
-  console.log(`Company ${companyId} subscribed to ${plan} plan`);
+  appLogger.info('Company subscribed to plan', { companyId, plan });
 }
 
 /**
@@ -239,7 +240,7 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
   });
 
   if (!company) {
-    console.error(`Company not found for Stripe customer: ${customerId}`);
+    appLogger.error('Company not found for Stripe customer', new Error('Company not found'), { customerId });
     return;
   }
 
@@ -261,7 +262,7 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
     },
   });
 
-  console.log(`Company ${company.id} subscription updated: ${status}`);
+  appLogger.info('Company subscription updated', { companyId: company.id, status });
 }
 
 /**
@@ -275,7 +276,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   });
 
   if (!company) {
-    console.error(`Company not found for Stripe customer: ${customerId}`);
+    appLogger.error('Company not found for Stripe customer', new Error('Company not found'), { customerId });
     return;
   }
 
@@ -288,7 +289,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
     },
   });
 
-  console.log(`Company ${company.id} subscription cancelled`);
+  appLogger.info('Company subscription cancelled', { companyId: company.id });
 }
 
 /**
@@ -302,7 +303,7 @@ async function handlePaymentFailed(invoice: Stripe.Invoice) {
   });
 
   if (!company) {
-    console.error(`Company not found for Stripe customer: ${customerId}`);
+    appLogger.error('Company not found for Stripe customer', new Error('Company not found'), { customerId });
     return;
   }
 
@@ -313,7 +314,7 @@ async function handlePaymentFailed(invoice: Stripe.Invoice) {
     },
   });
 
-  console.log(`Company ${company.id} payment failed - subscription expired`);
+  appLogger.warn('Company payment failed - subscription expired', { companyId: company.id });
 }
 
 /**
@@ -339,7 +340,7 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
       },
     });
 
-    console.log(`Company ${company.id} subscription reactivated`);
+    appLogger.info('Company subscription reactivated', { companyId: company.id });
   }
 }
 
@@ -531,7 +532,7 @@ export async function getLastPayment(companyId: string): Promise<{
       lastPaymentStatus: lastInvoice.status,
     };
   } catch (error) {
-    console.error('Error fetching last payment from Stripe:', error);
+    appLogger.error('Error fetching last payment from Stripe', error as Error);
     return null;
   }
 }

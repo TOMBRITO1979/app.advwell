@@ -3,13 +3,14 @@ import prisma from '../utils/prisma';
 import datajudService from '../services/datajud.service';
 import { AIService } from '../services/ai/ai.service';
 import { createRedisClient } from '../utils/redis';
+import { appLogger } from '../utils/logger';
 
 // ESCALABILIDADE: Parametros configuráveis via ambiente
 const SYNC_CONCURRENCY = parseInt(process.env.SYNC_CONCURRENCY || '5');
 const SYNC_BATCH_SIZE = parseInt(process.env.SYNC_BATCH_SIZE || '50');
 const SYNC_INCREMENTAL = process.env.SYNC_INCREMENTAL !== 'false'; // Default: true
 
-console.log(`Sync Queue config: concurrency=${SYNC_CONCURRENCY}, batch=${SYNC_BATCH_SIZE}, incremental=${SYNC_INCREMENTAL}`);
+appLogger.info('Sync Queue config', { concurrency: SYNC_CONCURRENCY, batch: SYNC_BATCH_SIZE, incremental: SYNC_INCREMENTAL });
 
 // TAREFA 4.1: Queue configuration usando createRedisClient (suporta Sentinel)
 const syncQueue = new Queue('datajud-sync', {
@@ -151,7 +152,7 @@ syncQueue.process('sync-case', SYNC_CONCURRENCY, async (job) => {
           }
         }
       } catch (aiError) {
-        console.error(`AI summary error for case ${caseId}:`, aiError);
+        appLogger.error('AI summary error for case', aiError as Error, { caseId });
       }
     }
 
@@ -164,7 +165,7 @@ syncQueue.process('sync-case', SYNC_CONCURRENCY, async (job) => {
       incremental: SYNC_INCREMENTAL,
     };
   } catch (error: any) {
-    console.error(`Sync error for case ${caseId}:`, error);
+    appLogger.error('Sync error for case', error as Error, { caseId });
     throw error; // Re-throw to trigger retry
   }
 });
@@ -238,7 +239,7 @@ syncQueue.process('sync-batch', async (job) => {
       total: totalCases,
     };
   } catch (error: any) {
-    console.error('Batch sync error:', error);
+    appLogger.error('Batch sync error', error as Error);
     throw error;
   }
 });
@@ -246,22 +247,22 @@ syncQueue.process('sync-batch', async (job) => {
 // Event handlers for logging
 syncQueue.on('completed', (job, result) => {
   if (job.name === 'sync-case') {
-    console.log(`✓ Synced: ${result.processNumber} (${result.movementsCount} movements)`);
+    appLogger.info('Synced case', { processNumber: result.processNumber, movementsCount: result.movementsCount });
   }
 });
 
 syncQueue.on('failed', (job, err) => {
-  console.error(`✗ Failed: ${job.name} - ${err.message}`);
+  appLogger.error('Job failed', err as Error, { jobName: job.name });
 });
 
 syncQueue.on('stalled', (job) => {
-  console.warn(`⚠ Stalled: ${job.name}`);
+  appLogger.warn('Job stalled', { jobName: job.name });
 });
 
 // Helper functions
 // SEGURANCA: Sync diario agora itera por empresa para garantir isolamento de tenant
 export const enqueueDailySync = async () => {
-  console.log('Enqueueing daily sync...');
+  appLogger.info('Enqueueing daily sync...');
 
   // SEGURANCA: Buscar todas as empresas ativas com assinatura valida
   const activeCompanies = await prisma.company.findMany({
@@ -272,7 +273,7 @@ export const enqueueDailySync = async () => {
     select: { id: true, name: true },
   });
 
-  console.log(`Found ${activeCompanies.length} active companies for daily sync`);
+  appLogger.info('Found active companies for daily sync', { count: activeCompanies.length });
 
   // Enfileirar sync para cada empresa separadamente
   for (const company of activeCompanies) {
@@ -288,7 +289,7 @@ export const enqueueDailySync = async () => {
         delay: Math.random() * 5000, // Delay aleatorio para distribuir carga
       }
     );
-    console.log(`Enqueued sync for company: ${company.name}`);
+    appLogger.info('Enqueued sync for company', { companyId: company.id, companyName: company.name });
   }
 };
 

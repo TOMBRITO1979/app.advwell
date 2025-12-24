@@ -2,6 +2,7 @@ import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import prisma from '../utils/prisma';
 import backupEmailService from '../services/backup-email.service';
+import { appLogger } from '../utils/logger';
 
 export class BackupEmailController {
   /**
@@ -31,7 +32,7 @@ export class BackupEmailController {
         hasSmtpConfig: true, // Usa SMTP do sistema, sempre disponível
       });
     } catch (error) {
-      console.error('Erro ao buscar configuração de backup:', error);
+      appLogger.error('Erro ao buscar configuração de backup:', error as Error);
       res.status(500).json({ error: 'Erro ao buscar configuração de backup' });
     }
   }
@@ -67,7 +68,7 @@ export class BackupEmailController {
         backupEmail: backupEmail || null,
       });
     } catch (error) {
-      console.error('Erro ao atualizar configuração de backup:', error);
+      appLogger.error('Erro ao atualizar configuração de backup:', error as Error);
       res.status(500).json({ error: 'Erro ao atualizar configuração de backup' });
     }
   }
@@ -102,7 +103,7 @@ export class BackupEmailController {
         res.status(400).json({ error: result.message });
       }
     } catch (error) {
-      console.error('Erro ao enviar backup de teste:', error);
+      appLogger.error('Erro ao enviar backup de teste:', error as Error);
       res.status(500).json({ error: 'Erro ao enviar backup de teste' });
     }
   }

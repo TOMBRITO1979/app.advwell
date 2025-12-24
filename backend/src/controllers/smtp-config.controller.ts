@@ -3,6 +3,7 @@ import { AuthRequest } from '../middleware/auth';
 import prisma from '../utils/prisma';
 import { encrypt, decrypt } from '../utils/encryption';
 import nodemailer from 'nodemailer';
+import { appLogger } from '../utils/logger';
 
 export class SMTPConfigController {
   // Get SMTP configuration for the company
@@ -32,7 +33,7 @@ export class SMTPConfigController {
 
       res.json(config);
     } catch (error) {
-      console.error('Erro ao buscar configuração SMTP:', error);
+      appLogger.error('Erro ao buscar configuração SMTP:', error as Error);
       res.status(500).json({ error: 'Erro ao buscar configuração SMTP' });
     }
   }
@@ -100,7 +101,7 @@ export class SMTPConfigController {
         config: configWithoutPassword,
       });
     } catch (error) {
-      console.error('Erro ao salvar configuração SMTP:', error);
+      appLogger.error('Erro ao salvar configuração SMTP:', error as Error);
       res.status(500).json({ error: 'Erro ao salvar configuração SMTP' });
     }
   }
@@ -152,7 +153,7 @@ export class SMTPConfigController {
         message: 'Conexão SMTP testada com sucesso!',
       });
     } catch (error: any) {
-      console.error('Erro ao testar conexão SMTP:', error);
+      appLogger.error('Erro ao testar conexão SMTP:', error as Error);
       res.status(400).json({
         success: false,
         error: 'Falha ao conectar com servidor SMTP. Verifique as configurações.',
@@ -180,7 +181,7 @@ export class SMTPConfigController {
 
       res.json({ message: 'Configuração SMTP excluída com sucesso' });
     } catch (error) {
-      console.error('Erro ao excluir configuração SMTP:', error);
+      appLogger.error('Erro ao excluir configuração SMTP:', error as Error);
       res.status(500).json({ error: 'Erro ao excluir configuração SMTP' });
     }
   }

@@ -1,6 +1,7 @@
 import { Request } from 'express';
 import prisma from '../utils/prisma';
 import { AuditEntityType, AuditAction, Client, Case, ScheduleEvent, Prisma } from '@prisma/client';
+import { appLogger } from '../utils/logger';
 
 interface AuditLogData {
   companyId: string;
@@ -106,7 +107,7 @@ class AuditLogService {
         },
       });
     } catch (error) {
-      console.error('Error creating audit log:', error);
+      appLogger.error('Error creating audit log', error as Error);
       // Não lança erro para não afetar a operação principal
     }
   }

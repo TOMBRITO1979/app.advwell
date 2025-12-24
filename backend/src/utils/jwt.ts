@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { config } from '../config';
 import { redis } from './redis';
+import { appLogger } from './logger';
 
 // Prefixo para tokens na blacklist
 const TOKEN_BLACKLIST_PREFIX = 'token:blacklist:';
@@ -107,7 +108,7 @@ export const blacklistToken = async (token: string): Promise<void> => {
       await redis.setex(key, ttl, '1');
     }
   } catch (error) {
-    console.error('[JWT] Erro ao adicionar token a blacklist:', error);
+    appLogger.error('[JWT] Erro ao adicionar token a blacklist', error as Error);
   }
 };
 
@@ -120,7 +121,7 @@ export const isTokenBlacklisted = async (jti: string): Promise<boolean> => {
     const result = await redis.get(key);
     return result === '1';
   } catch (error) {
-    console.error('[JWT] Erro ao verificar blacklist:', error);
+    appLogger.error('[JWT] Erro ao verificar blacklist', error as Error);
     return false; // Fail-open em caso de erro do Redis
   }
 };
@@ -136,7 +137,7 @@ export const invalidateAllUserTokens = async (userId: string): Promise<void> => 
     // Todos os tokens emitidos antes desse timestamp sao invalidos
     await redis.setex(key, 7 * 24 * 60 * 60, Date.now().toString()); // 7 dias
   } catch (error) {
-    console.error('[JWT] Erro ao invalidar tokens do usuario:', error);
+    appLogger.error('[JWT] Erro ao invalidar tokens do usuario', error as Error);
   }
 };
 
@@ -152,7 +153,7 @@ export const areUserTokensInvalidated = async (userId: string, tokenIssuedAt: nu
     // Token foi emitido antes da invalidacao?
     return tokenIssuedAt * 1000 < parseInt(invalidatedAt, 10);
   } catch (error) {
-    console.error('[JWT] Erro ao verificar invalidacao:', error);
+    appLogger.error('[JWT] Erro ao verificar invalidacao', error as Error);
     return false;
   }
 };

@@ -2,6 +2,7 @@ import { Router, Response } from 'express';
 import { authenticate, requireSuperAdmin } from '../middleware/auth';
 import { AuthRequest } from '../middleware/auth';
 import { backupRateLimit } from '../middleware/company-rate-limit';
+import { appLogger } from '../utils/logger';
 import databaseBackupService from '../services/database-backup.service';
 
 const router = Router();
@@ -12,7 +13,7 @@ router.use(authenticate, requireSuperAdmin, backupRateLimit);
 // POST /api/database-backup/test - Executa backup de teste
 router.post('/test', async (req: AuthRequest, res: Response) => {
   try {
-    console.log(`[DatabaseBackup] Backup manual solicitado por ${req.user?.email}`);
+    appLogger.info('[DatabaseBackup] Backup manual solicitado', { email: req.user?.email });
 
     const result = await databaseBackupService.generateBackup();
 
@@ -30,7 +31,7 @@ router.post('/test', async (req: AuthRequest, res: Response) => {
       });
     }
   } catch (error: any) {
-    console.error('[DatabaseBackup] Erro no backup manual:', error);
+    appLogger.error('[DatabaseBackup] Erro no backup manual', error as Error);
     res.status(500).json({
       success: false,
       error: 'Erro ao executar backup: ' + error.message,
@@ -41,7 +42,7 @@ router.post('/test', async (req: AuthRequest, res: Response) => {
 // POST /api/database-backup/cleanup - Limpa backups antigos
 router.post('/cleanup', async (req: AuthRequest, res: Response) => {
   try {
-    console.log(`[DatabaseBackup] Limpeza manual solicitada por ${req.user?.email}`);
+    appLogger.info('[DatabaseBackup] Limpeza manual solicitada', { email: req.user?.email });
 
     const result = await databaseBackupService.cleanupOldBackups();
 
@@ -51,7 +52,7 @@ router.post('/cleanup', async (req: AuthRequest, res: Response) => {
       errors: result.errors,
     });
   } catch (error: any) {
-    console.error('[DatabaseBackup] Erro na limpeza manual:', error);
+    appLogger.error('[DatabaseBackup] Erro na limpeza manual', error as Error);
     res.status(500).json({
       success: false,
       error: 'Erro ao limpar backups: ' + error.message,
@@ -62,7 +63,7 @@ router.post('/cleanup', async (req: AuthRequest, res: Response) => {
 // GET /api/database-backup/list - Lista todos os backups disponiveis
 router.get('/list', async (req: AuthRequest, res: Response) => {
   try {
-    console.log(`[DatabaseBackup] Listagem de backups solicitada por ${req.user?.email}`);
+    appLogger.info('[DatabaseBackup] Listagem de backups solicitada', { email: req.user?.email });
 
     const backups = await databaseBackupService.listBackups();
 
@@ -78,7 +79,7 @@ router.get('/list', async (req: AuthRequest, res: Response) => {
       })),
     });
   } catch (error: any) {
-    console.error('[DatabaseBackup] Erro ao listar backups:', error);
+    appLogger.error('[DatabaseBackup] Erro ao listar backups', error as Error);
     res.status(500).json({
       success: false,
       error: 'Erro ao listar backups: ' + error.message,
@@ -99,7 +100,7 @@ router.get('/info/*', async (req: AuthRequest, res: Response) => {
       });
     }
 
-    console.log(`[DatabaseBackup] Info do backup ${backupKey} solicitada por ${req.user?.email}`);
+    appLogger.info('[DatabaseBackup] Info do backup solicitada', { backupKey, email: req.user?.email });
 
     const info = await databaseBackupService.getBackupInfo(backupKey);
 
@@ -122,7 +123,7 @@ router.get('/info/*', async (req: AuthRequest, res: Response) => {
       },
     });
   } catch (error: any) {
-    console.error('[DatabaseBackup] Erro ao obter info do backup:', error);
+    appLogger.error('[DatabaseBackup] Erro ao obter info do backup', error as Error);
     res.status(500).json({
       success: false,
       error: 'Erro ao obter informacoes do backup: ' + error.message,
@@ -144,10 +145,12 @@ router.post('/restore', async (req: AuthRequest, res: Response) => {
     }
 
     // Log detalhado para auditoria
-    console.log(`[DatabaseBackup] ⚠️  RESTORE solicitado por ${req.user?.email}`);
-    console.log(`[DatabaseBackup] Backup: ${backupKey}`);
-    console.log(`[DatabaseBackup] Dry-run: ${dryRun}`);
-    console.log(`[DatabaseBackup] Tabelas: ${tables ? tables.join(', ') : 'todas'}`);
+    appLogger.warn('[DatabaseBackup] RESTORE solicitado', {
+      email: req.user?.email,
+      backupKey,
+      dryRun,
+      tables: tables ? tables.join(', ') : 'todas',
+    });
 
     // Executar restauracao
     const result = await databaseBackupService.restoreFromBackup(backupKey, {
@@ -171,7 +174,7 @@ router.post('/restore', async (req: AuthRequest, res: Response) => {
       });
     }
   } catch (error: any) {
-    console.error('[DatabaseBackup] Erro no restore:', error);
+    appLogger.error('[DatabaseBackup] Erro no restore', error as Error);
     res.status(500).json({
       success: false,
       error: 'Erro ao restaurar backup: ' + error.message,

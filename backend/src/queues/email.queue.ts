@@ -4,6 +4,7 @@ import prisma from '../utils/prisma';
 import { decrypt } from '../utils/encryption';
 import { replaceTemplateVariables } from '../utils/email-templates';
 import { createRedisClient } from '../utils/redis';
+import { appLogger } from '../utils/logger';
 
 // TAREFA 4.1: Queue configuration usando createRedisClient (suporta Sentinel)
 const emailQueue = new Queue('email-campaign', {
@@ -136,7 +137,7 @@ emailQueue.process('check-campaign-completion', async (job) => {
         },
       });
 
-      console.log(`✅ Campaign ${campaignId} completed: ${sentCount} sent, ${failedCount} failed`);
+      appLogger.info('Campaign completed', { campaignId, sentCount, failedCount });
     }
 
     return {
@@ -146,7 +147,7 @@ emailQueue.process('check-campaign-completion', async (job) => {
       pendingCount,
     };
   } catch (error: any) {
-    console.error('Error checking campaign completion:', error);
+    appLogger.error('Error checking campaign completion', error as Error);
     throw error;
   }
 });
@@ -154,12 +155,12 @@ emailQueue.process('check-campaign-completion', async (job) => {
 // Event handlers
 emailQueue.on('completed', (job, result) => {
   if (job.name === 'send-email' && result.success) {
-    console.log(`✓ Email sent: ${result.email}`);
+    appLogger.info('Email sent', { email: result.email });
   }
 });
 
 emailQueue.on('failed', (job, err) => {
-  console.error(`✗ Email job failed: ${job.name} - ${err.message}`);
+  appLogger.error('Email job failed', err as Error, { jobName: job.name });
 });
 
 // Helper function to enqueue campaign emails
@@ -183,7 +184,7 @@ export const enqueueCampaignEmails = async (campaignId: string) => {
     });
 
     if (recipients.length === 0) {
-      console.log('No pending recipients for campaign:', campaignId);
+      appLogger.info('No pending recipients for campaign', { campaignId });
       return { enqueued: 0 };
     }
 
@@ -218,14 +219,14 @@ export const enqueueCampaignEmails = async (campaignId: string) => {
       }
     );
 
-    console.log(`📧 Enqueued ${recipients.length} emails for campaign ${campaignId}`);
+    appLogger.info('Enqueued campaign emails', { campaignId, count: recipients.length, estimatedCompletionTime: estimatedTime });
 
     return {
       enqueued: recipients.length,
       estimatedCompletionTime: estimatedTime,
     };
   } catch (error: any) {
-    console.error('Error enqueueing campaign emails:', error);
+    appLogger.error('Error enqueueing campaign emails', error as Error);
     throw error;
   }
 };

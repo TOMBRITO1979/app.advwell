@@ -2,6 +2,7 @@ import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import prisma from '../utils/prisma';
 import AuditService from '../services/audit.service';
+import { appLogger } from '../utils/logger';
 
 export class CasePartController {
   // Listar partes de um processo
@@ -26,7 +27,7 @@ export class CasePartController {
 
       res.json(parts);
     } catch (error) {
-      console.error('Erro ao listar partes do processo:', error);
+      appLogger.error('Erro ao listar partes do processo:', error as Error);
       res.status(500).json({ error: 'Erro ao listar partes do processo' });
     }
   }
@@ -82,7 +83,7 @@ export class CasePartController {
 
       res.status(201).json(part);
     } catch (error) {
-      console.error('Erro ao criar parte do processo:', error);
+      appLogger.error('Erro ao criar parte do processo:', error as Error);
       res.status(500).json({ error: 'Erro ao criar parte do processo' });
     }
   }
@@ -141,7 +142,7 @@ export class CasePartController {
 
       res.json(part);
     } catch (error) {
-      console.error('Erro ao atualizar parte do processo:', error);
+      appLogger.error('Erro ao atualizar parte do processo:', error as Error);
       res.status(500).json({ error: 'Erro ao atualizar parte do processo' });
     }
   }
@@ -184,7 +185,7 @@ export class CasePartController {
 
       res.json({ message: 'Parte excluída com sucesso' });
     } catch (error) {
-      console.error('Erro ao deletar parte do processo:', error);
+      appLogger.error('Erro ao deletar parte do processo:', error as Error);
       res.status(500).json({ error: 'Erro ao deletar parte do processo' });
     }
   }

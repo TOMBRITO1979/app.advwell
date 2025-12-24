@@ -4,6 +4,7 @@ import prisma from '../utils/prisma';
 import { sanitizeString } from '../utils/sanitize';
 import { parse } from 'csv-parse/sync';
 import { Decimal } from '@prisma/client/runtime/library';
+import { appLogger } from '../utils/logger';
 
 // Helper para converter Prisma Decimal para number (necessário após migração Float → Decimal)
 const toNumber = (value: Decimal | number | null | undefined): number => {
@@ -94,7 +95,7 @@ export const listTransactions = async (req: AuthRequest, res: Response) => {
       }
     });
   } catch (error) {
-    console.error('Erro ao listar transações:', error);
+    appLogger.error('Erro ao listar transações', error as Error);
     res.status(500).json({ error: 'Erro ao listar transações financeiras' });
   }
 };
@@ -134,7 +135,7 @@ export const getTransaction = async (req: AuthRequest, res: Response) => {
 
     res.json(transaction);
   } catch (error) {
-    console.error('Erro ao buscar transação:', error);
+    appLogger.error('Erro ao buscar transação', error as Error);
     res.status(500).json({ error: 'Erro ao buscar transação' });
   }
 };
@@ -254,7 +255,7 @@ export const createTransaction = async (req: AuthRequest, res: Response) => {
 
     res.status(201).json(transaction);
   } catch (error) {
-    console.error('Erro ao criar transação:', error);
+    appLogger.error('Erro ao criar transação', error as Error);
     res.status(500).json({ error: 'Erro ao criar transação financeira' });
   }
 };
@@ -338,7 +339,7 @@ export const updateTransaction = async (req: AuthRequest, res: Response) => {
 
     res.json(transaction);
   } catch (error) {
-    console.error('Erro ao atualizar transação:', error);
+    appLogger.error('Erro ao atualizar transação', error as Error);
     res.status(500).json({ error: 'Erro ao atualizar transação' });
   }
 };
@@ -364,7 +365,7 @@ export const deleteTransaction = async (req: AuthRequest, res: Response) => {
 
     res.json({ message: 'Transação excluída com sucesso' });
   } catch (error) {
-    console.error('Erro ao excluir transação:', error);
+    appLogger.error('Erro ao excluir transação', error as Error);
     res.status(500).json({ error: 'Erro ao excluir transação' });
   }
 };
@@ -424,7 +425,7 @@ export const getFinancialSummary = async (req: AuthRequest, res: Response) => {
       }
     });
   } catch (error) {
-    console.error('Erro ao buscar resumo financeiro:', error);
+    appLogger.error('Erro ao buscar resumo financeiro', error as Error);
     res.status(500).json({ error: 'Erro ao buscar resumo financeiro' });
   }
 };
@@ -564,7 +565,7 @@ export const exportPDF = async (req: AuthRequest, res: Response) => {
 
     doc.end();
   } catch (error) {
-    console.error('Erro ao gerar PDF:', error);
+    appLogger.error('Erro ao gerar PDF', error as Error);
     res.status(500).json({ error: 'Erro ao gerar PDF' });
   }
 };
@@ -618,7 +619,7 @@ export const exportCSV = async (req: AuthRequest, res: Response) => {
     res.setHeader('Content-Disposition', 'attachment; filename=relatorio_financeiro.csv');
     res.send('\ufeff' + csv); // BOM for Excel UTF-8 recognition
   } catch (error) {
-    console.error('Erro ao gerar CSV:', error);
+    appLogger.error('Erro ao gerar CSV', error as Error);
     res.status(500).json({ error: 'Erro ao gerar CSV' });
   }
 };
@@ -798,7 +799,7 @@ export const importCSV = async (req: AuthRequest, res: Response) => {
 
     res.json(results);
   } catch (error: any) {
-    console.error('Erro ao importar CSV:', error);
+    appLogger.error('Erro ao importar CSV', error as Error);
     res.status(500).json({ error: 'Erro ao importar arquivo CSV' });
   }
 };
@@ -827,7 +828,7 @@ export const listInstallments = async (req: AuthRequest, res: Response) => {
 
     res.json(installments);
   } catch (error) {
-    console.error('Erro ao listar parcelas:', error);
+    appLogger.error('Erro ao listar parcelas', error as Error);
     res.status(500).json({ error: 'Erro ao listar parcelas' });
   }
 };
@@ -872,7 +873,7 @@ export const updateInstallment = async (req: AuthRequest, res: Response) => {
 
     res.json(updatedInstallment);
   } catch (error) {
-    console.error('Erro ao atualizar parcela:', error);
+    appLogger.error('Erro ao atualizar parcela', error as Error);
     res.status(500).json({ error: 'Erro ao atualizar parcela' });
   }
 };
@@ -1102,7 +1103,7 @@ export const generateTransactionReceipt = async (req: AuthRequest, res: Response
 
     doc.end();
   } catch (error) {
-    console.error('Erro ao gerar recibo:', error);
+    appLogger.error('Erro ao gerar recibo', error as Error);
     res.status(500).json({ error: 'Erro ao gerar recibo da transação' });
   }
 };
@@ -1356,7 +1357,7 @@ export const generateInstallmentReceipt = async (req: AuthRequest, res: Response
 
     doc.end();
   } catch (error) {
-    console.error('Erro ao gerar recibo:', error);
+    appLogger.error('Erro ao gerar recibo', error as Error);
     res.status(500).json({ error: 'Erro ao gerar recibo da parcela' });
   }
 };

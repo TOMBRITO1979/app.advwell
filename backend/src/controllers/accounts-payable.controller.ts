@@ -4,6 +4,7 @@ import prisma from '../utils/prisma';
 import PDFDocument from 'pdfkit';
 import { parse } from 'csv-parse/sync';
 import { sanitizeString } from '../utils/sanitize';
+import { appLogger } from '../utils/logger';
 
 export class AccountsPayableController {
   // Criar nova conta a pagar
@@ -38,7 +39,7 @@ export class AccountsPayableController {
 
       res.status(201).json(account);
     } catch (error) {
-      console.error('Erro ao criar conta a pagar:', error);
+      appLogger.error('Erro ao criar conta a pagar:', error as Error);
       res.status(500).json({ error: 'Erro ao criar conta a pagar' });
     }
   }
@@ -101,7 +102,7 @@ export class AccountsPayableController {
         totalPages: Math.ceil(total / Number(limit))
       });
     } catch (error) {
-      console.error('Erro ao listar contas a pagar:', error);
+      appLogger.error('Erro ao listar contas a pagar:', error as Error);
       res.status(500).json({ error: 'Erro ao listar contas a pagar' });
     }
   }
@@ -130,7 +131,7 @@ export class AccountsPayableController {
 
       res.json(account);
     } catch (error) {
-      console.error('Erro ao buscar conta:', error);
+      appLogger.error('Erro ao buscar conta:', error as Error);
       res.status(500).json({ error: 'Erro ao buscar conta' });
     }
   }
@@ -171,7 +172,7 @@ export class AccountsPayableController {
 
       res.json(updatedAccount);
     } catch (error) {
-      console.error('Erro ao atualizar conta:', error);
+      appLogger.error('Erro ao atualizar conta:', error as Error);
       res.status(500).json({ error: 'Erro ao atualizar conta' });
     }
   }
@@ -199,7 +200,7 @@ export class AccountsPayableController {
 
       res.json({ message: 'Conta excluída com sucesso' });
     } catch (error) {
-      console.error('Erro ao excluir conta:', error);
+      appLogger.error('Erro ao excluir conta:', error as Error);
       res.status(500).json({ error: 'Erro ao excluir conta' });
     }
   }
@@ -255,7 +256,7 @@ export class AccountsPayableController {
 
       res.json(updatedAccount);
     } catch (error) {
-      console.error('Erro ao marcar conta como paga:', error);
+      appLogger.error('Erro ao marcar conta como paga:', error as Error);
       res.status(500).json({ error: 'Erro ao marcar conta como paga' });
     }
   }
@@ -332,7 +333,7 @@ export class AccountsPayableController {
 
       doc.end();
     } catch (error) {
-      console.error('Erro ao gerar PDF:', error);
+      appLogger.error('Erro ao gerar PDF:', error as Error);
       res.status(500).json({ error: 'Erro ao gerar PDF' });
     }
   }
@@ -380,7 +381,7 @@ export class AccountsPayableController {
       res.setHeader('Content-Disposition', 'attachment; filename=contas_a_pagar.csv');
       res.send('\ufeff' + csv);
     } catch (error) {
-      console.error('Erro ao gerar CSV:', error);
+      appLogger.error('Erro ao gerar CSV:', error as Error);
       res.status(500).json({ error: 'Erro ao gerar CSV' });
     }
   }
@@ -505,7 +506,7 @@ export class AccountsPayableController {
 
       res.json(results);
     } catch (error: any) {
-      console.error('Erro ao importar CSV:', error);
+      appLogger.error('Erro ao importar CSV:', error as Error);
       res.status(500).json({ error: 'Erro ao importar arquivo CSV' });
     }
   }
@@ -545,7 +546,7 @@ export class AccountsPayableController {
         accounts,
       });
     } catch (error) {
-      console.error('Erro ao buscar contas vencendo hoje:', error);
+      appLogger.error('Erro ao buscar contas vencendo hoje:', error as Error);
       res.status(500).json({ error: 'Erro ao buscar contas vencendo hoje' });
     }
   }
@@ -570,7 +571,7 @@ export class AccountsPayableController {
 
       res.json(categories);
     } catch (error) {
-      console.error('Erro ao buscar categorias:', error);
+      appLogger.error('Erro ao buscar categorias:', error as Error);
       res.status(500).json({ error: 'Erro ao buscar categorias' });
     }
   }
@@ -612,7 +613,7 @@ export class AccountsPayableController {
         category: category || 'Todas',
       });
     } catch (error) {
-      console.error('Erro ao gerar extrato:', error);
+      appLogger.error('Erro ao gerar extrato:', error as Error);
       res.status(500).json({ error: 'Erro ao gerar extrato' });
     }
   }
@@ -698,7 +699,7 @@ export class AccountsPayableController {
 
       doc.end();
     } catch (error) {
-      console.error('Erro ao gerar PDF do extrato:', error);
+      appLogger.error('Erro ao gerar PDF do extrato:', error as Error);
       res.status(500).json({ error: 'Erro ao gerar PDF do extrato' });
     }
   }
@@ -747,7 +748,7 @@ export class AccountsPayableController {
       res.setHeader('Content-Disposition', `attachment; filename=extrato_${new Date().toISOString().split('T')[0]}.csv`);
       res.send('\ufeff' + csv);
     } catch (error) {
-      console.error('Erro ao gerar CSV do extrato:', error);
+      appLogger.error('Erro ao gerar CSV do extrato:', error as Error);
       res.status(500).json({ error: 'Erro ao gerar CSV do extrato' });
     }
   }

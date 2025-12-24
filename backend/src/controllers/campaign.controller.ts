@@ -2,6 +2,7 @@ import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import prisma from '../utils/prisma';
 import { emailTemplates } from '../utils/email-templates';
+import { appLogger } from '../utils/logger';
 
 export class CampaignController {
   async getTemplates(req: AuthRequest, res: Response) {
@@ -16,7 +17,7 @@ export class CampaignController {
 
       res.json(templates);
     } catch (error) {
-      console.error('Erro ao listar templates:', error);
+      appLogger.error('Erro ao listar templates', error as Error);
       res.status(500).json({ error: 'Erro ao listar templates' });
     }
   }
@@ -33,7 +34,7 @@ export class CampaignController {
 
       res.json({ id, ...template });
     } catch (error) {
-      console.error('Erro ao buscar template:', error);
+      appLogger.error('Erro ao buscar template', error as Error);
       res.status(500).json({ error: 'Erro ao buscar template' });
     }
   }
@@ -69,7 +70,7 @@ export class CampaignController {
         totalPages: Math.ceil(total / Number(limit)),
       });
     } catch (error) {
-      console.error('Erro ao listar campanhas:', error);
+      appLogger.error('Erro ao listar campanhas', error as Error);
       res.status(500).json({ error: 'Erro ao listar campanhas' });
     }
   }
@@ -93,7 +94,7 @@ export class CampaignController {
 
       res.json(campaign);
     } catch (error) {
-      console.error('Erro ao buscar campanha:', error);
+      appLogger.error('Erro ao buscar campanha', error as Error);
       res.status(500).json({ error: 'Erro ao buscar campanha' });
     }
   }
@@ -146,7 +147,7 @@ export class CampaignController {
 
       res.status(201).json(campaign);
     } catch (error) {
-      console.error('Erro ao criar campanha:', error);
+      appLogger.error('Erro ao criar campanha', error as Error);
       res.status(500).json({ error: 'Erro ao criar campanha' });
     }
   }
@@ -172,7 +173,7 @@ export class CampaignController {
 
       res.json({ message: 'Campanha excluída com sucesso' });
     } catch (error) {
-      console.error('Erro ao excluir campanha:', error);
+      appLogger.error('Erro ao excluir campanha', error as Error);
       res.status(500).json({ error: 'Erro ao excluir campanha' });
     }
   }
@@ -211,11 +212,11 @@ export class CampaignController {
 
       // Iniciar envio em background (importar o service)
       const { sendCampaign } = await import('../services/campaign.service');
-      sendCampaign(id).catch(console.error);
+      sendCampaign(id).catch((err) => appLogger.error('Erro ao enviar campanha em background', err as Error));
 
       res.json({ message: 'Campanha iniciada! Os emails serão enviados em breve.' });
     } catch (error) {
-      console.error('Erro ao enviar campanha:', error);
+      appLogger.error('Erro ao enviar campanha', error as Error);
       res.status(500).json({ error: 'Erro ao enviar campanha' });
     }
   }

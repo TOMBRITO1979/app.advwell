@@ -82,11 +82,11 @@ export class AuthController {
 
       // Envia email de verificação
       try {
-        console.log(`📧 Enviando email de verificação para: ${email}`);
+        appLogger.info('Enviando email de verificação', { email });
         await sendEmailVerification(email, name, emailVerificationToken);
-        console.log(`✅ Email de verificação enviado com sucesso para: ${email}`);
+        appLogger.info('Email de verificação enviado com sucesso', { email });
       } catch (error: any) {
-        appLogger.error('❌ Erro ao enviar email de verificação:', error as Error);
+        appLogger.error('Erro ao enviar email de verificação', error as Error, { email });
         // Logged above
       }
 
@@ -481,7 +481,7 @@ export class AuthController {
       });
 
       if (!user) {
-        appLogger.error(`Nenhum usuario verificado para embed - empresa ${company.id}`);
+        appLogger.error('Nenhum usuario verificado para embed', undefined, { companyId: company.id });
         return res.status(500).json({ error: 'Nenhum usuário ativo encontrado para esta empresa' });
       }
 
@@ -495,7 +495,7 @@ export class AuthController {
 
       // SEGURANCA: Log detalhado para auditoria
       securityLogger.loginSuccess(user.email, user.id, clientIp);
-      appLogger.info(`Embed auth: usuario ${user.email} (${user.role}) via ${origin}`);
+      appLogger.info('Embed auth realizado', { email: user.email, role: user.role, origin });
 
       // 5. Retornar dados com hideSidebar = true para embed
       res.json({
@@ -596,7 +596,7 @@ export class AuthController {
       await blacklistToken(token);
 
       // Log de seguranca
-      securityLogger.info(`Logout: usuario ${req.user?.email} (${req.user?.userId})`);
+      securityLogger.info('Logout realizado', { email: req.user?.email, userId: req.user?.userId });
 
       res.json({ message: 'Logout realizado com sucesso' });
     } catch (error) {
@@ -621,7 +621,7 @@ export class AuthController {
       await invalidateAllUserTokens(req.user.userId);
 
       // Log de seguranca
-      securityLogger.info(`Logout de todas as sessoes: usuario ${req.user.email} (${req.user.userId})`);
+      securityLogger.info('Logout de todas as sessoes', { email: req.user.email, userId: req.user.userId });
 
       res.json({ message: 'Logout de todas as sessões realizado com sucesso' });
     } catch (error) {

@@ -1,3 +1,5 @@
+import { appLogger } from './logger';
+
 /**
  * Gera link do Google Calendar com instruções para adicionar Google Meet
  *
@@ -15,7 +17,7 @@ export function generateGoogleMeetLink(
 ): string {
   // Validar datas
   if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
-    console.error('Data inválida:', { startDate, endDate });
+    appLogger.error('Data inválida ao gerar link Google Meet', undefined, { startDate: String(startDate), endDate: String(endDate) });
     return '';
   }
 

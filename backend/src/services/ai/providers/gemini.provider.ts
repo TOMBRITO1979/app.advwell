@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { appLogger } from '../../../utils/logger';
 import { IAIProvider, CaseMovementData, CaseInfo } from '../../../types/ai.types';
 import { SYSTEM_PROMPT, generateUserPrompt, formatMovementsForAI } from '../prompts';
 
@@ -51,7 +52,7 @@ export class GeminiProvider implements IAIProvider {
 
       return summary;
     } catch (error: any) {
-      console.error('Gemini Provider Error:', error);
+      appLogger.error('Gemini Provider Error', error as Error);
 
       // Handle specific Gemini errors
       if (error.message?.includes('API_KEY_INVALID') || error.message?.includes('invalid API key')) {
@@ -82,7 +83,7 @@ export class GeminiProvider implements IAIProvider {
 
       return text;
     } catch (error: any) {
-      console.error('Gemini generateText Error:', error);
+      appLogger.error('Gemini generateText Error', error as Error);
 
       if (error.message?.includes('API_KEY_INVALID') || error.message?.includes('invalid API key')) {
         throw new Error('API Key inválida. Verifique sua configuração.');
@@ -113,7 +114,7 @@ export class GeminiProvider implements IAIProvider {
 
       throw new Error('Resposta inválida da API');
     } catch (error: any) {
-      console.error('Gemini Connection Test Error:', error);
+      appLogger.error('Gemini Connection Test Error', error as Error);
 
       if (error.message?.includes('API_KEY_INVALID') || error.message?.includes('invalid API key')) {
         throw new Error('❌ API Key inválida. Verifique sua configuração.');
