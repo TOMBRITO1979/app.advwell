@@ -5,7 +5,12 @@ import toast from 'react-hot-toast';
 import Layout from '../components/Layout';
 import { formatDateTime, formatTime, formatDayName, formatDayNumber, formatMonthYear, toDatetimeLocal, isToday as isTodayUtil } from '../utils/dateFormatter';
 import DateTimePicker from '../components/DateTimePicker';
-import { parseISO } from 'date-fns';
+import { parseISO, format } from 'date-fns';
+
+// Converte Date para string no formato local (sem conversão UTC)
+const dateToLocalString = (date: Date): string => {
+  return format(date, "yyyy-MM-dd'T'HH:mm");
+};
 
 interface Client {
   id: string;
@@ -1016,7 +1021,7 @@ const Schedule: React.FC = () => {
                     </label>
                     <DateTimePicker
                       selected={formData.date ? parseISO(formData.date.includes('T') ? formData.date : formData.date + 'T00:00:00') : null}
-                      onChange={(date) => setFormData({ ...formData, date: date ? date.toISOString().slice(0, 16) : '' })}
+                      onChange={(date) => setFormData({ ...formData, date: date ? dateToLocalString(date) : '' })}
                       required
                       placeholderText="Selecione data e hora"
                     />
@@ -1027,7 +1032,7 @@ const Schedule: React.FC = () => {
                     </label>
                     <DateTimePicker
                       selected={formData.endDate ? parseISO(formData.endDate.includes('T') ? formData.endDate : formData.endDate + 'T00:00:00') : null}
-                      onChange={(date) => setFormData({ ...formData, endDate: date ? date.toISOString().slice(0, 16) : '' })}
+                      onChange={(date) => setFormData({ ...formData, endDate: date ? dateToLocalString(date) : '' })}
                       placeholderText="Selecione data e hora"
                       isClearable
                     />
