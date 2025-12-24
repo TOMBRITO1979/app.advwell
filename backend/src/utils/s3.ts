@@ -37,6 +37,8 @@ export const uploadToS3 = async (
     Key: key,
     Body: file.buffer,
     ContentType: file.mimetype,
+    // AUDITORIA: Server-Side Encryption para proteção de dados em repouso
+    ServerSideEncryption: 'AES256',
   });
 
   await s3Client.send(command);

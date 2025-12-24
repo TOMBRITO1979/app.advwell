@@ -85,13 +85,15 @@ class DatabaseBackupService {
       const fileName = `backup-${dateStr}.json.gz`;
       const s3Key = `${BACKUP_PREFIX}${fileName}`;
 
-      // Upload para S3
+      // Upload para S3 com criptografia em repouso
       const command = new PutObjectCommand({
         Bucket: config.aws.s3BucketName,
         Key: s3Key,
         Body: compressedData,
         ContentType: 'application/gzip',
         ContentEncoding: 'gzip',
+        // AUDITORIA: Server-Side Encryption para proteção de backups em repouso
+        ServerSideEncryption: 'AES256',
         Metadata: {
           'backup-version': '1.0',
           'backup-timestamp': metadata.timestamp,

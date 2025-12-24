@@ -1,5 +1,4 @@
 import { Router } from 'express';
-import express from 'express';
 import rateLimit from 'express-rate-limit';
 import RedisStore from 'rate-limit-redis';
 import * as subscriptionController from '../controllers/subscription.controller';
@@ -31,12 +30,11 @@ const webhookRateLimiter = rateLimit({
 router.get('/plans', subscriptionController.getPlans);
 
 // Webhook endpoint - needs raw body, no auth
-// IMPORTANT: This must be registered before json middleware parses the body
+// O express.raw() é aplicado no index.ts ANTES do express.json() global
 // TAREFA 5.1: Rate limit aplicado
 router.post(
   '/webhook',
   webhookRateLimiter,
-  express.raw({ type: 'application/json' }),
   subscriptionController.handleWebhook
 );
 

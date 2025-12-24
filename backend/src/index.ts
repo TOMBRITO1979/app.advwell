@@ -6,8 +6,6 @@ import RedisStore from 'rate-limit-redis';
 import { config } from './config';
 import routes from './routes';
 import { correlationIdMiddleware, requestLoggerMiddleware } from './middleware/request-logger';
-// Temporariamente desabilitado - aguardando schema Prisma
-// import stripeWebhookRoutes from './routes/stripe-webhook.routes';
 import cron from 'node-cron';
 import prisma from './utils/prisma';
 import { redis, cache } from './utils/redis';
@@ -16,6 +14,7 @@ import { getEmailQueueStats } from './queues/email.queue';
 import crypto from 'crypto';
 import backupEmailService from './services/backup-email.service';
 import databaseBackupService from './services/database-backup.service';
+import auditCleanupService from './services/audit-cleanup.service';
 import { errorHandler, notFoundHandler } from './middleware/error-handler';
 import { appLogger } from './utils/logger';
 
@@ -266,10 +265,12 @@ const passwordResetLimiter = rateLimit({
 });
 app.use('/api/auth/forgot-password', passwordResetLimiter);
 
-// Stripe webhook (must be BEFORE express.json() to receive raw body)
-// app.use('/api/stripe-webhook', stripeWebhookRoutes);
+// Stripe webhook - DEVE vir ANTES do express.json() para receber raw body
+// O webhook está em /api/subscription/webhook, configurado em subscription.routes.ts
+// com express.raw() inline. Usamos um middleware condicional para pular o json parser.
+app.use('/api/subscription/webhook', express.raw({ type: 'application/json' }));
 
-// Body parser com limite de tamanho
+// Body parser com limite de tamanho (exceto para webhook que já foi tratado acima)
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true, limit: '2mb' }));
 
@@ -560,6 +561,31 @@ CRON_ENABLED && cron.schedule('0 3 * * *', async () => {
     console.log(`[${INSTANCE_ID}] Database backup job completed`);
   } catch (error) {
     console.error(`[${INSTANCE_ID}] Error in database backup job:`, error);
+  }
+});
+
+// AUDITORIA: Limpeza semanal de logs de auditoria (Domingos 04:00 AM)
+// Remove logs com mais de 365 dias para conformidade LGPD e performance
+CRON_ENABLED && cron.schedule('0 4 * * 0', async () => {
+  const { isLeader, fencingToken } = await tryBecomeLeader();
+
+  if (!isLeader) {
+    console.log(`[${INSTANCE_ID}] Not leader, skipping audit cleanup`);
+    return;
+  }
+
+  if (!await validateLeadership()) {
+    console.warn(`[${INSTANCE_ID}] Leadership validation failed, aborting audit cleanup`);
+    return;
+  }
+
+  console.log(`[${INSTANCE_ID}] Leader (token=${fencingToken}): Starting audit log cleanup...`);
+
+  try {
+    const result = await auditCleanupService.cleanupOldLogs();
+    console.log(`[${INSTANCE_ID}] Audit cleanup completed: ${result.deletedCount} logs removed`);
+  } catch (error) {
+    console.error(`[${INSTANCE_ID}] Error in audit cleanup:`, error);
   }
 });
 

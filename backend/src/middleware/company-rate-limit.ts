@@ -1,6 +1,7 @@
 import { Response, NextFunction } from 'express';
 import { AuthRequest } from './auth';
 import { redis } from '../utils/redis';
+import { appLogger } from '../utils/logger';
 
 // Configuracao de limites
 const RATE_LIMIT_WINDOW = 60; // 1 minuto em segundos
@@ -9,6 +10,13 @@ const SUPER_ADMIN_LIMIT = 5000; // SUPER_ADMIN tem limite maior
 
 // Prefixo para chaves Redis
 const RATE_LIMIT_PREFIX = 'ratelimit:company:';
+
+// AUDITORIA: Circuit breaker para fail-closed após erros consecutivos
+const MAX_CONSECUTIVE_ERRORS = 3; // Após 3 erros, bloqueia
+const CIRCUIT_RESET_TIME = 30000; // 30 segundos para tentar novamente
+let consecutiveErrors = 0;
+let circuitOpen = false;
+let circuitOpenTime = 0;
 
 interface RateLimitInfo {
   remaining: number;
@@ -86,10 +94,56 @@ export const companyRateLimit = async (
 
     setRateLimitHeaders(res, rateLimitInfo);
 
+    // AUDITORIA: Reset do circuit breaker em caso de sucesso
+    if (consecutiveErrors > 0) {
+      consecutiveErrors = 0;
+      if (circuitOpen) {
+        circuitOpen = false;
+        appLogger.info('[RateLimit] Circuit breaker fechado - Redis operacional');
+      }
+    }
+
     next();
   } catch (error) {
-    // Em caso de erro no Redis, permite a requisicao (fail-open)
-    console.error('[RateLimit] Erro ao verificar rate limit:', error);
+    // AUDITORIA: Circuit breaker - fail-closed após erros consecutivos
+    consecutiveErrors++;
+    appLogger.error('[RateLimit] Erro ao verificar rate limit', error as Error, {
+      consecutiveErrors,
+      circuitOpen,
+    });
+
+    if (consecutiveErrors >= MAX_CONSECUTIVE_ERRORS) {
+      if (!circuitOpen) {
+        circuitOpen = true;
+        circuitOpenTime = Date.now();
+        appLogger.warn('[RateLimit] Circuit breaker ABERTO - bloqueando requisições', {
+          consecutiveErrors,
+          resetIn: CIRCUIT_RESET_TIME / 1000,
+        });
+      }
+    }
+
+    // Se circuito aberto, verifica se pode tentar novamente
+    if (circuitOpen) {
+      const elapsed = Date.now() - circuitOpenTime;
+      if (elapsed > CIRCUIT_RESET_TIME) {
+        // Tenta fechar o circuito
+        circuitOpen = false;
+        consecutiveErrors = 0;
+        appLogger.info('[RateLimit] Circuit breaker fechado - tentando novamente');
+        // Permite esta requisição para testar
+        return next();
+      }
+
+      // Circuito ainda aberto - bloqueia
+      return res.status(503).json({
+        error: 'Service Temporarily Unavailable',
+        message: 'Sistema de controle de taxa temporariamente indisponível. Tente novamente em alguns segundos.',
+        retryAfter: Math.ceil((CIRCUIT_RESET_TIME - elapsed) / 1000),
+      });
+    }
+
+    // Ainda não atingiu o limite de erros - permite (fail-open limitado)
     next();
   }
 };
