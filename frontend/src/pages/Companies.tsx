@@ -3,6 +3,7 @@ import Layout from '../components/Layout';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import { Plus, Search, Edit, X, Building2, Users, FileText, ToggleLeft, ToggleRight, Trash2, UserCog, Crown, Clock, DollarSign } from 'lucide-react';
+import { formatDate, formatDateTime } from '../utils/dateFormatter';
 
 interface Company {
   id: string;
@@ -277,20 +278,8 @@ const Companies: React.FC = () => {
     );
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('pt-BR');
-  };
-
-  const formatDateTime = (dateString: string | null) => {
-    if (!dateString) return '-';
-    return new Date(dateString).toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
+  // Wrapper que retorna '-' para datas vazias
+  const formatDateTimeDisplay = (dateString: string | null) => formatDateTime(dateString) || '-';
 
   const getSubscriptionBadge = (status: string | null) => {
     const badges: Record<string, string> = {
@@ -444,7 +433,7 @@ const Companies: React.FC = () => {
                             {company.subscriptionStatus === 'TRIAL' && company.trialEndsAt && (
                               <span className="flex items-center gap-1">
                                 <Clock size={12} />
-                                Trial até: {formatDateTime(company.trialEndsAt)}
+                                Trial até: {formatDateTimeDisplay(company.trialEndsAt)}
                               </span>
                             )}
                             {company.casesLimit && (
@@ -945,7 +934,7 @@ const Companies: React.FC = () => {
                 <p><strong>Plano atual:</strong> {selectedCompany.subscriptionPlan || 'Nenhum'}</p>
                 <p><strong>Processos:</strong> {selectedCompany._count.cases} / {selectedCompany.casesLimit || 'ilimitado'}</p>
                 {selectedCompany.trialEndsAt && (
-                  <p><strong>Trial expira:</strong> {formatDateTime(selectedCompany.trialEndsAt)}</p>
+                  <p><strong>Trial expira:</strong> {formatDateTimeDisplay(selectedCompany.trialEndsAt)}</p>
                 )}
                 {selectedCompany.stripeSubscriptionId && (
                   <p className="text-green-600"><strong>✓ Stripe ativo</strong></p>
@@ -966,7 +955,7 @@ const Companies: React.FC = () => {
                       <p>
                         <strong>Data:</strong>{' '}
                         {lastPaymentData.lastPayment.lastPaymentDate
-                          ? formatDateTime(lastPaymentData.lastPayment.lastPaymentDate)
+                          ? formatDateTimeDisplay(lastPaymentData.lastPayment.lastPaymentDate)
                           : '-'}
                       </p>
                       <p>

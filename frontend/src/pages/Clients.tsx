@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import { Plus, Search, Edit, Trash2, Eye, X, FileText, Loader2 } from 'lucide-react';
 import { ExportButton } from '../components/ui';
 import MobileCardList, { MobileCardItem } from '../components/MobileCardList';
+import { formatDate } from '../utils/dateFormatter';
 
 interface Case {
   id: string;
@@ -286,10 +287,8 @@ const Clients: React.FC = () => {
     setShowModal(true);
   };
 
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return '-';
-    return new Date(dateString).toLocaleDateString('pt-BR');
-  };
+  // Wrapper que retorna '-' para datas vazias
+  const formatDateDisplay = (dateString?: string) => formatDate(dateString) || '-';
 
   const formatCPF = (cpf?: string) => {
     if (!cpf) return '-';
@@ -916,7 +915,7 @@ const Clients: React.FC = () => {
                       </div>
                       <div>
                         <p className="text-sm font-medium text-neutral-500">Data de Nascimento</p>
-                        <p className="text-sm text-neutral-900 mt-1">{formatDate(selectedClient.birthDate)}</p>
+                        <p className="text-sm text-neutral-900 mt-1">{formatDateDisplay(selectedClient.birthDate)}</p>
                       </div>
                       <div>
                         <p className="text-sm font-medium text-neutral-500">Estado Civil</p>
@@ -950,7 +949,7 @@ const Clients: React.FC = () => {
                     </div>
                     <div>
                       <p className="text-sm font-medium text-neutral-500">Data de Nascimento</p>
-                      <p className="text-sm text-neutral-900 mt-1">{formatDate(selectedClient.birthDate)}</p>
+                      <p className="text-sm text-neutral-900 mt-1">{formatDateDisplay(selectedClient.birthDate)}</p>
                     </div>
                     <div>
                       <p className="text-sm font-medium text-neutral-500">Estado Civil</p>
@@ -1018,11 +1017,11 @@ const Clients: React.FC = () => {
                 <div className="bg-neutral-50 rounded-lg p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm font-medium text-neutral-500">Data de Cadastro</p>
-                    <p className="text-sm text-neutral-900 mt-1">{formatDate(selectedClient.createdAt)}</p>
+                    <p className="text-sm text-neutral-900 mt-1">{formatDateDisplay(selectedClient.createdAt)}</p>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-neutral-500">Última Atualização</p>
-                    <p className="text-sm text-neutral-900 mt-1">{formatDate(selectedClient.updatedAt)}</p>
+                    <p className="text-sm text-neutral-900 mt-1">{formatDateDisplay(selectedClient.updatedAt)}</p>
                   </div>
                 </div>
               </div>

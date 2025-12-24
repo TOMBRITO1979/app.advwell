@@ -4,6 +4,7 @@ import { Check, AlertTriangle, CreditCard, Crown, Star, Zap } from 'lucide-react
 import api from '../services/api';
 import { toast } from 'react-hot-toast';
 import Layout from '../components/Layout';
+import { formatDateTime } from '../utils/dateFormatter';
 
 interface SubscriptionInfo {
   status: 'TRIAL' | 'ACTIVE' | 'EXPIRED' | 'CANCELLED' | null;
@@ -104,16 +105,8 @@ export default function Subscription() {
     }
   };
 
-  const formatDate = (dateStr: string | null) => {
-    if (!dateStr) return '-';
-    return new Date(dateStr).toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
+  // Wrapper que retorna '-' para datas vazias
+  const formatDate = (dateStr: string | null) => formatDateTime(dateStr) || '-';
 
   if (loading) {
     return (

@@ -3,6 +3,7 @@ import Layout from '../components/Layout';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import { Bell, CheckCircle, ExternalLink } from 'lucide-react';
+import { formatDate, formatDateTime } from '../utils/dateFormatter';
 
 interface CaseUpdate {
   id: string;
@@ -69,14 +70,6 @@ const Updates: React.FC = () => {
     } finally {
       setAcknowledging(null);
     }
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('pt-BR');
-  };
-
-  const formatDateTime = (dateString: string) => {
-    return new Date(dateString).toLocaleString('pt-BR');
   };
 
   if (loading) {

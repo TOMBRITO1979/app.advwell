@@ -3,6 +3,7 @@ import { Gavel, Calendar, ChevronLeft, ChevronRight, Edit2, User, List, Calendar
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import Layout from '../components/Layout';
+import { formatDateFull } from '../utils/dateFormatter';
 
 interface Client {
   id: string;
@@ -403,15 +404,8 @@ const Hearings: React.FC = () => {
     });
   };
 
-  const formatDateDisplay = (dateString: string) => {
-    const date = new Date(dateString + 'T00:00:00');
-    return date.toLocaleDateString('pt-BR', {
-      weekday: 'long',
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric',
-    });
-  };
+  // Wrapper para usar formatDateFull do utilitário centralizado
+  const formatDateDisplay = (dateString: string) => formatDateFull(dateString + 'T00:00:00');
 
   return (
     <Layout>

@@ -12,6 +12,7 @@ import {
   RefreshCw,
   Activity
 } from 'lucide-react';
+import { formatDateTime } from '../utils/dateFormatter';
 
 interface AuditLog {
   id: string;
@@ -56,17 +57,6 @@ const getActionIcon = (action: string) => {
     default:
       return <Activity className="text-neutral-600" size={18} />;
   }
-};
-
-const formatDateTime = (dateString: string) => {
-  const date = new Date(dateString);
-  return new Intl.DateTimeFormat('pt-BR', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(date);
 };
 
 export default function CaseTimeline({ caseId }: CaseTimelineProps) {

@@ -3,6 +3,7 @@ import { Plus, Edit2, Trash2, Check, Repeat, FileText, Download } from 'lucide-r
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import Layout from '../components/Layout';
+import { formatDate } from '../utils/dateFormatter';
 
 interface AccountPayable {
   id: string;
@@ -273,15 +274,6 @@ const AccountsPayable: React.FC = () => {
       style: 'currency',
       currency: 'BRL',
     }).format(value);
-  };
-
-  const formatDate = (date: string) => {
-    // Extrair apenas a parte da data (YYYY-MM-DD) para evitar problemas de timezone
-    // Quando a data vem como "2025-12-08T00:00:00.000Z", new Date() interpreta como UTC
-    // e ao converter para local timezone pode voltar 1 dia
-    const dateOnly = date.split('T')[0]; // "2025-12-08"
-    const [year, month, day] = dateOnly.split('-');
-    return `${day}/${month}/${year}`; // "08/12/2025"
   };
 
   return (

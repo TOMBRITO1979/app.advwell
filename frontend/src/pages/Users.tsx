@@ -3,6 +3,7 @@ import Layout from '../components/Layout';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import { Plus, Search, Edit, Trash2, X, Shield, Eye, Edit as EditIcon, Trash, EyeOff } from 'lucide-react';
+import { formatDate } from '../utils/dateFormatter';
 
 interface Permission {
   id?: string;
@@ -189,10 +190,6 @@ const Users: React.FC = () => {
     const newPermissions = [...permissions];
     newPermissions[index] = { ...newPermissions[index], [field]: value };
     setPermissions(newPermissions);
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('pt-BR');
   };
 
   const getPermissionSummary = (userPermissions: Permission[]) => {

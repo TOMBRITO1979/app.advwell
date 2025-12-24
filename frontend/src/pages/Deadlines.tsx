@@ -3,6 +3,7 @@ import Layout from '../components/Layout';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import { Search, Clock, Calendar, Eye, AlertCircle, Edit, CheckCircle, X } from 'lucide-react';
+import { formatDate } from '../utils/dateFormatter';
 
 interface Case {
   id: string;
@@ -144,13 +145,6 @@ const Deadlines: React.FC = () => {
     } catch (error: any) {
       toast.error(error.response?.data?.error || 'Erro ao atualizar status do prazo');
     }
-  };
-
-  // Formatar data sem problemas de timezone
-  const formatDate = (dateString: string) => {
-    const dateOnly = dateString.split('T')[0];
-    const [year, month, day] = dateOnly.split('-');
-    return `${day}/${month}/${year}`;
   };
 
   const formatCurrency = (value: number) => {

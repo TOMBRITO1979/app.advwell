@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import { Plus, Search, RefreshCw, X, Calendar, User, FileText, Clock, Edit, Edit2, Trash2, Eye, Sparkles } from 'lucide-react';
 import { ExportButton } from '../components/ui';
 import CaseTimeline from '../components/CaseTimeline';
+import { formatDateTime } from '../utils/dateFormatter';
 
 interface Case {
   id: string;
@@ -519,15 +520,8 @@ const Cases: React.FC = () => {
     setShowModal(true);
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
+  // Alias para compatibilidade
+  const formatDate = formatDateTime;
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {

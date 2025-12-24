@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import { Plus, Search, Edit, Trash2, DollarSign, TrendingUp, TrendingDown, X, Filter, List, FileText } from 'lucide-react';
 import { ExportButton } from '../components/ui';
 import InstallmentsModal from '../components/InstallmentsModal';
+import { formatDate } from '../utils/dateFormatter';
 
 interface Client {
   id: string;
@@ -404,9 +405,6 @@ const Financial: React.FC = () => {
     }).format(value);
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('pt-BR');
-  };
 
   return (
     <Layout>

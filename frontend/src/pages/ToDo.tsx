@@ -3,6 +3,7 @@ import { Calendar, Plus, Search, CheckCircle, Circle, Edit2, Trash2 } from 'luci
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import Layout from '../components/Layout';
+import { formatDate } from '../utils/dateFormatter';
 
 interface Todo {
   id: string;
@@ -79,12 +80,6 @@ const ToDo: React.FC = () => {
     }
   };
 
-  // Formatar data sem problemas de timezone
-  const formatDate = (date: string) => {
-    const dateOnly = date.split('T')[0];
-    const [year, month, day] = dateOnly.split('-');
-    return `${day}/${month}/${year}`;
-  };
 
   const loadTodos = async () => {
     try {

@@ -3,6 +3,7 @@ import { Calendar, Plus, Search, CheckCircle, Circle, Edit2, Trash2, Eye, List, 
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import Layout from '../components/Layout';
+import { formatDateTime, formatTime, formatDayName, formatDayNumber, formatMonthYear, toDatetimeLocal, isToday as isTodayUtil } from '../utils/dateFormatter';
 
 interface Client {
   id: string;
@@ -306,8 +307,8 @@ const Schedule: React.FC = () => {
       description: event.description || '',
       type: event.type,
       priority: event.priority || 'MEDIA',
-      date: utcToDatetimeLocal(event.date),
-      endDate: event.endDate ? utcToDatetimeLocal(event.endDate) : '',
+      date: toDatetimeLocal(event.date),
+      endDate: event.endDate ? toDatetimeLocal(event.endDate) : '',
       clientId: event.client?.id || '',
       caseId: event.case?.id || '',
       assignedUserIds: [],
@@ -396,39 +397,6 @@ const Schedule: React.FC = () => {
     setSelectedUserId('');
   };
 
-  const formatDateTime = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleString('pt-BR', {
-      timeZone: 'America/Sao_Paulo',
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
-  // Converte data UTC para formato datetime-local no timezone de São Paulo
-  const utcToDatetimeLocal = (dateString: string): string => {
-    const date = new Date(dateString);
-    // Formata a data no timezone de São Paulo
-    const options: Intl.DateTimeFormatOptions = {
-      timeZone: 'America/Sao_Paulo',
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-    };
-    const parts = new Intl.DateTimeFormat('pt-BR', options).formatToParts(date);
-    const values: Record<string, string> = {};
-    parts.forEach(part => {
-      values[part.type] = part.value;
-    });
-    // Formato datetime-local: YYYY-MM-DDTHH:MM
-    return `${values.year}-${values.month}-${values.day}T${values.hour}:${values.minute}`;
-  };
 
   // Funções auxiliares para o calendário de 7 dias
   const getWeekDays = (startDate: Date): Date[] => {
@@ -465,36 +433,10 @@ const Schedule: React.FC = () => {
     setCurrentWeekStart(new Date(today.getFullYear(), today.getMonth(), diff));
   };
 
-  const isToday = (date: Date): boolean => {
-    const today = new Date();
-    return (
-      date.getFullYear() === today.getFullYear() &&
-      date.getMonth() === today.getMonth() &&
-      date.getDate() === today.getDate()
-    );
-  };
-
-  const formatDayHeader = (date: Date): string => {
-    const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-    return dayNames[date.getDay()];
-  };
-
-  const formatDayNumber = (date: Date): string => {
-    return date.getDate().toString().padStart(2, '0');
-  };
-
-  const formatMonthYear = (date: Date): string => {
-    return date.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
-  };
-
-  const formatEventTime = (dateString: string): string => {
-    const date = new Date(dateString);
-    return date.toLocaleTimeString('pt-BR', {
-      timeZone: 'America/Sao_Paulo',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
+  // Aliases locais para manter compatibilidade com o código existente
+  const isToday = (date: Date): boolean => isTodayUtil(date);
+  const formatDayHeader = (date: Date): string => formatDayName(date);
+  const formatEventTime = (dateString: string): string => formatTime(dateString);
 
   const handleExport = async (format: 'pdf' | 'csv') => {
     try {

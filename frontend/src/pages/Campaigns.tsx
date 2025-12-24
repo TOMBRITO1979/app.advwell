@@ -4,6 +4,7 @@ import DOMPurify from 'dompurify';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import Layout from '../components/Layout';
+import { formatDateTime } from '../utils/dateFormatter';
 
 interface Campaign {
   id: string;
@@ -240,15 +241,8 @@ const Campaigns: React.FC = () => {
     setSelectedTag('');
   };
 
-  const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
+  // Alias para compatibilidade
+  const formatDate = formatDateTime;
 
   return (
     <Layout>

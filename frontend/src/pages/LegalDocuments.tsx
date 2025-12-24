@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import Layout from '../components/Layout';
 import api from '../services/api';
 import toast from 'react-hot-toast';
+import { formatDate } from '../utils/dateFormatter';
 import {
   Plus,
   Search,
@@ -321,10 +322,6 @@ const LegalDocuments: React.FC = () => {
     } finally {
       setApplyingCorrection(false);
     }
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('pt-BR');
   };
 
   return (

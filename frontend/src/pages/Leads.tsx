@@ -19,6 +19,7 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import MobileCardList, { MobileCardItem } from '../components/MobileCardList';
+import { formatDate, formatDateTime } from '../utils/dateFormatter';
 
 type LeadStatus = 'NOVO' | 'CONTATADO' | 'QUALIFICADO' | 'CONVERTIDO' | 'PERDIDO';
 type LeadSource = 'WHATSAPP' | 'TELEFONE' | 'SITE' | 'INDICACAO' | 'REDES_SOCIAIS' | 'OUTROS';
@@ -307,15 +308,9 @@ const Leads: React.FC = () => {
     setShowModal(true);
   };
 
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return '-';
-    return new Date(dateString).toLocaleDateString('pt-BR');
-  };
-
-  const formatDateTime = (dateString?: string) => {
-    if (!dateString) return '-';
-    return new Date(dateString).toLocaleString('pt-BR');
-  };
+  // Wrappers que retornam '-' ao invés de string vazia para campos vazios
+  const formatDateDisplay = (dateString?: string) => formatDate(dateString) || '-';
+  const formatDateTimeDisplay = (dateString?: string) => formatDateTime(dateString) || '-';
 
   return (
     <Layout>
@@ -428,7 +423,7 @@ const Leads: React.FC = () => {
                     },
                     fields: [
                       { label: 'Origem', value: sourceLabels[lead.source] },
-                      { label: 'Criado em', value: formatDate(lead.createdAt) },
+                      { label: 'Criado em', value: formatDateDisplay(lead.createdAt) },
                     ],
                     onView: () => handleViewDetails(lead),
                     onEdit: lead.status !== 'CONVERTIDO' ? () => handleEdit(lead) : undefined,
@@ -483,7 +478,7 @@ const Leads: React.FC = () => {
                           {sourceLabels[lead.source]}
                         </td>
                         <td className="px-4 py-3 text-sm text-neutral-600">
-                          {formatDate(lead.createdAt)}
+                          {formatDateDisplay(lead.createdAt)}
                         </td>
                         <td className="px-4 py-3 text-sm text-center">
                           <div className="flex items-center justify-center gap-2">
@@ -758,7 +753,7 @@ const Leads: React.FC = () => {
                   <div>
                     <p className="text-sm font-medium text-neutral-500">Data de Cadastro</p>
                     <p className="text-sm text-neutral-900 mt-1">
-                      {formatDateTime(selectedLead.createdAt)}
+                      {formatDateTimeDisplay(selectedLead.createdAt)}
                     </p>
                   </div>
                 </div>
@@ -800,7 +795,7 @@ const Leads: React.FC = () => {
                       <strong>Cliente:</strong> {selectedLead.convertedToClient.name}
                     </p>
                     <p className="text-sm text-green-600 mt-1">
-                      <strong>Data da Conversão:</strong> {formatDateTime(selectedLead.convertedAt)}
+                      <strong>Data da Conversão:</strong> {formatDateTimeDisplay(selectedLead.convertedAt)}
                     </p>
                   </div>
                 </div>

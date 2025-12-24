@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { X, Download, Calendar, Check } from 'lucide-react';
 import api from '../services/api';
 import toast from 'react-hot-toast';
+import { formatDate } from '../utils/dateFormatter';
 
 interface Installment {
   id: string;
@@ -129,10 +130,6 @@ const InstallmentsModal: React.FC<InstallmentsModalProps> = ({
       style: 'currency',
       currency: 'BRL',
     }).format(value);
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('pt-BR');
   };
 
   // Calcular resumo financeiro
