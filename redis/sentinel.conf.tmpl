@@ -14,7 +14,7 @@ SENTINEL announce-hostnames yes
 sentinel monitor mymaster redis 6379 2
 
 # Master password (required if Redis has requirepass)
-sentinel auth-pass mymaster ${REDIS_PASSWORD}
+sentinel auth-pass mymaster "${REDIS_PASSWORD}"
 
 # Time in milliseconds before considering master down (30 seconds)
 sentinel down-after-milliseconds mymaster 30000
@@ -26,10 +26,10 @@ sentinel parallel-syncs mymaster 1
 sentinel failover-timeout mymaster 180000
 
 # Sentinel password (required for client auth to Sentinel)
-requirepass ${REDIS_PASSWORD}
+requirepass "${REDIS_PASSWORD}"
 
 # Sentinel-to-Sentinel authentication
-sentinel sentinel-pass ${REDIS_PASSWORD}
+sentinel sentinel-pass "${REDIS_PASSWORD}"
 
 # Log level
 loglevel notice
