@@ -17,6 +17,70 @@ import crypto from 'crypto';
 import backupEmailService from './services/backup-email.service';
 import databaseBackupService from './services/database-backup.service';
 import { errorHandler, notFoundHandler } from './middleware/error-handler';
+import { appLogger } from './utils/logger';
+
+// ============================================
+// TAREFA 3.3: Global Exception Handlers
+// Captura exceções não tratadas para evitar crashes silenciosos
+// ============================================
+
+// Handler para exceções síncronas não capturadas
+process.on('uncaughtException', (error: Error) => {
+  appLogger.error('UNCAUGHT EXCEPTION - Shutting down...', error, {
+    type: 'uncaughtException',
+    fatal: true,
+  });
+
+  // Dar tempo para logs serem escritos antes de encerrar
+  setTimeout(() => {
+    process.exit(1);
+  }, 1000);
+});
+
+// Handler para promessas rejeitadas sem catch
+process.on('unhandledRejection', (reason: unknown, promise: Promise<unknown>) => {
+  const error = reason instanceof Error ? reason : new Error(String(reason));
+
+  appLogger.error('UNHANDLED REJECTION', error, {
+    type: 'unhandledRejection',
+    promise: String(promise),
+  });
+
+  // Em produção, encerrar o processo para evitar estado inconsistente
+  // O orquestrador (Docker Swarm) irá reiniciar o container
+  if (config.nodeEnv === 'production') {
+    appLogger.warn('Scheduling shutdown due to unhandled rejection in production');
+    setTimeout(() => {
+      process.exit(1);
+    }, 1000);
+  }
+});
+
+// Handler para sinais de encerramento (graceful shutdown)
+const gracefulShutdown = async (signal: string) => {
+  appLogger.info(`Received ${signal}. Starting graceful shutdown...`);
+
+  try {
+    // Fechar conexões Redis
+    await redis.quit();
+    appLogger.info('Redis connection closed');
+
+    // Desconectar Prisma
+    await prisma.$disconnect();
+    appLogger.info('Database connection closed');
+
+    appLogger.info('Graceful shutdown completed');
+    process.exit(0);
+  } catch (error) {
+    appLogger.error('Error during graceful shutdown', error as Error);
+    process.exit(1);
+  }
+};
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+
+// ============================================
 
 // SEGURANCA: Redis store para rate limiting distribuido (compartilhado entre replicas)
 const createRedisStore = (prefix: string) => new RedisStore({
