@@ -229,7 +229,7 @@ const Cases: React.FC = () => {
 
   const loadUsers = async () => {
     try {
-      const response = await api.get('/users', { params: { limit: 1000 } });
+      const response = await api.get('/users', { params: { limit: 1000, companyOnly: 'true' } });
       setUsers(response.data.data);
     } catch (error) {
       console.error('Erro ao carregar usuários');

@@ -13,7 +13,7 @@ export class UserController {
   // Admin - Listar usuários da sua empresa
   async list(req: AuthRequest, res: Response) {
     try {
-      const { page = 1, limit = 10, search = '' } = req.query;
+      const { page = 1, limit = 10, search = '', companyOnly = 'false' } = req.query;
       const skip = (Number(page) - 1) * Number(limit);
 
       // SUPER_ADMIN pode listar todos os usuários, outros precisam de companyId
@@ -26,8 +26,9 @@ export class UserController {
 
       const where: any = {};
 
-      // Se não for SUPER_ADMIN, filtrar por companyId
-      if (!isSuperAdmin) {
+      // Se não for SUPER_ADMIN OU se companyOnly=true, filtrar por companyId
+      // companyOnly é usado para listar apenas usuários da mesma empresa (ex: para atribuição em eventos)
+      if (!isSuperAdmin || companyOnly === 'true') {
         where.companyId = companyId;
       }
 

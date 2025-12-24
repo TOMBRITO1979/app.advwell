@@ -73,7 +73,7 @@ const ToDo: React.FC = () => {
 
   const fetchCompanyUsers = async () => {
     try {
-      const response = await api.get('/users');
+      const response = await api.get('/users', { params: { companyOnly: 'true' } });
       setCompanyUsers(response.data.data || []);
     } catch (error) {
       console.error('Erro ao buscar usuários:', error);

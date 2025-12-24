@@ -124,7 +124,7 @@ const LegalDocuments: React.FC = () => {
 
   const loadUsers = async () => {
     try {
-      const response = await api.get('/users');
+      const response = await api.get('/users', { params: { companyOnly: 'true' } });
       setUsers(response.data.data || response.data);
     } catch (error) {
       console.error('Erro ao carregar usuários:', error);
