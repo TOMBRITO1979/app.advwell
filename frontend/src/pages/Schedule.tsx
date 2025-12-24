@@ -4,6 +4,8 @@ import api from '../services/api';
 import toast from 'react-hot-toast';
 import Layout from '../components/Layout';
 import { formatDateTime, formatTime, formatDayName, formatDayNumber, formatMonthYear, toDatetimeLocal, isToday as isTodayUtil } from '../utils/dateFormatter';
+import DateTimePicker from '../components/DateTimePicker';
+import { parseISO } from 'date-fns';
 
 interface Client {
   id: string;
@@ -1012,23 +1014,22 @@ const Schedule: React.FC = () => {
                     <label className="block text-sm font-medium text-neutral-700 mb-1">
                       Data e Hora *
                     </label>
-                    <input
-                      type="datetime-local"
+                    <DateTimePicker
+                      selected={formData.date ? parseISO(formData.date.includes('T') ? formData.date : formData.date + 'T00:00:00') : null}
+                      onChange={(date) => setFormData({ ...formData, date: date ? date.toISOString().slice(0, 16) : '' })}
                       required
-                      value={formData.date}
-                      onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                      placeholderText="Selecione data e hora"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-neutral-700 mb-1">
                       Data/Hora Término (opcional)
                     </label>
-                    <input
-                      type="datetime-local"
-                      value={formData.endDate}
-                      onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    <DateTimePicker
+                      selected={formData.endDate ? parseISO(formData.endDate.includes('T') ? formData.endDate : formData.endDate + 'T00:00:00') : null}
+                      onChange={(date) => setFormData({ ...formData, endDate: date ? date.toISOString().slice(0, 16) : '' })}
+                      placeholderText="Selecione data e hora"
+                      isClearable
                     />
                   </div>
                 </div>
