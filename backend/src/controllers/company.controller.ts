@@ -1,4 +1,5 @@
 import { Response } from 'express';
+import crypto from 'crypto';
 import { AuthRequest } from '../middleware/auth';
 import prisma from '../utils/prisma';
 import bcrypt from 'bcryptjs';

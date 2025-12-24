@@ -500,7 +500,7 @@ export class ScheduleController {
             data: assignedUserIds.map((userId: string) => ({
               eventId: id,
               userId,
-              companyId, // TAREFA 4.3: Isolamento de tenant direto
+              companyId: companyId!, // TAREFA 4.3: Isolamento de tenant direto
             })),
           });
         }

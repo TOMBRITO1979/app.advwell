@@ -560,7 +560,7 @@ export class CaseController {
         await prisma.caseMovement.createMany({
           data: datajudData.movimentos.map((mov) => ({
             caseId: id,
-            companyId, // TAREFA 4.3: Isolamento de tenant direto
+            companyId: companyId!, // TAREFA 4.3: Isolamento de tenant direto
             movementCode: mov.codigo,
             movementName: mov.nome,
             movementDate: new Date(mov.dataHora),

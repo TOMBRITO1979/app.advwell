@@ -158,10 +158,7 @@ export const errorHandler = (
 
   // Logar stack trace apenas para erros nao operacionais ou em dev
   if (!error.isOperational || config.nodeEnv === 'development') {
-    appLogger.error('Error occurred', {
-      ...logData,
-      stack: err.stack,
-    });
+    appLogger.error('Error occurred', err, logData);
   } else {
     appLogger.warn('Handled error', logData);
   }
