@@ -35,26 +35,33 @@ export class ClientController {
         }
       }
 
+      // Converter strings vazias para null para evitar conflito de unique constraint
+      const cleanCpf = cpf?.trim() || null;
+      const cleanRg = rg?.trim() || null;
+      const cleanEmail = email?.trim()?.toLowerCase() || null;
+      const cleanPhone = phone?.trim() || null;
+      const cleanRepresentativeCpf = representativeCpf?.trim() || null;
+
       const client = await prisma.client.create({
         data: {
           companyId,
           personType: personType || 'FISICA',
           name,
-          cpf,
-          rg,
-          email,
-          phone,
-          address: sanitizeString(address),
-          city,
-          state,
-          zipCode,
-          profession: sanitizeString(profession),
-          maritalStatus: sanitizeString(maritalStatus),
+          cpf: cleanCpf,
+          rg: cleanRg,
+          email: cleanEmail,
+          phone: cleanPhone,
+          address: sanitizeString(address) || null,
+          city: city?.trim() || null,
+          state: state?.trim() || null,
+          zipCode: zipCode?.trim() || null,
+          profession: sanitizeString(profession) || null,
+          maritalStatus: sanitizeString(maritalStatus) || null,
           birthDate: birthDate ? new Date(birthDate) : null,
-          representativeName: sanitizeString(representativeName),
-          representativeCpf,
-          notes: sanitizeString(notes),
-          tag: sanitizeString(tag),
+          representativeName: sanitizeString(representativeName) || null,
+          representativeCpf: cleanRepresentativeCpf,
+          notes: sanitizeString(notes) || null,
+          tag: sanitizeString(tag) || null,
         },
       });
 
@@ -154,13 +161,21 @@ export class ClientController {
         return res.status(404).json({ error: 'Cliente não encontrado' });
       }
 
+      // Converter strings vazias para null para evitar conflito de unique constraint
+      const cleanCpf = cpf?.trim() || null;
+      const cleanRg = rg?.trim() || null;
+      const cleanEmail = email?.trim()?.toLowerCase() || null;
+      const cleanPhone = phone?.trim() || null;
+      const cleanRepresentativeCpf = representativeCpf?.trim() || null;
+
       // Verificar se CPF já existe em outro cliente da empresa
-      if (cpf && cpf.trim() && cpf.trim() !== oldClient.cpf) {
+      if (cleanCpf && cleanCpf !== oldClient.cpf) {
         const existingClient = await prisma.client.findFirst({
           where: {
             companyId: companyId!,
-            cpf: cpf.trim(),
+            cpf: cleanCpf,
             id: { not: id }, // Excluir o próprio cliente
+            active: true,
           },
         });
 
@@ -176,21 +191,21 @@ export class ClientController {
         data: {
           personType: personType || 'FISICA',
           name,
-          cpf,
-          rg,
-          email,
-          phone,
-          address: sanitizeString(address),
-          city,
-          state,
-          zipCode,
-          profession: sanitizeString(profession),
-          maritalStatus: sanitizeString(maritalStatus),
+          cpf: cleanCpf,
+          rg: cleanRg,
+          email: cleanEmail,
+          phone: cleanPhone,
+          address: sanitizeString(address) || null,
+          city: city?.trim() || null,
+          state: state?.trim() || null,
+          zipCode: zipCode?.trim() || null,
+          profession: sanitizeString(profession) || null,
+          maritalStatus: sanitizeString(maritalStatus) || null,
           birthDate: birthDate ? new Date(birthDate) : null,
-          representativeName: sanitizeString(representativeName),
-          representativeCpf,
-          notes: sanitizeString(notes),
-          tag: sanitizeString(tag),
+          representativeName: sanitizeString(representativeName) || null,
+          representativeCpf: cleanRepresentativeCpf,
+          notes: sanitizeString(notes) || null,
+          tag: sanitizeString(tag) || null,
         },
       });
 
