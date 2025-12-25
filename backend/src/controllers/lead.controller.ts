@@ -361,6 +361,28 @@ export class LeadController {
         }
       }
 
+      // Verificar se CPF foi informado e se já existe
+      const cleanCpf = cpf?.trim() || null;
+      if (cleanCpf) {
+        const existingClientByCpf = await prisma.client.findFirst({
+          where: {
+            companyId,
+            cpf: cleanCpf,
+            active: true,
+          },
+        });
+
+        if (existingClientByCpf) {
+          return res.status(400).json({
+            error: 'Já existe um cliente com este CPF/CNPJ',
+            existingClient: {
+              id: existingClientByCpf.id,
+              name: existingClientByCpf.name,
+            },
+          });
+        }
+      }
+
       // Criar cliente e atualizar lead em uma transação
       const result = await prisma.$transaction(async (tx) => {
         // Criar cliente
@@ -371,20 +393,20 @@ export class LeadController {
             name: lead.name,
             email: lead.email,
             phone: lead.phone,
-            cpf,
-            rg,
-            address: sanitizeString(address),
-            city,
-            state,
-            zipCode,
-            profession: sanitizeString(profession),
-            maritalStatus: sanitizeString(maritalStatus),
+            cpf: cleanCpf, // Usar null se vazio para evitar conflito de unique constraint
+            rg: rg?.trim() || null,
+            address: sanitizeString(address) || null,
+            city: city?.trim() || null,
+            state: state?.trim() || null,
+            zipCode: zipCode?.trim() || null,
+            profession: sanitizeString(profession) || null,
+            maritalStatus: sanitizeString(maritalStatus) || null,
             birthDate: birthDate ? new Date(birthDate) : null,
             notes: sanitizeString(
               [lead.contactReason, lead.notes, additionalNotes]
                 .filter(Boolean)
                 .join('\n\n--- Lead convertido ---\n\n')
-            ),
+            ) || null,
           },
         });
 
