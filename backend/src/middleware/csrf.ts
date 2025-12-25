@@ -151,7 +151,17 @@ export const csrfProtection = async (req: Request, res: Response, next: NextFunc
       return next();
     }
 
-    // 3. Validar Origin/Referer (primeira linha de defesa)
+    // 3. Verificar JWT primeiro - requisicoes com Authorization header customizado
+    // sao seguras contra CSRF pois navegadores nao permitem enviar headers customizados
+    // em forms HTML ou requisicoes cross-origin simples
+    const hasJwt = req.headers.authorization?.startsWith('Bearer ');
+    if (hasJwt) {
+      // JWT com header Authorization e suficiente para APIs REST
+      // A maioria dos ataques CSRF nao consegue enviar headers customizados
+      return next();
+    }
+
+    // 4. Validar Origin/Referer para requisicoes sem JWT
     if (!validateOrigin(req)) {
       appLogger.warn('CSRF: Invalid origin/referer', {
         path: req.path,
@@ -167,19 +177,12 @@ export const csrfProtection = async (req: Request, res: Response, next: NextFunc
       return;
     }
 
-    // 4. Validar Double Submit Cookie
+    // 5. Validar Double Submit Cookie
     const cookieToken = req.cookies?.[CSRF_COOKIE_NAME];
     const headerToken = req.headers[CSRF_HEADER_NAME] as string;
 
-    // Se nao tem tokens, verificar se tem JWT (APIs autenticadas sao menos vulneraveis)
+    // Se nao tem tokens e chegou aqui, bloquear
     if (!cookieToken && !headerToken) {
-      const hasJwt = req.headers.authorization?.startsWith('Bearer ');
-
-      if (hasJwt) {
-        // JWT + Origin validation e suficiente para APIs REST
-        // A maioria dos ataques CSRF nao consegue enviar headers customizados
-        return next();
-      }
 
       // Sem JWT e sem CSRF token - bloquear
       appLogger.warn('CSRF: Missing token', {
