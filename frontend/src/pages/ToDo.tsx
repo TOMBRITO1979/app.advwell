@@ -110,10 +110,14 @@ const ToDo: React.FC = () => {
         : new Date().toISOString();
 
       const data = {
-        ...formData,
+        title: formData.title,
+        description: formData.description || undefined,
+        priority: formData.priority,
         type: 'TAREFA',
         date: dateWithTime,
-        startDate: dateWithTime,
+        // Converter strings vazias para null/undefined para evitar erro de validação UUID
+        clientId: formData.clientId || undefined,
+        caseId: formData.caseId || undefined,
         completed: false,
         assignedUserIds: selectedUserIds,
       };
