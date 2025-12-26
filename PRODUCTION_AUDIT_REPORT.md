@@ -19,7 +19,7 @@
 | Seguranca OWASP Top 10 | B+ | ✅ PARCIALMENTE CORRIGIDO |
 | Criptografia | A- | APROVADO |
 | Rate Limiting | A- | ✅ CORRIGIDO |
-| Escalabilidade Horizontal | C | BLOQUEADORES CRITICOS |
+| Escalabilidade e SPOFs | C+ | ✅ PARCIALMENTE CORRIGIDO |
 | Tratamento de Erros | B | REQUER MELHORIAS |
 
 ### VEREDITO FINAL
@@ -181,52 +181,109 @@ Os secrets em `/root/app.advwell/.env` foram expostos nesta auditoria.
 
 ---
 
-## 6. ESCALABILIDADE HORIZONTAL (NOTA: C)
+## 6. ESCALABILIDADE E SPOFS (NOTA: C+)
 
-### Status: BLOQUEADORES CRITICOS PARA MULTI-VPS
+### Status: ✅ PARCIALMENTE CORRIGIDO (Atualizado 2025-12-26)
 
-O sistema funciona bem em um unico VPS com 4 replicas, mas tem **3 bloqueadores criticos** para escalar em multiplos VPS:
+O sistema funciona bem em VPS unico com 4 replicas. Alguns SPOFs foram mitigados:
 
-### BLOQUEADOR 1: Bull Queues Nao Usam Sentinel
+### ANALISE DE SINGLE POINTS OF FAILURE (SPOFs)
+
+| SPOF | Status | Descricao |
+|------|--------|-----------|
+| Redis unico | ✅ **CORRIGIDO** | Redis Sentinel implementado (master + replica + 3 sentinels) |
+| PostgreSQL unico | ⚠️ **MITIGADO** | Backup diario automatico para S3 (30 dias retencao) |
+| Swarm 1 no | ❌ **PENDENTE** | Ainda single-node (sera adicionada VPS) |
+| Traefik unico | ❌ **PENDENTE** | Ainda single instance |
+
+### ✅ CORRIGIDO: Redis High Availability
+```
+Infraestrutura atual (docker-compose.yml):
+├── redis (master) ----------- 3GB, appendonly
+├── redis-replica ------------ 2.5GB, sync automatico
+├── redis-sentinel-1 --------- failover automatico
+├── redis-sentinel-2 --------- failover automatico
+└── redis-sentinel-3 --------- failover automatico
+
+Backend: REDIS_SENTINEL_ENABLED=true
+```
+
+### ⚠️ MITIGADO: PostgreSQL
+```
+Protecao atual:
+├── Backup diario as 03:00 para S3
+├── Retencao de 30 dias
+├── max_connections=500 (usando ~60)
+└── Restore testado e documentado
+
+RPO (perda maxima): 24 horas
+RTO (tempo restauracao): ~15 minutos
+```
+
+### ❌ PENDENTE: Bloqueadores para Multi-VPS
+
+**BLOQUEADOR 1: Bull Queues Nao Usam Sentinel**
 ```
 ARQUIVO: backend/src/queues/sync.queue.ts (linhas 14-20)
 ARQUIVO: backend/src/queues/email.queue.ts (linhas 8-13)
 PROBLEMA: Conexao direta ao Redis, ignora Sentinel
 IMPACTO: Failover quebra as filas
+SOLUCAO: Usar ioredis com configuracao Sentinel
 ```
 
-### BLOQUEADOR 2: Cron Jobs com Leader Election Local
+**BLOQUEADOR 2: Cron Jobs com Leader Election Local**
 ```
 ARQUIVO: backend/src/index.ts (linhas 399-533)
 PROBLEMA: Leader election assume rede Docker local
 IMPACTO: Split-brain em VPS diferentes
+SOLUCAO: Adicionar flag ENABLE_CRON_JOBS por VPS
 ```
 
-### BLOQUEADOR 3: Redis Sentinel Usa DNS Docker
+**BLOQUEADOR 3: Redis Sentinel Usa DNS Docker**
 ```
 ARQUIVO: docker-compose.yml (linhas 251-257)
 PROBLEMA: Sentinels usam hostnames Docker internos
 IMPACTO: Workers remotos nao conseguem resolver
+SOLUCAO: Expor portas ou usar Redis gerenciado
 ```
 
-**Arquitetura Recomendada para Multi-VPS:**
-```
-VPS-1 (Primario - 16GB RAM)
-├── PostgreSQL (unica instancia)
-├── Redis Master
-├── Redis Sentinel 1
-├── Backend (2 replicas) - CRON ATIVADO
-└── Frontend (1 replica)
+### ARQUITETURA RECOMENDADA PARA 2 VPS
 
-VPS-2 (Worker - 8GB RAM)
-├── Redis Replica
-├── Redis Sentinel 2
-└── Backend (4 replicas) - CRON DESATIVADO
-
-VPS-3 (Worker - 8GB RAM)
-├── Redis Sentinel 3
-└── Backend (4 replicas) - CRON DESATIVADO
 ```
+┌─────────────────────────────────────┐  ┌─────────────────────────────────────┐
+│  VPS-1 (Primario - 16GB RAM)        │  │  VPS-2 (Worker - 8GB RAM)           │
+│  ├── PostgreSQL (master)            │  │  ├── Redis Replica                  │
+│  ├── Redis Master                   │  │  ├── Redis Sentinel 2               │
+│  ├── Redis Sentinel 1               │  │  ├── Backend (4 replicas)           │
+│  ├── Redis Sentinel 3               │  │  │   └── CRON DESATIVADO            │
+│  ├── Backend (2 replicas)           │  │  └── Frontend (opcional)            │
+│  │   └── CRON ATIVADO               │  │                                     │
+│  ├── Frontend (1 replica)           │  │  Funcao: Workers para processar     │
+│  ├── Traefik                        │  │  requisicoes e jobs em paralelo     │
+│  └── Monitoramento                  │  │                                     │
+└─────────────────────────────────────┘  └─────────────────────────────────────┘
+              │                                        │
+              └──────────── Rede Privada ──────────────┘
+                    (VPN ou VLAN do provedor)
+```
+
+### PASSOS PARA ADICIONAR VPS-2
+
+1. **Preparar VPS-1:**
+   - Expor portas Redis: 6379, 26379 (via VPN/firewall)
+   - Adicionar `ENABLE_CRON_JOBS=true` no backend
+   - Configurar Sentinel com IPs reais
+
+2. **Configurar VPS-2:**
+   - Instalar Docker Swarm (join como worker)
+   - Configurar Redis Replica apontando para VPS-1
+   - Deploy backend com `ENABLE_CRON_JOBS=false`
+
+3. **Corrigir Bull Queues:**
+   - Atualizar sync.queue.ts e email.queue.ts para usar Sentinel
+
+4. **DNS/Load Balancer:**
+   - Configurar DNS round-robin ou load balancer externo
 
 ---
 
@@ -273,6 +330,12 @@ VPS-3 (Worker - 8GB RAM)
 
 ### Status: SUPORTA 200 ESCRITORIOS em VPS Unico
 
+**Alta Disponibilidade Atual:**
+- ✅ Redis: Master + Replica + 3 Sentinels (failover automatico)
+- ✅ Backend: 4 replicas com health checks
+- ✅ Backup PostgreSQL: Diario para S3 (RPO 24h, RTO 15min)
+- ⚠️ VPS unico: Planejada adicao de VPS-2 para workers
+
 ---
 
 ## 9. LISTA DE CORRECOES
@@ -304,14 +367,16 @@ VPS-3 (Worker - 8GB RAM)
 | 11 | Adicionar companyId em tabelas filhas | schema.prisma | PENDENTE |
 | 12 | ✅ Implementar CSRF protection | middleware/csrf.ts | FEITO |
 
-### PARA MULTI-VPS (Quando Necessario)
+### PARA MULTI-VPS (Planejado)
 
-| # | Tarefa | Esforco |
-|---|--------|---------|
-| 13 | Bull queues com Sentinel | 4 horas |
-| 14 | Flag ENABLE_CRON_JOBS | 2 horas |
-| 15 | Expor Sentinel ou usar Redis gerenciado | 8 horas |
-| 16 | Implementar PgBouncer | 4 horas |
+| # | Tarefa | Arquivo | Status | Prioridade |
+|---|--------|---------|--------|------------|
+| 13 | ✅ Redis Sentinel configurado | docker-compose.yml | FEITO | - |
+| 14 | Bull queues usar Sentinel | sync.queue.ts, email.queue.ts | PENDENTE | ALTA |
+| 15 | Flag ENABLE_CRON_JOBS | index.ts + docker-compose.yml | PENDENTE | ALTA |
+| 16 | Expor portas Redis (VPN/firewall) | docker-compose.yml | PENDENTE | ALTA |
+| 17 | Configurar VPS-2 como worker | nova VPS | PENDENTE | MEDIA |
+| 18 | DNS/Load balancer para 2 VPS | infraestrutura | PENDENTE | MEDIA |
 
 ---
 
@@ -341,8 +406,19 @@ VPS-3 (Worker - 8GB RAM)
 - [ ] Alertas para tentativas de acesso cross-tenant
 - [ ] Monitorar rate limit hits
 - [ ] Revisar logs de seguranca diariamente
-- [ ] Backup diario verificado
+- [x] ✅ Backup diario verificado (S3, 30 dias retencao)
 - [ ] Teste de failover Redis semanal
+
+### Para Adicionar VPS-2 (Multi-VPS)
+
+- [x] ✅ Redis Sentinel configurado (master + replica + 3 sentinels)
+- [ ] Atualizar Bull queues para usar Sentinel (sync.queue.ts, email.queue.ts)
+- [ ] Adicionar flag ENABLE_CRON_JOBS no backend
+- [ ] Expor portas Redis via VPN/firewall
+- [ ] Provisionar VPS-2 (8GB RAM recomendado)
+- [ ] Configurar VPS-2 como Docker Swarm worker
+- [ ] Deploy backend na VPS-2 com CRON desativado
+- [ ] Configurar DNS/load balancer
 
 ---
 
@@ -352,8 +428,10 @@ O sistema AdvWell demonstra **maturidade de seguranca** com implementacoes solid
 - Isolamento multi-tenant
 - Autenticacao JWT
 - Criptografia de dados sensiveis
-- Rate limiting distribuido (agora com cobertura completa)
+- Rate limiting distribuido (cobertura completa)
 - Protecao CSRF
+- Redis High Availability (Sentinel)
+- Backup automatizado (S3)
 - Logging estruturado
 
 Os problemas criticos identificados foram **corrigidos** e nao representam riscos de vazamento de dados entre escritorios.
@@ -364,12 +442,24 @@ Os problemas criticos identificados foram **corrigidos** e nao representam risco
 1. ✅ 3 itens criticos corrigidos (axios, rate limiting, Redis store)
 2. ✅ CSRF protection implementada
 3. ✅ Rate limiting em LGPD endpoints
-4. ⚠️ PENDENTE: Rotacionar todos os secrets
-5. ⚠️ PENDENTE: Monitorar ativamente nos primeiros 30 dias
+4. ✅ Redis HA com Sentinel (SPOF corrigido)
+5. ✅ Backup diario PostgreSQL para S3 (SPOF mitigado)
+6. ⚠️ PENDENTE: Rotacionar todos os secrets
+7. ⚠️ PENDENTE: Monitorar ativamente nos primeiros 30 dias
 
-### Para Escalar Multi-VPS: NAO APROVADO AINDA
+### Para Escalar Multi-VPS: EM PREPARACAO
 
-Requer trabalho adicional para resolver os bloqueadores de escalabilidade horizontal.
+**SPOFs Resolvidos:**
+- ✅ Redis: Sentinel com failover automatico
+
+**SPOFs Pendentes (requer VPS-2):**
+- ⚠️ VPS unico: Swarm single-node
+- ⚠️ Traefik unico: Sem HA
+
+**Proximos passos para Multi-VPS:**
+1. Atualizar Bull queues para Sentinel
+2. Adicionar flag ENABLE_CRON_JOBS
+3. Provisionar e configurar VPS-2
 
 ---
 
