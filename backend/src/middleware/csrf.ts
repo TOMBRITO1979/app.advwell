@@ -17,15 +17,24 @@ const CSRF_HEADER_NAME = 'x-csrf-token';
 const PROTECTED_METHODS = ['POST', 'PUT', 'DELETE', 'PATCH'];
 
 // Rotas isentas de CSRF (webhooks externos, APIs publicas)
+// NOTA: req.path pode ou nao incluir /api dependendo de onde o middleware e aplicado
 const EXEMPT_ROUTES = [
   '/api/subscription/webhook',      // Stripe webhook (usa assinatura propria)
+  '/subscription/webhook',          // Sem prefixo /api
   '/api/auth/login',                // Login inicial (sem token ainda)
+  '/auth/login',                    // Sem prefixo /api
   '/api/auth/register',             // Registro (sem token ainda)
+  '/auth/register',                 // Sem prefixo /api
   '/api/auth/forgot-password',      // Recuperacao de senha
+  '/auth/forgot-password',          // Sem prefixo /api
   '/api/auth/reset-password',       // Reset de senha
+  '/auth/reset-password',           // Sem prefixo /api
   '/api/auth/verify-email',         // Verificacao de email
+  '/auth/verify-email',             // Sem prefixo /api
   '/api/lgpd/consent',              // Consentimento LGPD (publico)
+  '/lgpd/consent',                  // Sem prefixo /api
   '/api/integration/chatwoot/sso',  // SSO externo
+  '/integration/chatwoot/sso',      // Sem prefixo /api
   '/health',                        // Health checks
 ];
 
