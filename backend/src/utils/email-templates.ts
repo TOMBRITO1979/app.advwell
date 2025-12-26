@@ -7,6 +7,25 @@
  * - {data} - Data atual formatada
  */
 
+import DOMPurify from 'isomorphic-dompurify';
+
+/**
+ * SEGURANCA: Sanitiza conteudo do usuario para prevenir XSS em templates de email
+ * Remove tags HTML/JS e escapa caracteres especiais
+ */
+const sanitizeForTemplate = (input: string | undefined): string => {
+  if (!input) return '';
+  // Remove qualquer HTML/script tags
+  const sanitized = DOMPurify.sanitize(input, { ALLOWED_TAGS: [] });
+  // Escapa caracteres HTML restantes para prevenir XSS
+  return sanitized
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+};
+
 export const emailTemplates = {
   // Template 1: Perícia Marcada
   pericia_marcada: {
@@ -414,6 +433,7 @@ export const emailTemplates = {
 
 /**
  * Substitui variáveis no template
+ * SEGURANCA: Todas as variaveis sao sanitizadas para prevenir XSS
  */
 export function replaceTemplateVariables(
   template: string,
@@ -425,10 +445,15 @@ export function replaceTemplateVariables(
 ): string {
   let result = template;
 
-  // Substituir variáveis
-  result = result.replace(/{nome_cliente}/g, variables.nome_cliente || '[Nome do Cliente]');
-  result = result.replace(/{nome_empresa}/g, variables.nome_empresa || '[Nome da Empresa]');
-  result = result.replace(/{data}/g, variables.data || new Date().getFullYear().toString());
+  // SEGURANCA: Sanitizar todas as variaveis antes de inserir no template HTML
+  const safeNomeCliente = sanitizeForTemplate(variables.nome_cliente) || '[Nome do Cliente]';
+  const safeNomeEmpresa = sanitizeForTemplate(variables.nome_empresa) || '[Nome da Empresa]';
+  const safeData = sanitizeForTemplate(variables.data) || new Date().getFullYear().toString();
+
+  // Substituir variáveis com valores sanitizados
+  result = result.replace(/{nome_cliente}/g, safeNomeCliente);
+  result = result.replace(/{nome_empresa}/g, safeNomeEmpresa);
+  result = result.replace(/{data}/g, safeData);
 
   return result;
 }
