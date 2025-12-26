@@ -292,7 +292,7 @@ export class AccountsPayableController {
         select: { name: true },
       });
 
-      const doc = new PDFDocument({ margin: 50, size: 'A4', bufferPages: true });
+      const doc = new PDFDocument({ margin: 50, size: 'A4' });
 
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', 'attachment; filename=contas_a_pagar.pdf');
@@ -372,8 +372,8 @@ export class AccountsPayableController {
 
       pdfStyles.addTable(doc, headers, rows, columnWidths);
 
-      // Adicionar rodapés a todas as páginas
-      pdfStyles.addFootersToAllPages(doc);
+      // Rodapé
+      pdfStyles.addFooter(doc, 1, 1);
 
       doc.end();
     } catch (error) {
@@ -728,7 +728,7 @@ export class AccountsPayableController {
         select: { name: true },
       });
 
-      const doc = new PDFDocument({ margin: 50, size: 'A4', bufferPages: true });
+      const doc = new PDFDocument({ margin: 50, size: 'A4' });
 
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', `attachment; filename=extrato_${new Date().toISOString().split('T')[0]}.pdf`);
@@ -802,8 +802,8 @@ export class AccountsPayableController {
 
       pdfStyles.addTable(doc, headers, rows, columnWidths);
 
-      // Adicionar rodapés a todas as páginas
-      pdfStyles.addFootersToAllPages(doc);
+      // Rodapé
+      pdfStyles.addFooter(doc, 1, 1);
 
       doc.end();
     } catch (error) {

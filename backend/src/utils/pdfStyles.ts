@@ -86,76 +86,72 @@ export function addHeader(
 }
 
 /**
- * Adiciona rodapés a todas as páginas do PDF
- * IMPORTANTE: O documento deve ser criado com { bufferPages: true }
- * Chamar esta função ANTES de doc.end()
+ * Adiciona rodapé simples ao PDF (apenas na página atual)
+ * Usa desenho gráfico direto para evitar criação de páginas extras
  */
-export function addFootersToAllPages(doc: PDFKit.PDFDocument) {
-  const pageRange = doc.bufferedPageRange();
-  const totalPages = pageRange.count;
-
-  for (let i = 0; i < totalPages; i++) {
-    doc.switchToPage(i);
-    drawFooterOnCurrentPage(doc, i + 1, totalPages);
-  }
-}
-
-/**
- * Desenha o rodapé na página atual (uso interno)
- * Usa save/restore para isolar o desenho do rodapé
- */
-function drawFooterOnCurrentPage(doc: PDFKit.PDFDocument, pageNumber: number, totalPages: number) {
+export function addFooter(doc: PDFKit.PDFDocument, pageNumber?: number, totalPages?: number) {
   const pageWidth = doc.page.width;
   const pageHeight = doc.page.height;
   const margin = doc.page.margins.left;
-  const footerY = pageHeight - 40;
-  const textY = footerY + 10;
-
-  // Salvar estado gráfico
-  doc.save();
+  const footerY = pageHeight - 35;
+  const textY = footerY + 8;
 
   // Linha separadora (desenho gráfico não cria páginas)
   doc
     .strokeColor(colors.grayLight)
-    .lineWidth(1)
+    .lineWidth(0.5)
     .moveTo(margin, footerY)
     .lineTo(pageWidth - margin, footerY)
     .stroke();
 
-  // Usar _fragment para desenhar texto sem paginação
-  // Este é um método interno do PDFKit que não dispara lógica de página
+  // Preparar textos do rodapé
+  const dateText = `Gerado em ${new Date().toLocaleString('pt-BR')}`;
+  const pageText = pageNumber && totalPages
+    ? `Página ${pageNumber} de ${totalPages}`
+    : pageNumber
+    ? `Página ${pageNumber}`
+    : '';
+
+  // Usar addContent para inserir texto diretamente no stream PDF
+  // Isso evita a lógica de paginação do doc.text()
+  doc.save();
   doc.fillColor(colors.gray).fontSize(fonts.tiny);
 
-  const dateText = `Gerado em ${new Date().toLocaleString('pt-BR')}`;
-  const pageText = `Página ${pageNumber} de ${totalPages}`;
+  // Posicionar e desenhar a data (esquerda)
+  const dateWidth = doc.widthOfString(dateText);
+  doc
+    .fill()  // Aplicar cor
+    .font('Helvetica')
+    .fontSize(fonts.tiny);
 
-  // Calcular larguras
-  const pageTextWidth = doc.widthOfString(pageText);
+  // Usar método interno _line para evitar paginação
+  // Alternativa: desenhar como parte do content stream
+  doc.addContent(`BT`); // Begin Text
+  doc.addContent(`/F1 ${fonts.tiny} Tf`); // Set font
+  doc.addContent(`${margin} ${pageHeight - textY - 5} Td`); // Position (inverte Y para PDF coords)
+  doc.addContent(`(${dateText}) Tj`); // Show text
+  doc.addContent(`ET`); // End Text
 
-  // Desenhar usando posicionamento direto no content stream
-  // Método: definir posição com translate e desenhar
-  doc.save();
-  doc.translate(margin, textY);
-  doc.text(dateText, 0, 0, { lineBreak: false, baseline: 'top' });
+  // Desenhar número da página (direita)
+  if (pageText) {
+    const pageTextWidth = doc.widthOfString(pageText);
+    doc.addContent(`BT`);
+    doc.addContent(`/F1 ${fonts.tiny} Tf`);
+    doc.addContent(`${pageWidth - margin - pageTextWidth} ${pageHeight - textY - 5} Td`);
+    doc.addContent(`(${pageText}) Tj`);
+    doc.addContent(`ET`);
+  }
+
   doc.restore();
-
-  doc.save();
-  doc.translate(pageWidth - margin - pageTextWidth, textY);
-  doc.text(pageText, 0, 0, { lineBreak: false, baseline: 'top' });
-  doc.restore();
-
   doc.fillColor(colors.black);
-
-  // Restaurar estado gráfico
-  doc.restore();
 }
 
 /**
- * @deprecated Use addFootersToAllPages() com bufferPages: true
+ * @deprecated Para documentos multi-página, considere outra abordagem
  */
-export function addFooter(doc: PDFKit.PDFDocument, pageNumber: number, totalPages?: number) {
-  // Mantido para compatibilidade, mas recomenda-se usar addFootersToAllPages
-  drawFooterOnCurrentPage(doc, pageNumber, totalPages || 1);
+export function addFootersToAllPages(doc: PDFKit.PDFDocument) {
+  // Chamar addFooter uma vez é suficiente para a última página
+  addFooter(doc, 1, 1);
 }
 
 /**
