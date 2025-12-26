@@ -87,16 +87,15 @@ export function addHeader(
 
 /**
  * Adiciona rodapé simples ao PDF (apenas na página atual)
- * Usa desenho gráfico direto para evitar criação de páginas extras
  */
 export function addFooter(doc: PDFKit.PDFDocument, pageNumber?: number, totalPages?: number) {
   const pageWidth = doc.page.width;
-  const pageHeight = doc.page.height;
   const margin = doc.page.margins.left;
-  const footerY = pageHeight - 35;
-  const textY = footerY + 8;
 
-  // Linha separadora (desenho gráfico não cria páginas)
+  // Posicionar 20 pontos abaixo da posição atual
+  const footerY = doc.y + 20;
+
+  // Linha separadora
   doc
     .strokeColor(colors.grayLight)
     .lineWidth(0.5)
@@ -112,37 +111,18 @@ export function addFooter(doc: PDFKit.PDFDocument, pageNumber?: number, totalPag
     ? `Página ${pageNumber}`
     : '';
 
-  // Usar addContent para inserir texto diretamente no stream PDF
-  // Isso evita a lógica de paginação do doc.text()
-  doc.save();
-  doc.fillColor(colors.gray).fontSize(fonts.tiny);
+  // Configurar fonte e cor
+  doc.font('Helvetica').fontSize(fonts.tiny).fillColor(colors.gray);
 
-  // Posicionar e desenhar a data (esquerda)
-  const dateWidth = doc.widthOfString(dateText);
-  doc
-    .fill()  // Aplicar cor
-    .font('Helvetica')
-    .fontSize(fonts.tiny);
+  // Desenhar data à esquerda
+  doc.text(dateText, margin, footerY + 8, { lineBreak: false });
 
-  // Usar método interno _line para evitar paginação
-  // Alternativa: desenhar como parte do content stream
-  doc.addContent(`BT`); // Begin Text
-  doc.addContent(`/F1 ${fonts.tiny} Tf`); // Set font
-  doc.addContent(`${margin} ${pageHeight - textY - 5} Td`); // Position (inverte Y para PDF coords)
-  doc.addContent(`(${dateText}) Tj`); // Show text
-  doc.addContent(`ET`); // End Text
-
-  // Desenhar número da página (direita)
+  // Desenhar número da página à direita
   if (pageText) {
     const pageTextWidth = doc.widthOfString(pageText);
-    doc.addContent(`BT`);
-    doc.addContent(`/F1 ${fonts.tiny} Tf`);
-    doc.addContent(`${pageWidth - margin - pageTextWidth} ${pageHeight - textY - 5} Td`);
-    doc.addContent(`(${pageText}) Tj`);
-    doc.addContent(`ET`);
+    doc.text(pageText, pageWidth - margin - pageTextWidth, footerY + 8, { lineBreak: false });
   }
 
-  doc.restore();
   doc.fillColor(colors.black);
 }
 
