@@ -19,7 +19,7 @@
 | Seguranca OWASP Top 10 | B+ | ✅ PARCIALMENTE CORRIGIDO |
 | Criptografia | A- | APROVADO |
 | Rate Limiting | A- | ✅ CORRIGIDO |
-| Escalabilidade e SPOFs | C+ | ✅ PARCIALMENTE CORRIGIDO |
+| Escalabilidade e SPOFs | B+ | ✅ PRONTO PARA MULTI-NODE |
 | Tratamento de Erros | B | REQUER MELHORIAS |
 
 ### VEREDITO FINAL
@@ -181,9 +181,9 @@ Os secrets em `/root/app.advwell/.env` foram expostos nesta auditoria.
 
 ---
 
-## 6. ESCALABILIDADE E SPOFS (NOTA: C+)
+## 6. ESCALABILIDADE E SPOFS (NOTA: B+)
 
-### Status: ✅ PARCIALMENTE CORRIGIDO (Atualizado 2025-12-26)
+### Status: ✅ PRONTO PARA SWARM MULTI-NODE (Verificado 2025-12-26)
 
 O sistema funciona bem em VPS unico com 4 replicas. Alguns SPOFs foram mitigados:
 
@@ -220,31 +220,29 @@ RPO (perda maxima): 24 horas
 RTO (tempo restauracao): ~15 minutos
 ```
 
-### ❌ PENDENTE: Bloqueadores para Multi-VPS
+### ✅ BLOQUEADORES RESOLVIDOS (Verificado 2025-12-26)
 
-**BLOQUEADOR 1: Bull Queues Nao Usam Sentinel**
+**✅ RESOLVIDO: Bull Queues Usam Sentinel**
 ```
-ARQUIVO: backend/src/queues/sync.queue.ts (linhas 14-20)
-ARQUIVO: backend/src/queues/email.queue.ts (linhas 8-13)
-PROBLEMA: Conexao direta ao Redis, ignora Sentinel
-IMPACTO: Failover quebra as filas
-SOLUCAO: Usar ioredis com configuracao Sentinel
-```
-
-**BLOQUEADOR 2: Cron Jobs com Leader Election Local**
-```
-ARQUIVO: backend/src/index.ts (linhas 399-533)
-PROBLEMA: Leader election assume rede Docker local
-IMPACTO: Split-brain em VPS diferentes
-SOLUCAO: Adicionar flag ENABLE_CRON_JOBS por VPS
+ARQUIVO: backend/src/queues/sync.queue.ts (linha 17-19)
+ARQUIVO: backend/src/queues/email.queue.ts (linha 11-13)
+IMPLEMENTACAO: createClient: () => createRedisClient()
+STATUS: createRedisClient() usa ioredis com Sentinel quando REDIS_SENTINEL_ENABLED=true
 ```
 
-**BLOQUEADOR 3: Redis Sentinel Usa DNS Docker**
+**✅ RESOLVIDO: Leader Election Baseado em Redis**
 ```
-ARQUIVO: docker-compose.yml (linhas 251-257)
-PROBLEMA: Sentinels usam hostnames Docker internos
-IMPACTO: Workers remotos nao conseguem resolver
-SOLUCAO: Expor portas ou usar Redis gerenciado
+ARQUIVO: backend/src/index.ts (linhas 442-474)
+IMPLEMENTACAO: redis.set(CRON_LEADER_KEY, ..., 'NX') + fencing token
+STATUS: Funciona em qualquer VPS que acesse o mesmo Redis
+FLAG: ENABLE_CRON=false para desabilitar em workers
+```
+
+**⚠️ ATENCAO: DNS Docker para Swarm Multi-Node**
+```
+CONTEXTO: Sentinels usam hostnames Docker (redis-sentinel-1, etc)
+PARA SWARM MULTI-NODE: Funciona via overlay network (network_public)
+PARA VPS SEPARADAS (sem Swarm): Requer expor portas ou Redis gerenciado
 ```
 
 ### ARQUITETURA RECOMENDADA PARA 2 VPS
@@ -267,23 +265,30 @@ SOLUCAO: Expor portas ou usar Redis gerenciado
                     (VPN ou VLAN do provedor)
 ```
 
-### PASSOS PARA ADICIONAR VPS-2
+### PASSOS PARA ADICIONAR VPS-2 (Simplificado)
 
-1. **Preparar VPS-1:**
-   - Expor portas Redis: 6379, 26379 (via VPN/firewall)
-   - Adicionar `ENABLE_CRON_JOBS=true` no backend
-   - Configurar Sentinel com IPs reais
+> **NOTA:** O codigo ja esta pronto! Apenas infraestrutura necessaria.
 
-2. **Configurar VPS-2:**
-   - Instalar Docker Swarm (join como worker)
-   - Configurar Redis Replica apontando para VPS-1
-   - Deploy backend com `ENABLE_CRON_JOBS=false`
+1. **Na VPS-2:**
+   ```bash
+   # Instalar Docker
+   curl -fsSL https://get.docker.com | sh
 
-3. **Corrigir Bull Queues:**
-   - Atualizar sync.queue.ts e email.queue.ts para usar Sentinel
+   # Join no Swarm (obter token do manager)
+   docker swarm join --token <TOKEN> <MANAGER_IP>:2377
+   ```
 
-4. **DNS/Load Balancer:**
-   - Configurar DNS round-robin ou load balancer externo
+2. **No Manager (VPS-1):**
+   ```bash
+   # Escalar backend (replicas serao distribuidas automaticamente)
+   docker service scale advtom_backend=6
+   ```
+
+3. **(Opcional) Desabilitar CRON na VPS-2:**
+   - Adicionar `ENABLE_CRON=false` nas replicas do worker
+   - Ou usar placement constraints para separar
+
+**Documentacao completa:** `HORIZONTAL_SCALING.md`
 
 ---
 
@@ -367,16 +372,16 @@ SOLUCAO: Expor portas ou usar Redis gerenciado
 | 11 | Adicionar companyId em tabelas filhas | schema.prisma | PENDENTE |
 | 12 | ✅ Implementar CSRF protection | middleware/csrf.ts | FEITO |
 
-### PARA MULTI-VPS (Planejado)
+### PARA MULTI-VPS (Verificado 2025-12-26)
 
-| # | Tarefa | Arquivo | Status | Prioridade |
-|---|--------|---------|--------|------------|
-| 13 | ✅ Redis Sentinel configurado | docker-compose.yml | FEITO | - |
-| 14 | Bull queues usar Sentinel | sync.queue.ts, email.queue.ts | PENDENTE | ALTA |
-| 15 | Flag ENABLE_CRON_JOBS | index.ts + docker-compose.yml | PENDENTE | ALTA |
-| 16 | Expor portas Redis (VPN/firewall) | docker-compose.yml | PENDENTE | ALTA |
-| 17 | Configurar VPS-2 como worker | nova VPS | PENDENTE | MEDIA |
-| 18 | DNS/Load balancer para 2 VPS | infraestrutura | PENDENTE | MEDIA |
+| # | Tarefa | Arquivo | Status | Verificacao |
+|---|--------|---------|--------|-------------|
+| 13 | ✅ Redis Sentinel configurado | docker-compose.yml | FEITO | Master + Replica + 3 Sentinels |
+| 14 | ✅ Bull queues usar Sentinel | sync.queue.ts:17, email.queue.ts:11 | FEITO | createRedisClient() |
+| 15 | ✅ Flag ENABLE_CRON | index.ts:495 | FEITO | `ENABLE_CRON=false` |
+| 16 | ⚠️ Rede para VPS-2 | docker-compose.yml | SWARM OK | Overlay network funciona |
+| 17 | Configurar VPS-2 como worker | nova VPS | PENDENTE | Quando necessario |
+| 18 | DNS/Load balancer para 2 VPS | infraestrutura | PENDENTE | Quando necessario |
 
 ---
 
@@ -409,16 +414,19 @@ SOLUCAO: Expor portas ou usar Redis gerenciado
 - [x] ✅ Backup diario verificado (S3, 30 dias retencao)
 - [ ] Teste de failover Redis semanal
 
-### Para Adicionar VPS-2 (Multi-VPS)
+### Para Adicionar VPS-2 (Multi-VPS) - Verificado 2025-12-26
 
+**Codigo pronto:**
 - [x] ✅ Redis Sentinel configurado (master + replica + 3 sentinels)
-- [ ] Atualizar Bull queues para usar Sentinel (sync.queue.ts, email.queue.ts)
-- [ ] Adicionar flag ENABLE_CRON_JOBS no backend
-- [ ] Expor portas Redis via VPN/firewall
+- [x] ✅ Bull queues usam Sentinel (sync.queue.ts:17, email.queue.ts:11)
+- [x] ✅ Flag ENABLE_CRON existe (index.ts:495, usar `ENABLE_CRON=false`)
+- [x] ✅ Leader election baseado em Redis (index.ts:442-474)
+
+**Infraestrutura pendente (quando adicionar VPS-2):**
 - [ ] Provisionar VPS-2 (8GB RAM recomendado)
-- [ ] Configurar VPS-2 como Docker Swarm worker
-- [ ] Deploy backend na VPS-2 com CRON desativado
-- [ ] Configurar DNS/load balancer
+- [ ] Instalar Docker e join no Swarm como worker
+- [ ] Deploy backend na VPS-2 com `ENABLE_CRON=false`
+- [ ] (Opcional) Configurar DNS/load balancer
 
 ---
 
@@ -447,19 +455,19 @@ Os problemas criticos identificados foram **corrigidos** e nao representam risco
 6. ⚠️ PENDENTE: Rotacionar todos os secrets
 7. ⚠️ PENDENTE: Monitorar ativamente nos primeiros 30 dias
 
-### Para Escalar Multi-VPS: EM PREPARACAO
+### Para Escalar Multi-VPS: ✅ CODIGO PRONTO
 
-**SPOFs Resolvidos:**
-- ✅ Redis: Sentinel com failover automatico
+**Verificacao tecnica (2025-12-26):**
+- ✅ Bull queues: Usam `createRedisClient()` com Sentinel
+- ✅ Leader election: Baseado em Redis + fencing token
+- ✅ Flag ENABLE_CRON: Existe em index.ts:495
+- ✅ Redis Sentinel: Configurado com failover automatico
 
-**SPOFs Pendentes (requer VPS-2):**
-- ⚠️ VPS unico: Swarm single-node
-- ⚠️ Traefik unico: Sem HA
+**Pendente apenas infraestrutura:**
+- ⚠️ Provisionar VPS-2 e join no Swarm
+- ⚠️ Deploy backend com `ENABLE_CRON=false`
 
-**Proximos passos para Multi-VPS:**
-1. Atualizar Bull queues para Sentinel
-2. Adicionar flag ENABLE_CRON_JOBS
-3. Provisionar e configurar VPS-2
+**Documentacao:** Ver `HORIZONTAL_SCALING.md` para guia passo-a-passo
 
 ---
 
