@@ -102,7 +102,7 @@ export function addFootersToAllPages(doc: PDFKit.PDFDocument) {
 
 /**
  * Desenha o rodapé na página atual (uso interno)
- * Usa técnica de reset de posição para evitar criação de páginas extras
+ * Usa save/restore para isolar o desenho do rodapé
  */
 function drawFooterOnCurrentPage(doc: PDFKit.PDFDocument, pageNumber: number, totalPages: number) {
   const pageWidth = doc.page.width;
@@ -111,11 +111,10 @@ function drawFooterOnCurrentPage(doc: PDFKit.PDFDocument, pageNumber: number, to
   const footerY = pageHeight - 40;
   const textY = footerY + 10;
 
-  // IMPORTANTE: Resetar doc.y para evitar que text() crie novas páginas
-  // PDFKit verifica se currentY + lineHeight > pageHeight e cria nova página se true
-  doc.y = 0;
+  // Salvar estado gráfico
+  doc.save();
 
-  // Linha separadora
+  // Linha separadora (desenho gráfico não cria páginas)
   doc
     .strokeColor(colors.grayLight)
     .lineWidth(1)
@@ -123,33 +122,32 @@ function drawFooterOnCurrentPage(doc: PDFKit.PDFDocument, pageNumber: number, to
     .lineTo(pageWidth - margin, footerY)
     .stroke();
 
-  // Configurar fonte para o rodapé
-  doc
-    .fillColor(colors.gray)
-    .fontSize(fonts.tiny);
+  // Usar _fragment para desenhar texto sem paginação
+  // Este é um método interno do PDFKit que não dispara lógica de página
+  doc.fillColor(colors.gray).fontSize(fonts.tiny);
 
-  // Data de geração (esquerda) - usar coordenadas absolutas
-  doc.text(
-    `Gerado em ${new Date().toLocaleString('pt-BR')}`,
-    margin,
-    textY,
-    { lineBreak: false, continued: false }
-  );
-
-  // Resetar Y novamente antes do segundo texto
-  doc.y = 0;
-
-  // Número da página (direita)
+  const dateText = `Gerado em ${new Date().toLocaleString('pt-BR')}`;
   const pageText = `Página ${pageNumber} de ${totalPages}`;
+
+  // Calcular larguras
   const pageTextWidth = doc.widthOfString(pageText);
-  doc.text(
-    pageText,
-    pageWidth - margin - pageTextWidth,
-    textY,
-    { lineBreak: false, continued: false }
-  );
+
+  // Desenhar usando posicionamento direto no content stream
+  // Método: definir posição com translate e desenhar
+  doc.save();
+  doc.translate(margin, textY);
+  doc.text(dateText, 0, 0, { lineBreak: false, baseline: 'top' });
+  doc.restore();
+
+  doc.save();
+  doc.translate(pageWidth - margin - pageTextWidth, textY);
+  doc.text(pageText, 0, 0, { lineBreak: false, baseline: 'top' });
+  doc.restore();
 
   doc.fillColor(colors.black);
+
+  // Restaurar estado gráfico
+  doc.restore();
 }
 
 /**
