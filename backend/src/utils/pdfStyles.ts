@@ -102,6 +102,7 @@ export function addFootersToAllPages(doc: PDFKit.PDFDocument) {
 
 /**
  * Desenha o rodapé na página atual (uso interno)
+ * Usa técnica de reset de posição para evitar criação de páginas extras
  */
 function drawFooterOnCurrentPage(doc: PDFKit.PDFDocument, pageNumber: number, totalPages: number) {
   const pageWidth = doc.page.width;
@@ -109,6 +110,10 @@ function drawFooterOnCurrentPage(doc: PDFKit.PDFDocument, pageNumber: number, to
   const margin = doc.page.margins.left;
   const footerY = pageHeight - 40;
   const textY = footerY + 10;
+
+  // IMPORTANTE: Resetar doc.y para evitar que text() crie novas páginas
+  // PDFKit verifica se currentY + lineHeight > pageHeight e cria nova página se true
+  doc.y = 0;
 
   // Linha separadora
   doc
@@ -118,16 +123,21 @@ function drawFooterOnCurrentPage(doc: PDFKit.PDFDocument, pageNumber: number, to
     .lineTo(pageWidth - margin, footerY)
     .stroke();
 
-  // Data de geração (esquerda)
+  // Configurar fonte para o rodapé
   doc
     .fillColor(colors.gray)
-    .fontSize(fonts.tiny)
-    .text(
-      `Gerado em ${new Date().toLocaleString('pt-BR')}`,
-      margin,
-      textY,
-      { lineBreak: false }
-    );
+    .fontSize(fonts.tiny);
+
+  // Data de geração (esquerda) - usar coordenadas absolutas
+  doc.text(
+    `Gerado em ${new Date().toLocaleString('pt-BR')}`,
+    margin,
+    textY,
+    { lineBreak: false, continued: false }
+  );
+
+  // Resetar Y novamente antes do segundo texto
+  doc.y = 0;
 
   // Número da página (direita)
   const pageText = `Página ${pageNumber} de ${totalPages}`;
@@ -136,7 +146,7 @@ function drawFooterOnCurrentPage(doc: PDFKit.PDFDocument, pageNumber: number, to
     pageText,
     pageWidth - margin - pageTextWidth,
     textY,
-    { lineBreak: false }
+    { lineBreak: false, continued: false }
   );
 
   doc.fillColor(colors.black);
