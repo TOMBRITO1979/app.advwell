@@ -86,16 +86,29 @@ export function addHeader(
 }
 
 /**
- * Adiciona rodapé ao PDF (posicionamento absoluto para evitar criação de páginas extras)
+ * Adiciona rodapés a todas as páginas do PDF
+ * IMPORTANTE: O documento deve ser criado com { bufferPages: true }
+ * Chamar esta função ANTES de doc.end()
  */
-export function addFooter(doc: PDFKit.PDFDocument, pageNumber: number, totalPages?: number) {
+export function addFootersToAllPages(doc: PDFKit.PDFDocument) {
+  const pageRange = doc.bufferedPageRange();
+  const totalPages = pageRange.count;
+
+  for (let i = 0; i < totalPages; i++) {
+    doc.switchToPage(i);
+    drawFooterOnCurrentPage(doc, i + 1, totalPages);
+  }
+}
+
+/**
+ * Desenha o rodapé na página atual (uso interno)
+ */
+function drawFooterOnCurrentPage(doc: PDFKit.PDFDocument, pageNumber: number, totalPages: number) {
   const pageWidth = doc.page.width;
   const pageHeight = doc.page.height;
   const margin = doc.page.margins.left;
   const footerY = pageHeight - 40;
-
-  // Salva posição atual
-  const savedY = doc.y;
+  const textY = footerY + 10;
 
   // Linha separadora
   doc
@@ -105,23 +118,19 @@ export function addFooter(doc: PDFKit.PDFDocument, pageNumber: number, totalPage
     .lineTo(pageWidth - margin, footerY)
     .stroke();
 
-  // Texto do rodapé - usando posicionamento absoluto com lineBreak: false
-  const textY = footerY + 10;
-
+  // Data de geração (esquerda)
   doc
     .fillColor(colors.gray)
-    .fontSize(fonts.tiny);
-
-  // Data de geração (esquerda)
-  doc.text(
-    `Gerado em ${new Date().toLocaleString('pt-BR')}`,
-    margin,
-    textY,
-    { lineBreak: false }
-  );
+    .fontSize(fonts.tiny)
+    .text(
+      `Gerado em ${new Date().toLocaleString('pt-BR')}`,
+      margin,
+      textY,
+      { lineBreak: false }
+    );
 
   // Número da página (direita)
-  const pageText = totalPages ? `Página ${pageNumber} de ${totalPages}` : `Página ${pageNumber}`;
+  const pageText = `Página ${pageNumber} de ${totalPages}`;
   const pageTextWidth = doc.widthOfString(pageText);
   doc.text(
     pageText,
@@ -131,9 +140,14 @@ export function addFooter(doc: PDFKit.PDFDocument, pageNumber: number, totalPage
   );
 
   doc.fillColor(colors.black);
+}
 
-  // Restaura posição Y (não afeta o fluxo do documento)
-  doc.y = savedY;
+/**
+ * @deprecated Use addFootersToAllPages() com bufferPages: true
+ */
+export function addFooter(doc: PDFKit.PDFDocument, pageNumber: number, totalPages?: number) {
+  // Mantido para compatibilidade, mas recomenda-se usar addFootersToAllPages
+  drawFooterOnCurrentPage(doc, pageNumber, totalPages || 1);
 }
 
 /**

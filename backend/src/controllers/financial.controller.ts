@@ -519,7 +519,7 @@ export const exportPDF = async (req: AuthRequest, res: Response) => {
 
     // Generate PDF using PDFKit
     const PDFDocument = require('pdfkit');
-    const doc = new PDFDocument({ margin: 50, size: 'A4' });
+    const doc = new PDFDocument({ margin: 50, size: 'A4', bufferPages: true });
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', 'attachment; filename=relatorio_financeiro.pdf');
@@ -579,8 +579,8 @@ export const exportPDF = async (req: AuthRequest, res: Response) => {
 
     pdfStyles.addTable(doc, headers, rows, columnWidths);
 
-    // Rodapé
-    pdfStyles.addFooter(doc, 1);
+    // Adicionar rodapés a todas as páginas (usando bufferPages)
+    pdfStyles.addFootersToAllPages(doc);
 
     doc.end();
   } catch (error) {

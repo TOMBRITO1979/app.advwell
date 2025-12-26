@@ -776,7 +776,7 @@ export class ScheduleController {
 
       // Generate PDF using PDFKit
       const PDFDocument = require('pdfkit');
-      const doc = new PDFDocument({ margin: 50 });
+      const doc = new PDFDocument({ margin: 50, size: 'A4', bufferPages: true });
 
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', 'attachment; filename=agenda.pdf');
@@ -860,10 +860,8 @@ export class ScheduleController {
         pdfStyles.addDivider(doc, 'dashed');
       });
 
-      // ==================== RODAPÉ ====================
-      doc.fontSize(pdfStyles.fonts.tiny).fillColor(pdfStyles.colors.gray);
-      doc.text(`Documento gerado em ${new Date().toLocaleString('pt-BR')}`, { align: 'center' });
-      doc.fillColor(pdfStyles.colors.black);
+      // Adicionar rodapés a todas as páginas
+      pdfStyles.addFootersToAllPages(doc);
 
       doc.end();
     } catch (error) {
