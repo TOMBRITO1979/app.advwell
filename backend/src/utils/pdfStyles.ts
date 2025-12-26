@@ -86,39 +86,54 @@ export function addHeader(
 }
 
 /**
- * Adiciona rodapé ao PDF
+ * Adiciona rodapé ao PDF (posicionamento absoluto para evitar criação de páginas extras)
  */
 export function addFooter(doc: PDFKit.PDFDocument, pageNumber: number, totalPages?: number) {
   const pageWidth = doc.page.width;
   const pageHeight = doc.page.height;
   const margin = doc.page.margins.left;
+  const footerY = pageHeight - 40;
+
+  // Salva posição atual
+  const savedY = doc.y;
 
   // Linha separadora
   doc
     .strokeColor(colors.grayLight)
     .lineWidth(1)
-    .moveTo(margin, pageHeight - 40)
-    .lineTo(pageWidth - margin, pageHeight - 40)
+    .moveTo(margin, footerY)
+    .lineTo(pageWidth - margin, footerY)
     .stroke();
 
-  // Texto do rodapé
+  // Texto do rodapé - usando posicionamento absoluto com lineBreak: false
+  const textY = footerY + 10;
+
   doc
     .fillColor(colors.gray)
-    .fontSize(fonts.tiny)
-    .text(
-      `Gerado em ${new Date().toLocaleString('pt-BR')}`,
-      margin,
-      pageHeight - 30,
-      { width: (pageWidth - margin * 2) / 2, align: 'left' }
-    )
-    .text(
-      totalPages ? `Página ${pageNumber} de ${totalPages}` : `Página ${pageNumber}`,
-      pageWidth / 2,
-      pageHeight - 30,
-      { width: (pageWidth - margin * 2) / 2, align: 'right' }
-    );
+    .fontSize(fonts.tiny);
+
+  // Data de geração (esquerda)
+  doc.text(
+    `Gerado em ${new Date().toLocaleString('pt-BR')}`,
+    margin,
+    textY,
+    { lineBreak: false }
+  );
+
+  // Número da página (direita)
+  const pageText = totalPages ? `Página ${pageNumber} de ${totalPages}` : `Página ${pageNumber}`;
+  const pageTextWidth = doc.widthOfString(pageText);
+  doc.text(
+    pageText,
+    pageWidth - margin - pageTextWidth,
+    textY,
+    { lineBreak: false }
+  );
 
   doc.fillColor(colors.black);
+
+  // Restaura posição Y (não afeta o fluxo do documento)
+  doc.y = savedY;
 }
 
 /**
