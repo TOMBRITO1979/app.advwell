@@ -59,6 +59,8 @@ const Financial: React.FC = () => {
   const [search, setSearch] = useState('');
   const [filterType, setFilterType] = useState<string>('');
   const [filterClientId, setFilterClientId] = useState<string>('');
+  const [filterStartDate, setFilterStartDate] = useState<string>('');
+  const [filterEndDate, setFilterEndDate] = useState<string>('');
   const [showModal, setShowModal] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [editMode, setEditMode] = useState(false);
@@ -101,7 +103,7 @@ const Financial: React.FC = () => {
     loadTransactions();
     loadClients();
     loadCases();
-  }, [search, filterType, filterClientId]);
+  }, [search, filterType, filterClientId, filterStartDate, filterEndDate]);
 
   // Filter clients based on search text
   useEffect(() => {
@@ -135,6 +137,8 @@ const Financial: React.FC = () => {
       if (search) params.search = search;
       if (filterType) params.type = filterType;
       if (filterClientId) params.clientId = filterClientId;
+      if (filterStartDate) params.startDate = filterStartDate;
+      if (filterEndDate) params.endDate = filterEndDate;
 
       const response = await api.get('/financial', { params });
       setTransactions(response.data.data);
@@ -283,6 +287,8 @@ const Financial: React.FC = () => {
     setSearch('');
     setFilterType('');
     setFilterClientId('');
+    setFilterStartDate('');
+    setFilterEndDate('');
   };
 
   const handleClientSelect = (client: Client) => {
@@ -303,6 +309,8 @@ const Financial: React.FC = () => {
       if (search) params.search = search;
       if (filterType) params.type = filterType;
       if (filterClientId) params.clientId = filterClientId;
+      if (filterStartDate) params.startDate = filterStartDate;
+      if (filterEndDate) params.endDate = filterEndDate;
 
       const response = await api.get('/financial/export/pdf', {
         params,
@@ -329,6 +337,8 @@ const Financial: React.FC = () => {
       if (search) params.search = search;
       if (filterType) params.type = filterType;
       if (filterClientId) params.clientId = filterClientId;
+      if (filterStartDate) params.startDate = filterStartDate;
+      if (filterEndDate) params.endDate = filterEndDate;
 
       const response = await api.get('/financial/export/csv', {
         params,
@@ -517,40 +527,116 @@ const Financial: React.FC = () => {
           </div>
 
           {showFilters && (
-            <div className="mt-4 pt-4 border-t border-neutral-200 grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">Tipo</label>
-                <select
-                  value={filterType}
-                  onChange={(e) => setFilterType(e.target.value)}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
-                >
-                  <option value="">Todos</option>
-                  <option value="INCOME">Receitas</option>
-                  <option value="EXPENSE">Despesas</option>
-                </select>
+            <div className="mt-4 pt-4 border-t border-neutral-200 space-y-4">
+              {/* Linha 1: Filtros de data */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">Data Inicial</label>
+                  <input
+                    type="date"
+                    value={filterStartDate}
+                    onChange={(e) => setFilterStartDate(e.target.value)}
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">Data Final</label>
+                  <input
+                    type="date"
+                    value={filterEndDate}
+                    onChange={(e) => setFilterEndDate(e.target.value)}
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">Tipo</label>
+                  <select
+                    value={filterType}
+                    onChange={(e) => setFilterType(e.target.value)}
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                  >
+                    <option value="">Todos</option>
+                    <option value="INCOME">Receitas</option>
+                    <option value="EXPENSE">Despesas</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">Cliente</label>
+                  <select
+                    value={filterClientId}
+                    onChange={(e) => setFilterClientId(e.target.value)}
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                  >
+                    <option value="">Todos</option>
+                    {clients.map((client) => (
+                      <option key={client.id} value={client.id}>
+                        {client.name} {client.cpf && `(${client.cpf})`}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">Cliente</label>
-                <select
-                  value={filterClientId}
-                  onChange={(e) => setFilterClientId(e.target.value)}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
-                >
-                  <option value="">Todos</option>
-                  {clients.map((client) => (
-                    <option key={client.id} value={client.id}>
-                      {client.name} {client.cpf && `(${client.cpf})`}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="flex items-end">
+              {/* Linha 2: Botões de atalho e limpar */}
+              <div className="flex flex-wrap gap-2 items-center justify-between">
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const today = new Date();
+                      const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+                      setFilterStartDate(firstDay.toISOString().split('T')[0]);
+                      setFilterEndDate(today.toISOString().split('T')[0]);
+                    }}
+                    className="px-3 py-1.5 text-sm border border-primary-300 rounded-md text-primary-700 hover:bg-primary-50 transition-colors"
+                  >
+                    Este Mês
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const today = new Date();
+                      const firstDay = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+                      const lastDay = new Date(today.getFullYear(), today.getMonth(), 0);
+                      setFilterStartDate(firstDay.toISOString().split('T')[0]);
+                      setFilterEndDate(lastDay.toISOString().split('T')[0]);
+                    }}
+                    className="px-3 py-1.5 text-sm border border-primary-300 rounded-md text-primary-700 hover:bg-primary-50 transition-colors"
+                  >
+                    Mês Anterior
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const today = new Date();
+                      const firstDay = new Date(today.getFullYear(), 0, 1);
+                      setFilterStartDate(firstDay.toISOString().split('T')[0]);
+                      setFilterEndDate(today.toISOString().split('T')[0]);
+                    }}
+                    className="px-3 py-1.5 text-sm border border-primary-300 rounded-md text-primary-700 hover:bg-primary-50 transition-colors"
+                  >
+                    Este Ano
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const today = new Date();
+                      const last30 = new Date(today);
+                      last30.setDate(today.getDate() - 30);
+                      setFilterStartDate(last30.toISOString().split('T')[0]);
+                      setFilterEndDate(today.toISOString().split('T')[0]);
+                    }}
+                    className="px-3 py-1.5 text-sm border border-primary-300 rounded-md text-primary-700 hover:bg-primary-50 transition-colors"
+                  >
+                    Últimos 30 Dias
+                  </button>
+                </div>
                 <button
                   onClick={clearFilters}
-                  className="w-full px-4 py-2 border border-neutral-300 rounded-md hover:bg-neutral-50 transition-colors min-h-[44px]"
+                  className="px-4 py-2 border border-neutral-300 rounded-md hover:bg-neutral-50 transition-colors min-h-[44px]"
                 >
                   Limpar Filtros
                 </button>
@@ -565,7 +651,7 @@ const Financial: React.FC = () => {
             <p className="text-center py-8 text-neutral-600">Carregando...</p>
           ) : transactions.length === 0 ? (
             <p className="text-center py-8 text-neutral-600">
-              {search || filterType || filterClientId
+              {search || filterType || filterClientId || filterStartDate || filterEndDate
                 ? 'Nenhuma transação encontrada para os filtros aplicados'
                 : 'Nenhuma transação cadastrada'}
             </p>

@@ -5,6 +5,7 @@ import { sanitizeString } from '../utils/sanitize';
 import { parse } from 'csv-parse/sync';
 import { Decimal } from '@prisma/client/runtime/library';
 import { appLogger } from '../utils/logger';
+import * as pdfStyles from '../utils/pdfStyles';
 
 // Helper para converter Prisma Decimal para number (necessário após migração Float → Decimal)
 const toNumber = (value: Decimal | number | null | undefined): number => {
@@ -16,7 +17,7 @@ const toNumber = (value: Decimal | number | null | undefined): number => {
 // Listar transações financeiras com filtros e paginação
 export const listTransactions = async (req: AuthRequest, res: Response) => {
   try {
-    const { search, clientId, caseId, type, page = 1, limit = 50 } = req.query;
+    const { search, clientId, caseId, type, startDate, endDate, page = 1, limit = 50 } = req.query;
     const companyId = req.user!.companyId;
 
     const skip = (Number(page) - 1) * Number(limit);
@@ -30,6 +31,20 @@ export const listTransactions = async (req: AuthRequest, res: Response) => {
         { client: { name: { contains: String(search), mode: 'insensitive' } } },
         { client: { cpf: { contains: String(search), mode: 'insensitive' } } },
       ];
+    }
+
+    // Filtro por período (data inicial e final)
+    if (startDate || endDate) {
+      where.date = {};
+      if (startDate) {
+        where.date.gte = new Date(String(startDate));
+      }
+      if (endDate) {
+        // Ajustar endDate para incluir o final do dia (23:59:59.999)
+        const parsedEndDate = new Date(String(endDate));
+        parsedEndDate.setUTCHours(23, 59, 59, 999);
+        where.date.lte = parsedEndDate;
+      }
     }
 
     // Filtro por cliente
@@ -385,7 +400,7 @@ export const getFinancialSummary = async (req: AuthRequest, res: Response) => {
       if (endDate) {
         // Ajustar endDate para incluir o final do dia (23:59:59.999)
         const parsedEndDate = new Date(String(endDate));
-        parsedEndDate.setHours(23, 59, 59, 999);
+        parsedEndDate.setUTCHours(23, 59, 59, 999);
         where.date.lte = parsedEndDate;
       }
     }
@@ -433,7 +448,7 @@ export const getFinancialSummary = async (req: AuthRequest, res: Response) => {
 // Exportar transações para PDF
 export const exportPDF = async (req: AuthRequest, res: Response) => {
   try {
-    const { search, clientId, caseId, type } = req.query;
+    const { search, clientId, caseId, type, startDate, endDate } = req.query;
     const companyId = req.user!.companyId;
 
     const where: any = { companyId };
@@ -444,6 +459,19 @@ export const exportPDF = async (req: AuthRequest, res: Response) => {
         { client: { name: { contains: String(search), mode: 'insensitive' } } },
         { client: { cpf: { contains: String(search), mode: 'insensitive' } } },
       ];
+    }
+
+    // Filtro por período (data inicial e final)
+    if (startDate || endDate) {
+      where.date = {};
+      if (startDate) {
+        where.date.gte = new Date(String(startDate));
+      }
+      if (endDate) {
+        const parsedEndDate = new Date(String(endDate));
+        parsedEndDate.setUTCHours(23, 59, 59, 999);
+        where.date.lte = parsedEndDate;
+      }
     }
 
     if (clientId) where.clientId = String(clientId);
@@ -491,77 +519,68 @@ export const exportPDF = async (req: AuthRequest, res: Response) => {
 
     // Generate PDF using PDFKit
     const PDFDocument = require('pdfkit');
-    const doc = new PDFDocument({ margin: 50 });
+    const doc = new PDFDocument({ margin: 50, size: 'A4' });
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', 'attachment; filename=relatorio_financeiro.pdf');
 
     doc.pipe(res);
 
-    // Header com dados da empresa
-    if (company) {
-      doc.fontSize(16).text(company.name, { align: 'center', bold: true });
-      doc.moveDown(0.3);
-      doc.fontSize(9);
-
-      if (company.address || company.city || company.state) {
-        const addressParts = [];
-        if (company.address) addressParts.push(company.address);
-        if (company.city) addressParts.push(company.city);
-        if (company.state) addressParts.push(company.state);
-        if (company.zipCode) addressParts.push(`CEP: ${company.zipCode}`);
-        doc.text(addressParts.join(' - '), { align: 'center' });
-      }
-
-      const contactParts = [];
-      if (company.phone) contactParts.push(`Tel: ${company.phone}`);
-      if (company.email) contactParts.push(company.email);
-      if (contactParts.length > 0) {
-        doc.text(contactParts.join(' | '), { align: 'center' });
-      }
-
-      doc.moveDown(1);
-      doc.moveTo(50, doc.y).lineTo(545, doc.y).stroke();
-      doc.moveDown(1);
+    // Header moderno
+    let subtitleText = `${transactions.length} transações`;
+    if (startDate && endDate) {
+      subtitleText += ` | ${pdfStyles.formatDate(String(startDate))} a ${pdfStyles.formatDate(String(endDate))}`;
     }
+    pdfStyles.addHeader(doc, 'Relatório Financeiro', subtitleText, company?.name);
 
-    // Título do relatório
-    doc.fontSize(20).text('Relatório Financeiro', { align: 'center' });
-    doc.moveDown();
-    doc.fontSize(10).text(`Data de Geração: ${new Date().toLocaleDateString('pt-BR')}`, { align: 'center' });
-    doc.moveDown(2);
+    // Cards de resumo
+    const cardWidth = 165;
+    const cardHeight = 55;
+    const margin = doc.page.margins.left;
+    const cardY = doc.y;
 
-    // Summary
-    doc.fontSize(14).text('Resumo:', { underline: true });
-    doc.moveDown(0.5);
-    doc.fontSize(10);
-    doc.text(`Total de Receitas: R$ ${totalIncome.toFixed(2)}`);
-    doc.text(`Total de Despesas: R$ ${totalExpense.toFixed(2)}`);
-    doc.text(`Saldo: R$ ${balance.toFixed(2)}`);
-    doc.moveDown(2);
+    pdfStyles.addSummaryCard(
+      doc, margin, cardY, cardWidth, cardHeight,
+      'Total de Receitas',
+      pdfStyles.formatCurrency(totalIncome),
+      pdfStyles.colors.cardGreen  // Verde suave - faturado
+    );
 
-    // Transactions table
-    doc.fontSize(14).text('Transações:', { underline: true });
-    doc.moveDown(1);
+    pdfStyles.addSummaryCard(
+      doc, margin + cardWidth + 10, cardY, cardWidth, cardHeight,
+      'Total de Despesas',
+      pdfStyles.formatCurrency(totalExpense),
+      pdfStyles.colors.cardRed    // Vermelho suave - pago/saída
+    );
 
-    transactions.forEach((transaction, index) => {
-      doc.fontSize(10);
-      const date = new Date(transaction.date).toLocaleDateString('pt-BR');
-      const type = transaction.type === 'INCOME' ? 'Receita' : 'Despesa';
-      const amount = `R$ ${transaction.amount.toFixed(2)}`;
-      const processNum = transaction.case?.processNumber || '-';
+    pdfStyles.addSummaryCard(
+      doc, margin + (cardWidth + 10) * 2, cardY, cardWidth, cardHeight,
+      'Saldo',
+      pdfStyles.formatCurrency(balance),
+      pdfStyles.colors.cardBlue   // Azul suave - saldo/devido
+    );
 
-      doc.text(`${index + 1}. ${date} | ${type}`, { continued: false });
-      doc.text(`   Cliente: ${transaction.client.name}${transaction.client.cpf ? ` (${transaction.client.cpf})` : ''}`);
-      doc.text(`   Descrição: ${transaction.description}`);
-      doc.text(`   Processo: ${processNum}`);
-      doc.text(`   Valor: ${amount}`, { align: 'right' });
-      doc.moveDown(0.5);
+    doc.y = cardY + cardHeight + 25;
 
-      if ((index + 1) % 10 === 0 && index !== transactions.length - 1) {
-        doc.addPage();
-      }
-    });
+    // Seção de transações
+    pdfStyles.addSection(doc, 'Detalhamento das Transações');
+
+    // Tabela de transações
+    const headers = ['Data', 'Tipo', 'Cliente', 'Descrição', 'Valor'];
+    const columnWidths = [70, 60, 120, 150, 105];
+
+    const rows = transactions.map(transaction => [
+      pdfStyles.formatDate(transaction.date),
+      transaction.type === 'INCOME' ? 'Receita' : 'Despesa',
+      transaction.client?.name?.substring(0, 20) || '-',
+      transaction.description.substring(0, 25),
+      pdfStyles.formatCurrency(toNumber(transaction.amount)),
+    ]);
+
+    pdfStyles.addTable(doc, headers, rows, columnWidths);
+
+    // Rodapé
+    pdfStyles.addFooter(doc, 1);
 
     doc.end();
   } catch (error) {
@@ -573,7 +592,7 @@ export const exportPDF = async (req: AuthRequest, res: Response) => {
 // Exportar transações para CSV
 export const exportCSV = async (req: AuthRequest, res: Response) => {
   try {
-    const { search, clientId, caseId, type } = req.query;
+    const { search, clientId, caseId, type, startDate, endDate } = req.query;
     const companyId = req.user!.companyId;
 
     const where: any = { companyId };
@@ -584,6 +603,19 @@ export const exportCSV = async (req: AuthRequest, res: Response) => {
         { client: { name: { contains: String(search), mode: 'insensitive' } } },
         { client: { cpf: { contains: String(search), mode: 'insensitive' } } },
       ];
+    }
+
+    // Filtro por período (data inicial e final)
+    if (startDate || endDate) {
+      where.date = {};
+      if (startDate) {
+        where.date.gte = new Date(String(startDate));
+      }
+      if (endDate) {
+        const parsedEndDate = new Date(String(endDate));
+        parsedEndDate.setUTCHours(23, 59, 59, 999);
+        where.date.lte = parsedEndDate;
+      }
     }
 
     if (clientId) where.clientId = String(clientId);
@@ -949,115 +981,85 @@ export const generateTransactionReceipt = async (req: AuthRequest, res: Response
 
     doc.pipe(res);
 
-    // ==================== HEADER DA EMPRESA ====================
+    // ==================== HEADER MODERNO ====================
+    pdfStyles.addHeader(doc, documentTitle, `${documentSubtitle} - Nº ${transaction.id.substring(0, 8).toUpperCase()}`, company?.name);
+
+    // ==================== DADOS DA EMPRESA ====================
     if (company) {
-      doc.fontSize(18).font('Helvetica-Bold').text(company.name, { align: 'center' });
-      doc.moveDown(0.3);
-      doc.fontSize(10).font('Helvetica');
-
-      if (company.cnpj) {
-        doc.text(`CNPJ: ${company.cnpj}`, { align: 'center' });
-      }
-
-      if (company.address || company.city || company.state) {
-        const addressParts = [];
-        if (company.address) addressParts.push(company.address);
-        if (company.city) addressParts.push(company.city);
-        if (company.state) addressParts.push(company.state);
-        if (company.zipCode) addressParts.push(`CEP: ${company.zipCode}`);
-        doc.text(addressParts.join(' - '), { align: 'center' });
-      }
-
-      const contactParts = [];
-      if (company.phone) contactParts.push(`Tel: ${company.phone}`);
-      if (company.email) contactParts.push(company.email);
-      if (contactParts.length > 0) {
-        doc.text(contactParts.join(' | '), { align: 'center' });
-      }
-
-      doc.moveDown(1);
-      doc.moveTo(50, doc.y).lineTo(545, doc.y).stroke();
-      doc.moveDown(1);
+      doc.fontSize(pdfStyles.fonts.small).fillColor(pdfStyles.colors.gray);
+      const companyInfo = [];
+      if (company.cnpj) companyInfo.push(`CNPJ: ${company.cnpj}`);
+      if (company.address) companyInfo.push(company.address);
+      if (company.city) companyInfo.push(company.city);
+      if (company.state) companyInfo.push(company.state);
+      if (company.phone) companyInfo.push(`Tel: ${company.phone}`);
+      if (company.email) companyInfo.push(company.email);
+      doc.text(companyInfo.join(' | '), { align: 'center' });
+      doc.fillColor(pdfStyles.colors.black);
+      doc.moveDown(1.5);
     }
-
-    // ==================== TÍTULO DO DOCUMENTO ====================
-    doc.fontSize(22).font('Helvetica-Bold').text(documentTitle, { align: 'center' });
-    doc.fontSize(12).font('Helvetica').text(`(${documentSubtitle})`, { align: 'center' });
-    doc.moveDown(0.5);
-
-    // Número do documento
-    const documentNumber = `Nº ${transaction.id.substring(0, 8).toUpperCase()}`;
-    doc.fontSize(10).text(documentNumber, { align: 'center' });
-    doc.moveDown(2);
 
     // ==================== DADOS DO CLIENTE ====================
-    doc.fontSize(14).font('Helvetica-Bold').text('DADOS DO CLIENTE', { underline: true });
-    doc.moveDown(0.5);
-    doc.fontSize(11).font('Helvetica');
-
-    doc.text(`Nome: ${transaction.client.name}`);
+    pdfStyles.addSection(doc, 'Dados do Cliente');
+    pdfStyles.addKeyValue(doc, 'Nome', transaction.client.name);
     if (transaction.client.cpf) {
-      doc.text(`CPF/CNPJ: ${transaction.client.cpf}`);
+      pdfStyles.addKeyValue(doc, 'CPF/CNPJ', transaction.client.cpf);
     }
     if (transaction.client.email) {
-      doc.text(`E-mail: ${transaction.client.email}`);
+      pdfStyles.addKeyValue(doc, 'E-mail', transaction.client.email);
     }
     if (transaction.client.phone) {
-      doc.text(`Telefone: ${transaction.client.phone}`);
+      pdfStyles.addKeyValue(doc, 'Telefone', transaction.client.phone);
     }
     if (transaction.client.address) {
-      doc.text(`Endereço: ${transaction.client.address}`);
+      pdfStyles.addKeyValue(doc, 'Endereço', transaction.client.address);
     }
-    doc.moveDown(1.5);
+    doc.moveDown(1);
 
     // ==================== DADOS DA TRANSAÇÃO ====================
-    doc.fontSize(14).font('Helvetica-Bold').text('DETALHES DA TRANSAÇÃO', { underline: true });
-    doc.moveDown(0.5);
-    doc.fontSize(11).font('Helvetica');
-
-    doc.text(`Descrição: ${transaction.description}`);
-    doc.text(`Data: ${new Date(transaction.date).toLocaleDateString('pt-BR')}`);
+    pdfStyles.addSection(doc, 'Detalhes da Transação');
+    pdfStyles.addKeyValue(doc, 'Descrição', transaction.description);
+    pdfStyles.addKeyValue(doc, 'Data', pdfStyles.formatDate(transaction.date));
 
     if (transaction.case) {
-      doc.moveDown(0.5);
-      doc.text(`Processo Vinculado: ${transaction.case.processNumber}`);
+      pdfStyles.addKeyValue(doc, 'Processo Vinculado', transaction.case.processNumber);
       if (transaction.case.subject) {
-        doc.text(`Assunto: ${transaction.case.subject}`);
+        pdfStyles.addKeyValue(doc, 'Assunto', transaction.case.subject);
       }
       if (transaction.case.court) {
-        doc.text(`Tribunal: ${transaction.case.court}`);
+        pdfStyles.addKeyValue(doc, 'Tribunal', transaction.case.court);
       }
     }
-    doc.moveDown(1.5);
+    doc.moveDown(1);
 
     // ==================== VALORES ====================
-    doc.fontSize(14).font('Helvetica-Bold').text('VALORES', { underline: true });
-    doc.moveDown(0.5);
-    doc.fontSize(11).font('Helvetica');
+    pdfStyles.addSection(doc, 'Valores');
 
     // Verificar se é parcelado
     if (transaction.isInstallment && transaction.installmentCount) {
-      doc.text(`Tipo de Pagamento: Parcelado`);
-      doc.text(`Número de Parcelas: ${transaction.installmentCount}x`);
+      pdfStyles.addKeyValue(doc, 'Tipo de Pagamento', 'Parcelado');
+      pdfStyles.addKeyValue(doc, 'Número de Parcelas', `${transaction.installmentCount}x`);
       if (transaction.installmentInterval) {
-        doc.text(`Intervalo entre Parcelas: ${transaction.installmentInterval} dias`);
+        pdfStyles.addKeyValue(doc, 'Intervalo entre Parcelas', `${transaction.installmentInterval} dias`);
       }
       doc.moveDown(0.5);
-      doc.fontSize(12).font('Helvetica-Bold');
-      doc.text(`Valor Total: R$ ${toNumber(transaction.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
-      doc.text(`Valor por Parcela: R$ ${(toNumber(transaction.amount) / (transaction.installmentCount || 1)).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
+      doc.fontSize(pdfStyles.fonts.heading).fillColor(pdfStyles.colors.primary);
+      doc.text(`Valor Total: ${pdfStyles.formatCurrency(toNumber(transaction.amount))}`);
+      doc.fillColor(pdfStyles.colors.black);
+      pdfStyles.addKeyValue(doc, 'Valor por Parcela', pdfStyles.formatCurrency(toNumber(transaction.amount) / (transaction.installmentCount || 1)));
       doc.moveDown(0.5);
-      doc.text(`Total Pago: R$ ${totalPaid.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
-      doc.text(`Valor Devido: R$ ${valorDevido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
+      pdfStyles.addKeyValue(doc, 'Total Pago', pdfStyles.formatCurrency(totalPaid));
+      doc.fillColor(valorDevido > 0 ? pdfStyles.colors.danger : pdfStyles.colors.success);
+      pdfStyles.addKeyValue(doc, 'Valor Devido', pdfStyles.formatCurrency(valorDevido));
+      doc.fillColor(pdfStyles.colors.black);
 
       // Tabela de parcelas
       if (transaction.installments.length > 0) {
         doc.moveDown(1);
-        doc.fontSize(12).font('Helvetica-Bold').text('DETALHAMENTO DAS PARCELAS:', { underline: true });
-        doc.moveDown(0.5);
-        doc.fontSize(10).font('Helvetica');
+        pdfStyles.addSection(doc, 'Detalhamento das Parcelas');
 
-        for (const inst of transaction.installments) {
+        const headers = ['Parcela', 'Valor', 'Vencimento', 'Status', 'Pago'];
+        const rows = transaction.installments.map(inst => {
           const statusLabels: Record<string, string> = {
             PENDING: 'Pendente',
             PAID: 'Pago',
@@ -1065,27 +1067,32 @@ export const generateTransactionReceipt = async (req: AuthRequest, res: Response
             CANCELLED: 'Cancelado',
           };
           const status = inst.paidAmount && toNumber(inst.paidAmount) >= toNumber(inst.amount) ? 'Pago' : statusLabels[inst.status] || 'Pendente';
-          const dueDate = new Date(inst.dueDate).toLocaleDateString('pt-BR');
-          const paidInfo = inst.paidAmount ? ` (Pago: R$ ${toNumber(inst.paidAmount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })})` : '';
-
-          doc.text(`  ${inst.installmentNumber}ª Parcela - R$ ${toNumber(inst.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })} - Venc: ${dueDate} - ${status}${paidInfo}`);
-        }
+          return [
+            `${inst.installmentNumber}ª`,
+            pdfStyles.formatCurrency(toNumber(inst.amount)),
+            pdfStyles.formatDate(inst.dueDate),
+            status,
+            inst.paidAmount ? pdfStyles.formatCurrency(toNumber(inst.paidAmount)) : '-',
+          ];
+        });
+        pdfStyles.addTable(doc, headers, rows, [60, 100, 100, 80, 100]);
       }
     } else {
-      doc.text(`Tipo de Pagamento: À Vista`);
+      pdfStyles.addKeyValue(doc, 'Tipo de Pagamento', 'À Vista');
       doc.moveDown(0.5);
-      doc.fontSize(14).font('Helvetica-Bold');
-      doc.text(`Valor Total: R$ ${toNumber(transaction.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
+      doc.fontSize(pdfStyles.fonts.subtitle).fillColor(pdfStyles.colors.primary);
+      doc.text(`Valor Total: ${pdfStyles.formatCurrency(toNumber(transaction.amount))}`);
+      doc.fillColor(pdfStyles.colors.black);
     }
 
     doc.moveDown(2);
 
     // ==================== LINHA DE ASSINATURA ====================
-    doc.moveTo(50, doc.y).lineTo(545, doc.y).stroke();
-    doc.moveDown(2);
+    pdfStyles.addDivider(doc);
+    doc.moveDown(1);
 
     // Área de assinatura
-    doc.fontSize(10).font('Helvetica');
+    doc.fontSize(pdfStyles.fonts.body).fillColor(pdfStyles.colors.gray);
     const signatureY = doc.y;
 
     // Assinatura do recebedor/pagador
@@ -1094,12 +1101,14 @@ export const generateTransactionReceipt = async (req: AuthRequest, res: Response
 
     doc.text('_________________________________', 350, signatureY);
     doc.text(isIncome ? 'Assinatura do Recebedor' : 'Assinatura do Responsável', 350, signatureY + 15);
+    doc.fillColor(pdfStyles.colors.black);
 
     // ==================== RODAPÉ ====================
     doc.moveDown(4);
-    doc.fontSize(9).font('Helvetica');
-    doc.text(`Documento gerado em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}`, { align: 'center' });
+    doc.fontSize(pdfStyles.fonts.tiny).fillColor(pdfStyles.colors.gray);
+    doc.text(`Documento gerado em ${new Date().toLocaleString('pt-BR')}`, { align: 'center' });
     doc.text('Este documento é válido como comprovante de transação.', { align: 'center' });
+    doc.fillColor(pdfStyles.colors.black);
 
     doc.end();
   } catch (error) {
@@ -1186,90 +1195,62 @@ export const generateInstallmentReceipt = async (req: AuthRequest, res: Response
 
     doc.pipe(res);
 
-    // ==================== HEADER DA EMPRESA ====================
+    // ==================== HEADER MODERNO ====================
+    pdfStyles.addHeader(
+      doc,
+      documentTitle,
+      `Parcela ${installment.installmentNumber}/${installment.financialTransaction.installmentCount} - Nº ${installment.id.substring(0, 8).toUpperCase()}`,
+      company?.name
+    );
+
+    // ==================== DADOS DA EMPRESA ====================
     if (company) {
-      doc.fontSize(18).font('Helvetica-Bold').text(company.name, { align: 'center' });
-      doc.moveDown(0.3);
-      doc.fontSize(10).font('Helvetica');
-
-      if (company.cnpj) {
-        doc.text(`CNPJ: ${company.cnpj}`, { align: 'center' });
-      }
-
-      if (company.address || company.city || company.state) {
-        const addressParts = [];
-        if (company.address) addressParts.push(company.address);
-        if (company.city) addressParts.push(company.city);
-        if (company.state) addressParts.push(company.state);
-        if (company.zipCode) addressParts.push(`CEP: ${company.zipCode}`);
-        doc.text(addressParts.join(' - '), { align: 'center' });
-      }
-
-      const contactParts = [];
-      if (company.phone) contactParts.push(`Tel: ${company.phone}`);
-      if (company.email) contactParts.push(company.email);
-      if (contactParts.length > 0) {
-        doc.text(contactParts.join(' | '), { align: 'center' });
-      }
-
-      doc.moveDown(1);
-      doc.moveTo(50, doc.y).lineTo(545, doc.y).stroke();
-      doc.moveDown(1);
+      doc.fontSize(pdfStyles.fonts.small).fillColor(pdfStyles.colors.gray);
+      const companyInfo = [];
+      if (company.cnpj) companyInfo.push(`CNPJ: ${company.cnpj}`);
+      if (company.address) companyInfo.push(company.address);
+      if (company.city) companyInfo.push(company.city);
+      if (company.state) companyInfo.push(company.state);
+      if (company.phone) companyInfo.push(`Tel: ${company.phone}`);
+      if (company.email) companyInfo.push(company.email);
+      doc.text(companyInfo.join(' | '), { align: 'center' });
+      doc.fillColor(pdfStyles.colors.black);
+      doc.moveDown(1.5);
     }
-
-    // ==================== TÍTULO DO DOCUMENTO ====================
-    doc.fontSize(22).font('Helvetica-Bold').text(documentTitle, { align: 'center' });
-    doc.fontSize(14).font('Helvetica').text(`Parcela ${installment.installmentNumber}/${installment.financialTransaction.installmentCount}`, { align: 'center' });
-    doc.moveDown(0.5);
-
-    // Número do documento
-    const documentNumber = `Nº ${installment.id.substring(0, 8).toUpperCase()}`;
-    doc.fontSize(10).text(documentNumber, { align: 'center' });
-    doc.moveDown(2);
 
     // ==================== DADOS DO CLIENTE ====================
-    doc.fontSize(14).font('Helvetica-Bold').text('DADOS DO CLIENTE', { underline: true });
-    doc.moveDown(0.5);
-    doc.fontSize(11).font('Helvetica');
-
-    doc.text(`Nome: ${installment.financialTransaction.client.name}`);
+    pdfStyles.addSection(doc, 'Dados do Cliente');
+    pdfStyles.addKeyValue(doc, 'Nome', installment.financialTransaction.client.name);
     if (installment.financialTransaction.client.cpf) {
-      doc.text(`CPF/CNPJ: ${installment.financialTransaction.client.cpf}`);
+      pdfStyles.addKeyValue(doc, 'CPF/CNPJ', installment.financialTransaction.client.cpf);
     }
     if (installment.financialTransaction.client.email) {
-      doc.text(`E-mail: ${installment.financialTransaction.client.email}`);
+      pdfStyles.addKeyValue(doc, 'E-mail', installment.financialTransaction.client.email);
     }
     if (installment.financialTransaction.client.phone) {
-      doc.text(`Telefone: ${installment.financialTransaction.client.phone}`);
+      pdfStyles.addKeyValue(doc, 'Telefone', installment.financialTransaction.client.phone);
     }
-    doc.moveDown(1.5);
+    doc.moveDown(1);
 
     // ==================== REFERÊNCIA DO SERVIÇO ====================
-    doc.fontSize(14).font('Helvetica-Bold').text('REFERÊNCIA', { underline: true });
-    doc.moveDown(0.5);
-    doc.fontSize(11).font('Helvetica');
-
-    doc.text(`Descrição: ${installment.financialTransaction.description}`);
+    pdfStyles.addSection(doc, 'Referência');
+    pdfStyles.addKeyValue(doc, 'Descrição', installment.financialTransaction.description);
     if (installment.financialTransaction.case) {
-      doc.text(`Processo: ${installment.financialTransaction.case.processNumber}`);
+      pdfStyles.addKeyValue(doc, 'Processo', installment.financialTransaction.case.processNumber);
       if (installment.financialTransaction.case.subject) {
-        doc.text(`Assunto: ${installment.financialTransaction.case.subject}`);
+        pdfStyles.addKeyValue(doc, 'Assunto', installment.financialTransaction.case.subject);
       }
       if (installment.financialTransaction.case.court) {
-        doc.text(`Tribunal: ${installment.financialTransaction.case.court}`);
+        pdfStyles.addKeyValue(doc, 'Tribunal', installment.financialTransaction.case.court);
       }
     }
-    doc.moveDown(1.5);
+    doc.moveDown(1);
 
     // ==================== INFORMAÇÕES DA PARCELA ====================
-    doc.fontSize(14).font('Helvetica-Bold').text('DETALHES DA PARCELA', { underline: true });
-    doc.moveDown(0.5);
-    doc.fontSize(11).font('Helvetica');
-
-    const dueDate = new Date(installment.dueDate).toLocaleDateString('pt-BR');
-    doc.text(`Parcela: ${installment.installmentNumber} de ${installment.financialTransaction.installmentCount}`);
-    doc.text(`Valor da Parcela: R$ ${toNumber(installment.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
-    doc.text(`Data de Vencimento: ${dueDate}`);
+    pdfStyles.addSection(doc, 'Detalhes da Parcela');
+    pdfStyles.addKeyValue(doc, 'Parcela', `${installment.installmentNumber} de ${installment.financialTransaction.installmentCount}`);
+    pdfStyles.addKeyValue(doc, 'Valor da Parcela', pdfStyles.formatCurrency(toNumber(installment.amount)));
+    pdfStyles.addKeyValue(doc, 'Data de Vencimento', pdfStyles.formatDate(installment.dueDate));
 
     // Status da parcela
     let statusText = '';
@@ -1288,59 +1269,57 @@ export const generateInstallmentReceipt = async (req: AuthRequest, res: Response
       };
       statusText = statusLabels[installment.status] || 'Pendente';
     }
-    doc.text(`Status: ${statusText}`);
+    pdfStyles.addKeyValue(doc, 'Status', statusText);
 
     if (installment.paidDate) {
-      const paidDate = new Date(installment.paidDate).toLocaleDateString('pt-BR');
-      doc.text(`Data de Pagamento: ${paidDate}`);
+      pdfStyles.addKeyValue(doc, 'Data de Pagamento', pdfStyles.formatDate(installment.paidDate));
     }
 
     if (installment.paidAmount) {
-      doc.text(`Valor Pago nesta Parcela: R$ ${toNumber(installment.paidAmount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
+      pdfStyles.addKeyValue(doc, 'Valor Pago nesta Parcela', pdfStyles.formatCurrency(toNumber(installment.paidAmount)));
     }
 
     if (installment.notes) {
-      doc.text(`Observações: ${installment.notes}`);
+      pdfStyles.addKeyValue(doc, 'Observações', installment.notes);
     }
-    doc.moveDown(1.5);
+    doc.moveDown(1);
 
     // ==================== RESUMO FINANCEIRO ====================
-    doc.moveTo(50, doc.y).lineTo(545, doc.y).stroke();
+    pdfStyles.addSection(doc, 'Resumo Financeiro do Contrato');
+    pdfStyles.addKeyValue(doc, 'Valor Total do Contrato', pdfStyles.formatCurrency(toNumber(installment.financialTransaction.amount)));
+    doc.fillColor(pdfStyles.colors.success);
+    pdfStyles.addKeyValue(doc, 'Total Já Pago', pdfStyles.formatCurrency(totalPaid));
+    doc.fillColor(saldoDevedor > 0 ? pdfStyles.colors.danger : pdfStyles.colors.success);
+    pdfStyles.addKeyValue(doc, 'Saldo Devedor', pdfStyles.formatCurrency(saldoDevedor));
+    doc.fillColor(pdfStyles.colors.black);
     doc.moveDown(1);
-
-    doc.fontSize(14).font('Helvetica-Bold').text('RESUMO FINANCEIRO DO CONTRATO', { underline: true });
-    doc.moveDown(0.5);
-    doc.fontSize(12).font('Helvetica');
-
-    doc.text(`Valor Total do Contrato: R$ ${toNumber(installment.financialTransaction.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
-    doc.font('Helvetica-Bold').text(`Total Já Pago: R$ ${totalPaid.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
-    doc.font('Helvetica-Bold').fillColor(saldoDevedor > 0 ? 'red' : 'green').text(`Saldo Devedor: R$ ${saldoDevedor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`);
-    doc.fillColor('black');
 
     // ==================== HISTÓRICO DE PARCELAS ====================
+    pdfStyles.addSection(doc, 'Status das Parcelas');
+
+    const headers = ['Parcela', 'Valor', 'Vencimento', 'Status', 'Pago'];
+    const rows = allInstallments.map(inst => {
+      const instStatus = inst.paidAmount && toNumber(inst.paidAmount) >= toNumber(inst.amount) ? 'Pago' :
+                         inst.paidAmount && toNumber(inst.paidAmount) > 0 ? 'Parcial' : 'Pendente';
+      const highlight = inst.id === installment.id ? ' ←' : '';
+      return [
+        `${inst.installmentNumber}ª${highlight}`,
+        pdfStyles.formatCurrency(toNumber(inst.amount)),
+        pdfStyles.formatDate(inst.dueDate),
+        instStatus,
+        inst.paidAmount ? pdfStyles.formatCurrency(toNumber(inst.paidAmount)) : '-',
+      ];
+    });
+    pdfStyles.addTable(doc, headers, rows, [70, 100, 100, 80, 100]);
+
     doc.moveDown(1);
-    doc.fontSize(12).font('Helvetica-Bold').text('STATUS DAS PARCELAS:', { underline: true });
-    doc.moveDown(0.5);
-    doc.fontSize(10).font('Helvetica');
-
-    for (const inst of allInstallments) {
-      const instStatus = inst.paidAmount && toNumber(inst.paidAmount) >= toNumber(inst.amount) ? '✓ Pago' :
-                         inst.paidAmount && toNumber(inst.paidAmount) > 0 ? '◐ Parcial' : '○ Pendente';
-      const instDueDate = new Date(inst.dueDate).toLocaleDateString('pt-BR');
-      const paidInfo = inst.paidAmount ? ` (R$ ${toNumber(inst.paidAmount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })})` : '';
-      const isCurrent = inst.id === installment.id ? ' ← ESTA PARCELA' : '';
-
-      doc.text(`  ${inst.installmentNumber}ª - R$ ${toNumber(inst.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })} - Venc: ${instDueDate} - ${instStatus}${paidInfo}${isCurrent}`);
-    }
-
-    doc.moveDown(2);
 
     // ==================== LINHA DE ASSINATURA ====================
-    doc.moveTo(50, doc.y).lineTo(545, doc.y).stroke();
-    doc.moveDown(2);
+    pdfStyles.addDivider(doc);
+    doc.moveDown(1);
 
     // Área de assinatura
-    doc.fontSize(10).font('Helvetica');
+    doc.fontSize(pdfStyles.fonts.body).fillColor(pdfStyles.colors.gray);
     const signatureY = doc.y;
 
     doc.text('_________________________________', 100, signatureY);
@@ -1348,12 +1327,14 @@ export const generateInstallmentReceipt = async (req: AuthRequest, res: Response
 
     doc.text('_________________________________', 350, signatureY);
     doc.text(isIncome ? 'Assinatura do Recebedor' : 'Assinatura do Responsável', 350, signatureY + 15);
+    doc.fillColor(pdfStyles.colors.black);
 
     // ==================== RODAPÉ ====================
     doc.moveDown(4);
-    doc.fontSize(9).font('Helvetica');
-    doc.text(`Documento gerado em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}`, { align: 'center' });
+    doc.fontSize(pdfStyles.fonts.tiny).fillColor(pdfStyles.colors.gray);
+    doc.text(`Documento gerado em ${new Date().toLocaleString('pt-BR')}`, { align: 'center' });
     doc.text('Este documento é válido como comprovante de pagamento de parcela.', { align: 'center' });
+    doc.fillColor(pdfStyles.colors.black);
 
     doc.end();
   } catch (error) {

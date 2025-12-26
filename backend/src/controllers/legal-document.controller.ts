@@ -3,6 +3,7 @@ import { AuthRequest } from '../middleware/auth';
 import prisma from '../utils/prisma';
 import { sanitizeString } from '../utils/sanitize';
 import { appLogger } from '../utils/logger';
+import * as pdfStyles from '../utils/pdfStyles';
 
 // Listar documentos jurídicos
 export const listLegalDocuments = async (req: AuthRequest, res: Response) => {
@@ -335,7 +336,7 @@ export const generatePDF = async (req: AuthRequest, res: Response) => {
     }
 
     const PDFDocument = require('pdfkit');
-    const doc = new PDFDocument({ margin: 50 });
+    const doc = new PDFDocument({ margin: 50, size: 'A4' });
 
     const filename = `documento_${document.id.substring(0, 8)}.pdf`;
 
@@ -344,11 +345,21 @@ export const generatePDF = async (req: AuthRequest, res: Response) => {
 
     doc.pipe(res);
 
-    // ==================== HEADER DA EMPRESA ====================
+    const pageWidth = doc.page.width;
+    const margin = doc.page.margins.left;
+
+    // ==================== HEADER MODERNO DA EMPRESA ====================
     if (document.company) {
-      doc.fontSize(16).font('Helvetica-Bold').text(document.company.name, { align: 'center' });
-      doc.moveDown(0.3);
-      doc.fontSize(10).font('Helvetica');
+      // Barra verde no topo
+      doc.rect(0, 0, pageWidth, 8).fill(pdfStyles.colors.primary);
+
+      doc.y = 25;
+      doc.fillColor(pdfStyles.colors.primary)
+         .fontSize(18)
+         .font('Helvetica-Bold')
+         .text(document.company.name, { align: 'center' });
+
+      doc.fillColor(pdfStyles.colors.gray).fontSize(10).font('Helvetica');
 
       if (document.company.cnpj) {
         doc.text(`CNPJ: ${document.company.cnpj}`, { align: 'center' });
@@ -371,19 +382,29 @@ export const generatePDF = async (req: AuthRequest, res: Response) => {
       }
 
       doc.moveDown(1);
-      doc.moveTo(50, doc.y).lineTo(545, doc.y).stroke();
+      doc.strokeColor(pdfStyles.colors.primary)
+         .lineWidth(2)
+         .moveTo(margin, doc.y)
+         .lineTo(pageWidth - margin, doc.y)
+         .stroke();
       doc.moveDown(1.5);
     }
 
     // ==================== TÍTULO DO DOCUMENTO ====================
-    doc.fontSize(18).font('Helvetica-Bold').text(document.title.toUpperCase(), { align: 'center' });
+    doc.fillColor(pdfStyles.colors.black)
+       .fontSize(16)
+       .font('Helvetica-Bold')
+       .text(document.title.toUpperCase(), { align: 'center' });
     doc.moveDown(2);
 
     // ==================== CONTEÚDO DO DOCUMENTO ====================
-    doc.fontSize(12).font('Helvetica').text(document.content, {
-      align: 'justify',
-      lineGap: 5,
-    });
+    doc.fillColor(pdfStyles.colors.black)
+       .fontSize(12)
+       .font('Helvetica')
+       .text(document.content, {
+         align: 'justify',
+         lineGap: 5,
+       });
 
     doc.moveDown(3);
 
@@ -394,7 +415,6 @@ export const generatePDF = async (req: AuthRequest, res: Response) => {
       year: 'numeric',
     });
 
-    // Obter cidade da empresa ou usar genérico
     const cidade = document.company?.city || 'Local';
     doc.fontSize(12).font('Helvetica').text(`${cidade}, ${documentDate}`, { align: 'center' });
 
@@ -402,22 +422,40 @@ export const generatePDF = async (req: AuthRequest, res: Response) => {
 
     // ==================== ASSINATURA ====================
     if (document.signer) {
-      doc.fontSize(12).font('Helvetica');
-      doc.text('_'.repeat(50), { align: 'center' });
-      doc.moveDown(0.3);
-      doc.font('Helvetica-Bold').text(document.signer.name, { align: 'center' });
+      doc.strokeColor(pdfStyles.colors.grayDark)
+         .lineWidth(1)
+         .moveTo(pageWidth / 2 - 100, doc.y)
+         .lineTo(pageWidth / 2 + 100, doc.y)
+         .stroke();
 
-      // Buscar OAB se existir no nome ou adicionar informação genérica
-      doc.font('Helvetica').fontSize(10);
+      doc.moveDown(0.3);
+      doc.fillColor(pdfStyles.colors.black)
+         .font('Helvetica-Bold')
+         .text(document.signer.name, { align: 'center' });
+
+      doc.font('Helvetica').fontSize(10).fillColor(pdfStyles.colors.gray);
       if (document.signer.email) {
         doc.text(document.signer.email, { align: 'center' });
       }
     }
 
     // ==================== RODAPÉ ====================
-    doc.moveDown(4);
-    doc.fontSize(8).font('Helvetica');
-    doc.text(`Documento gerado em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}`, { align: 'center' });
+    const footerY = doc.page.height - 40;
+    doc.strokeColor(pdfStyles.colors.grayLight)
+       .lineWidth(1)
+       .moveTo(margin, footerY - 10)
+       .lineTo(pageWidth - margin, footerY - 10)
+       .stroke();
+
+    doc.fillColor(pdfStyles.colors.gray)
+       .fontSize(8)
+       .font('Helvetica')
+       .text(
+         `Documento gerado em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}`,
+         margin,
+         footerY,
+         { align: 'center', width: pageWidth - margin * 2 }
+       );
 
     doc.end();
   } catch (error) {

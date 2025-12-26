@@ -4,6 +4,7 @@ import prisma from '../utils/prisma';
 import { generateGoogleMeetLink } from '../utils/googleMeet';
 import { auditLogService } from '../services/audit-log.service';
 import { appLogger } from '../utils/logger';
+import * as pdfStyles from '../utils/pdfStyles';
 
 export class ScheduleController {
   async create(req: AuthRequest, res: Response) {
@@ -782,44 +783,47 @@ export class ScheduleController {
 
       doc.pipe(res);
 
-      // Header com dados da empresa
+      // ==================== HEADER MODERNO ====================
+      pdfStyles.addHeader(doc, 'Agenda', `Total de eventos: ${events.length}`, company?.name);
+
+      // ==================== DADOS DA EMPRESA ====================
       if (company) {
-        doc.fontSize(16).text(company.name, { align: 'center' });
-        doc.moveDown(0.3);
-        doc.fontSize(9);
-
-        if (company.address || company.city || company.state) {
-          const addressParts = [];
-          if (company.address) addressParts.push(company.address);
-          if (company.city) addressParts.push(company.city);
-          if (company.state) addressParts.push(company.state);
-          if (company.zipCode) addressParts.push(`CEP: ${company.zipCode}`);
-          doc.text(addressParts.join(' - '), { align: 'center' });
-        }
-
-        const contactParts = [];
-        if (company.phone) contactParts.push(`Tel: ${company.phone}`);
-        if (company.email) contactParts.push(company.email);
-        if (contactParts.length > 0) {
-          doc.text(contactParts.join(' | '), { align: 'center' });
-        }
-
-        doc.moveDown(1);
-        doc.moveTo(50, doc.y).lineTo(545, doc.y).stroke();
+        doc.fontSize(pdfStyles.fonts.small).fillColor(pdfStyles.colors.gray);
+        const companyInfo = [];
+        if (company.address) companyInfo.push(company.address);
+        if (company.city) companyInfo.push(company.city);
+        if (company.state) companyInfo.push(company.state);
+        if (company.phone) companyInfo.push(`Tel: ${company.phone}`);
+        if (company.email) companyInfo.push(company.email);
+        doc.text(companyInfo.join(' | '), { align: 'center' });
+        doc.fillColor(pdfStyles.colors.black);
         doc.moveDown(1);
       }
 
-      // Título do relatório
-      doc.fontSize(20).text('Agenda', { align: 'center' });
-      doc.moveDown();
-      doc.fontSize(10).text(`Data de Geração: ${new Date().toLocaleDateString('pt-BR')}`, { align: 'center' });
-      doc.moveDown(0.5);
-      doc.fontSize(10).text(`Total de eventos: ${events.length}`, { align: 'center' });
-      doc.moveDown(2);
+      // ==================== RESUMO ====================
+      const pendingCount = events.filter(e => !e.completed).length;
+      const completedCount = events.filter(e => e.completed).length;
+      const pageWidth = doc.page.width;
+      const margin = doc.page.margins.left;
+      const cardWidth = (pageWidth - margin * 2 - 20) / 3;
 
-      // Lista de eventos
+      pdfStyles.addSummaryCard(doc, margin, doc.y, cardWidth, 50, 'Total', `${events.length}`, pdfStyles.colors.cardBlue);      // Azul suave
+      pdfStyles.addSummaryCard(doc, margin + cardWidth + 10, doc.y - 50, cardWidth, 50, 'Pendentes', `${pendingCount}`, pdfStyles.colors.cardOrange);  // Laranja suave
+      pdfStyles.addSummaryCard(doc, margin + (cardWidth + 10) * 2, doc.y - 50, cardWidth, 50, 'Concluídos', `${completedCount}`, pdfStyles.colors.cardGreen); // Verde suave
+
+      doc.y += 20;
+      doc.moveDown(1);
+
+      // ==================== LISTA DE EVENTOS ====================
+      pdfStyles.addSection(doc, 'Eventos');
+
       events.forEach((event, index) => {
-        doc.fontSize(10);
+        // Verificar se precisa de nova página
+        if (doc.y > doc.page.height - 150) {
+          doc.addPage();
+          doc.y = doc.page.margins.top;
+        }
+
         const date = new Date(event.date).toLocaleDateString('pt-BR');
         const time = new Date(event.date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
         const typeLabel = typeLabels[event.type] || event.type;
@@ -829,22 +833,37 @@ export class ScheduleController {
         const processNum = event.case?.processNumber || '-';
         const assignedNames = event.assignedUsers?.map(a => a.user.name).join(', ') || '-';
 
-        doc.font('Helvetica-Bold').text(`${index + 1}. ${event.title}`, { continued: false });
-        doc.font('Helvetica');
-        doc.text(`   Data: ${date} às ${time}`);
-        doc.text(`   Tipo: ${typeLabel} | Prioridade: ${priorityLabel} | Status: ${status}`);
-        doc.text(`   Cliente: ${clientName}`);
-        doc.text(`   Processo: ${processNum}`);
-        doc.text(`   Responsável(is): ${assignedNames}`);
-        if (event.description) {
-          doc.text(`   Descrição: ${event.description}`);
-        }
-        doc.moveDown(0.8);
+        // Título do evento com número
+        doc.fontSize(pdfStyles.fonts.heading).fillColor(pdfStyles.colors.primary);
+        doc.text(`${index + 1}. ${event.title}`);
+        doc.fillColor(pdfStyles.colors.black);
 
-        if ((index + 1) % 8 === 0 && index !== events.length - 1) {
-          doc.addPage();
+        doc.fontSize(pdfStyles.fonts.body);
+        pdfStyles.addKeyValue(doc, 'Data/Hora', `${date} às ${time}`, { indent: 15 });
+        pdfStyles.addKeyValue(doc, 'Tipo', `${typeLabel} | Prioridade: ${priorityLabel}`, { indent: 15 });
+
+        // Status com cor
+        doc.fontSize(pdfStyles.fonts.body).fillColor(pdfStyles.colors.gray);
+        doc.text('Status: ', margin + 15, doc.y, { continued: true });
+        doc.fillColor(event.completed ? pdfStyles.colors.success : pdfStyles.colors.warning);
+        doc.text(status);
+        doc.fillColor(pdfStyles.colors.black);
+
+        pdfStyles.addKeyValue(doc, 'Cliente', clientName, { indent: 15 });
+        pdfStyles.addKeyValue(doc, 'Processo', processNum, { indent: 15 });
+        pdfStyles.addKeyValue(doc, 'Responsável(is)', assignedNames, { indent: 15 });
+
+        if (event.description) {
+          pdfStyles.addKeyValue(doc, 'Descrição', event.description, { indent: 15 });
         }
+
+        pdfStyles.addDivider(doc, 'dashed');
       });
+
+      // ==================== RODAPÉ ====================
+      doc.fontSize(pdfStyles.fonts.tiny).fillColor(pdfStyles.colors.gray);
+      doc.text(`Documento gerado em ${new Date().toLocaleString('pt-BR')}`, { align: 'center' });
+      doc.fillColor(pdfStyles.colors.black);
 
       doc.end();
     } catch (error) {

@@ -5,6 +5,7 @@ import PDFDocument from 'pdfkit';
 import { parse } from 'csv-parse/sync';
 import { sanitizeString } from '../utils/sanitize';
 import { appLogger } from '../utils/logger';
+import * as pdfStyles from '../utils/pdfStyles';
 
 export class AccountsPayableController {
   // Criar nova conta a pagar
@@ -285,51 +286,94 @@ export class AccountsPayableController {
         orderBy: { dueDate: 'asc' },
       });
 
-      const doc = new PDFDocument({ margin: 50 });
+      // Buscar nome da empresa
+      const company = await prisma.company.findUnique({
+        where: { id: companyId },
+        select: { name: true },
+      });
+
+      const doc = new PDFDocument({ margin: 50, size: 'A4' });
 
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', 'attachment; filename=contas_a_pagar.pdf');
 
       doc.pipe(res);
 
-      // Header
-      doc.fontSize(20).text('Relatório de Contas a Pagar', { align: 'center' });
-      doc.moveDown();
-      doc.fontSize(10).text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, { align: 'center' });
-      doc.moveDown(2);
+      // Header moderno
+      pdfStyles.addHeader(doc, 'Relatório de Contas a Pagar', `Total: ${accounts.length} contas`, company?.name);
 
       // Calculate totals
       const totalPending = accounts.filter(a => a.status === 'PENDING').reduce((sum, a) => sum + Number(a.amount), 0);
       const totalPaid = accounts.filter(a => a.status === 'PAID').reduce((sum, a) => sum + Number(a.amount), 0);
       const totalOverdue = accounts.filter(a => a.status === 'OVERDUE').reduce((sum, a) => sum + Number(a.amount), 0);
+      const countPending = accounts.filter(a => a.status === 'PENDING').length;
+      const countPaid = accounts.filter(a => a.status === 'PAID').length;
+      const countOverdue = accounts.filter(a => a.status === 'OVERDUE').length;
 
-      // Summary
-      doc.fontSize(12).text('Resumo:', { underline: true });
-      doc.fontSize(10);
-      doc.text(`Total Pendente: R$ ${totalPending.toFixed(2)}`);
-      doc.text(`Total Pago: R$ ${totalPaid.toFixed(2)}`);
-      doc.text(`Total Vencido: R$ ${totalOverdue.toFixed(2)}`);
-      doc.text(`Total Geral: R$ ${(totalPending + totalPaid + totalOverdue).toFixed(2)}`);
-      doc.moveDown(2);
+      // Cards de resumo
+      const cardWidth = 125;
+      const cardHeight = 55;
+      const margin = doc.page.margins.left;
+      const cardY = doc.y;
 
-      // Table header
-      doc.fontSize(12).text('Detalhamento:', { underline: true });
-      doc.moveDown();
+      pdfStyles.addSummaryCard(
+        doc, margin, cardY, cardWidth, cardHeight,
+        `Pendentes (${countPending})`,
+        pdfStyles.formatCurrency(totalPending),
+        pdfStyles.colors.cardOrange  // Laranja suave - pendente
+      );
 
-      // Accounts list
-      accounts.forEach((account, index) => {
-        if ((index + 1) % 15 === 0) doc.addPage();
+      pdfStyles.addSummaryCard(
+        doc, margin + cardWidth + 10, cardY, cardWidth, cardHeight,
+        `Pagos (${countPaid})`,
+        pdfStyles.formatCurrency(totalPaid),
+        pdfStyles.colors.cardRed     // Vermelho suave - pago
+      );
 
-        doc.fontSize(10);
-        doc.text(`${index + 1}. ${account.supplier}`, { continued: false });
-        doc.fontSize(9);
-        doc.text(`   Descrição: ${account.description}`);
-        doc.text(`   Valor: R$ ${Number(account.amount).toFixed(2)}`);
-        doc.text(`   Vencimento: ${new Date(account.dueDate).toLocaleDateString('pt-BR')}`);
-        doc.text(`   Status: ${account.status === 'PAID' ? 'Pago' : account.status === 'PENDING' ? 'Pendente' : 'Vencido'}`);
-        if (account.notes) doc.text(`   Observações: ${account.notes}`);
-        doc.moveDown();
-      });
+      pdfStyles.addSummaryCard(
+        doc, margin + (cardWidth + 10) * 2, cardY, cardWidth, cardHeight,
+        `Vencidos (${countOverdue})`,
+        pdfStyles.formatCurrency(totalOverdue),
+        pdfStyles.colors.danger      // Vermelho forte - vencido/urgente
+      );
+
+      pdfStyles.addSummaryCard(
+        doc, margin + (cardWidth + 10) * 3, cardY, cardWidth, cardHeight,
+        'Total Geral',
+        pdfStyles.formatCurrency(totalPending + totalPaid + totalOverdue),
+        pdfStyles.colors.cardBlue    // Azul suave - total
+      );
+
+      doc.y = cardY + cardHeight + 25;
+
+      // Seção de detalhamento
+      pdfStyles.addSection(doc, 'Detalhamento das Contas');
+
+      // Tabela de contas
+      const headers = ['Fornecedor', 'Descrição', 'Valor', 'Vencimento', 'Status'];
+      const columnWidths = [130, 150, 80, 80, 65];
+
+      const getStatusLabel = (status: string) => {
+        switch (status) {
+          case 'PAID': return 'Pago';
+          case 'PENDING': return 'Pendente';
+          case 'OVERDUE': return 'Vencido';
+          default: return status;
+        }
+      };
+
+      const rows = accounts.map(account => [
+        account.supplier.substring(0, 22),
+        account.description.substring(0, 25),
+        pdfStyles.formatCurrency(Number(account.amount)),
+        pdfStyles.formatDate(account.dueDate),
+        getStatusLabel(account.status),
+      ]);
+
+      pdfStyles.addTable(doc, headers, rows, columnWidths);
+
+      // Rodapé
+      pdfStyles.addFooter(doc, 1);
 
       doc.end();
     } catch (error) {
@@ -585,11 +629,30 @@ export class AccountsPayableController {
       const where: any = { companyId, status: 'PAID' };
 
       // Filtro por data (data de pagamento)
+      // Buscar contas onde paidDate está no período OU paidDate é null mas updatedAt está no período
       if (startDate && endDate) {
-        where.paidDate = {
-          gte: new Date(String(startDate)),
-          lte: new Date(String(endDate)),
-        };
+        const parsedStartDate = new Date(String(startDate));
+        const parsedEndDate = new Date(String(endDate));
+        // Ajustar endDate para incluir o final do dia (23:59:59.999) em UTC
+        parsedEndDate.setUTCHours(23, 59, 59, 999);
+
+        where.OR = [
+          // Contas com paidDate no período
+          {
+            paidDate: {
+              gte: parsedStartDate,
+              lte: parsedEndDate,
+            },
+          },
+          // Contas sem paidDate mas com updatedAt no período (marcadas como pagas mas sem data específica)
+          {
+            paidDate: null,
+            updatedAt: {
+              gte: parsedStartDate,
+              lte: parsedEndDate,
+            },
+          },
+        ];
       }
 
       // Filtro por categoria
@@ -627,10 +690,25 @@ export class AccountsPayableController {
       const where: any = { companyId, status: 'PAID' };
 
       if (startDate && endDate) {
-        where.paidDate = {
-          gte: new Date(String(startDate)),
-          lte: new Date(String(endDate)),
-        };
+        const parsedStartDate = new Date(String(startDate));
+        const parsedEndDate = new Date(String(endDate));
+        parsedEndDate.setUTCHours(23, 59, 59, 999);
+
+        where.OR = [
+          {
+            paidDate: {
+              gte: parsedStartDate,
+              lte: parsedEndDate,
+            },
+          },
+          {
+            paidDate: null,
+            updatedAt: {
+              gte: parsedStartDate,
+              lte: parsedEndDate,
+            },
+          },
+        ];
       }
 
       if (category) {
@@ -644,58 +722,88 @@ export class AccountsPayableController {
 
       const total = accounts.reduce((sum, account) => sum + Number(account.amount), 0);
 
-      const doc = new PDFDocument({ margin: 50 });
+      // Buscar nome da empresa
+      const company = await prisma.company.findUnique({
+        where: { id: companyId },
+        select: { name: true },
+      });
+
+      const doc = new PDFDocument({ margin: 50, size: 'A4' });
 
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', `attachment; filename=extrato_${new Date().toISOString().split('T')[0]}.pdf`);
 
       doc.pipe(res);
 
-      // Header
-      doc.fontSize(20).text('Extrato de Pagamentos', { align: 'center' });
-      doc.moveDown();
-      doc.fontSize(10).text(`Gerado em: ${new Date().toLocaleDateString('pt-BR')}`, { align: 'center' });
-      doc.moveDown(2);
-
-      // Período
+      // Header moderno
+      let subtitleText = '';
       if (startDate && endDate) {
-        doc.fontSize(12).text('Período:', { underline: true });
-        doc.fontSize(10);
-        doc.text(`De: ${new Date(String(startDate)).toLocaleDateString('pt-BR')}`);
-        doc.text(`Até: ${new Date(String(endDate)).toLocaleDateString('pt-BR')}`);
-        doc.moveDown();
+        subtitleText = `Período: ${pdfStyles.formatDate(String(startDate))} a ${pdfStyles.formatDate(String(endDate))}`;
       }
+      pdfStyles.addHeader(doc, 'Extrato de Pagamentos', subtitleText, company?.name);
 
-      // Categoria
+      // Cards de resumo
+      const cardWidth = 170;
+      const cardHeight = 55;
+      const margin = doc.page.margins.left;
+      const cardY = doc.y;
+
+      pdfStyles.addSummaryCard(
+        doc,
+        margin,
+        cardY,
+        cardWidth,
+        cardHeight,
+        'Total de Pagamentos',
+        String(accounts.length),
+        pdfStyles.colors.cardBlue    // Azul suave - quantidade
+      );
+
+      pdfStyles.addSummaryCard(
+        doc,
+        margin + cardWidth + 15,
+        cardY,
+        cardWidth,
+        cardHeight,
+        'Valor Total Pago',
+        pdfStyles.formatCurrency(total),
+        pdfStyles.colors.cardRed     // Vermelho suave - pago
+      );
+
       if (category) {
-        doc.fontSize(12).text('Categoria:', { underline: true });
-        doc.fontSize(10).text(String(category));
-        doc.moveDown();
+        pdfStyles.addSummaryCard(
+          doc,
+          margin + (cardWidth + 15) * 2,
+          cardY,
+          cardWidth,
+          cardHeight,
+          'Categoria',
+          String(category),
+          pdfStyles.colors.cardGray  // Cinza suave - categoria
+        );
       }
 
-      // Resumo
-      doc.fontSize(14).text('Resumo:', { underline: true });
-      doc.fontSize(12);
-      doc.text(`Total de Pagamentos: ${accounts.length}`);
-      doc.text(`Valor Total Pago: R$ ${total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
-      doc.moveDown(2);
+      doc.y = cardY + cardHeight + 25;
 
-      // Detalhamento
-      doc.fontSize(12).text('Detalhamento:', { underline: true });
-      doc.moveDown();
+      // Seção de detalhamento
+      pdfStyles.addSection(doc, 'Detalhamento dos Pagamentos');
 
-      accounts.forEach((account, index) => {
-        if ((index + 1) % 12 === 0) doc.addPage();
+      // Tabela de pagamentos
+      const headers = ['Fornecedor', 'Descrição', 'Categoria', 'Valor', 'Data Pgto'];
+      const columnWidths = [120, 150, 80, 80, 75];
 
-        doc.fontSize(10);
-        doc.text(`${index + 1}. ${account.supplier}`, { continued: false });
-        doc.fontSize(9);
-        doc.text(`   Descrição: ${account.description}`);
-        doc.text(`   Valor: R$ ${Number(account.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
-        doc.text(`   Data de Pagamento: ${new Date(account.paidDate || account.dueDate).toLocaleDateString('pt-BR')}`);
-        if (account.category) doc.text(`   Categoria: ${account.category}`);
-        doc.moveDown();
-      });
+      const rows = accounts.map(account => [
+        account.supplier.substring(0, 20),
+        account.description.substring(0, 25),
+        account.category || '-',
+        pdfStyles.formatCurrency(Number(account.amount)),
+        pdfStyles.formatDate(account.paidDate || account.dueDate),
+      ]);
+
+      pdfStyles.addTable(doc, headers, rows, columnWidths);
+
+      // Rodapé
+      pdfStyles.addFooter(doc, 1);
 
       doc.end();
     } catch (error) {
@@ -713,10 +821,25 @@ export class AccountsPayableController {
       const where: any = { companyId, status: 'PAID' };
 
       if (startDate && endDate) {
-        where.paidDate = {
-          gte: new Date(String(startDate)),
-          lte: new Date(String(endDate)),
-        };
+        const parsedStartDate = new Date(String(startDate));
+        const parsedEndDate = new Date(String(endDate));
+        parsedEndDate.setUTCHours(23, 59, 59, 999);
+
+        where.OR = [
+          {
+            paidDate: {
+              gte: parsedStartDate,
+              lte: parsedEndDate,
+            },
+          },
+          {
+            paidDate: null,
+            updatedAt: {
+              gte: parsedStartDate,
+              lte: parsedEndDate,
+            },
+          },
+        ];
       }
 
       if (category) {
