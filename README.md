@@ -1,189 +1,68 @@
-# AdvTom - Sistema Multitenant para Escritório de Advocacia
+# AdvWell - Sistema Multitenant para Escritórios de Advocacia
 
-Sistema SaaS completo para escritórios de advocacia com integração ao DataJud CNJ.
+Sistema SaaS completo para escritórios de advocacia brasileiros com integração ao DataJud CNJ.
 
-## URLs de Teste
+## URLs de Produção
 
-- **Frontend**: https://app.advtom.com
-- **Backend API**: https://api.advtom.com
-
-**IMPORTANTE**: Estas são URLs de teste. Para distribuir o sistema para outras pessoas, você precisará alterar as URLs no `docker-compose.yml` e fazer rebuild das imagens com as novas URLs.
+- **Frontend**: https://app.advwell.pro
+- **Backend API**: https://api.advwell.pro
 
 ## Funcionalidades
 
 - **Sistema Multitenant**: Suporte para múltiplas empresas isoladas
-- **Autenticação JWT**: Login seguro com recuperação de senha via SMTP
+- **Autenticação JWT**: Login seguro com refresh tokens e recuperação de senha
 - **Gestão de Clientes**: Cadastro e gerenciamento completo de clientes
 - **Gestão de Processos**: Cadastro de processos com integração DataJud CNJ
-- **Sincronização Automática**: Atualização diária automática dos processos
+- **Sincronização DataJud**: Graus G1, G2 e G3 com atualização automática
+- **Sumarização por IA**: Integração com OpenAI GPT e Google Gemini
+- **Campanhas de Email**: Templates personalizáveis com SMTP configurável
+- **Contas a Pagar**: Gestão de contas com recorrência
+- **Agenda**: Eventos com integração Google Meet
+- **Prazos**: Acompanhamento com cores por urgência
+- **Gestão Financeira**: Receitas e despesas
+- **Documentos**: Armazenamento S3 + links externos
+- **Import/Export CSV**: Para clientes e processos
 - **Níveis de Usuário**:
-  - Super Admin: Gerencia empresas
-  - Admin: Gerencia sua empresa e usuários
-  - User: Acessa recursos conforme permissões
-- **Upload de Documentos**: Armazenamento seguro no AWS S3
-- **Notificações por Email**: Sistema SMTP configurável
+  - SUPER_ADMIN: Gerencia empresas, bypass de tenant
+  - ADMIN: Gerencia sua empresa e usuários
+  - USER: Acesso baseado em permissões
 
 ## Tecnologias
 
 ### Backend
 - Node.js + Express + TypeScript
-- PostgreSQL + Prisma ORM
+- PostgreSQL 16 + Prisma ORM
 - JWT Authentication
 - AWS S3 Integration
-- Nodemailer (SMTP)
+- Redis 7 (cache + filas)
 - Node-Cron (tarefas agendadas)
 
 ### Frontend
-- React 18 + TypeScript
-- Vite
+- React 18 + TypeScript + Vite
 - TailwindCSS
 - Zustand (state management)
 - React Router
 - Axios
 
 ### Infraestrutura
-- Docker + Docker Swarm
+- Docker Swarm (4 réplicas backend)
 - Traefik (reverse proxy + SSL)
-- PostgreSQL 16
-- Nginx (frontend)
+- PostgreSQL 16 (max_connections=500)
+- Redis 7 (2GB cache)
+- Prometheus + Alertmanager (monitoramento)
 
-## Como Mudar as URLs para Distribuição
-
-### 1. Editar docker-compose.yml
-
-Abra o arquivo `/root/advtom/docker-compose.yml` e altere:
-
-```yaml
-# Altere estas linhas no serviço backend:
-- API_URL=https://SEU_DOMINIO_API
-- FRONTEND_URL=https://SEU_DOMINIO_FRONTEND
-
-# E estas labels do Traefik:
-- "traefik.http.routers.advtom-backend.rule=Host(`SEU_DOMINIO_API`)"
-
-# No serviço frontend:
-- VITE_API_URL=https://SEU_DOMINIO_API/api
-
-# E esta label do Traefik:
-- "traefik.http.routers.advtom-frontend.rule=Host(`SEU_DOMINIO_FRONTEND`)"
-```
-
-### 2. Rebuild da imagem do frontend
-
-O frontend precisa ser rebuilded com a nova URL da API:
-
-```bash
-cd /root/advtom/frontend
-docker build --no-cache --build-arg VITE_API_URL=https://SEU_DOMINIO_API/api -t tomautomations/advtom-frontend:latest .
-```
-
-### 3. Push das imagens (opcional)
-
-Se você quiser usar suas próprias imagens:
-
-```bash
-# Login no Docker Hub
-docker login -u SEU_USUARIO
-
-# Tag e push
-docker tag tomautomations/advtom-backend:latest SEU_USUARIO/advtom-backend:latest
-docker push SEU_USUARIO/advtom-backend:latest
-
-docker tag tomautomations/advtom-frontend:latest SEU_USUARIO/advtom-frontend:latest
-docker push SEU_USUARIO/advtom-frontend:latest
-```
-
-### 4. Deploy
-
-```bash
-# Atualizar o script de deploy
-vim /root/advtom/deploy_expect.sh
-# Alterar o host para seu servidor
-
-# Executar deploy
-/root/advtom/deploy_expect.sh
-```
-
-## Deploy
-
-### Pré-requisitos
-
-- Docker Swarm inicializado
-- Rede `network_public` criada
-- Traefik configurado na rede `network_public`
-- DNS configurado apontando para o servidor
-
-### Deploy Automatizado
-
-```bash
-# O script já está configurado
-/root/advtom/deploy_expect.sh
-```
-
-### Deploy Manual
-
-```bash
-# 1. Copiar docker-compose.yml para o servidor
-scp docker-compose.yml root@SEU_SERVIDOR:/root/advtom-stack.yml
-
-# 2. Conectar ao servidor
-ssh root@SEU_SERVIDOR
-
-# 3. Deploy da stack
-docker stack deploy -c /root/advtom-stack.yml advtom
-
-# 4. Verificar status
-docker stack ps advtom
-```
-
-### Verificar Logs
-
-```bash
-docker service logs advtom_backend -f
-docker service logs advtom_frontend -f
-docker service logs advtom_postgres -f
-```
-
-## Configuração
-
-### Variáveis de Ambiente (docker-compose.yml)
-
-#### Database
-- `POSTGRES_PASSWORD`: Senha do PostgreSQL
-
-#### AWS S3
-- `AWS_ACCESS_KEY_ID`: Chave de acesso AWS
-- `AWS_SECRET_ACCESS_KEY`: Chave secreta AWS
-- `AWS_REGION`: Região AWS
-- `S3_BUCKET_NAME`: Nome do bucket
-
-#### SMTP
-- `SMTP_HOST`: Servidor SMTP (ex: smtp.gmail.com)
-- `SMTP_PORT`: Porta SMTP (ex: 587)
-- `SMTP_USER`: Usuário SMTP
-- `SMTP_PASSWORD`: Senha SMTP ou App Password
-- `SMTP_FROM`: Remetente dos emails
-
-#### DataJud CNJ
-- `DATAJUD_API_KEY`: Chave da API DataJud
-
-#### URLs
-- `API_URL`: URL completa da API
-- `FRONTEND_URL`: URL completa do frontend
-- `VITE_API_URL`: URL completa da API + /api
-
-## Desenvolvimento Local
+## Comandos de Desenvolvimento
 
 ### Backend
 
 ```bash
 cd backend
 npm install
-cp .env.example .env
-# Edite o .env com suas configurações
-npx prisma generate
-npx prisma migrate dev
-npm run dev
+npm run dev                    # Dev server
+npm run build                  # Compilar TypeScript
+npm run prisma:generate        # Gerar Prisma client
+npm run prisma:migrate         # Executar migrations
+npm test                       # Rodar testes
 ```
 
 ### Frontend
@@ -191,113 +70,115 @@ npm run dev
 ```bash
 cd frontend
 npm install
-cp .env.example .env
-# Edite o .env com a URL da API
-npm run dev
+npm run dev                    # Vite dev server (porta 5173)
+npm run build                  # Build de produção
 ```
 
-## Acesso ao Sistema
+## Deploy
 
-### Primeiro Acesso
-
-1. Acesse https://app.advtom.com/register (ou sua URL)
-2. Crie sua conta (será criado como Admin da empresa)
-3. Faça login e comece a usar
-
-### Super Admin
-
-Para criar um Super Admin, conecte ao container e use o Prisma Studio:
+### Build das Imagens
 
 ```bash
-docker exec -it $(docker ps -q -f name=advtom_backend) sh
-npx prisma studio
+# Backend
+cd backend
+docker build -t tomautomations/advtom-backend:latest .
+
+# Frontend (com URL da API)
+cd frontend
+docker build --build-arg VITE_API_URL=https://api.advwell.pro/api -t tomautomations/advtom-frontend:latest .
 ```
 
-## API DataJud CNJ
-
-A integração com o DataJud permite:
-
-- Busca automática de processos por número
-- Sincronização de movimentações
-- Atualização diária automática às 2h da manhã
-- Busca manual via botão "Sincronizar"
-
-### Tribunais Suportados
-
-- TJRJ, TJSP, TJMG
-- TRF1, TRF2, TRF3, TRF4, TRF5
-
-## Segurança
-
-- Senhas criptografadas com bcrypt
-- JWT para autenticação
-- Rate limiting nas APIs
-- Helmet.js para headers de segurança
-- Isolamento multitenant no banco de dados
-- CORS configurado
-
-## Atualizar o Sistema
+### Deploy na Stack
 
 ```bash
-# Local - fazer rebuild e push
-cd /root/advtom/frontend
-docker build --no-cache --build-arg VITE_API_URL=https://api.advtom.com/api -t tomautomations/advtom-frontend:latest .
-docker push tomautomations/advtom-frontend:latest
-
-# No servidor
-/root/advtom/deploy_expect.sh
+./deploy.sh                    # Exporta .env e faz deploy
+docker stack ps advtom         # Verificar status
+docker service logs advtom_backend -f   # Ver logs
 ```
 
-## Backup
+## Variáveis de Ambiente
 
-```bash
-# Conectar ao servidor
-ssh root@72.60.123.185
+### Obrigatórias
+- `DATABASE_URL` - String de conexão PostgreSQL
+- `JWT_SECRET` - Secret JWT (min 32 chars)
+- `ENCRYPTION_KEY` - Chave AES-256-CBC (64 hex chars)
+- `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `S3_BUCKET_NAME` - S3
+- `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD` - Email
+- `DATAJUD_API_KEY` - API DataJud CNJ
+- `API_URL`, `FRONTEND_URL` - URLs dos serviços
 
-# Fazer backup
-docker exec $(docker ps -q -f name=advtom_postgres) pg_dump -U postgres advtom > backup_advtom_$(date +%Y%m%d).sql
-
-# Restaurar backup
-cat backup_advtom_20241030.sql | docker exec -i $(docker ps -q -f name=advtom_postgres) psql -U postgres advtom
-```
+### Segurança
+- `HEALTH_CHECK_KEY` - Protege `/health/detailed`
+- `REDIS_PASSWORD` - Autenticação Redis
 
 ## Estrutura do Projeto
 
 ```
-advtom/
+app.advwell/
 ├── backend/              # API Node.js
 │   ├── src/
 │   │   ├── controllers/  # Controllers
-│   │   ├── middleware/   # Middlewares
-│   │   ├── models/       # (Prisma gera os models)
-│   │   ├── routes/       # Rotas
-│   │   ├── services/     # Serviços (DataJud, etc)
-│   │   ├── config/       # Configurações
-│   │   └── utils/        # Utilitários
-│   ├── prisma/           # Schema do Prisma
+│   │   ├── middleware/   # Middlewares (auth, tenant, csrf)
+│   │   ├── routes/       # Rotas da API
+│   │   ├── services/     # Serviços (DataJud, AI, backup)
+│   │   └── utils/        # Utilitários (prisma, redis, logger)
+│   ├── prisma/           # Schema do banco
 │   └── Dockerfile
 ├── frontend/             # React App
 │   ├── src/
-│   │   ├── components/   # Componentes
-│   │   ├── pages/        # Páginas
+│   │   ├── components/   # Componentes reutilizáveis
+│   │   ├── pages/        # Páginas da aplicação
 │   │   ├── services/     # API clients
-│   │   ├── contexts/     # Contextos (Auth)
-│   │   └── styles/       # Estilos
+│   │   └── contexts/     # Contextos (Auth)
 │   └── Dockerfile
-├── docker-compose.yml    # Stack do Docker Swarm
-├── deploy_expect.sh      # Script de deploy
-├── README.md             # Este arquivo
-└── ACESSO.md            # Informações de acesso
+├── monitoring/           # Prometheus + Alertmanager
+├── docker-compose.yml    # Stack Docker Swarm
+├── deploy.sh             # Script de deploy
+├── CLAUDE.md             # Guia para Claude Code
+└── README.md             # Este arquivo
 ```
 
-## Suporte
+## Segurança
 
-Para suporte ou dúvidas, consulte a documentação completa no ACESSO.md.
+- Senhas com bcrypt (12 rounds)
+- JWT + Refresh Tokens
+- Rate limiting (200 req/15min global, 20 req/15min auth)
+- CSRF protection (Double Submit Cookie)
+- XSS sanitization
+- Helmet.js security headers
+- Isolamento multitenant (row-level)
+- CORS configurado
+- Health checks protegidos
+
+## Backup
+
+### Automático
+- Backup diário às 03:00 para S3
+- Retenção de 30 dias
+- Formato JSON comprimido (.json.gz)
+
+### Manual (SUPER_ADMIN)
+```bash
+# Criar backup
+curl -X POST -H "Authorization: Bearer <token>" \
+  https://api.advwell.pro/api/database-backup/test
+
+# Listar backups
+curl -H "Authorization: Bearer <token>" \
+  https://api.advwell.pro/api/database-backup/list
+```
+
+## Monitoramento
+
+- Prometheus: métricas de sistema
+- Alertmanager: alertas configuráveis
+- Grafana: dashboards
+- Health checks: `/health` e `/health/detailed`
 
 ## Licença
 
-Este projeto foi desenvolvido para fins comerciais.
+Projeto comercial - Todos os direitos reservados.
 
 ---
 
-**Sistema desenvolvido e pronto para distribuição! 🚀**
+**Sistema em produção para escritórios de advocacia brasileiros**
