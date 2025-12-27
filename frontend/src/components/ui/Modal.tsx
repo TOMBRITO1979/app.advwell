@@ -63,12 +63,13 @@ const Modal: React.FC<ModalProps> = ({
           className={`
             relative w-full ${sizeStyles[size]} bg-white rounded-xl shadow-xl
             transform transition-all animate-slide-in
+            max-h-[90vh] flex flex-col my-4
           `}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
           {(title || showCloseButton) && (
-            <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-200">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-200 flex-shrink-0">
               {title && (
                 <h2 className="text-xl font-semibold text-neutral-900">{title}</h2>
               )}
@@ -84,7 +85,7 @@ const Modal: React.FC<ModalProps> = ({
           )}
 
           {/* Content */}
-          <div className="max-h-[calc(100vh-200px)] overflow-y-auto">
+          <div className="flex-1 overflow-y-auto">
             {children}
           </div>
         </div>
