@@ -96,24 +96,24 @@ const SubscriptionAlerts: React.FC = () => {
             className="py-3 px-4 hover:bg-neutral-50 cursor-pointer transition-colors"
             onClick={goToCompanies}
           >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-neutral-900">{company.name}</p>
-                <p className="text-sm text-neutral-500">{company.email}</p>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div className="min-w-0">
+                <p className="font-medium text-neutral-900 truncate">{company.name}</p>
+                <p className="text-sm text-neutral-500 truncate">{company.email}</p>
               </div>
-              <div className="flex items-center gap-4 text-sm text-neutral-600">
-                <div className="flex items-center gap-1" title="Usuarios">
-                  <Users size={14} className="text-neutral-400" />
+              <div className="flex flex-wrap items-center gap-3 text-sm text-neutral-600">
+                <div className="flex items-center gap-1" title="Usuários">
+                  <Users size={14} className="text-neutral-400 flex-shrink-0" />
                   <span>{company._count.users}</span>
                 </div>
                 <div className="flex items-center gap-1" title="Processos">
-                  <FileText size={14} className="text-neutral-400" />
+                  <FileText size={14} className="text-neutral-400 flex-shrink-0" />
                   <span>{company._count.cases}</span>
                 </div>
                 {company.trialEndsAt && (
                   <div className="flex items-center gap-1 text-xs text-neutral-500">
-                    <Clock size={12} />
-                    <span>Trial: {formatDate(company.trialEndsAt)}</span>
+                    <Clock size={12} className="flex-shrink-0" />
+                    <span className="whitespace-nowrap">Trial: {formatDate(company.trialEndsAt)}</span>
                   </div>
                 )}
               </div>
