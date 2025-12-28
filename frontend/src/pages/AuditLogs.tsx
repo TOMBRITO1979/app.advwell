@@ -292,19 +292,27 @@ const AuditLogs: React.FC = () => {
 
         {/* Filters */}
         <div className="bg-white rounded-lg shadow-sm border border-neutral-200 p-4 mb-6">
-          <div className="flex items-center gap-4 flex-wrap">
-            <div className="flex items-center gap-2">
-              <Filter className="w-4 h-4 text-neutral-400" />
-              <span className="text-sm font-medium text-neutral-600">Filtros:</span>
-            </div>
+          <div className="flex items-center gap-2 mb-3">
+            <Filter className="w-4 h-4 text-neutral-400" />
+            <span className="text-sm font-medium text-neutral-600">Filtros:</span>
+            {hasActiveFilters && (
+              <button
+                onClick={clearFilters}
+                className="ml-auto text-sm text-primary-600 hover:text-primary-700"
+              >
+                Limpar filtros
+              </button>
+            )}
+          </div>
 
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <select
               value={filterEntityType}
               onChange={(e) => {
                 setFilterEntityType(e.target.value);
                 setPage(1);
               }}
-              className="px-3 py-1.5 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
+              className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
             >
               <option value="">Todas Entidades</option>
               <option value="CLIENT">Clientes</option>
@@ -318,12 +326,12 @@ const AuditLogs: React.FC = () => {
                 setFilterAction(e.target.value);
                 setPage(1);
               }}
-              className="px-3 py-1.5 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
+              className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
             >
-              <option value="">Todas Acoes</option>
-              <option value="CREATE">Criacao</option>
-              <option value="UPDATE">Edicao</option>
-              <option value="DELETE">Exclusao</option>
+              <option value="">Todas Ações</option>
+              <option value="CREATE">Criação</option>
+              <option value="UPDATE">Edição</option>
+              <option value="DELETE">Exclusão</option>
             </select>
 
             {isAdmin && (
@@ -333,9 +341,9 @@ const AuditLogs: React.FC = () => {
                   setFilterUserId(e.target.value);
                   setPage(1);
                 }}
-                className="px-3 py-1.5 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
+                className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
               >
-                <option value="">Todos Usuarios</option>
+                <option value="">Todos Usuários</option>
                 {users.map((u) => (
                   <option key={u.id} value={u.id}>
                     {u.name}
@@ -343,9 +351,13 @@ const AuditLogs: React.FC = () => {
                 ))}
               </select>
             )}
+          </div>
 
+          {/* Date Range */}
+          <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-neutral-400" />
+              <Calendar className="w-4 h-4 text-neutral-400 flex-shrink-0" />
+              <span className="text-sm text-neutral-500 flex-shrink-0">De:</span>
               <input
                 type="date"
                 value={filterStartDate}
@@ -353,9 +365,11 @@ const AuditLogs: React.FC = () => {
                   setFilterStartDate(e.target.value);
                   setPage(1);
                 }}
-                className="px-3 py-1.5 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
+                className="flex-1 px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
               />
-              <span className="text-neutral-400">ate</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-neutral-500 flex-shrink-0">Até:</span>
               <input
                 type="date"
                 value={filterEndDate}
@@ -363,36 +377,27 @@ const AuditLogs: React.FC = () => {
                   setFilterEndDate(e.target.value);
                   setPage(1);
                 }}
-                className="px-3 py-1.5 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
+                className="flex-1 px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
               />
             </div>
-
-            {hasActiveFilters && (
-              <button
-                onClick={clearFilters}
-                className="text-sm text-primary-600 hover:text-primary-700"
-              >
-                Limpar filtros
-              </button>
-            )}
           </div>
 
           {/* Busca */}
-          <div className="mt-4 flex items-center gap-2">
-            <div className="relative flex-1 max-w-md">
+          <div className="mt-3 flex flex-col sm:flex-row gap-2">
+            <div className="relative flex-1">
               <Search className="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                placeholder="Buscar por nome, usuario ou descricao..."
+                placeholder="Buscar por nome, usuário ou descrição..."
                 className="w-full pl-10 pr-4 py-2 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
               />
             </div>
             <button
               onClick={handleSearch}
-              className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors text-sm"
+              className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors text-sm whitespace-nowrap"
             >
               Buscar
             </button>
@@ -474,16 +479,21 @@ const AuditLogs: React.FC = () => {
                         </div>
 
                         {/* Expand Icon */}
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-col items-center justify-center flex-shrink-0 ml-2">
                           {log.changedFields.length > 0 && (
-                            <span className="text-xs text-neutral-500">
-                              {log.changedFields.length} campo{log.changedFields.length > 1 ? 's' : ''}
-                            </span>
+                            <>
+                              <span className="text-sm font-semibold text-neutral-600">
+                                {log.changedFields.length}
+                              </span>
+                              <span className="text-xs text-neutral-500">
+                                {log.changedFields.length > 1 ? 'campos' : 'campo'}
+                              </span>
+                            </>
                           )}
                           {isExpanded ? (
-                            <ChevronUp className="w-5 h-5 text-neutral-400" />
+                            <ChevronUp className="w-5 h-5 text-neutral-400 mt-1" />
                           ) : (
-                            <ChevronDown className="w-5 h-5 text-neutral-400" />
+                            <ChevronDown className="w-5 h-5 text-neutral-400 mt-1" />
                           )}
                         </div>
                       </div>
