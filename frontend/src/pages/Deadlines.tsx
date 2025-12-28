@@ -324,7 +324,7 @@ const Deadlines: React.FC = () => {
 
       {/* Modal de Detalhes do Processo */}
       {showDetailsModal && selectedCase && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
           <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             {/* Header */}
             <div className="sticky top-0 bg-white border-b border-neutral-200 px-6 py-4 flex justify-between items-center min-h-[44px]">
@@ -474,8 +474,8 @@ const Deadlines: React.FC = () => {
 
       {/* Modal de Edição do Prazo */}
       {showEditModal && selectedCase && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
+          <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto my-4">
             {/* Header */}
             <div className="border-b border-neutral-200 px-6 py-4 flex justify-between items-center">
               <div>

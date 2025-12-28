@@ -519,7 +519,7 @@ const Companies: React.FC = () => {
 
       {/* Modal Criar/Editar Empresa */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
           <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-white border-b border-neutral-200 px-6 py-4 flex justify-between items-center min-h-[44px]">
               <h2 className="text-xl font-bold text-neutral-900">
@@ -747,8 +747,8 @@ const Companies: React.FC = () => {
 
       {/* Modal de Confirmação de Exclusão */}
       {showDeleteModal && selectedCompany && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
+          <div className="bg-white rounded-lg max-w-md w-full p-6 max-h-[90vh] overflow-y-auto my-4">
             <div className="flex items-center justify-center w-12 h-12 mx-auto bg-error-100 rounded-full mb-4">
               <Trash2 className="text-error-600" size={24} />
             </div>
@@ -797,7 +797,7 @@ const Companies: React.FC = () => {
 
       {/* Modal de Gerenciamento de Usuários */}
       {showUsersModal && selectedCompany && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
           <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-white border-b border-neutral-200 px-6 py-4 flex justify-between items-center">
               <div>
@@ -908,8 +908,8 @@ const Companies: React.FC = () => {
 
       {/* Modal de Gerenciamento de Assinatura */}
       {showSubscriptionModal && selectedCompany && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
+          <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto my-4">
             <div className="sticky top-0 bg-white border-b border-neutral-200 px-6 py-4 flex justify-between items-center">
               <div>
                 <h2 className="text-xl font-bold text-neutral-900">Gerenciar Assinatura</h2>
