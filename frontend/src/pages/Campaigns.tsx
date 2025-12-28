@@ -4,6 +4,7 @@ import DOMPurify from 'dompurify';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import Layout from '../components/Layout';
+import MobileCardList, { MobileCardItem } from '../components/MobileCardList';
 import { formatDateTime } from '../utils/dateFormatter';
 
 interface Campaign {
@@ -334,95 +335,124 @@ const Campaigns: React.FC = () => {
           </div>
         ) : (
           <div className="bg-white rounded-lg shadow overflow-hidden">
-            <table className="min-w-full divide-y divide-neutral-200">
-              <thead className="bg-neutral-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
-                    Nome
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
-                    Assunto
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
-                    Destinatários
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
-                    Enviados
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
-                    Data
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-neutral-500 uppercase">
-                    Ações
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-neutral-200">
-                {campaigns.map((campaign) => (
-                  <tr key={campaign.id} className="hover:bg-neutral-50">
-                    <td className="px-6 py-4 text-sm font-medium text-neutral-900">
-                      {campaign.name}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-neutral-600">
-                      {campaign.subject}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`px-2 py-1 text-xs font-medium rounded-full ${
-                          statusColors[campaign.status]
-                        }`}
-                      >
-                        {statusLabels[campaign.status]}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-neutral-600">
-                      {campaign.totalRecipients}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-neutral-600">
-                      {campaign.sentCount} / {campaign.totalRecipients}
-                      {campaign.failedCount > 0 && (
-                        <span className="text-red-600 ml-2">({campaign.failedCount} falhas)</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-neutral-600">
-                      {formatDate(campaign.createdAt)}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-right">
-                      <div className="flex justify-end gap-2">
-                        <button
-                          onClick={() => handleView(campaign)}
-                          className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-info-600 hover:text-info-700 hover:bg-info-50 rounded-md transition-all duration-200"
-                          title="Visualizar"
-                        >
-                          <Eye size={18} />
-                        </button>
-                        {campaign.status === 'draft' && (
-                          <button
-                            onClick={() => handleSend(campaign.id)}
-                            className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-success-600 hover:text-success-700 hover:bg-success-50 rounded-md transition-all duration-200"
-                            title="Enviar"
-                          >
-                            <Send size={18} />
-                          </button>
-                        )}
-                        {campaign.status !== 'sending' && (
-                          <button
-                            onClick={() => handleDelete(campaign.id)}
-                            className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-error-600 hover:text-error-700 hover:bg-error-50 rounded-md transition-all duration-200"
-                            title="Excluir"
-                          >
-                            <Trash2 size={18} />
-                          </button>
-                        )}
-                      </div>
-                    </td>
+            {/* Mobile Card View */}
+            <div className="mobile-card-view">
+              <MobileCardList
+                items={campaigns.map((campaign): MobileCardItem => ({
+                  id: campaign.id,
+                  title: campaign.name,
+                  subtitle: campaign.subject,
+                  badge: {
+                    text: statusLabels[campaign.status],
+                    color: campaign.status === 'completed' ? 'green' :
+                           campaign.status === 'sending' ? 'blue' :
+                           campaign.status === 'failed' ? 'red' :
+                           campaign.status === 'cancelled' ? 'yellow' : 'gray',
+                  },
+                  fields: [
+                    { label: 'Destinatários', value: String(campaign.totalRecipients) },
+                    { label: 'Enviados', value: `${campaign.sentCount} / ${campaign.totalRecipients}${campaign.failedCount > 0 ? ` (${campaign.failedCount} falhas)` : ''}` },
+                    { label: 'Data', value: formatDate(campaign.createdAt) },
+                  ],
+                  onView: () => handleView(campaign),
+                  onDelete: campaign.status !== 'sending' ? () => handleDelete(campaign.id) : undefined,
+                }))}
+                emptyMessage="Nenhuma campanha encontrada"
+              />
+            </div>
+
+            {/* Desktop Table View */}
+            <div className="desktop-table-view">
+              <table className="min-w-full divide-y divide-neutral-200">
+                <thead className="bg-neutral-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                      Nome
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                      Assunto
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                      Destinatários
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                      Enviados
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                      Data
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-neutral-500 uppercase">
+                      Ações
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="bg-white divide-y divide-neutral-200">
+                  {campaigns.map((campaign) => (
+                    <tr key={campaign.id} className="hover:bg-neutral-50">
+                      <td className="px-6 py-4 text-sm font-medium text-neutral-900">
+                        {campaign.name}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-neutral-600">
+                        {campaign.subject}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span
+                          className={`px-2 py-1 text-xs font-medium rounded-full ${
+                            statusColors[campaign.status]
+                          }`}
+                        >
+                          {statusLabels[campaign.status]}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-neutral-600">
+                        {campaign.totalRecipients}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-neutral-600">
+                        {campaign.sentCount} / {campaign.totalRecipients}
+                        {campaign.failedCount > 0 && (
+                          <span className="text-red-600 ml-2">({campaign.failedCount} falhas)</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-neutral-600">
+                        {formatDate(campaign.createdAt)}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-right">
+                        <div className="flex justify-end gap-2">
+                          <button
+                            onClick={() => handleView(campaign)}
+                            className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-info-600 hover:text-info-700 hover:bg-info-50 rounded-md transition-all duration-200"
+                            title="Visualizar"
+                          >
+                            <Eye size={18} />
+                          </button>
+                          {campaign.status === 'draft' && (
+                            <button
+                              onClick={() => handleSend(campaign.id)}
+                              className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-success-600 hover:text-success-700 hover:bg-success-50 rounded-md transition-all duration-200"
+                              title="Enviar"
+                            >
+                              <Send size={18} />
+                            </button>
+                          )}
+                          {campaign.status !== 'sending' && (
+                            <button
+                              onClick={() => handleDelete(campaign.id)}
+                              className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-error-600 hover:text-error-700 hover:bg-error-50 rounded-md transition-all duration-200"
+                              title="Excluir"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
 

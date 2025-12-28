@@ -3,6 +3,7 @@ import Layout from '../components/Layout';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import { Plus, Search, Edit, Trash2, X, Shield, Eye, Edit as EditIcon, Trash, EyeOff } from 'lucide-react';
+import MobileCardList, { MobileCardItem } from '../components/MobileCardList';
 import { formatDate } from '../utils/dateFormatter';
 
 interface Permission {
@@ -230,86 +231,112 @@ const Users: React.FC = () => {
           ) : users.length === 0 ? (
             <p className="text-center py-4 text-neutral-600">Nenhum usuário encontrado</p>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-neutral-50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
-                      Usuário
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
-                      Email
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
-                      Permissões
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
-                      Status
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
-                      Ações
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-neutral-200">
-                  {users.map((user) => (
-                    <tr key={user.id} className="hover:bg-neutral-50">
-                      <td className="px-4 py-3 text-sm">
-                        <div>
-                          <p className="font-medium text-neutral-900">{user.name}</p>
-                          {user.role === 'ADMIN' && (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-primary-100 text-primary-800 mt-1">
-                              <Shield size={16} className="mr-1" />
-                              Administrador
-                            </span>
-                          )}
-                          <p className="text-xs text-neutral-400">Criado em {formatDate(user.createdAt)}</p>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 text-sm text-neutral-600">
-                        {user.email}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-neutral-600">
-                        <span className="text-xs bg-neutral-100 px-2 py-1 rounded">
-                          {getPermissionSummary(user.permissions)}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-sm">
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            user.active
-                              ? 'bg-success-100 text-success-800'
-                              : 'bg-error-100 text-error-800'
-                          }`}
-                        >
-                          {user.active ? 'Ativo' : 'Inativo'}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-sm">
-                        <div className="flex items-center justify-center gap-2">
-                          <button
-                            onClick={() => handleEdit(user)}
-                            className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                            title="Editar"
-                            disabled={user.role === 'ADMIN' || user.role === 'SUPER_ADMIN'}
-                          >
-                            <Edit size={18} />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(user)}
-                            className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-error-600 hover:text-error-700 hover:bg-error-50 rounded-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                            title="Desativar"
-                            disabled={user.role === 'ADMIN' || user.role === 'SUPER_ADMIN'}
-                          >
-                            <Trash2 size={18} />
-                          </button>
-                        </div>
-                      </td>
+            <>
+              {/* Mobile Card View */}
+              <div className="mobile-card-view">
+                <MobileCardList
+                  items={users.map((user): MobileCardItem => ({
+                    id: user.id,
+                    title: user.name,
+                    subtitle: user.email,
+                    badge: {
+                      text: user.active ? 'Ativo' : 'Inativo',
+                      color: user.active ? 'green' : 'red',
+                    },
+                    fields: [
+                      { label: 'Perfil', value: user.role === 'ADMIN' ? 'Administrador' : user.role === 'SUPER_ADMIN' ? 'Super Admin' : 'Usuário' },
+                      { label: 'Permissões', value: getPermissionSummary(user.permissions) },
+                      { label: 'Criado em', value: formatDate(user.createdAt) || '-' },
+                    ],
+                    onEdit: user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN' ? () => handleEdit(user) : undefined,
+                    onDelete: user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN' ? () => handleDelete(user) : undefined,
+                  }))}
+                  emptyMessage="Nenhum usuário encontrado"
+                />
+              </div>
+
+              {/* Desktop Table View */}
+              <div className="desktop-table-view overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-neutral-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                        Usuário
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                        Email
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                        Permissões
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                        Status
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                        Ações
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-neutral-200">
+                    {users.map((user) => (
+                      <tr key={user.id} className="hover:bg-neutral-50">
+                        <td className="px-4 py-3 text-sm">
+                          <div>
+                            <p className="font-medium text-neutral-900">{user.name}</p>
+                            {user.role === 'ADMIN' && (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-primary-100 text-primary-800 mt-1">
+                                <Shield size={16} className="mr-1" />
+                                Administrador
+                              </span>
+                            )}
+                            <p className="text-xs text-neutral-400">Criado em {formatDate(user.createdAt)}</p>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-sm text-neutral-600">
+                          {user.email}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-neutral-600">
+                          <span className="text-xs bg-neutral-100 px-2 py-1 rounded">
+                            {getPermissionSummary(user.permissions)}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-sm">
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              user.active
+                                ? 'bg-success-100 text-success-800'
+                                : 'bg-error-100 text-error-800'
+                            }`}
+                          >
+                            {user.active ? 'Ativo' : 'Inativo'}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-sm">
+                          <div className="flex items-center justify-center gap-2">
+                            <button
+                              onClick={() => handleEdit(user)}
+                              className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                              title="Editar"
+                              disabled={user.role === 'ADMIN' || user.role === 'SUPER_ADMIN'}
+                            >
+                              <Edit size={18} />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(user)}
+                              className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-error-600 hover:text-error-700 hover:bg-error-50 rounded-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                              title="Desativar"
+                              disabled={user.role === 'ADMIN' || user.role === 'SUPER_ADMIN'}
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </div>
       </div>

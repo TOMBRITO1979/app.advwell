@@ -3,6 +3,7 @@ import Layout from '../components/Layout';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import { Search, Clock, Calendar, Eye, AlertCircle, Edit, CheckCircle, X } from 'lucide-react';
+import MobileCardList, { MobileCardItem } from '../components/MobileCardList';
 import { formatDate } from '../utils/dateFormatter';
 
 interface Case {
@@ -201,123 +202,162 @@ const Deadlines: React.FC = () => {
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-neutral-50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
-                      Urgência
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
-                      Número do Processo
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
-                      Cliente
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
-                      Assunto
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
-                      Prazo
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
-                      Dias Restantes
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
-                      Status
-                    </th>
-                    <th className="px-4 py-3 text-center text-xs font-medium text-neutral-500 uppercase">
-                      Ações
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-neutral-200">
-                  {cases.map((caseItem) => {
+            <>
+              {/* Mobile Card View */}
+              <div className="mobile-card-view">
+                <MobileCardList
+                  items={cases.map((caseItem): MobileCardItem => {
                     const daysRemaining = calculateDaysRemaining(caseItem.deadline);
-                    const deadlineColor = getDeadlineColor(daysRemaining);
+                    const getBadgeColor = (): 'green' | 'red' | 'yellow' | 'gray' => {
+                      if (caseItem.deadlineCompleted) return 'green';
+                      if (daysRemaining < 0) return 'red';
+                      if (daysRemaining <= 7) return 'yellow';
+                      return 'green';
+                    };
+                    const getBadgeText = (): string => {
+                      if (caseItem.deadlineCompleted) return 'Cumprido';
+                      return getDeadlineLabel(daysRemaining);
+                    };
+                    return {
+                      id: caseItem.id,
+                      title: caseItem.processNumber,
+                      subtitle: caseItem.client.name,
+                      badge: {
+                        text: getBadgeText(),
+                        color: getBadgeColor(),
+                      },
+                      fields: [
+                        { label: 'Assunto', value: caseItem.subject },
+                        { label: 'Prazo', value: formatDate(caseItem.deadline) },
+                        { label: 'Status', value: statusLabels[caseItem.status as keyof typeof statusLabels] || caseItem.status },
+                      ],
+                      onView: () => handleCaseClick(caseItem.id),
+                      onEdit: () => handleEditClick(caseItem),
+                    };
+                  })}
+                  emptyMessage={search ? 'Nenhum prazo encontrado' : 'Nenhum processo com prazo definido'}
+                />
+              </div>
 
-                    return (
-                      <tr key={caseItem.id} className={`hover:bg-neutral-50 ${caseItem.deadlineCompleted ? 'bg-success-50' : ''}`}>
-                        <td className="px-4 py-3 text-sm">
-                          <div className="flex items-center justify-center">
-                            {caseItem.deadlineCompleted ? (
-                              <CheckCircle size={18} className="text-success-600" />
-                            ) : (
-                              getDeadlineIcon(daysRemaining)
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 text-sm">
-                          <button
-                            onClick={() => handleCaseClick(caseItem.id)}
-                            className={`hover:underline font-medium transition-colors ${caseItem.deadlineCompleted ? 'text-success-600 hover:text-success-800' : 'text-primary-600 hover:text-primary-800'}`}
-                            title="Ver detalhes do processo"
-                          >
-                            {caseItem.processNumber}
-                          </button>
-                        </td>
-                        <td className="px-4 py-3 text-sm text-neutral-600">
-                          {caseItem.client.name}
-                        </td>
-                        <td className="px-4 py-3 text-sm text-neutral-600">
-                          <div className="max-w-xs truncate" title={caseItem.subject}>
-                            {caseItem.subject}
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 text-sm text-neutral-600">
-                          {formatDate(caseItem.deadline)}
-                        </td>
-                        <td className="px-4 py-3 text-sm">
-                          {caseItem.deadlineCompleted ? (
-                            <span className="px-2 py-1 rounded-full text-xs font-medium bg-success-100 text-success-800">
-                              Cumprido
-                            </span>
-                          ) : (
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${deadlineColor}`}>
-                              {getDeadlineLabel(daysRemaining)}
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-4 py-3 text-sm">
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[caseItem.status as keyof typeof statusColors] || 'bg-neutral-100 text-neutral-800'}`}>
-                            {statusLabels[caseItem.status as keyof typeof statusLabels] || caseItem.status}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-sm">
-                          <div className="flex items-center justify-center gap-1">
+              {/* Desktop Table View */}
+              <div className="desktop-table-view overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-neutral-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                        Urgência
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                        Número do Processo
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                        Cliente
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                        Assunto
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                        Prazo
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                        Dias Restantes
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                        Status
+                      </th>
+                      <th className="px-4 py-3 text-center text-xs font-medium text-neutral-500 uppercase">
+                        Ações
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-neutral-200">
+                    {cases.map((caseItem) => {
+                      const daysRemaining = calculateDaysRemaining(caseItem.deadline);
+                      const deadlineColor = getDeadlineColor(daysRemaining);
+
+                      return (
+                        <tr key={caseItem.id} className={`hover:bg-neutral-50 ${caseItem.deadlineCompleted ? 'bg-success-50' : ''}`}>
+                          <td className="px-4 py-3 text-sm">
+                            <div className="flex items-center justify-center">
+                              {caseItem.deadlineCompleted ? (
+                                <CheckCircle size={18} className="text-success-600" />
+                              ) : (
+                                getDeadlineIcon(daysRemaining)
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 text-sm">
                             <button
                               onClick={() => handleCaseClick(caseItem.id)}
-                              className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-info-600 hover:text-info-700 hover:bg-info-50 rounded-md transition-all duration-200"
-                              title="Ver detalhes"
+                              className={`hover:underline font-medium transition-colors ${caseItem.deadlineCompleted ? 'text-success-600 hover:text-success-800' : 'text-primary-600 hover:text-primary-800'}`}
+                              title="Ver detalhes do processo"
                             >
-                              <Eye size={18} />
+                              {caseItem.processNumber}
                             </button>
-                            <button
-                              onClick={() => handleEditClick(caseItem)}
-                              className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-md transition-all duration-200"
-                              title="Editar prazo"
-                            >
-                              <Edit size={18} />
-                            </button>
-                            <button
-                              onClick={() => handleToggleCompleted(caseItem)}
-                              className={`inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] rounded-md transition-all duration-200 ${
-                                caseItem.deadlineCompleted
-                                  ? 'text-orange-600 hover:text-orange-700 hover:bg-orange-50'
-                                  : 'text-success-600 hover:text-success-700 hover:bg-success-50'
-                              }`}
-                              title={caseItem.deadlineCompleted ? 'Reabrir prazo' : 'Marcar como cumprido'}
-                            >
-                              <CheckCircle size={18} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                          </td>
+                          <td className="px-4 py-3 text-sm text-neutral-600">
+                            {caseItem.client.name}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-neutral-600">
+                            <div className="max-w-xs truncate" title={caseItem.subject}>
+                              {caseItem.subject}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 text-sm text-neutral-600">
+                            {formatDate(caseItem.deadline)}
+                          </td>
+                          <td className="px-4 py-3 text-sm">
+                            {caseItem.deadlineCompleted ? (
+                              <span className="px-2 py-1 rounded-full text-xs font-medium bg-success-100 text-success-800">
+                                Cumprido
+                              </span>
+                            ) : (
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${deadlineColor}`}>
+                                {getDeadlineLabel(daysRemaining)}
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-sm">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[caseItem.status as keyof typeof statusColors] || 'bg-neutral-100 text-neutral-800'}`}>
+                              {statusLabels[caseItem.status as keyof typeof statusLabels] || caseItem.status}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-sm">
+                            <div className="flex items-center justify-center gap-1">
+                              <button
+                                onClick={() => handleCaseClick(caseItem.id)}
+                                className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-info-600 hover:text-info-700 hover:bg-info-50 rounded-md transition-all duration-200"
+                                title="Ver detalhes"
+                              >
+                                <Eye size={18} />
+                              </button>
+                              <button
+                                onClick={() => handleEditClick(caseItem)}
+                                className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-md transition-all duration-200"
+                                title="Editar prazo"
+                              >
+                                <Edit size={18} />
+                              </button>
+                              <button
+                                onClick={() => handleToggleCompleted(caseItem)}
+                                className={`inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] rounded-md transition-all duration-200 ${
+                                  caseItem.deadlineCompleted
+                                    ? 'text-orange-600 hover:text-orange-700 hover:bg-orange-50'
+                                    : 'text-success-600 hover:text-success-700 hover:bg-success-50'
+                                }`}
+                                title={caseItem.deadlineCompleted ? 'Reabrir prazo' : 'Marcar como cumprido'}
+                              >
+                                <CheckCircle size={18} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </div>
       </div>

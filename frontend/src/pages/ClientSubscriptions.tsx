@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   CreditCard, Plus, Users, TrendingUp, AlertTriangle,
   RefreshCw, Loader2, X, Search
 } from 'lucide-react';
 import Layout from '../components/Layout';
+import MobileCardList, { MobileCardItem } from '../components/MobileCardList';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 
@@ -322,7 +323,59 @@ export default function ClientSubscriptions() {
             </button>
           </div>
 
-          <div className="bg-white rounded-lg shadow overflow-hidden">
+          {/* Mobile Card View */}
+          <div className="mobile-card-view">
+            <MobileCardList
+              items={subscriptions.map((sub): MobileCardItem => ({
+                id: sub.id,
+                title: sub.client.name,
+                subtitle: sub.client.email || sub.client.phone || '-',
+                badge: {
+                  text: statusLabels[sub.status]?.label || sub.status,
+                  color: sub.status === 'ACTIVE' ? 'green' :
+                         sub.status === 'PAST_DUE' ? 'red' :
+                         sub.status === 'CANCELED' ? 'gray' :
+                         sub.status === 'UNPAID' ? 'yellow' :
+                         sub.status === 'INCOMPLETE' ? 'blue' :
+                         sub.status === 'TRIALING' ? 'purple' : 'gray',
+                },
+                fields: [
+                  { label: 'Plano', value: sub.servicePlan.name },
+                  { label: 'Valor', value: `R$ ${sub.servicePlan.price.toFixed(2).replace('.', ',')} / ${intervalLabels[sub.servicePlan.interval]}` },
+                  { label: 'Periodo', value: sub.currentPeriodEnd ? `Ate ${new Date(sub.currentPeriodEnd).toLocaleDateString('pt-BR')}` : '-' },
+                ],
+              }))}
+              emptyMessage="Nenhuma assinatura encontrada"
+            />
+            {/* Subscription actions for mobile */}
+            {subscriptions.filter(sub => sub.status === 'INCOMPLETE' || sub.status === 'ACTIVE' || sub.status === 'PAST_DUE').length > 0 && (
+              <div className="p-4 space-y-2">
+                {subscriptions.map((sub) => (
+                  <React.Fragment key={`action-${sub.id}`}>
+                    {sub.status === 'INCOMPLETE' && (
+                      <button
+                        onClick={() => handleRegenerateCheckout(sub.id)}
+                        className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-primary-100 text-primary-700 border border-primary-200 hover:bg-primary-200 font-medium rounded-lg transition-all duration-200"
+                      >
+                        Gerar Link - {sub.client.name}
+                      </button>
+                    )}
+                    {(sub.status === 'ACTIVE' || sub.status === 'PAST_DUE') && (
+                      <button
+                        onClick={() => handleCancelSubscription(sub.id)}
+                        className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-error-100 text-error-700 border border-error-200 hover:bg-error-200 font-medium rounded-lg transition-all duration-200"
+                      >
+                        Cancelar - {sub.client.name}
+                      </button>
+                    )}
+                  </React.Fragment>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Desktop Table View */}
+          <div className="desktop-table-view bg-white rounded-lg shadow overflow-hidden">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>

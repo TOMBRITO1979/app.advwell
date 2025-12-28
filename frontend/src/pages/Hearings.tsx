@@ -3,6 +3,7 @@ import { Gavel, Calendar, ChevronLeft, ChevronRight, Edit2, User, List, Calendar
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import Layout from '../components/Layout';
+import MobileCardList, { MobileCardItem } from '../components/MobileCardList';
 import { formatDateFull } from '../utils/dateFormatter';
 
 interface Client {
@@ -541,7 +542,36 @@ const Hearings: React.FC = () => {
             </div>
           ) : (
             <div className="bg-white rounded-lg shadow overflow-hidden">
-              <div className="overflow-x-auto">
+              {/* Mobile Card View */}
+              <div className="mobile-card-view">
+                <MobileCardList
+                  items={events
+                    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+                    .map((hearing): MobileCardItem => ({
+                      id: hearing.id,
+                      title: hearing.title,
+                      subtitle: `${formatTime(hearing.date)}${hearing.client ? ` - ${hearing.client.name}` : ''}`,
+                      badge: {
+                        text: hearing.completed ? 'Concluída' : priorityLabels[hearing.priority || 'MEDIA'],
+                        color: hearing.completed ? 'green' :
+                               hearing.priority === 'URGENTE' ? 'red' :
+                               hearing.priority === 'ALTA' ? 'yellow' :
+                               hearing.priority === 'MEDIA' ? 'yellow' : 'green',
+                      },
+                      fields: [
+                        { label: 'Processo', value: hearing.case?.processNumber || '-' },
+                        { label: 'Advogado', value: hearing.assignedUsers && hearing.assignedUsers.length > 0
+                          ? hearing.assignedUsers[0].user.name
+                          : hearing.user?.name || '-' },
+                      ],
+                      onEdit: () => handleEditClick(hearing),
+                    }))}
+                  emptyMessage="Nenhuma audiência encontrada"
+                />
+              </div>
+
+              {/* Desktop Table View */}
+              <div className="desktop-table-view overflow-x-auto">
                 <table className="min-w-full divide-y divide-neutral-200">
                   <thead className="bg-neutral-50">
                     <tr>

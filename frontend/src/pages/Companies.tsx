@@ -3,6 +3,7 @@ import Layout from '../components/Layout';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import { Plus, Search, Edit, X, Building2, Users, FileText, ToggleLeft, ToggleRight, Trash2, UserCog, Crown, Clock, DollarSign } from 'lucide-react';
+import MobileCardList, { MobileCardItem } from '../components/MobileCardList';
 import { formatDate, formatDateTime } from '../utils/dateFormatter';
 
 interface Company {
@@ -392,7 +393,35 @@ const Companies: React.FC = () => {
           ) : companies.length === 0 ? (
             <p className="text-center py-4 text-neutral-600">Nenhuma empresa encontrada</p>
           ) : (
-            <div className="overflow-x-auto">
+            <>
+              {/* Mobile Card View */}
+              <div className="mobile-card-view">
+                <MobileCardList
+                  items={companies.map((company): MobileCardItem => ({
+                    id: company.id,
+                    title: company.name,
+                    subtitle: company.cnpj ? `CNPJ: ${company.cnpj}` : company.email,
+                    badge: {
+                      text: company.active ? 'Ativa' : 'Inativa',
+                      color: company.active ? 'green' : 'red',
+                    },
+                    fields: [
+                      { label: 'Assinatura', value: company.subscriptionStatus || '-' },
+                      { label: 'Plano', value: company.subscriptionPlan || '-' },
+                      { label: 'Usuarios', value: String(company._count.users) },
+                      { label: 'Clientes', value: String(company._count.clients) },
+                      { label: 'Processos', value: String(company._count.cases) },
+                      { label: 'Criada em', value: formatDate(company.createdAt) || '-' },
+                    ],
+                    onEdit: () => handleEdit(company),
+                    onDelete: () => handleDeleteClick(company),
+                  }))}
+                  emptyMessage="Nenhuma empresa encontrada"
+                />
+              </div>
+
+              {/* Desktop Table View */}
+              <div className="desktop-table-view overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-neutral-50">
                   <tr>
@@ -512,7 +541,8 @@ const Companies: React.FC = () => {
                   ))}
                 </tbody>
               </table>
-            </div>
+              </div>
+            </>
           )}
         </div>
       </div>

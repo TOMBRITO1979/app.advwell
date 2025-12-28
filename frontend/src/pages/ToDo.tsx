@@ -3,6 +3,7 @@ import { Calendar, Plus, Search, CheckCircle, Circle, Edit2, Trash2 } from 'luci
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import Layout from '../components/Layout';
+import MobileCardList, { MobileCardItem } from '../components/MobileCardList';
 import { formatDate } from '../utils/dateFormatter';
 
 interface Todo {
@@ -276,67 +277,96 @@ const ToDo: React.FC = () => {
               Nenhuma tarefa encontrada. Crie uma nova tarefa para começar.
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-neutral-200">
-                <thead className="bg-neutral-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Status</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Tarefa</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Prioridade</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Vencimento</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Ações</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-neutral-200">
-                  {todos.map((todo) => (
-                    <tr key={todo.id} className="hover:bg-neutral-50">
-                      <td className="px-6 py-4">
-                        <button
-                          onClick={() => handleToggleComplete(todo)}
-                          className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-md transition-all duration-200"
-                        >
-                          {todo.completed ? <CheckCircle size={18} /> : <Circle size={18} />}
-                        </button>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className={todo.completed ? 'line-through text-neutral-400' : ''}>
-                          <div className="font-medium">{todo.title}</div>
-                          {todo.description && (
-                            <div className="text-sm text-neutral-500 mt-1">{todo.description}</div>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`px-2 py-1 rounded text-xs font-medium ${getPriorityColor(todo.priority)}`}>
-                          {getPriorityLabel(todo.priority)}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-neutral-500">
-                        {todo.dueDate ? formatDate(todo.dueDate) : '-'}
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => handleEdit(todo)}
-                            className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-md transition-all duration-200"
-                            title="Editar"
-                          >
-                            <Edit2 size={18} />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(todo.id)}
-                            className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-error-600 hover:text-error-700 hover:bg-error-50 rounded-md transition-all duration-200"
-                            title="Excluir"
-                          >
-                            <Trash2 size={18} />
-                          </button>
-                        </div>
-                      </td>
+            <>
+              {/* Mobile Card View */}
+              <div className="mobile-card-view">
+                <MobileCardList
+                  items={todos.map((todo): MobileCardItem => ({
+                    id: todo.id,
+                    title: todo.title,
+                    subtitle: todo.description || undefined,
+                    badge: {
+                      text: todo.completed ? 'Concluída' : getPriorityLabel(todo.priority),
+                      color: todo.completed ? 'green' :
+                             todo.priority === 'BAIXA' ? 'green' :
+                             todo.priority === 'MEDIA' ? 'yellow' :
+                             todo.priority === 'ALTA' ? 'yellow' :
+                             'red',
+                    },
+                    fields: [
+                      { label: 'Status', value: todo.completed ? 'Concluída' : 'Pendente' },
+                      { label: 'Vencimento', value: todo.dueDate ? formatDate(todo.dueDate) : '-' },
+                    ],
+                    onEdit: () => handleEdit(todo),
+                    onDelete: () => handleDelete(todo.id),
+                  }))}
+                  emptyMessage="Nenhuma tarefa encontrada"
+                />
+              </div>
+
+              {/* Desktop Table View */}
+              <div className="desktop-table-view overflow-x-auto">
+                <table className="min-w-full divide-y divide-neutral-200">
+                  <thead className="bg-neutral-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Status</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Tarefa</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Prioridade</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Vencimento</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Ações</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-neutral-200">
+                    {todos.map((todo) => (
+                      <tr key={todo.id} className="hover:bg-neutral-50">
+                        <td className="px-6 py-4">
+                          <button
+                            onClick={() => handleToggleComplete(todo)}
+                            className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-md transition-all duration-200"
+                          >
+                            {todo.completed ? <CheckCircle size={18} /> : <Circle size={18} />}
+                          </button>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className={todo.completed ? 'line-through text-neutral-400' : ''}>
+                            <div className="font-medium">{todo.title}</div>
+                            {todo.description && (
+                              <div className="text-sm text-neutral-500 mt-1">{todo.description}</div>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={`px-2 py-1 rounded text-xs font-medium ${getPriorityColor(todo.priority)}`}>
+                            {getPriorityLabel(todo.priority)}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-neutral-500">
+                          {todo.dueDate ? formatDate(todo.dueDate) : '-'}
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => handleEdit(todo)}
+                              className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-md transition-all duration-200"
+                              title="Editar"
+                            >
+                              <Edit2 size={18} />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(todo.id)}
+                              className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-error-600 hover:text-error-700 hover:bg-error-50 rounded-md transition-all duration-200"
+                              title="Excluir"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </div>
 

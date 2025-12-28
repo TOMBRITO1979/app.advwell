@@ -17,6 +17,7 @@ import {
   Edit3,
   AlertCircle,
 } from 'lucide-react';
+import MobileCardList, { MobileCardItem } from '../components/MobileCardList';
 
 interface DataRequest {
   id: string;
@@ -276,65 +277,99 @@ const LGPDRequests: React.FC = () => {
               <p className="text-neutral-500">Nenhuma solicitacao encontrada</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-neutral-50 border-b border-neutral-200">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">Solicitante</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">Tipo</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">Status</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">Data</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">Acoes</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-neutral-200">
-                  {filteredRequests.map((request) => {
+            <>
+              {/* Mobile Card View */}
+              <div className="mobile-card-view">
+                <MobileCardList
+                  items={filteredRequests.map((request): MobileCardItem => {
                     const typeInfo = getRequestTypeLabel(request.requestType);
-                    return (
-                      <tr key={request.id} className="hover:bg-neutral-50">
-                        <td className="px-4 py-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
-                              <User className="w-4 h-4 text-primary-600" />
-                            </div>
-                            <div>
-                              <p className="font-medium text-neutral-800">{request.user.name}</p>
-                              <p className="text-sm text-neutral-500">{request.user.email}</p>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-4 py-4">
-                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${typeInfo.color}`}>
-                            {typeInfo.icon}
-                            {typeInfo.label}
-                          </span>
-                        </td>
-                        <td className="px-4 py-4">
-                          {getStatusBadge(request.status)}
-                        </td>
-                        <td className="px-4 py-4">
-                          <p className="text-sm text-neutral-800">
-                            {new Date(request.requestedAt).toLocaleDateString('pt-BR')}
-                          </p>
-                          <p className="text-xs text-neutral-500">
-                            {new Date(request.requestedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-                          </p>
-                        </td>
-                        <td className="px-4 py-4">
-                          <button
-                            onClick={() => handleOpenModal(request)}
-                            className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
-                          >
-                            <Eye className="w-4 h-4" />
-                            {request.status === 'PENDING' || request.status === 'IN_PROGRESS' ? 'Processar' : 'Ver'}
-                          </button>
-                        </td>
-                      </tr>
-                    );
+                    const statusConfig: Record<string, { label: string; color: 'yellow' | 'blue' | 'green' | 'red' | 'gray' }> = {
+                      PENDING: { label: 'Pendente', color: 'yellow' },
+                      IN_PROGRESS: { label: 'Em Processamento', color: 'blue' },
+                      COMPLETED: { label: 'Concluido', color: 'green' },
+                      REJECTED: { label: 'Rejeitado', color: 'red' },
+                    };
+                    const status = statusConfig[request.status] || { label: request.status, color: 'gray' };
+                    return {
+                      id: request.id,
+                      title: request.user.name,
+                      subtitle: request.user.email,
+                      badge: {
+                        text: status.label,
+                        color: status.color,
+                      },
+                      fields: [
+                        { label: 'Tipo', value: typeInfo.label },
+                        { label: 'Data', value: new Date(request.requestedAt).toLocaleDateString('pt-BR') },
+                      ],
+                      onView: () => handleOpenModal(request),
+                    };
                   })}
-                </tbody>
-              </table>
-            </div>
+                  emptyMessage="Nenhuma solicitacao encontrada"
+                />
+              </div>
+
+              {/* Desktop Table View */}
+              <div className="desktop-table-view overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-neutral-50 border-b border-neutral-200">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">Solicitante</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">Tipo</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">Status</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">Data</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">Acoes</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-neutral-200">
+                    {filteredRequests.map((request) => {
+                      const typeInfo = getRequestTypeLabel(request.requestType);
+                      return (
+                        <tr key={request.id} className="hover:bg-neutral-50">
+                          <td className="px-4 py-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
+                                <User className="w-4 h-4 text-primary-600" />
+                              </div>
+                              <div>
+                                <p className="font-medium text-neutral-800">{request.user.name}</p>
+                                <p className="text-sm text-neutral-500">{request.user.email}</p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-4 py-4">
+                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${typeInfo.color}`}>
+                              {typeInfo.icon}
+                              {typeInfo.label}
+                            </span>
+                          </td>
+                          <td className="px-4 py-4">
+                            {getStatusBadge(request.status)}
+                          </td>
+                          <td className="px-4 py-4">
+                            <p className="text-sm text-neutral-800">
+                              {new Date(request.requestedAt).toLocaleDateString('pt-BR')}
+                            </p>
+                            <p className="text-xs text-neutral-500">
+                              {new Date(request.requestedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                            </p>
+                          </td>
+                          <td className="px-4 py-4">
+                            <button
+                              onClick={() => handleOpenModal(request)}
+                              className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+                            >
+                              <Eye className="w-4 h-4" />
+                              {request.status === 'PENDING' || request.status === 'IN_PROGRESS' ? 'Processar' : 'Ver'}
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </div>
 

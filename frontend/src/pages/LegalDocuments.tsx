@@ -16,6 +16,7 @@ import {
   Calendar,
   PenTool,
 } from 'lucide-react';
+import MobileCardList, { MobileCardItem } from '../components/MobileCardList';
 
 interface Client {
   id: string;
@@ -367,91 +368,112 @@ const LegalDocuments: React.FC = () => {
               {search ? 'Nenhum documento encontrado' : 'Nenhum documento cadastrado'}
             </p>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-neutral-50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                      Título
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                      Parte (Cliente)
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                      Data
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                      Assinante
-                    </th>
-                    <th className="px-4 py-3 text-center text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                      Ações
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-neutral-200 bg-white">
-                  {documents.map((doc) => (
-                    <tr key={doc.id} className="hover:bg-neutral-50 transition-colors">
-                      <td className="px-4 py-3 text-sm">
-                        <div className="flex items-center gap-2">
-                          <FileText size={18} className="text-primary-600" />
-                          <span className="font-medium text-neutral-900">{doc.title}</span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 text-sm text-neutral-600">
-                        {doc.client ? (
-                          <div>
-                            <p className="font-medium">{doc.client.name}</p>
-                            {doc.client.cpf && (
-                              <p className="text-xs text-neutral-500">{doc.client.cpf}</p>
-                            )}
-                          </div>
-                        ) : (
-                          <span className="text-neutral-400">-</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-neutral-600">
-                        {formatDate(doc.documentDate)}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-neutral-600">
-                        {doc.signer?.name || <span className="text-neutral-400">-</span>}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-center">
-                        <div className="flex items-center justify-center gap-1">
-                          <button
-                            onClick={() => handleDownloadPDF(doc)}
-                            className="inline-flex items-center justify-center p-2 min-h-[40px] min-w-[40px] text-info-600 hover:text-info-700 hover:bg-info-50 rounded-md transition-all duration-200"
-                            title="Gerar PDF"
-                          >
-                            <Download size={18} />
-                          </button>
-                          <button
-                            onClick={() => handleReviewWithAI(doc)}
-                            className="inline-flex items-center justify-center p-2 min-h-[40px] min-w-[40px] text-purple-700 hover:text-purple-800 hover:bg-purple-100 rounded-md transition-all duration-200"
-                            title="Revisar com IA"
-                          >
-                            <Sparkles size={18} />
-                          </button>
-                          <button
-                            onClick={() => handleEdit(doc)}
-                            className="inline-flex items-center justify-center p-2 min-h-[40px] min-w-[40px] text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-md transition-all duration-200"
-                            title="Editar"
-                          >
-                            <Edit size={18} />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(doc)}
-                            className="inline-flex items-center justify-center p-2 min-h-[40px] min-w-[40px] text-error-600 hover:text-error-700 hover:bg-error-50 rounded-md transition-all duration-200"
-                            title="Excluir"
-                          >
-                            <Trash2 size={18} />
-                          </button>
-                        </div>
-                      </td>
+            <>
+              {/* Mobile Card View */}
+              <div className="mobile-card-view">
+                <MobileCardList
+                  items={documents.map((doc): MobileCardItem => ({
+                    id: doc.id,
+                    title: doc.title,
+                    subtitle: doc.client?.name || '-',
+                    fields: [
+                      { label: 'Data', value: formatDate(doc.documentDate) || '-' },
+                      { label: 'Assinante', value: doc.signer?.name || '-' },
+                    ],
+                    onEdit: () => handleEdit(doc),
+                    onDelete: () => handleDelete(doc),
+                  }))}
+                  emptyMessage={search ? 'Nenhum documento encontrado' : 'Nenhum documento cadastrado'}
+                />
+              </div>
+
+              {/* Desktop Table View */}
+              <div className="desktop-table-view overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-neutral-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                        Título
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                        Parte (Cliente)
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                        Data
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                        Assinante
+                      </th>
+                      <th className="px-4 py-3 text-center text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                        Ações
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-neutral-200 bg-white">
+                    {documents.map((doc) => (
+                      <tr key={doc.id} className="hover:bg-neutral-50 transition-colors">
+                        <td className="px-4 py-3 text-sm">
+                          <div className="flex items-center gap-2">
+                            <FileText size={18} className="text-primary-600" />
+                            <span className="font-medium text-neutral-900">{doc.title}</span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-sm text-neutral-600">
+                          {doc.client ? (
+                            <div>
+                              <p className="font-medium">{doc.client.name}</p>
+                              {doc.client.cpf && (
+                                <p className="text-xs text-neutral-500">{doc.client.cpf}</p>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-neutral-400">-</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-neutral-600">
+                          {formatDate(doc.documentDate)}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-neutral-600">
+                          {doc.signer?.name || <span className="text-neutral-400">-</span>}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-center">
+                          <div className="flex items-center justify-center gap-1">
+                            <button
+                              onClick={() => handleDownloadPDF(doc)}
+                              className="inline-flex items-center justify-center p-2 min-h-[40px] min-w-[40px] text-info-600 hover:text-info-700 hover:bg-info-50 rounded-md transition-all duration-200"
+                              title="Gerar PDF"
+                            >
+                              <Download size={18} />
+                            </button>
+                            <button
+                              onClick={() => handleReviewWithAI(doc)}
+                              className="inline-flex items-center justify-center p-2 min-h-[40px] min-w-[40px] text-purple-700 hover:text-purple-800 hover:bg-purple-100 rounded-md transition-all duration-200"
+                              title="Revisar com IA"
+                            >
+                              <Sparkles size={18} />
+                            </button>
+                            <button
+                              onClick={() => handleEdit(doc)}
+                              className="inline-flex items-center justify-center p-2 min-h-[40px] min-w-[40px] text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-md transition-all duration-200"
+                              title="Editar"
+                            >
+                              <Edit size={18} />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(doc)}
+                              className="inline-flex items-center justify-center p-2 min-h-[40px] min-w-[40px] text-error-600 hover:text-error-700 hover:bg-error-50 rounded-md transition-all duration-200"
+                              title="Excluir"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </div>
       </div>

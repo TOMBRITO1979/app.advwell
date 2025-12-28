@@ -4,6 +4,7 @@ import api from '../services/api';
 import toast from 'react-hot-toast';
 import { Bell, CheckCircle, ExternalLink } from 'lucide-react';
 import { formatDate, formatDateTime } from '../utils/dateFormatter';
+import MobileCardList, { MobileCardItem } from '../components/MobileCardList';
 
 interface CaseUpdate {
   id: string;
@@ -122,7 +123,46 @@ const Updates: React.FC = () => {
       {/* Updates List */}
       {updates.length > 0 && (
         <div className="bg-white shadow-sm rounded-lg border border-neutral-200 overflow-hidden">
-          <div className="overflow-x-auto">
+          {/* Mobile Card View */}
+          <div className="mobile-card-view">
+            <MobileCardList
+              items={updates.map((update): MobileCardItem => ({
+                id: update.id,
+                title: update.processNumber,
+                subtitle: update.client.name,
+                fields: [
+                  { label: 'Tribunal', value: update.court },
+                  { label: 'Assunto', value: update.subject || '-' },
+                  {
+                    label: 'Último Andamento',
+                    value: update.movements.length > 0
+                      ? `${update.movements[0].movementName} (${formatDate(update.movements[0].movementDate) || '-'})`
+                      : update.ultimoAndamento || 'Sem movimentações'
+                  },
+                  { label: 'Atualizado em', value: formatDateTime(update.lastSyncedAt) || '-' },
+                ],
+              }))}
+              emptyMessage="Nenhuma atualização pendente"
+            />
+            {/* Acknowledge buttons for mobile */}
+            {updates.length > 0 && (
+              <div className="p-4 space-y-2">
+                {updates.map((update) => (
+                  <button
+                    key={`ack-${update.id}`}
+                    onClick={() => handleAcknowledge(update.id, update.processNumber)}
+                    disabled={acknowledging === update.id}
+                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-success-100 text-success-700 border border-success-200 hover:bg-success-200 font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {acknowledging === update.id ? 'Processando...' : `Ciente - ${update.processNumber}`}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Desktop Table View */}
+          <div className="desktop-table-view overflow-x-auto">
             <table className="min-w-full divide-y divide-neutral-200">
               <thead className="bg-neutral-50">
                 <tr>

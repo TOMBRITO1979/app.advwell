@@ -3,6 +3,7 @@ import { Calendar, Plus, Search, CheckCircle, Circle, Edit2, Trash2, Eye, List, 
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import Layout from '../components/Layout';
+import MobileCardList, { MobileCardItem } from '../components/MobileCardList';
 import { formatDateTime, formatTime, formatDayName, formatDayNumber, formatMonthYear, toDatetimeLocal, isToday as isTodayUtil } from '../utils/dateFormatter';
 import DateTimePicker from '../components/DateTimePicker';
 import { parseISO, format } from 'date-fns';
@@ -630,149 +631,180 @@ const Schedule: React.FC = () => {
               Nenhum evento encontrado. Crie um novo evento para começar.
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-neutral-200">
-                <thead className="bg-neutral-50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                      Tipo
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                      Prioridade
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                      Título
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                      Data
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                      Cliente
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                      Processo
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                      Atribuído
-                    </th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                      Ações
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-neutral-200">
-                  {events.map((event) => (
-                    <tr key={event.id} className="hover:bg-neutral-50">
-                      <td className="px-4 py-3">
-                        <button
-                          onClick={() => handleToggleComplete(event)}
-                          className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-neutral-600 hover:text-success-600 hover:bg-success-50 rounded-md transition-all duration-200"
-                          title={event.completed ? 'Marcar como pendente' : 'Marcar como concluído'}
-                        >
-                          {event.completed ? (
-                            <CheckCircle size={18} className="text-success-600" />
-                          ) : (
-                            <Circle size={18} />
-                          )}
-                        </button>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${eventTypeColors[event.type]}`}>
-                          {eventTypeLabels[event.type]}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${priorityColors[event.priority || 'MEDIA']}`}>
-                          {priorityLabels[event.priority || 'MEDIA']}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className={event.completed ? 'line-through text-neutral-500' : 'text-neutral-900'}>
-                          {event.title}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 text-sm text-neutral-600">
-                        {formatDateTime(event.date)}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-neutral-600">
-                        {event.client?.name || '-'}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-neutral-600">
-                        {event.case?.processNumber || '-'}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-neutral-600">
-                        {event.assignedUsers && event.assignedUsers.length > 0 ? (
-                          <div className="flex flex-wrap gap-1">
-                            {event.assignedUsers.map((assignment) => (
-                              <span
-                                key={assignment.id}
-                                className="px-2 py-1 text-xs font-medium bg-info-100 text-info-700 rounded-full"
-                              >
-                                {assignment.user.name}
-                              </span>
-                            ))}
-                          </div>
-                        ) : (
-                          '-'
-                        )}
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex justify-end gap-2">
-                          {event.type === 'GOOGLE_MEET' && event.googleMeetLink && (
-                            <>
-                              <button
-                                onClick={() => {
-                                  navigator.clipboard.writeText(event.googleMeetLink!);
-                                  toast.success('Link do Google Meet copiado!');
-                                }}
-                                className="text-orange-600 hover:text-orange-800 transition-colors"
-                                title="Copiar link do Google Meet"
-                              >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                                </svg>
-                              </button>
-                              <button
-                                onClick={() => window.open(event.googleMeetLink, '_blank')}
-                                className="text-primary-600 hover:text-primary-800 transition-colors"
-                                title="Abrir no Google Calendar"
-                              >
-                                <Calendar size={18} />
-                              </button>
-                            </>
-                          )}
-                          <button
-                            onClick={() => handleView(event)}
-                            className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-info-600 hover:text-info-700 hover:bg-info-50 rounded-md transition-all duration-200"
-                            title="Ver detalhes"
-                          >
-                            <Eye size={18} />
-                          </button>
-                          <button
-                            onClick={() => handleEdit(event)}
-                            className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-md transition-all duration-200"
-                            title="Editar"
-                          >
-                            <Edit2 size={18} />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(event.id)}
-                            className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-error-600 hover:text-error-700 hover:bg-error-50 rounded-md transition-all duration-200"
-                            title="Excluir"
-                          >
-                            <Trash2 size={18} />
-                          </button>
-                        </div>
-                      </td>
+            <>
+              {/* Mobile Card View */}
+              <div className="mobile-card-view">
+                <MobileCardList
+                  items={events.map((event): MobileCardItem => ({
+                    id: event.id,
+                    title: event.title,
+                    subtitle: formatDateTime(event.date),
+                    badge: {
+                      text: eventTypeLabels[event.type],
+                      color: event.type === 'COMPROMISSO' ? 'blue' :
+                             event.type === 'TAREFA' ? 'green' :
+                             event.type === 'PRAZO' ? 'red' :
+                             event.type === 'AUDIENCIA' ? 'purple' : 'yellow',
+                    },
+                    fields: [
+                      { label: 'Prioridade', value: priorityLabels[event.priority || 'MEDIA'] },
+                      { label: 'Cliente', value: event.client?.name || '-' },
+                      { label: 'Processo', value: event.case?.processNumber || '-' },
+                      { label: 'Status', value: event.completed ? 'Concluido' : 'Pendente' },
+                    ],
+                    onView: () => handleView(event),
+                    onEdit: () => handleEdit(event),
+                    onDelete: () => handleDelete(event.id),
+                  }))}
+                  emptyMessage="Nenhum evento encontrado"
+                />
+              </div>
+
+              {/* Desktop Table View */}
+              <div className="desktop-table-view overflow-x-auto">
+                <table className="min-w-full divide-y divide-neutral-200">
+                  <thead className="bg-neutral-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                        Status
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                        Tipo
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                        Prioridade
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                        Título
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                        Data
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                        Cliente
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                        Processo
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                        Atribuído
+                      </th>
+                      <th className="px-4 py-3 text-right text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                        Ações
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-neutral-200">
+                    {events.map((event) => (
+                      <tr key={event.id} className="hover:bg-neutral-50">
+                        <td className="px-4 py-3">
+                          <button
+                            onClick={() => handleToggleComplete(event)}
+                            className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-neutral-600 hover:text-success-600 hover:bg-success-50 rounded-md transition-all duration-200"
+                            title={event.completed ? 'Marcar como pendente' : 'Marcar como concluído'}
+                          >
+                            {event.completed ? (
+                              <CheckCircle size={18} className="text-success-600" />
+                            ) : (
+                              <Circle size={18} />
+                            )}
+                          </button>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${eventTypeColors[event.type]}`}>
+                            {eventTypeLabels[event.type]}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${priorityColors[event.priority || 'MEDIA']}`}>
+                            {priorityLabels[event.priority || 'MEDIA']}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className={event.completed ? 'line-through text-neutral-500' : 'text-neutral-900'}>
+                            {event.title}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-sm text-neutral-600">
+                          {formatDateTime(event.date)}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-neutral-600">
+                          {event.client?.name || '-'}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-neutral-600">
+                          {event.case?.processNumber || '-'}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-neutral-600">
+                          {event.assignedUsers && event.assignedUsers.length > 0 ? (
+                            <div className="flex flex-wrap gap-1">
+                              {event.assignedUsers.map((assignment) => (
+                                <span
+                                  key={assignment.id}
+                                  className="px-2 py-1 text-xs font-medium bg-info-100 text-info-700 rounded-full"
+                                >
+                                  {assignment.user.name}
+                                </span>
+                              ))}
+                            </div>
+                          ) : (
+                            '-'
+                          )}
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex justify-end gap-2">
+                            {event.type === 'GOOGLE_MEET' && event.googleMeetLink && (
+                              <>
+                                <button
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(event.googleMeetLink!);
+                                    toast.success('Link do Google Meet copiado!');
+                                  }}
+                                  className="text-orange-600 hover:text-orange-800 transition-colors"
+                                  title="Copiar link do Google Meet"
+                                >
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                  </svg>
+                                </button>
+                                <button
+                                  onClick={() => window.open(event.googleMeetLink, '_blank')}
+                                  className="text-primary-600 hover:text-primary-800 transition-colors"
+                                  title="Abrir no Google Calendar"
+                                >
+                                  <Calendar size={18} />
+                                </button>
+                              </>
+                            )}
+                            <button
+                              onClick={() => handleView(event)}
+                              className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-info-600 hover:text-info-700 hover:bg-info-50 rounded-md transition-all duration-200"
+                              title="Ver detalhes"
+                            >
+                              <Eye size={18} />
+                            </button>
+                            <button
+                              onClick={() => handleEdit(event)}
+                              className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-md transition-all duration-200"
+                              title="Editar"
+                            >
+                              <Edit2 size={18} />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(event.id)}
+                              className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-error-600 hover:text-error-700 hover:bg-error-50 rounded-md transition-all duration-200"
+                              title="Excluir"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </div>
       ) : (

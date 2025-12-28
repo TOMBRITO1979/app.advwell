@@ -6,6 +6,7 @@ import { Plus, Search, Edit, Trash2, DollarSign, TrendingUp, TrendingDown, X, Fi
 import { ExportButton } from '../components/ui';
 import InstallmentsModal from '../components/InstallmentsModal';
 import { formatDate } from '../utils/dateFormatter';
+import MobileCardList, { MobileCardItem } from '../components/MobileCardList';
 
 interface Client {
   id: string;
@@ -656,114 +657,142 @@ const Financial: React.FC = () => {
                 : 'Nenhuma transação cadastrada'}
             </p>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-neutral-50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                      Data
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                      Tipo
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                      Cliente
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                      Descrição
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                      Processo
-                    </th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                      Valor
-                    </th>
-                    <th className="px-4 py-3 text-center text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                      Ações
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-neutral-200 bg-white">
-                  {transactions.map((transaction) => (
-                    <tr key={transaction.id} className="hover:bg-neutral-50 transition-colors">
-                      <td className="px-4 py-3 text-sm text-neutral-900">
-                        {formatDate(transaction.date)}
-                      </td>
-                      <td className="px-4 py-3 text-sm">
-                        {transaction.type === 'INCOME' ? (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-success-100 text-success-800">
-                            <TrendingUp size={16} className="mr-1" />
-                            Receita
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-error-100 text-error-800">
-                            <TrendingDown size={16} className="mr-1" />
-                            Despesa
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-neutral-900">
-                        <div>
-                          <p className="font-medium">{transaction.client.name}</p>
-                          {transaction.client.cpf && (
-                            <p className="text-xs text-neutral-500">{transaction.client.cpf}</p>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 text-sm text-neutral-600">
-                        {transaction.description}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-neutral-600">
-                        {transaction.case ? (
-                          <span className="text-xs">{transaction.case.processNumber}</span>
-                        ) : (
-                          <span className="text-xs text-neutral-400">-</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-right">
-                        <span className={`font-semibold ${transaction.type === 'INCOME' ? 'text-primary-600' : 'text-error-600'}`}>
-                          {transaction.type === 'INCOME' ? '+' : '-'} {formatCurrency(transaction.amount)}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-sm text-center">
-                        <div className="flex items-center justify-center gap-2">
-                          {transaction.isInstallment && (
-                            <button
-                              onClick={() => handleViewInstallments(transaction)}
-                              className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-info-600 hover:text-info-700 hover:bg-info-50 rounded-md transition-all duration-200"
-                              title="Ver Parcelas"
-                            >
-                              <List size={18} />
-                            </button>
-                          )}
-                          <button
-                            onClick={() => handleGenerateReceipt(transaction)}
-                            className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-amber-600 hover:text-amber-700 hover:bg-amber-50 rounded-md transition-all duration-200"
-                            title={transaction.type === 'INCOME' ? 'Gerar Recibo' : 'Gerar Comprovante'}
-                          >
-                            <FileText size={18} />
-                          </button>
-                          <button
-                            onClick={() => handleEdit(transaction)}
-                            className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-md transition-all duration-200"
-                            title="Editar"
-                          >
-                            <Edit size={18} />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(transaction)}
-                            className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-error-600 hover:text-error-700 hover:bg-error-50 rounded-md transition-all duration-200"
-                            title="Excluir"
-                          >
-                            <Trash2 size={18} />
-                          </button>
-                        </div>
-                      </td>
+            <>
+              {/* Mobile Card View */}
+              <div className="mobile-card-view">
+                <MobileCardList
+                  items={transactions.map((transaction): MobileCardItem => ({
+                    id: transaction.id,
+                    title: transaction.description,
+                    subtitle: transaction.client.name,
+                    badge: {
+                      text: transaction.type === 'INCOME' ? 'Receita' : 'Despesa',
+                      color: transaction.type === 'INCOME' ? 'green' : 'red',
+                    },
+                    fields: [
+                      { label: 'Data', value: formatDate(transaction.date) || '-' },
+                      { label: 'Valor', value: `${transaction.type === 'INCOME' ? '+' : '-'} ${formatCurrency(transaction.amount)}` },
+                      { label: 'Processo', value: transaction.case?.processNumber || '-' },
+                    ],
+                    onEdit: () => handleEdit(transaction),
+                    onDelete: () => handleDelete(transaction),
+                  }))}
+                  emptyMessage={search || filterType || filterClientId || filterStartDate || filterEndDate
+                    ? 'Nenhuma transacao encontrada para os filtros aplicados'
+                    : 'Nenhuma transacao cadastrada'}
+                />
+              </div>
+
+              {/* Desktop Table View */}
+              <div className="desktop-table-view overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-neutral-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                        Data
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                        Tipo
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                        Cliente
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                        Descrição
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                        Processo
+                      </th>
+                      <th className="px-4 py-3 text-right text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                        Valor
+                      </th>
+                      <th className="px-4 py-3 text-center text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                        Ações
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-neutral-200 bg-white">
+                    {transactions.map((transaction) => (
+                      <tr key={transaction.id} className="hover:bg-neutral-50 transition-colors">
+                        <td className="px-4 py-3 text-sm text-neutral-900">
+                          {formatDate(transaction.date)}
+                        </td>
+                        <td className="px-4 py-3 text-sm">
+                          {transaction.type === 'INCOME' ? (
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-success-100 text-success-800">
+                              <TrendingUp size={16} className="mr-1" />
+                              Receita
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-error-100 text-error-800">
+                              <TrendingDown size={16} className="mr-1" />
+                              Despesa
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-neutral-900">
+                          <div>
+                            <p className="font-medium">{transaction.client.name}</p>
+                            {transaction.client.cpf && (
+                              <p className="text-xs text-neutral-500">{transaction.client.cpf}</p>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-sm text-neutral-600">
+                          {transaction.description}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-neutral-600">
+                          {transaction.case ? (
+                            <span className="text-xs">{transaction.case.processNumber}</span>
+                          ) : (
+                            <span className="text-xs text-neutral-400">-</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-right">
+                          <span className={`font-semibold ${transaction.type === 'INCOME' ? 'text-primary-600' : 'text-error-600'}`}>
+                            {transaction.type === 'INCOME' ? '+' : '-'} {formatCurrency(transaction.amount)}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-sm text-center">
+                          <div className="flex items-center justify-center gap-2">
+                            {transaction.isInstallment && (
+                              <button
+                                onClick={() => handleViewInstallments(transaction)}
+                                className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-info-600 hover:text-info-700 hover:bg-info-50 rounded-md transition-all duration-200"
+                                title="Ver Parcelas"
+                              >
+                                <List size={18} />
+                              </button>
+                            )}
+                            <button
+                              onClick={() => handleGenerateReceipt(transaction)}
+                              className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-amber-600 hover:text-amber-700 hover:bg-amber-50 rounded-md transition-all duration-200"
+                              title={transaction.type === 'INCOME' ? 'Gerar Recibo' : 'Gerar Comprovante'}
+                            >
+                              <FileText size={18} />
+                            </button>
+                            <button
+                              onClick={() => handleEdit(transaction)}
+                              className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-md transition-all duration-200"
+                              title="Editar"
+                            >
+                              <Edit size={18} />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(transaction)}
+                              className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-error-600 hover:text-error-700 hover:bg-error-50 rounded-md transition-all duration-200"
+                              title="Excluir"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </div>
       </div>

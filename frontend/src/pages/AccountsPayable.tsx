@@ -3,6 +3,7 @@ import { Plus, Edit2, Trash2, Check, Repeat, FileText, Download } from 'lucide-r
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import Layout from '../components/Layout';
+import MobileCardList, { MobileCardItem } from '../components/MobileCardList';
 import { formatDate } from '../utils/dateFormatter';
 
 interface AccountPayable {
@@ -331,90 +332,138 @@ const AccountsPayable: React.FC = () => {
           <div className="text-center py-8 text-neutral-600">
             Carregando...
           </div>
+        ) : accounts.length === 0 ? (
+          <div className="bg-white rounded-lg shadow p-8 text-center text-neutral-600">
+            Nenhuma conta encontrada
+          </div>
         ) : (
-          <div className="bg-white rounded-lg shadow overflow-hidden overflow-x-auto">
-            <table className="min-w-full divide-y divide-neutral-200" style={{ minWidth: '700px' }}>
-              <thead className="bg-neutral-50">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
-                    Fornecedor
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
-                    Descrição
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
-                    Valor
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
-                    Vencimento
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
-                    Status
-                  </th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-neutral-500 uppercase">
-                    Ações
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-neutral-200">
-                {accounts.map((account) => (
-                  <tr key={account.id} className="hover:bg-neutral-50">
-                    <td className="px-4 py-3 text-sm text-neutral-900">
-                      {account.supplier}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-neutral-600">
-                      <div className="flex items-center gap-2">
-                        {account.description}
-                        {(account as any).isRecurring && (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-primary-100 text-primary-800" title="Conta recorrente">
-                            <Repeat size={16} className="mr-1" />
-                            Recorrente
-                          </span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-sm font-medium text-neutral-900">
-                      {formatCurrency(account.amount)}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-neutral-600">
-                      {formatDate(account.dueDate)}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusColors[account.status]}`}>
-                        {statusLabels[account.status]}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex justify-end gap-2">
-                        {account.status === 'PENDING' && (
-                          <button
-                            onClick={() => handleMarkAsPaid(account.id)}
-                            className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-success-600 hover:text-success-700 hover:bg-success-50 rounded-md transition-all duration-200"
-                            title="Marcar como pago"
-                          >
-                            <Check size={18} />
-                          </button>
-                        )}
-                        <button
-                          onClick={() => handleEdit(account)}
-                          className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-md transition-all duration-200"
-                          title="Editar"
-                        >
-                          <Edit2 size={18} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(account.id)}
-                          className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-error-600 hover:text-error-700 hover:bg-error-50 rounded-md transition-all duration-200"
-                          title="Excluir"
-                        >
-                          <Trash2 size={18} />
-                        </button>
-                      </div>
-                    </td>
+          <div className="bg-white rounded-lg shadow overflow-hidden">
+            {/* Mobile Card View */}
+            <div className="mobile-card-view">
+              <MobileCardList
+                items={accounts.map((account): MobileCardItem => ({
+                  id: account.id,
+                  title: account.description,
+                  subtitle: formatCurrency(account.amount),
+                  badge: {
+                    text: statusLabels[account.status],
+                    color: account.status === 'PAID' ? 'green' :
+                           account.status === 'PENDING' ? 'yellow' :
+                           account.status === 'OVERDUE' ? 'red' : 'gray',
+                  },
+                  fields: [
+                    { label: 'Fornecedor', value: account.supplier },
+                    { label: 'Vencimento', value: formatDate(account.dueDate) },
+                    { label: 'Categoria', value: account.category || '-' },
+                    ...(account.isRecurring ? [{ label: 'Recorrente', value: 'Sim' }] : []),
+                  ],
+                  onEdit: () => handleEdit(account),
+                  onDelete: () => handleDelete(account.id),
+                }))}
+                emptyMessage="Nenhuma conta encontrada"
+              />
+              {/* Mark as Paid buttons for mobile */}
+              {accounts.filter(a => a.status === 'PENDING').length > 0 && (
+                <div className="p-4 space-y-2">
+                  {accounts.filter(a => a.status === 'PENDING').map((account) => (
+                    <button
+                      key={account.id}
+                      onClick={() => handleMarkAsPaid(account.id)}
+                      className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-success-100 text-success-700 border border-success-200 hover:bg-success-200 font-medium rounded-lg transition-all duration-200"
+                    >
+                      <Check size={18} />
+                      Marcar "{account.description}" como pago
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Desktop Table View */}
+            <div className="desktop-table-view overflow-x-auto">
+              <table className="min-w-full divide-y divide-neutral-200" style={{ minWidth: '700px' }}>
+                <thead className="bg-neutral-50">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                      Fornecedor
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                      Descrição
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                      Valor
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                      Vencimento
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                      Status
+                    </th>
+                    <th className="px-4 py-3 text-right text-xs font-medium text-neutral-500 uppercase">
+                      Ações
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="bg-white divide-y divide-neutral-200">
+                  {accounts.map((account) => (
+                    <tr key={account.id} className="hover:bg-neutral-50">
+                      <td className="px-4 py-3 text-sm text-neutral-900">
+                        {account.supplier}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-neutral-600">
+                        <div className="flex items-center gap-2">
+                          {account.description}
+                          {(account as any).isRecurring && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-primary-100 text-primary-800" title="Conta recorrente">
+                              <Repeat size={16} className="mr-1" />
+                              Recorrente
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-sm font-medium text-neutral-900">
+                        {formatCurrency(account.amount)}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-neutral-600">
+                        {formatDate(account.dueDate)}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusColors[account.status]}`}>
+                          {statusLabels[account.status]}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex justify-end gap-2">
+                          {account.status === 'PENDING' && (
+                            <button
+                              onClick={() => handleMarkAsPaid(account.id)}
+                              className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-success-600 hover:text-success-700 hover:bg-success-50 rounded-md transition-all duration-200"
+                              title="Marcar como pago"
+                            >
+                              <Check size={18} />
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleEdit(account)}
+                            className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-md transition-all duration-200"
+                            title="Editar"
+                          >
+                            <Edit2 size={18} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(account.id)}
+                            className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-error-600 hover:text-error-700 hover:bg-error-50 rounded-md transition-all duration-200"
+                            title="Excluir"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
 
