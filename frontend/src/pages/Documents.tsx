@@ -526,31 +526,37 @@ const Documents: React.FC = () => {
                         )}
                       </div>
 
-                      <div className="flex gap-1.5 mt-3 justify-center">
+                      <div className="flex gap-1 mt-3 justify-center">
                         <button
                           onClick={() => handleOpenDocument(doc)}
-                          className="inline-flex items-center justify-center gap-1 px-2 py-1 bg-info-600 hover:bg-info-700 text-white font-medium rounded text-xs shadow-sm transition-all duration-200"
+                          className="inline-flex items-center justify-center gap-1 p-1.5 md:px-2 md:py-1 bg-info-600 hover:bg-info-700 text-white font-medium rounded text-xs shadow-sm transition-all duration-200"
+                          title="Visualizar"
                         >
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
                             <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
                             <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
                           </svg>
-                          Visualizar
+                          <span className="hidden md:inline">Visualizar</span>
                         </button>
                         <button
                           onClick={() => handleDownloadDocument(doc)}
-                          className="inline-flex items-center justify-center gap-1 px-2 py-1 bg-info-100 text-info-700 border border-info-200 hover:bg-info-200 font-medium rounded text-xs transition-all duration-200"
+                          className="inline-flex items-center justify-center gap-1 p-1.5 md:px-2 md:py-1 bg-info-100 text-info-700 border border-info-200 hover:bg-info-200 font-medium rounded text-xs transition-all duration-200"
+                          title="Download"
                         >
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
                             <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
                           </svg>
-                          Download
+                          <span className="hidden md:inline">Download</span>
                         </button>
                         <button
                           onClick={() => handleDeleteDocument(doc.id)}
-                          className="inline-flex items-center justify-center gap-1 px-2 py-1 bg-red-100 text-red-700 border border-red-200 hover:bg-red-200 font-medium rounded text-xs transition-all duration-200"
+                          className="inline-flex items-center justify-center gap-1 p-1.5 md:px-2 md:py-1 bg-red-100 text-red-700 border border-red-200 hover:bg-red-200 font-medium rounded text-xs transition-all duration-200"
+                          title="Excluir"
                         >
-                          Excluir
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                          </svg>
+                          <span className="hidden md:inline">Excluir</span>
                         </button>
                       </div>
                     </div>
