@@ -67,7 +67,7 @@ const Hearings: React.FC = () => {
     const today = new Date();
     return today.toISOString().split('T')[0];
   });
-  const [viewMode, setViewMode] = useState<'list' | 'week'>('week');
+  const [viewMode, setViewMode] = useState<'list' | 'week'>('list');
   const [weekEvents, setWeekEvents] = useState<ScheduleEvent[]>([]);
 
   // Modal de edição
@@ -452,55 +452,62 @@ const Hearings: React.FC = () => {
 
         {/* Filtros */}
         <div className="bg-white rounded-lg shadow p-4">
-          <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-            {/* Navegação de Data */}
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => viewMode === 'list' ? changeDate(-1) : changeWeek(-1)}
-                className="p-2 hover:bg-neutral-100 rounded-lg transition-colors"
-                title={viewMode === 'list' ? 'Dia anterior' : 'Semana anterior'}
-              >
-                <ChevronLeft size={20} />
-              </button>
-              <div className="flex items-center gap-2">
-                <Calendar size={20} className="text-neutral-500" />
-                <input
-                  type="date"
-                  value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
-                />
-              </div>
-              <button
-                onClick={() => viewMode === 'list' ? changeDate(1) : changeWeek(1)}
-                className="p-2 hover:bg-neutral-100 rounded-lg transition-colors"
-                title={viewMode === 'list' ? 'Próximo dia' : 'Próxima semana'}
-              >
-                <ChevronRight size={20} />
-              </button>
+          <div className="flex flex-col gap-4">
+            {/* Botão Hoje - Primeira linha */}
+            <div className="flex justify-center">
               <button
                 onClick={() => setSelectedDate(new Date().toISOString().split('T')[0])}
-                className="px-3 py-2 text-sm bg-primary-100 text-primary-700 rounded-lg hover:bg-primary-200 transition-colors"
+                className="px-6 py-2 text-sm bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-colors min-h-[44px]"
               >
                 Hoje
               </button>
             </div>
 
-            {/* Filtro por Advogado */}
-            <div className="flex items-center gap-2">
-              <User size={20} className="text-neutral-500" />
-              <select
-                value={selectedUserId}
-                onChange={(e) => setSelectedUserId(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] min-w-[200px]"
-              >
-                <option value="">Todos os advogados</option>
-                {companyUsers.map((user) => (
-                  <option key={user.id} value={user.id}>
-                    {user.name}
-                  </option>
-                ))}
-              </select>
+            {/* Navegação de Data e Filtro por Advogado - Segunda linha */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Navegação de Data */}
+              <div className="flex items-center justify-center gap-2">
+                <button
+                  onClick={() => viewMode === 'list' ? changeDate(-1) : changeWeek(-1)}
+                  className="p-2 hover:bg-neutral-100 rounded-lg transition-colors flex-shrink-0"
+                  title={viewMode === 'list' ? 'Dia anterior' : 'Semana anterior'}
+                >
+                  <ChevronLeft size={20} />
+                </button>
+                <div className="flex items-center gap-2 flex-1 min-w-0">
+                  <Calendar size={20} className="text-neutral-500 flex-shrink-0" />
+                  <input
+                    type="date"
+                    value={selectedDate}
+                    onChange={(e) => setSelectedDate(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                  />
+                </div>
+                <button
+                  onClick={() => viewMode === 'list' ? changeDate(1) : changeWeek(1)}
+                  className="p-2 hover:bg-neutral-100 rounded-lg transition-colors flex-shrink-0"
+                  title={viewMode === 'list' ? 'Próximo dia' : 'Próxima semana'}
+                >
+                  <ChevronRight size={20} />
+                </button>
+              </div>
+
+              {/* Filtro por Advogado */}
+              <div className="flex items-center justify-center gap-2">
+                <User size={20} className="text-neutral-500 flex-shrink-0" />
+                <select
+                  value={selectedUserId}
+                  onChange={(e) => setSelectedUserId(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                >
+                  <option value="">Todos os advogados</option>
+                  {companyUsers.map((user) => (
+                    <option key={user.id} value={user.id}>
+                      {user.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
 
