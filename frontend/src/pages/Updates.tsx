@@ -89,9 +89,9 @@ const Updates: React.FC = () => {
     <Layout>
       <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div className="flex items-center gap-3">
-          <Bell className="w-8 h-8 text-primary-600" />
+          <Bell className="w-8 h-8 text-primary-600 flex-shrink-0" />
           <div>
             <h1 className="text-2xl font-bold text-neutral-900">Atualizações</h1>
             <p className="text-sm text-neutral-600">
@@ -100,7 +100,7 @@ const Updates: React.FC = () => {
           </div>
         </div>
         {updates.length > 0 && (
-          <div className="bg-success-100 text-success-800 px-4 py-2 rounded-full font-semibold min-h-[44px]">
+          <div className="bg-success-100 text-success-800 px-4 py-2 rounded-lg md:rounded-full font-semibold text-center">
             {updates.length} {updates.length === 1 ? 'atualização' : 'atualizações'}
           </div>
         )}
