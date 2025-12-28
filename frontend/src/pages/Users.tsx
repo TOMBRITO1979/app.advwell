@@ -44,6 +44,7 @@ const AVAILABLE_RESOURCES = [
   { value: 'campaigns', label: 'Campanhas' },
   { value: 'smtp-settings', label: 'Config. SMTP' },
   { value: 'ai-config', label: 'Config. IA' },
+  { value: 'backup-settings', label: 'Config. Backup' },
   { value: 'lgpd-requests', label: 'Solicitações LGPD' },
   { value: 'audit-logs', label: 'Logs de Auditoria' },
   { value: 'subscription', label: 'Assinatura' },
