@@ -41,7 +41,7 @@ export default function StripeConfig() {
       });
     } catch (error: any) {
       if (error.response?.status !== 404) {
-        toast.error('Erro ao carregar configuracao');
+        toast.error('Erro ao carregar configuração');
       }
     } finally {
       setLoading(false);
@@ -62,7 +62,7 @@ export default function StripeConfig() {
         stripeWebhookSecret: '',
       });
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Erro ao salvar configuracao');
+      toast.error(error.response?.data?.error || 'Erro ao salvar configuração');
     } finally {
       setSaving(false);
     }
@@ -83,11 +83,11 @@ export default function StripeConfig() {
   };
 
   const handleDelete = async () => {
-    if (!confirm('Tem certeza que deseja excluir a configuracao Stripe?')) return;
+    if (!confirm('Tem certeza que deseja excluir a configuração Stripe?')) return;
 
     try {
       await api.delete('/stripe-config');
-      toast.success('Configuracao excluida');
+      toast.success('Configuração excluída');
       setConfig(null);
       setFormData({
         stripePublicKey: '',
@@ -114,7 +114,7 @@ export default function StripeConfig() {
     <div className="p-6 max-w-3xl mx-auto">
       <div className="flex items-center gap-3 mb-6">
         <CreditCard className="w-8 h-8 text-blue-600" />
-        <h1 className="text-2xl font-bold text-gray-900">Configuracao Stripe</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Configuração Stripe</h1>
       </div>
 
       {/* Status Card */}
@@ -135,7 +135,7 @@ export default function StripeConfig() {
               )}
             </div>
             <span className="text-sm text-gray-500">
-              Ultima atualizacao: {new Date(config.updatedAt!).toLocaleDateString('pt-BR')}
+              Última atualização: {new Date(config.updatedAt!).toLocaleDateString('pt-BR')}
             </span>
           </div>
         </div>
@@ -155,11 +155,11 @@ export default function StripeConfig() {
       {/* Webhook URL Info */}
       <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
         <h3 className="font-medium text-yellow-900 mb-2">URL do Webhook:</h3>
-        <code className="text-sm bg-yellow-100 px-2 py-1 rounded">
+        <code className="text-sm bg-yellow-100 px-2 py-1 rounded block break-all">
           https://api.advwell.pro/api/stripe-webhook
         </code>
         <p className="text-xs text-yellow-700 mt-2">
-          Configure este endpoint no seu dashboard Stripe para receber notificacoes de pagamento.
+          Configure este endpoint no seu dashboard Stripe para receber notificações de pagamento.
         </p>
       </div>
 
@@ -223,18 +223,18 @@ export default function StripeConfig() {
             </button>
           </div>
           <p className="text-xs text-gray-500 mt-1">
-            Usado para verificar assinatura dos webhooks (recomendado para producao)
+            Usado para verificar assinatura dos webhooks (recomendado para produção)
           </p>
         </div>
 
-        <div className="flex flex-wrap gap-3 pt-4">
+        <div className="flex flex-wrap gap-3 pt-4 justify-center">
           <button
             type="submit"
             disabled={saving}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
           >
             {saving && <Loader2 className="w-4 h-4 animate-spin" />}
-            Salvar Configuracao
+            Salvar Configuração
           </button>
 
           <button
@@ -244,7 +244,7 @@ export default function StripeConfig() {
             className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 flex items-center gap-2"
           >
             {testing && <Loader2 className="w-4 h-4 animate-spin" />}
-            Testar Conexao
+            Testar Conexão
           </button>
 
           {config && (
@@ -253,7 +253,7 @@ export default function StripeConfig() {
               onClick={handleDelete}
               className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
             >
-              Excluir Configuracao
+              Excluir Configuração
             </button>
           )}
         </div>
