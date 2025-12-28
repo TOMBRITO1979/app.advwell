@@ -4,7 +4,6 @@ import api from '../services/api';
 import toast from 'react-hot-toast';
 import { Bell, CheckCircle, ExternalLink } from 'lucide-react';
 import { formatDate, formatDateTime } from '../utils/dateFormatter';
-import MobileCardList, { MobileCardItem } from '../components/MobileCardList';
 
 interface CaseUpdate {
   id: string;
@@ -124,41 +123,47 @@ const Updates: React.FC = () => {
       {updates.length > 0 && (
         <div className="bg-white shadow-sm rounded-lg border border-neutral-200 overflow-hidden">
           {/* Mobile Card View */}
-          <div className="mobile-card-view">
-            <MobileCardList
-              items={updates.map((update): MobileCardItem => ({
-                id: update.id,
-                title: update.processNumber,
-                subtitle: update.client.name,
-                fields: [
-                  { label: 'Tribunal', value: update.court },
-                  { label: 'Assunto', value: update.subject || '-' },
-                  {
-                    label: 'Último Andamento',
-                    value: update.movements.length > 0
-                      ? `${update.movements[0].movementName} (${formatDate(update.movements[0].movementDate) || '-'})`
-                      : update.ultimoAndamento || 'Sem movimentações'
-                  },
-                  { label: 'Atualizado em', value: formatDateTime(update.lastSyncedAt) || '-' },
-                ],
-              }))}
-              emptyMessage="Nenhuma atualização pendente"
-            />
-            {/* Acknowledge buttons for mobile */}
-            {updates.length > 0 && (
-              <div className="p-4 space-y-2">
-                {updates.map((update) => (
-                  <button
-                    key={`ack-${update.id}`}
-                    onClick={() => handleAcknowledge(update.id, update.processNumber)}
-                    disabled={acknowledging === update.id}
-                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-success-100 text-success-700 border border-success-200 hover:bg-success-200 font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {acknowledging === update.id ? 'Processando...' : `Ciente - ${update.processNumber}`}
-                  </button>
-                ))}
+          <div className="mobile-card-view p-4 space-y-3">
+            {updates.map((update) => (
+              <div key={update.id} className="bg-white border border-neutral-200 rounded-lg p-4 shadow-sm">
+                <div className="flex justify-between items-start mb-2">
+                  <div>
+                    <h3 className="font-semibold text-neutral-900">{update.processNumber}</h3>
+                    <p className="text-sm text-neutral-600">{update.client.name}</p>
+                  </div>
+                </div>
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-neutral-500">Tribunal</span>
+                    <span className="text-neutral-700">{update.court}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-neutral-500">Assunto</span>
+                    <span className="text-neutral-700 text-right max-w-[60%] truncate">{update.subject || '-'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-neutral-500">Último Andamento</span>
+                    <span className="text-neutral-700 text-right max-w-[60%] truncate">
+                      {update.movements.length > 0
+                        ? `${update.movements[0].movementName}`
+                        : update.ultimoAndamento || 'Sem movimentações'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-neutral-500">Atualizado em</span>
+                    <span className="text-neutral-700">{formatDateTime(update.lastSyncedAt) || '-'}</span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => handleAcknowledge(update.id, update.processNumber)}
+                  disabled={acknowledging === update.id}
+                  className="w-full mt-3 inline-flex items-center justify-center gap-2 px-4 py-2 bg-success-100 text-success-700 border border-success-200 hover:bg-success-200 font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                >
+                  <CheckCircle size={16} />
+                  {acknowledging === update.id ? 'Processando...' : 'Ciente'}
+                </button>
               </div>
-            )}
+            ))}
           </div>
 
           {/* Desktop Table View */}
