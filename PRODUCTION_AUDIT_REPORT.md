@@ -19,7 +19,7 @@
 | Autenticacao/Autorizacao | A- | ✅ APROVADO |
 | Seguranca OWASP Top 10 | A- | ✅ APROVADO |
 | Criptografia | A- | ✅ APROVADO |
-| Rate Limiting | A- | ✅ APROVADO |
+| Rate Limiting | A | ✅ APROVADO |
 | Escalabilidade e SPOFs | B+ | ✅ PRONTO PARA MULTI-NODE |
 | Tratamento de Erros | A- | ✅ APROVADO |
 
@@ -39,8 +39,7 @@
 - ✅ Handlers de excecao global (uncaughtException/unhandledRejection)
 - ✅ Migracao console.* para logger (99.4% concluido)
 
-**Pendente (baixa prioridade):**
-- Rate limit para AI/DataJud (operacoes com limite alto)
+**Todos os itens de seguranca foram implementados!**
 
 **Nota:** Escalabilidade multi-VPS requer apenas infraestrutura (codigo pronto)
 
@@ -152,9 +151,9 @@ Os secrets em `/root/app.advwell/.env` foram expostos nesta auditoria.
 
 ---
 
-## 5. RATE LIMITING (NOTA: A-)
+## 5. RATE LIMITING (NOTA: A)
 
-### Status: ✅ CORRIGIDO
+### Status: ✅ COMPLETO (Atualizado 2025-12-29)
 
 **Configuracao Atual:**
 
@@ -170,20 +169,18 @@ Os secrets em `/root/app.advwell/.env` foram expostos nesta auditoria.
 | **LGPD Consent** | **10/IP** | **1 min** | **Redis** ✅ |
 | **LGPD Request** | **5/IP** | **1 hora** | **Redis** ✅ |
 | **LGPD MyData** | **3/IP** | **1 hora** | **Redis** ✅ |
+| **DataJud Sync** | **50/empresa** | **1 hora** | **Redis** ✅ |
+| **AI Summary** | **30/empresa** | **1 hora** | **Redis** ✅ |
 
-**PROBLEMAS CORRIGIDOS:**
+**TODOS OS PROBLEMAS CORRIGIDOS:**
 
 | Status | Problema | Arquivo | Correcao |
 |--------|----------|---------|----------|
 | ✅ | Database backup rate limiting | database-backup.routes.ts | `backupRateLimit` 5/hora |
 | ✅ | Integration routes Redis store | integration.routes.ts | `RedisStore` implementado |
 | ✅ | LGPD endpoints rate limiting | lgpd.routes.ts | 3 rate limiters com Redis |
-
-**Problema Pendente:**
-
-| Prioridade | Problema | Arquivo |
-|------------|----------|---------|
-| MEDIA | Operacoes AI/DataJud com limite alto | case.routes.ts |
+| ✅ | DataJud sync rate limiting | case.routes.ts:24 | 50/hora por empresa |
+| ✅ | AI summary rate limiting | case.routes.ts:38 | 30/hora por empresa |
 
 ---
 
@@ -368,7 +365,7 @@ PARA VPS SEPARADAS (sem Swarm): Requer expor portas ou Redis gerenciado
 | 4 | ✅ Implementar endpoint de logout com blacklist | auth.controller.ts:587-631 | FEITO |
 | 5 | ✅ Adicionar aleatoriedade ao reset token | jwt.ts:31,76,86 | FEITO |
 | 6 | ✅ Rate limit em LGPD endpoints publicos | lgpd.routes.ts | FEITO |
-| 7 | Rate limit estrito para AI e DataJud | case.routes.ts | BAIXA PRIORIDADE |
+| 7 | ✅ Rate limit para AI e DataJud | case.routes.ts:24,38 | FEITO |
 | 8 | ✅ Sanitizar variaveis em emails HTML | email.ts, email-templates.ts | FEITO |
 
 ### MEDIA PRIORIDADE (Segunda Semana) - ✅ TODAS CONCLUIDAS
