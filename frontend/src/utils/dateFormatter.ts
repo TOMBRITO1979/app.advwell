@@ -21,6 +21,17 @@ function formatWithTimezone(date: Date, options: Intl.DateTimeFormatOptions): st
 }
 
 /**
+ * Converte uma data para o horário de São Paulo
+ * Útil para usar com date-fns format que não suporta timezone nativo
+ */
+function toSaoPauloTime(date: Date): Date {
+  // Obtém a string da data no timezone de São Paulo
+  const saoPauloString = date.toLocaleString('en-US', { timeZone: SAO_PAULO_TIMEZONE });
+  // Retorna um novo Date com os valores de São Paulo
+  return new Date(saoPauloString);
+}
+
+/**
  * Formata data no padrão brasileiro DD/MM/AAAA
  * Sempre usa timezone de São Paulo
  * @param dateString - Data em formato ISO ou string
@@ -124,6 +135,7 @@ export function formatDateFull(dateString: string | Date | null | undefined): st
 /**
  * Formata data curta com mês abreviado
  * Ex: "24 dez 2025"
+ * Sempre usa timezone de São Paulo
  * @param dateString - Data em formato ISO ou string
  * @returns Data formatada curta
  */
@@ -135,7 +147,7 @@ export function formatDateShort(dateString: string | Date | null | undefined): s
 
     if (!isValid(date)) return '';
 
-    return format(date, 'dd MMM yyyy', { locale: ptBR });
+    return format(toSaoPauloTime(date), 'dd MMM yyyy', { locale: ptBR });
   } catch {
     return '';
   }
@@ -144,6 +156,7 @@ export function formatDateShort(dateString: string | Date | null | undefined): s
 /**
  * Formata data e hora completa
  * Ex: "24/12/2025 às 14:30"
+ * Sempre usa timezone de São Paulo
  * @param dateString - Data em formato ISO ou string
  * @returns Data e hora formatadas
  */
@@ -155,7 +168,7 @@ export function formatDateTimeVerbose(dateString: string | Date | null | undefin
 
     if (!isValid(date)) return '';
 
-    return format(date, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR });
+    return format(toSaoPauloTime(date), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR });
   } catch {
     return '';
   }
@@ -207,7 +220,7 @@ export function toDateInput(dateString: string | Date | null | undefined): strin
 
     if (!isValid(date)) return '';
 
-    return format(date, 'yyyy-MM-dd');
+    return format(toSaoPauloTime(date), 'yyyy-MM-dd');
   } catch {
     return '';
   }
@@ -215,6 +228,7 @@ export function toDateInput(dateString: string | Date | null | undefined): strin
 
 /**
  * Formata apenas o dia do mês
+ * Sempre usa timezone de São Paulo
  * @param dateString - Data em formato ISO
  * @returns Dia do mês (1-31)
  */
@@ -226,7 +240,7 @@ export function formatDayNumber(dateString: string | Date | null | undefined): s
 
     if (!isValid(date)) return '';
 
-    return format(date, 'd', { locale: ptBR });
+    return format(toSaoPauloTime(date), 'd', { locale: ptBR });
   } catch {
     return '';
   }
@@ -234,6 +248,7 @@ export function formatDayNumber(dateString: string | Date | null | undefined): s
 
 /**
  * Formata nome do dia da semana abreviado
+ * Sempre usa timezone de São Paulo
  * @param dateString - Data em formato ISO
  * @returns Dia da semana abreviado (Seg, Ter, etc)
  */
@@ -245,7 +260,7 @@ export function formatDayName(dateString: string | Date | null | undefined): str
 
     if (!isValid(date)) return '';
 
-    return format(date, 'EEE', { locale: ptBR });
+    return format(toSaoPauloTime(date), 'EEE', { locale: ptBR });
   } catch {
     return '';
   }
@@ -254,6 +269,7 @@ export function formatDayName(dateString: string | Date | null | undefined): str
 /**
  * Formata mês e ano
  * Ex: "Dezembro 2025"
+ * Sempre usa timezone de São Paulo
  * @param dateString - Data em formato ISO
  * @returns Mês e ano
  */
@@ -265,7 +281,7 @@ export function formatMonthYear(dateString: string | Date | null | undefined): s
 
     if (!isValid(date)) return '';
 
-    return format(date, 'MMMM yyyy', { locale: ptBR });
+    return format(toSaoPauloTime(date), 'MMMM yyyy', { locale: ptBR });
   } catch {
     return '';
   }
