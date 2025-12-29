@@ -180,24 +180,33 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   const menuItems = [
     { path: '/dashboard', label: 'Dashboard', icon: Home },
-    { path: '/hearings', label: 'Audiências', icon: Gavel },
     { path: '/schedule', label: 'Agenda', icon: Calendar },
-    { path: '/todos', label: 'Tarefas', icon: CheckSquare },
-    { path: '/leads', label: 'Leads', icon: UserPlus },
     { path: '/clients', label: 'Clientes', icon: Users },
     { path: '/cases', label: 'Processos', icon: FileText },
     { path: '/deadlines', label: 'Prazos', icon: Clock },
-    { path: '/documents', label: 'Uploads', icon: FolderOpen },
-    { path: '/legal-documents', label: 'Documentos', icon: Scale },
     { path: '/updates', label: 'Atualizações', icon: Bell },
-    { path: '/financial', label: 'Financeiro', icon: DollarSign },
-    { path: '/client-subscriptions', label: 'Planos', icon: CreditCard },
-    { path: '/stripe-config', label: 'Config. Stripe', icon: CreditCard },
-    { path: '/accounts-payable', label: 'Contas a Pagar', icon: CreditCard },
+    { path: '/legal-documents', label: 'Documentos', icon: Scale },
+    { path: '/documents', label: 'Uploads', icon: FolderOpen },
+    { path: '/todos', label: 'Tarefas', icon: CheckSquare },
+    { path: '/leads', label: 'Leads', icon: UserPlus },
   ];
 
+  // Campanhas vem após Leads (apenas para Admin)
   if (user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') {
     menuItems.push({ path: '/campaigns', label: 'Campanhas', icon: Mail });
+  }
+
+  // Financeiro e Contas a Pagar
+  menuItems.push({ path: '/financial', label: 'Financeiro', icon: DollarSign });
+  menuItems.push({ path: '/accounts-payable', label: 'Contas a Pagar', icon: CreditCard });
+
+  // Itens restantes na ordem original
+  menuItems.push({ path: '/hearings', label: 'Audiências', icon: Gavel });
+  menuItems.push({ path: '/client-subscriptions', label: 'Planos', icon: CreditCard });
+  menuItems.push({ path: '/stripe-config', label: 'Config. Stripe', icon: CreditCard });
+
+  // Itens administrativos
+  if (user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') {
     menuItems.push({ path: '/smtp-settings', label: 'Config. SMTP', icon: Settings });
     menuItems.push({ path: '/backup-settings', label: 'Email Backup', icon: Database });
     menuItems.push({ path: '/ai-config', label: 'Config. IA', icon: Bot });
