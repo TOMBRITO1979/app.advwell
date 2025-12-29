@@ -4,7 +4,7 @@ import api from '../services/api';
 import toast from 'react-hot-toast';
 import Layout from '../components/Layout';
 import MobileCardList, { MobileCardItem } from '../components/MobileCardList';
-import { formatDateFull } from '../utils/dateFormatter';
+import { formatDateFull, fromSaoPauloToISO, toDatetimeLocal } from '../utils/dateFormatter';
 
 interface Client {
   id: string;
@@ -223,8 +223,9 @@ const Hearings: React.FC = () => {
       description: event.description || '',
       type: event.type,
       priority: event.priority || 'MEDIA',
-      date: event.date.split('T')[0] + 'T' + event.date.split('T')[1].substring(0, 5),
-      endDate: event.endDate ? event.endDate.split('T')[0] + 'T' + event.endDate.split('T')[1].substring(0, 5) : '',
+      // Converter para timezone de São Paulo para exibição no formulário
+      date: toDatetimeLocal(event.date),
+      endDate: event.endDate ? toDatetimeLocal(event.endDate) : '',
       clientId: event.client?.id || '',
       caseId: event.case?.id || '',
       assignedUserIds: [],
@@ -265,9 +266,11 @@ const Hearings: React.FC = () => {
     try {
       const payload = {
         ...formData,
+        // Converter datas para ISO com timezone de São Paulo
+        date: fromSaoPauloToISO(formData.date),
+        endDate: formData.endDate ? fromSaoPauloToISO(formData.endDate) : null,
         clientId: selectedClient?.id || null,
         caseId: selectedCase?.id || null,
-        endDate: formData.endDate || null,
         assignedUserIds: selectedEditUserId ? [selectedEditUserId] : undefined,
       };
 

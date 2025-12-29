@@ -4,13 +4,13 @@ import api from '../services/api';
 import toast from 'react-hot-toast';
 import Layout from '../components/Layout';
 import MobileCardList, { MobileCardItem } from '../components/MobileCardList';
-import { formatDateTime, formatTime, formatDayName, formatDayNumber, formatMonthYear, toDatetimeLocal, isToday as isTodayUtil } from '../utils/dateFormatter';
+import { formatDateTime, formatTime, formatDayName, formatDayNumber, formatMonthYear, toDatetimeLocal, isToday as isTodayUtil, fromSaoPauloToISO } from '../utils/dateFormatter';
 import DateTimePicker from '../components/DateTimePicker';
-import { parseISO, format } from 'date-fns';
+import { parseISO } from 'date-fns';
 
-// Converte Date para string no formato local (sem conversão UTC)
+// Converte Date para string no formato São Paulo (para inputs datetime-local)
 const dateToLocalString = (date: Date): string => {
-  return format(date, "yyyy-MM-dd'T'HH:mm");
+  return toDatetimeLocal(date);
 };
 
 interface Client {
@@ -330,9 +330,11 @@ const Schedule: React.FC = () => {
     try {
       const payload = {
         ...formData,
+        // Converter datas para ISO com timezone de São Paulo
+        date: fromSaoPauloToISO(formData.date),
+        endDate: formData.endDate ? fromSaoPauloToISO(formData.endDate) : null,
         clientId: selectedClient?.id || null,
         caseId: selectedCase?.id || null,
-        endDate: formData.endDate || null,
         assignedUserIds: selectedUserId ? [selectedUserId] : undefined,
       };
 

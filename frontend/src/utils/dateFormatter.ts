@@ -1,13 +1,28 @@
 /**
  * Utilitário centralizado para formatação de datas no padrão brasileiro
  * Formato: DD/MM/AAAA e horário 24h
+ * IMPORTANTE: Todas as datas são exibidas no timezone de São Paulo (America/Sao_Paulo)
  */
 
 import { format, parseISO, isValid } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
+// Timezone fixo para São Paulo - usado em todo o app
+const SAO_PAULO_TIMEZONE = 'America/Sao_Paulo';
+
+/**
+ * Formata data usando Intl.DateTimeFormat com timezone de São Paulo
+ */
+function formatWithTimezone(date: Date, options: Intl.DateTimeFormatOptions): string {
+  return new Intl.DateTimeFormat('pt-BR', {
+    ...options,
+    timeZone: SAO_PAULO_TIMEZONE,
+  }).format(date);
+}
+
 /**
  * Formata data no padrão brasileiro DD/MM/AAAA
+ * Sempre usa timezone de São Paulo
  * @param dateString - Data em formato ISO ou string
  * @returns Data formatada ou string vazia se inválida
  */
@@ -15,12 +30,15 @@ export function formatDate(dateString: string | Date | null | undefined): string
   if (!dateString) return '';
 
   try {
-    // Se for string, tentar parsear
     const date = typeof dateString === 'string' ? parseISO(dateString) : dateString;
 
     if (!isValid(date)) return '';
 
-    return format(date, 'dd/MM/yyyy', { locale: ptBR });
+    return formatWithTimezone(date, {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    });
   } catch {
     return '';
   }
@@ -28,6 +46,7 @@ export function formatDate(dateString: string | Date | null | undefined): string
 
 /**
  * Formata data e hora no padrão brasileiro DD/MM/AAAA HH:mm
+ * Sempre usa timezone de São Paulo
  * @param dateString - Data em formato ISO ou string
  * @returns Data e hora formatadas ou string vazia se inválida
  */
@@ -39,7 +58,14 @@ export function formatDateTime(dateString: string | Date | null | undefined): st
 
     if (!isValid(date)) return '';
 
-    return format(date, 'dd/MM/yyyy HH:mm', { locale: ptBR });
+    return formatWithTimezone(date, {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    });
   } catch {
     return '';
   }
@@ -47,6 +73,7 @@ export function formatDateTime(dateString: string | Date | null | undefined): st
 
 /**
  * Formata apenas a hora no formato 24h HH:mm
+ * Sempre usa timezone de São Paulo
  * @param dateString - Data em formato ISO ou string
  * @returns Hora formatada ou string vazia se inválida
  */
@@ -58,7 +85,11 @@ export function formatTime(dateString: string | Date | null | undefined): string
 
     if (!isValid(date)) return '';
 
-    return format(date, 'HH:mm', { locale: ptBR });
+    return formatWithTimezone(date, {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    });
   } catch {
     return '';
   }
@@ -67,6 +98,7 @@ export function formatTime(dateString: string | Date | null | undefined): string
 /**
  * Formata data completa com dia da semana
  * Ex: "Segunda-feira, 24 de dezembro de 2025"
+ * Sempre usa timezone de São Paulo
  * @param dateString - Data em formato ISO ou string
  * @returns Data formatada por extenso
  */
@@ -78,7 +110,12 @@ export function formatDateFull(dateString: string | Date | null | undefined): st
 
     if (!isValid(date)) return '';
 
-    return format(date, "EEEE, dd 'de' MMMM 'de' yyyy", { locale: ptBR });
+    return formatWithTimezone(date, {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
   } catch {
     return '';
   }
@@ -126,6 +163,7 @@ export function formatDateTimeVerbose(dateString: string | Date | null | undefin
 
 /**
  * Converte data ISO para formato datetime-local (para inputs HTML)
+ * Sempre usa timezone de São Paulo
  * @param dateString - Data em formato ISO
  * @returns Data no formato YYYY-MM-DDTHH:mm
  */
@@ -137,7 +175,20 @@ export function toDatetimeLocal(dateString: string | Date | null | undefined): s
 
     if (!isValid(date)) return '';
 
-    return format(date, "yyyy-MM-dd'T'HH:mm");
+    // Formatar no timezone de São Paulo
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: SAO_PAULO_TIMEZONE,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    }).formatToParts(date);
+
+    const getValue = (type: string) => parts.find(p => p.type === type)?.value || '';
+
+    return `${getValue('year')}-${getValue('month')}-${getValue('day')}T${getValue('hour')}:${getValue('minute')}`;
   } catch {
     return '';
   }
@@ -285,5 +336,54 @@ export function isPast(dateString: string | Date | null | undefined): boolean {
     return date < now;
   } catch {
     return false;
+  }
+}
+
+/**
+ * Retorna a data/hora atual no timezone de São Paulo formatada para datetime-local
+ * @returns Data no formato YYYY-MM-DDTHH:mm
+ */
+export function getNowInSaoPaulo(): string {
+  return toDatetimeLocal(new Date());
+}
+
+/**
+ * Retorna apenas a data atual no timezone de São Paulo
+ * @returns Data no formato YYYY-MM-DD
+ */
+export function getTodayInSaoPaulo(): string {
+  const now = new Date();
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: SAO_PAULO_TIMEZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(now);
+
+  const getValue = (type: string) => parts.find(p => p.type === type)?.value || '';
+
+  return `${getValue('year')}-${getValue('month')}-${getValue('day')}`;
+}
+
+/**
+ * Converte um datetime-local (sem timezone) para ISO string interpretando como horário de São Paulo
+ * Use esta função ao enviar datas do formulário para o backend
+ * @param datetimeLocal - Data no formato YYYY-MM-DDTHH:mm
+ * @returns ISO string com a data correta em UTC
+ */
+export function fromSaoPauloToISO(datetimeLocal: string): string {
+  if (!datetimeLocal) return '';
+
+  try {
+    // Adiciona o offset de São Paulo (-03:00) para interpretar corretamente
+    // Note: São Paulo é UTC-3 (ou UTC-2 no horário de verão, mas Brasil não tem mais)
+    const isoWithOffset = `${datetimeLocal}:00-03:00`;
+    const date = new Date(isoWithOffset);
+
+    if (isNaN(date.getTime())) return '';
+
+    return date.toISOString();
+  } catch {
+    return '';
   }
 }
