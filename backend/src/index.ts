@@ -504,12 +504,15 @@ async function validateLeadership(): Promise<boolean> {
 // TAREFA 4.2: Flag para desabilitar cron jobs (util para workers dedicados)
 const CRON_ENABLED = process.env.ENABLE_CRON !== 'false';
 
+// Timezone fixo para São Paulo - todos os cron jobs rodam neste timezone
+const CRON_TIMEZONE = 'America/Sao_Paulo';
+
 if (!CRON_ENABLED) {
   appLogger.info('Cron jobs DISABLED via ENABLE_CRON=false', { instanceId: INSTANCE_ID });
 }
 
 // Cron job para sincronizar processos - agora usa filas
-// Executa às 2h da manhã, mas apenas no líder
+// Executa às 2h da manhã (São Paulo), mas apenas no líder
 CRON_ENABLED && cron.schedule('0 2 * * *', async () => {
   const { isLeader, fencingToken } = await tryBecomeLeader();
 
@@ -532,9 +535,9 @@ CRON_ENABLED && cron.schedule('0 2 * * *', async () => {
   } catch (error) {
     appLogger.error('Error enqueueing daily sync', error as Error, { instanceId: INSTANCE_ID });
   }
-});
+}, { timezone: CRON_TIMEZONE });
 
-// Cron job para enviar backup por email - às 12h e 18h
+// Cron job para enviar backup por email - às 12h e 18h (São Paulo)
 CRON_ENABLED && cron.schedule('0 12,18 * * *', async () => {
   const { isLeader, fencingToken } = await tryBecomeLeader();
 
@@ -557,9 +560,9 @@ CRON_ENABLED && cron.schedule('0 12,18 * * *', async () => {
   } catch (error) {
     appLogger.error('Error in backup email job', error as Error, { instanceId: INSTANCE_ID });
   }
-});
+}, { timezone: CRON_TIMEZONE });
 
-// Cron job para backup do banco de dados - às 03:00 (após sync diário às 02:00)
+// Cron job para backup do banco de dados - às 03:00 São Paulo (após sync diário às 02:00)
 CRON_ENABLED && cron.schedule('0 3 * * *', async () => {
   const { isLeader, fencingToken } = await tryBecomeLeader();
 
@@ -582,9 +585,9 @@ CRON_ENABLED && cron.schedule('0 3 * * *', async () => {
   } catch (error) {
     appLogger.error('Error in database backup job', error as Error, { instanceId: INSTANCE_ID });
   }
-});
+}, { timezone: CRON_TIMEZONE });
 
-// AUDITORIA: Limpeza semanal de logs de auditoria (Domingos 04:00 AM)
+// AUDITORIA: Limpeza semanal de logs de auditoria (Domingos 04:00 AM São Paulo)
 // Remove logs com mais de 365 dias para conformidade LGPD e performance
 CRON_ENABLED && cron.schedule('0 4 * * 0', async () => {
   const { isLeader, fencingToken } = await tryBecomeLeader();
@@ -607,7 +610,7 @@ CRON_ENABLED && cron.schedule('0 4 * * 0', async () => {
   } catch (error) {
     appLogger.error('Error in audit cleanup', error as Error, { instanceId: INSTANCE_ID });
   }
-});
+}, { timezone: CRON_TIMEZONE });
 
 // Refresh leader status every minute
 CRON_ENABLED && cron.schedule('* * * * *', async () => {
@@ -615,7 +618,7 @@ CRON_ENABLED && cron.schedule('* * * * *', async () => {
   if (isLeader) {
     appLogger.debug('Leader status refreshed', { instanceId: INSTANCE_ID });
   }
-});
+}, { timezone: CRON_TIMEZONE });
 
 // Iniciar servidor
 const PORT = config.port;
