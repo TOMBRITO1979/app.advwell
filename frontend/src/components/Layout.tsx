@@ -184,6 +184,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { path: '/clients', label: 'Clientes', icon: Users },
     { path: '/cases', label: 'Processos', icon: FileText },
     { path: '/deadlines', label: 'Prazos', icon: Clock },
+    { path: '/hearings', label: 'Audiências', icon: Gavel },
     { path: '/updates', label: 'Atualizações', icon: Bell },
     { path: '/legal-documents', label: 'Documentos', icon: Scale },
     { path: '/documents', label: 'Uploads', icon: FolderOpen },
@@ -201,7 +202,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   menuItems.push({ path: '/accounts-payable', label: 'Contas a Pagar', icon: CreditCard });
 
   // Itens restantes na ordem original
-  menuItems.push({ path: '/hearings', label: 'Audiências', icon: Gavel });
   menuItems.push({ path: '/client-subscriptions', label: 'Planos', icon: CreditCard });
   menuItems.push({ path: '/stripe-config', label: 'Config. Stripe', icon: CreditCard });
 
