@@ -67,7 +67,10 @@ const Hearings: React.FC = () => {
     const today = new Date();
     return today.toISOString().split('T')[0];
   });
-  const [viewMode, setViewMode] = useState<'list' | 'week'>('week');
+  // Mobile: lista por padrão, Desktop: semana por padrão
+  const [viewMode, setViewMode] = useState<'list' | 'week'>(() => {
+    return window.innerWidth < 768 ? 'list' : 'week';
+  });
   const [weekEvents, setWeekEvents] = useState<ScheduleEvent[]>([]);
 
   // Modal de edição
