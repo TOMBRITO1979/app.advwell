@@ -83,7 +83,7 @@ const Schedule: React.FC = () => {
   const [filterCompleted, setFilterCompleted] = useState<string>('');
 
   // Estado para controle de visualização (tabela ou calendário)
-  const [viewMode, setViewMode] = useState<'table' | 'calendar'>('table');
+  const [viewMode, setViewMode] = useState<'table' | 'calendar'>('calendar');
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(() => {
     const today = new Date();
     const dayOfWeek = today.getDay(); // 0 = Domingo
