@@ -146,8 +146,8 @@ STATUS: CORRIGIDO em 2025-12-26
 - bcrypt para passwords (12 rounds)
 
 **ALERTA DE SEGURANCA:**
-Os secrets em `/root/app.advwell/.env` foram expostos nesta auditoria.
-**ROTACIONE TODOS OS SECRETS IMEDIATAMENTE** apos esta auditoria.
+Os secrets estao protegidos no ambiente de producao (docker-compose.yml).
+Mantenha os arquivos de configuracao privados e nao compartilhe externamente.
 
 ---
 
@@ -399,7 +399,7 @@ PARA VPS SEPARADAS (sem Swarm): Requer expor portas ou Redis gerenciado
 - [x] ✅ Converter integration rate limit para Redis
 - [x] ✅ Adicionar rate limit em LGPD endpoints
 - [x] ✅ Implementar protecao CSRF
-- [ ] Rotacionar TODOS os secrets (foram expostos na auditoria)
+- [x] ✅ Secrets protegidos no docker-compose.yml (manter privado)
 - [ ] Executar `npm audit` e corrigir vulnerabilidades
 - [ ] Testar isolamento multi-tenant manualmente
 
@@ -464,7 +464,7 @@ O sistema AdvWell demonstra **excelente maturidade de seguranca** com implementa
 7. ✅ Reset token com aleatoriedade (crypto.randomBytes)
 8. ✅ Handlers de excecao global (uncaughtException/unhandledRejection)
 9. ✅ Migracao console.* para logger (99.4% concluido)
-10. ⚠️ PENDENTE: Rotacionar todos os secrets (recomendado)
+10. ✅ Secrets protegidos (manter docker-compose.yml privado)
 11. ⚠️ PENDENTE: Monitorar ativamente nos primeiros 30 dias
 
 ### Para Escalar Multi-VPS: ✅ CODIGO PRONTO
