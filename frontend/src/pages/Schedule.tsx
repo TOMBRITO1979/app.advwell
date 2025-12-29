@@ -36,6 +36,12 @@ interface EventAssignment {
   user: User;
 }
 
+interface Holiday {
+  date: string;
+  name: string;
+  type: string;
+}
+
 interface ScheduleEvent {
   id: string;
   title: string;
@@ -88,6 +94,9 @@ const Schedule: React.FC = () => {
   // Estado para seleção única de usuário responsável
   const [companyUsers, setCompanyUsers] = useState<User[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string>('');
+
+  // Estado para feriados nacionais
+  const [holidays, setHolidays] = useState<Holiday[]>([]);
 
   // Export states
   const [showExportMenu, setShowExportMenu] = useState(false);
@@ -183,6 +192,11 @@ const Schedule: React.FC = () => {
     fetchCompanyUsers();
   }, [searchTerm, filterType, filterCompleted]);
 
+  // Buscar feriados quando mudar de semana
+  useEffect(() => {
+    fetchHolidays();
+  }, [currentWeekStart]);
+
   // Debounce para busca de clientes
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -217,6 +231,34 @@ const Schedule: React.FC = () => {
       setCompanyUsers(response.data.data || []);
     } catch (error) {
       console.error('Erro ao buscar usuários:', error);
+    }
+  };
+
+  const fetchHolidays = async () => {
+    try {
+      // Buscar feriados para o ano da semana atual e próximo (caso cruze anos)
+      const weekEnd = new Date(currentWeekStart);
+      weekEnd.setDate(weekEnd.getDate() + 6);
+
+      const startYear = currentWeekStart.getFullYear();
+      const endYear = weekEnd.getFullYear();
+
+      // Buscar feriados de todos os anos necessários
+      const yearsToFetch = [startYear];
+      if (endYear !== startYear) {
+        yearsToFetch.push(endYear);
+      }
+
+      const allHolidays: Holiday[] = [];
+      for (const year of yearsToFetch) {
+        const response = await api.get(`/holidays/${year}`);
+        allHolidays.push(...response.data);
+      }
+
+      setHolidays(allHolidays);
+    } catch (error) {
+      console.error('Erro ao buscar feriados:', error);
+      // Não exibe toast para não atrapalhar a experiência do usuário
     }
   };
 
@@ -428,6 +470,11 @@ const Schedule: React.FC = () => {
         eventDate.getDate() === day.getDate()
       );
     });
+  };
+
+  const getHolidayForDay = (day: Date): Holiday | undefined => {
+    const dayStr = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
+    return holidays.find(h => h.date === dayStr);
   };
 
   const navigateWeek = (direction: 'prev' | 'next') => {
@@ -848,17 +895,26 @@ const Schedule: React.FC = () => {
                 {getWeekDays(currentWeekStart).map((day, index) => {
                   const dayEvents = getEventsForDay(day);
                   const isDayToday = isToday(day);
+                  const holiday = getHolidayForDay(day);
                   return (
-                    <div key={index} className={`min-h-[300px] ${isDayToday ? 'bg-primary-50/30' : ''}`}>
+                    <div key={index} className={`min-h-[300px] ${isDayToday ? 'bg-primary-50/30' : holiday ? 'bg-red-50/30' : ''}`}>
                       {/* Day Header */}
-                      <div className={`p-3 text-center border-b border-neutral-200 ${isDayToday ? 'bg-primary-100' : 'bg-neutral-50'}`}>
-                        <div className={`text-xs font-medium uppercase ${isDayToday ? 'text-primary-700' : 'text-neutral-500'}`}>
+                      <div className={`p-3 text-center border-b border-neutral-200 ${isDayToday ? 'bg-primary-100' : holiday ? 'bg-red-100' : 'bg-neutral-50'}`}>
+                        <div className={`text-xs font-medium uppercase ${isDayToday ? 'text-primary-700' : holiday ? 'text-red-700' : 'text-neutral-500'}`}>
                           {formatDayHeader(day)}
                         </div>
-                        <div className={`text-2xl font-bold ${isDayToday ? 'text-primary-700' : 'text-neutral-900'}`}>
+                        <div className={`text-2xl font-bold ${isDayToday ? 'text-primary-700' : holiday ? 'text-red-700' : 'text-neutral-900'}`}>
                           {formatDayNumber(day)}
                         </div>
                       </div>
+                      {/* Holiday Banner */}
+                      {holiday && (
+                        <div className="px-2 py-1 bg-red-100 border-b border-red-200">
+                          <div className="text-xs font-medium text-red-800 text-center truncate" title={holiday.name}>
+                            🎉 {holiday.name}
+                          </div>
+                        </div>
+                      )}
                       {/* Day Events */}
                       <div className="p-2 space-y-2">
                         {dayEvents.length === 0 ? (
@@ -917,16 +973,24 @@ const Schedule: React.FC = () => {
                 {getWeekDays(currentWeekStart).map((day, index) => {
                   const dayEvents = getEventsForDay(day);
                   const isDayToday = isToday(day);
+                  const holiday = getHolidayForDay(day);
                   return (
-                    <div key={index} className={`${isDayToday ? 'bg-primary-50/30' : ''}`}>
+                    <div key={index} className={`${isDayToday ? 'bg-primary-50/30' : holiday ? 'bg-red-50/30' : ''}`}>
                       {/* Day Header */}
-                      <div className={`p-3 flex items-center justify-between ${isDayToday ? 'bg-primary-100' : 'bg-neutral-50'}`}>
+                      <div className={`p-3 flex items-center justify-between ${isDayToday ? 'bg-primary-100' : holiday ? 'bg-red-100' : 'bg-neutral-50'}`}>
                         <div className="flex items-center gap-3">
-                          <div className={`text-2xl font-bold ${isDayToday ? 'text-primary-700' : 'text-neutral-900'}`}>
+                          <div className={`text-2xl font-bold ${isDayToday ? 'text-primary-700' : holiday ? 'text-red-700' : 'text-neutral-900'}`}>
                             {formatDayNumber(day)}
                           </div>
-                          <div className={`text-sm font-medium ${isDayToday ? 'text-primary-700' : 'text-neutral-600'}`}>
-                            {formatDayHeader(day)}
+                          <div className="flex flex-col">
+                            <div className={`text-sm font-medium ${isDayToday ? 'text-primary-700' : holiday ? 'text-red-700' : 'text-neutral-600'}`}>
+                              {formatDayHeader(day)}
+                            </div>
+                            {holiday && (
+                              <div className="text-xs text-red-600">
+                                🎉 {holiday.name}
+                              </div>
+                            )}
                           </div>
                         </div>
                         <button
