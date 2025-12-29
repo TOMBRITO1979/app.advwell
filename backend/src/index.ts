@@ -166,7 +166,23 @@ const CRON_LEADER_KEY = 'advwell:cron:leader';
 const CRON_LEADER_TTL = 120; // 2 minutes
 
 // Trust proxy - necessário quando atrás de Traefik/Nginx
-app.set('trust proxy', 1);
+app.set('trust proxy', true);
+
+// Helper para extrair IP real do cliente (atrás de Traefik)
+const getClientIp = (req: express.Request): string => {
+  // X-Real-IP é setado pelo Traefik
+  const realIp = req.headers['x-real-ip'] as string;
+  if (realIp) return realIp;
+
+  // X-Forwarded-For pode ter múltiplos IPs: client, proxy1, proxy2
+  const forwardedFor = req.headers['x-forwarded-for'] as string;
+  if (forwardedFor) {
+    const ips = forwardedFor.split(',').map(ip => ip.trim());
+    return ips[0]; // Primeiro IP é o cliente real
+  }
+
+  return req.ip || '0.0.0.0';
+};
 
 // CORS deve vir antes do helmet
 // Em produção, apenas o frontend configurado é permitido
@@ -230,9 +246,7 @@ const globalLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many attempts. Please try again later.', retry_after: 15 * 60 },
-  validate: {
-    trustProxy: true, // FIXED: App is behind Traefik, must trust proxy headers
-  },
+  keyGenerator: getClientIp, // Usa IP real do cliente
   skip: (req) => {
     // Skip rate limiting for health checks
     return req.path === '/health';
@@ -247,9 +261,7 @@ const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 20,
   message: { error: 'Muitas tentativas de login. Tente novamente em 15 minutos.' },
-  validate: {
-    trustProxy: true, // FIXED: App is behind Traefik
-  },
+  keyGenerator: getClientIp, // Usa IP real do cliente
   store: createRedisStore('auth'),
 });
 app.use('/api/auth/login', authLimiter);
@@ -261,9 +273,7 @@ const passwordResetLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hora
   max: 3, // Máximo 3 tentativas por hora
   message: { error: 'Muitas tentativas de recuperação de senha. Tente novamente em 1 hora.' },
-  validate: {
-    trustProxy: true,
-  },
+  keyGenerator: getClientIp, // Usa IP real do cliente
   store: createRedisStore('password-reset'),
 });
 app.use('/api/auth/forgot-password', passwordResetLimiter);
