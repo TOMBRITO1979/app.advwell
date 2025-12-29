@@ -343,7 +343,7 @@ services:
         - "traefik.docker.network=network_public"
 
   frontend:
-    image: tomautomations/advtom-frontend:v1.5.1
+    image: tomautomations/advtom-frontend:v1.5.2
     environment:
       - TZ=${TZ:-America/Sao_Paulo}
       - VITE_API_URL=${VITE_API_URL}

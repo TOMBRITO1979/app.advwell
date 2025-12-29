@@ -8,9 +8,15 @@ import { formatDateTime, formatTime, formatDayName, formatDayNumber, formatMonth
 import DateTimePicker from '../components/DateTimePicker';
 import { parseISO } from 'date-fns';
 
-// Converte Date para string no formato São Paulo (para inputs datetime-local)
+// Converte Date para string datetime-local SEM conversão de timezone
+// O usuário sempre digita horário de São Paulo, independente de onde esteja
 const dateToLocalString = (date: Date): string => {
-  return toDatetimeLocal(date);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
 };
 
 interface Client {
