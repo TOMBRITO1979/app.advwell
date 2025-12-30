@@ -160,6 +160,9 @@ services:
   portainer:
     image: portainer/portainer-ce:latest
     command: -H tcp://tasks.agent:9001 --tlsskipverify
+    ports:
+      # Acesso direto por IP enquanto DNS aponta para outro servidor
+      - "9000:9000"
     volumes:
       - portainer_data:/data
     networks:
