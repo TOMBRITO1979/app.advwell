@@ -1,0 +1,220 @@
+version: '3.8'
+
+# =============================================================================
+# AdvWell - Stack para Portainer (16GB Server)
+# Versão simplificada sem dependências de arquivos locais
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # REDIS - Cache e Filas
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    command: >
+      redis-server
+      --appendonly yes
+      --maxmemory 1536mb
+      --maxmemory-policy allkeys-lru
+      --tcp-keepalive 300
+      --requirepass ${REDIS_PASSWORD}
+    environment:
+      - TZ=America/Sao_Paulo
+    volumes:
+      - redis_data:/data
+    networks:
+      - network_public
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 2G
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # ---------------------------------------------------------------------------
+  # POSTGRESQL - Banco de Dados
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - TZ=America/Sao_Paulo
+      - PGTZ=America/Sao_Paulo
+      - POSTGRES_DB=${POSTGRES_DB:-advtom}
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    command: >
+      postgres
+      -c max_connections=200
+      -c shared_buffers=1GB
+      -c effective_cache_size=3GB
+      -c work_mem=16MB
+      -c maintenance_work_mem=256MB
+      -c random_page_cost=1.1
+      -c effective_io_concurrency=200
+      -c wal_buffers=32MB
+      -c min_wal_size=512MB
+      -c max_wal_size=2GB
+      -c max_worker_processes=4
+      -c max_parallel_workers_per_gather=2
+      -c max_parallel_workers=4
+      -c checkpoint_completion_target=0.9
+      -c huge_pages=off
+    networks:
+      - network_public
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 3G
+        reservations:
+          cpus: '0.25'
+          memory: 1G
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-advtom}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ---------------------------------------------------------------------------
+  # BACKEND - API Node.js
+  # ---------------------------------------------------------------------------
+  backend:
+    image: tomautomations/advtom-backend:v1.5.5
+    environment:
+      - TZ=America/Sao_Paulo
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?connection_limit=25&pool_timeout=20
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_REGION=${AWS_REGION:-us-east-1}
+      - S3_BUCKET_NAME=${S3_BUCKET_NAME:-advwell-app}
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - SMTP_FROM=${SMTP_FROM}
+      - API_URL=${API_URL}
+      - FRONTEND_URL=${FRONTEND_URL}
+      - DATAJUD_API_KEY=${DATAJUD_API_KEY}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
+      - PORT=3000
+      - NODE_ENV=production
+      - HEALTH_CHECK_KEY=${HEALTH_CHECK_KEY}
+      - NODE_OPTIONS=--max-old-space-size=1024
+    networks:
+      - network_public
+    depends_on:
+      - postgres
+      - redis
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      replicas: 2
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1536M
+        reservations:
+          cpus: '0.25'
+          memory: 384M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.advwell-backend.rule=Host(`api.advwell.pro`)"
+        - "traefik.http.routers.advwell-backend.entrypoints=websecure"
+        - "traefik.http.routers.advwell-backend.tls=true"
+        - "traefik.http.routers.advwell-backend.tls.certresolver=letsencryptresolver"
+        - "traefik.http.services.advwell-backend.loadbalancer.server.port=3000"
+        - "traefik.http.services.advwell-backend.loadbalancer.healthcheck.path=/health"
+        - "traefik.http.services.advwell-backend.loadbalancer.healthcheck.interval=10s"
+        - "traefik.docker.network=network_public"
+
+  # ---------------------------------------------------------------------------
+  # FRONTEND - React App
+  # ---------------------------------------------------------------------------
+  frontend:
+    image: tomautomations/advtom-frontend:v1.5.5
+    environment:
+      - TZ=America/Sao_Paulo
+      - VITE_API_URL=${VITE_API_URL}
+    networks:
+      - network_public
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1:80/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.1'
+          memory: 128M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.advwell-frontend.rule=Host(`app.advwell.pro`)"
+        - "traefik.http.routers.advwell-frontend.entrypoints=websecure"
+        - "traefik.http.routers.advwell-frontend.tls=true"
+        - "traefik.http.routers.advwell-frontend.tls.certresolver=letsencryptresolver"
+        - "traefik.http.services.advwell-frontend.loadbalancer.server.port=80"
+        - "traefik.docker.network=network_public"
+
+networks:
+  network_public:
+    external: true
+
+volumes:
+  postgres_data:
+  redis_data:
