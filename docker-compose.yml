@@ -2,14 +2,14 @@ version: '3.8'
 
 services:
   # Redis for caching and job queues
-  # ESCALABILIDADE: Aumentado para 2GB para suportar 200 escritorios
+  # OTIMIZADO: 16GB server - suporta 50-80 escritorios
   # SEGURANCA: Autenticacao por senha habilitada
   redis:
     image: redis:7-alpine
     command: >
       redis-server
       --appendonly yes
-      --maxmemory 3gb
+      --maxmemory 1536mb
       --maxmemory-policy allkeys-lru
       --tcp-keepalive 300
       --requirepass ${REDIS_PASSWORD}
@@ -28,11 +28,11 @@ services:
           - node.role == manager
       resources:
         limits:
-          cpus: '1'
-          memory: 3.5G
+          cpus: '0.5'
+          memory: 2G
         reservations:
-          cpus: '0.25'
-          memory: 1G
+          cpus: '0.1'
+          memory: 512M
       restart_policy:
         condition: on-failure
         delay: 5s
@@ -48,7 +48,7 @@ services:
   # ===========================================
 
   # Redis Replica - syncs from master for failover
-  # Uses custom entrypoint to set replica-announce-ip for proper Sentinel discovery
+  # OTIMIZADO: 16GB server
   redis-replica:
     image: redis:7-alpine
     entrypoint: ["/bin/sh", "/etc/redis/replica-entrypoint.sh"]
@@ -66,11 +66,11 @@ services:
       replicas: 1
       resources:
         limits:
-          cpus: '0.5'
-          memory: 2.5G
+          cpus: '0.25'
+          memory: 1G
         reservations:
-          cpus: '0.1'
-          memory: 512M
+          cpus: '0.05'
+          memory: 256M
       restart_policy:
         condition: on-failure
         delay: 5s
@@ -178,9 +178,10 @@ services:
       retries: 3
 
   # NOTE: PgBouncer removed - SCRAM-SHA-256 auth issues with edoburu/pgbouncer
-  # PostgreSQL already configured with max_connections=500 which is sufficient
+  # OTIMIZADO: max_connections=200 para 16GB server (50-80 escritorios)
   # Consider adding PgBouncer in future with proper auth configuration
 
+  # OTIMIZADO: 16GB server - reduzido para 50-80 escritorios
   postgres:
     image: postgres:16-alpine
     volumes:
@@ -193,16 +194,16 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     command: >
       postgres
-      -c max_connections=500
-      -c shared_buffers=2GB
-      -c effective_cache_size=8GB
-      -c work_mem=32MB
-      -c maintenance_work_mem=512MB
+      -c max_connections=200
+      -c shared_buffers=1GB
+      -c effective_cache_size=3GB
+      -c work_mem=16MB
+      -c maintenance_work_mem=256MB
       -c random_page_cost=1.1
       -c effective_io_concurrency=200
-      -c wal_buffers=64MB
-      -c min_wal_size=1GB
-      -c max_wal_size=4GB
+      -c wal_buffers=32MB
+      -c min_wal_size=512MB
+      -c max_wal_size=2GB
       -c max_worker_processes=4
       -c max_parallel_workers_per_gather=2
       -c max_parallel_workers=4
@@ -211,7 +212,7 @@ services:
       -c log_disconnections=on
       -c checkpoint_completion_target=0.9
       -c default_statistics_target=100
-      -c huge_pages=try
+      -c huge_pages=off
     networks:
       - network_public
     deploy:
@@ -221,11 +222,11 @@ services:
           - node.role == manager
       resources:
         limits:
-          cpus: '2'
-          memory: 4G
+          cpus: '1.5'
+          memory: 3G
         reservations:
-          cpus: '0.5'
-          memory: 2.5G
+          cpus: '0.25'
+          memory: 1G
       restart_policy:
         condition: on-failure
         delay: 5s
@@ -236,6 +237,7 @@ services:
       timeout: 5s
       retries: 5
 
+  # OTIMIZADO: 16GB server - 2 replicas para 50-80 escritorios
   backend:
     image: tomautomations/advtom-backend:v1.5.4
     environment:
@@ -243,8 +245,8 @@ services:
       - TZ=${TZ:-America/Sao_Paulo}
 
       # Database connection (direct to PostgreSQL with connection pooling)
-      # ESCALABILIDADE: 15 conexoes x 4 replicas = 60 conexoes (max_connections=500)
-      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?connection_limit=15&pool_timeout=20
+      # OTIMIZADO: 25 conexoes x 2 replicas = 50 conexoes (max_connections=200)
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?connection_limit=25&pool_timeout=20
 
       # Redis for caching and queues (with authentication)
       # ALTA DISPONIBILIDADE: Sentinel mode para failover automatico
@@ -293,8 +295,8 @@ services:
       # Security: Health check protection
       - HEALTH_CHECK_KEY=${HEALTH_CHECK_KEY}
 
-      # Performance tuning (optimized for 16GB server)
-      - NODE_OPTIONS=--max-old-space-size=1536
+      # Performance tuning (optimized for 16GB server with 2 replicas)
+      - NODE_OPTIONS=--max-old-space-size=1024
     networks:
       - network_public
     depends_on:
@@ -311,8 +313,8 @@ services:
       retries: 3
       start_period: 40s
     deploy:
-      # ESCALABILIDADE: 4 replicas para suportar 200 escritorios
-      replicas: 4
+      # OTIMIZADO: 2 replicas para 50-80 escritorios em 16GB server
+      replicas: 2
       update_config:
         parallelism: 1
         delay: 10s
@@ -323,10 +325,10 @@ services:
       resources:
         limits:
           cpus: '1'
-          memory: 2G
+          memory: 1536M
         reservations:
           cpus: '0.25'
-          memory: 512M
+          memory: 384M
       restart_policy:
         condition: on-failure
         delay: 5s
@@ -458,6 +460,7 @@ services:
   # ===========================================
 
   # Prometheus - Metrics collection and alerting
+  # OTIMIZADO: 16GB server - retencao reduzida para 15 dias
   prometheus:
     image: prom/prometheus:latest
     command:
@@ -465,7 +468,7 @@ services:
       - '--storage.tsdb.path=/prometheus'
       - '--web.console.libraries=/usr/share/prometheus/console_libraries'
       - '--web.console.templates=/usr/share/prometheus/consoles'
-      - '--storage.tsdb.retention.time=30d'
+      - '--storage.tsdb.retention.time=15d'
       - '--web.enable-lifecycle'
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
@@ -478,11 +481,11 @@ services:
       replicas: 1
       resources:
         limits:
-          cpus: '0.5'
-          memory: 1G
+          cpus: '0.25'
+          memory: 512M
         reservations:
-          cpus: '0.1'
-          memory: 256M
+          cpus: '0.05'
+          memory: 128M
       labels:
         - "traefik.enable=false"
 
@@ -523,6 +526,7 @@ services:
 
   # ===========================================
   # GRAFANA - Metrics Visualization
+  # OTIMIZADO: 16GB server
   # ===========================================
   grafana:
     image: grafana/grafana:latest
@@ -546,11 +550,11 @@ services:
       replicas: 1
       resources:
         limits:
-          cpus: '0.5'
-          memory: 512M
+          cpus: '0.25'
+          memory: 256M
         reservations:
-          cpus: '0.1'
-          memory: 128M
+          cpus: '0.05'
+          memory: 64M
       restart_policy:
         condition: on-failure
         delay: 5s
