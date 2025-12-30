@@ -3,6 +3,7 @@ import { CreditCard, Eye, EyeOff, CheckCircle, XCircle, Loader2 } from 'lucide-r
 import Layout from '../components/Layout';
 import api from '../services/api';
 import toast from 'react-hot-toast';
+import { formatDate } from '../utils/dateFormatter';
 
 interface StripeConfigData {
   id?: string;
@@ -135,7 +136,7 @@ export default function StripeConfig() {
               )}
             </div>
             <span className="text-sm text-gray-500">
-              Última atualização: {new Date(config.updatedAt!).toLocaleDateString('pt-BR')}
+              Última atualização: {formatDate(config.updatedAt!)}
             </span>
           </div>
         </div>

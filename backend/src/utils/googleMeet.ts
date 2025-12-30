@@ -1,5 +1,8 @@
 import { appLogger } from './logger';
 
+// Timezone fixo para São Paulo
+const SAO_PAULO_TIMEZONE = 'America/Sao_Paulo';
+
 /**
  * Gera link do Google Calendar com instruções para adicionar Google Meet
  *
@@ -22,13 +25,27 @@ export function generateGoogleMeetLink(
   }
 
   // Formatar data para Google Calendar (YYYYMMDDTHHmmss)
-  // IMPORTANTE: Usar timezone LOCAL, não UTC!
+  // IMPORTANTE: Usar timezone de São Paulo para garantir consistência
   const formatGoogleDate = (date: Date): string => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
+    // Usar Intl.DateTimeFormat para obter os componentes no timezone de São Paulo
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: SAO_PAULO_TIMEZONE,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+    }).formatToParts(date);
+
+    const getValue = (type: string) => parts.find(p => p.type === type)?.value || '00';
+
+    const year = getValue('year');
+    const month = getValue('month');
+    const day = getValue('day');
+    const hours = getValue('hour');
+    const minutes = getValue('minute');
     const seconds = '00';
 
     return `${year}${month}${day}T${hours}${minutes}${seconds}`;

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
 import { ArrowLeft, Shield, FileText, Clock, Users, Database, Lock, Mail, AlertTriangle } from 'lucide-react';
+import { formatDate } from '../utils/dateFormatter';
 
 interface PolicyContent {
   title: string;
@@ -70,7 +71,7 @@ const PrivacyPolicy: React.FC = () => {
                 <div>
                   <h1 className="text-3xl font-bold">{policy?.title || 'Politica de Privacidade'}</h1>
                   <p className="text-white/80 mt-1">
-                    Versao {policy?.version || '1.0'} - Atualizada em {policy?.lastUpdated || new Date().toLocaleDateString('pt-BR')}
+                    Versao {policy?.version || '1.0'} - Atualizada em {policy?.lastUpdated || formatDate(new Date())}
                   </p>
                 </div>
               </div>

@@ -38,7 +38,7 @@ function getUltimoAndamento(movimentos: any[]): string | null {
   );
 
   const ultimo = sorted[0];
-  const data = new Date(ultimo.dataHora).toLocaleDateString('pt-BR');
+  const data = new Date(ultimo.dataHora).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });
   return `${ultimo.nome} - ${data}`;
 }
 
@@ -740,8 +740,8 @@ export class CaseController {
         const subject = `"${caseItem.subject || ''}"`;
         const value = caseItem.value ? `"R$ ${toNumber(caseItem.value).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}"` : '""';
         const status = `"${caseItem.status || ''}"`;
-        const lastSyncedAt = caseItem.lastSyncedAt ? `"${new Date(caseItem.lastSyncedAt).toLocaleString('pt-BR')}"` : '""';
-        const createdAt = `"${new Date(caseItem.createdAt).toLocaleDateString('pt-BR')}"`;
+        const lastSyncedAt = caseItem.lastSyncedAt ? `"${new Date(caseItem.lastSyncedAt).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}"` : '""';
+        const createdAt = `"${new Date(caseItem.createdAt).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}"`;
         const notes = `"${(caseItem.notes || '').replace(/"/g, '""')}"`;
 
         return `${processNumber},${clientName},${clientCpf},${court},${subject},${value},${status},${lastSyncedAt},${createdAt},${notes}`;

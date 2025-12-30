@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
 import api from '../services/api';
 import toast from 'react-hot-toast';
+import { formatDate } from '../utils/dateFormatter';
 
 interface Client {
   id: string;
@@ -515,7 +516,7 @@ const Documents: React.FC = () => {
                         <div>
                           <span className="text-neutral-500">Adicionado em: </span>
                           <span className="text-neutral-700">
-                            {new Date(doc.createdAt).toLocaleDateString('pt-BR')}
+                            {formatDate(doc.createdAt)}
                           </span>
                         </div>
                         {doc.user && (

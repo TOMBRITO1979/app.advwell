@@ -284,11 +284,11 @@ export class ClientController {
         const zipCode = `"${client.zipCode || ''}"`;
         const profession = `"${client.profession || ''}"`;
         const maritalStatus = `"${client.maritalStatus || ''}"`;
-        const birthDate = client.birthDate ? `"${new Date(client.birthDate).toLocaleDateString('pt-BR')}"` : '""';
+        const birthDate = client.birthDate ? `"${new Date(client.birthDate).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}"` : '""';
         const representativeName = `"${client.representativeName || ''}"`;
         const representativeCpf = `"${client.representativeCpf || ''}"`;
         const notes = `"${(client.notes || '').replace(/"/g, '""')}"`;
-        const createdAt = `"${new Date(client.createdAt).toLocaleDateString('pt-BR')}"`;
+        const createdAt = `"${new Date(client.createdAt).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}"`;
 
         return `${personType},${name},${cpf},${rg},${email},${phone},${address},${city},${state},${zipCode},${profession},${maritalStatus},${birthDate},${representativeName},${representativeCpf},${notes},${createdAt}`;
       }).join('\n');

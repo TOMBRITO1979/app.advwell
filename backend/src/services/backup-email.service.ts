@@ -67,11 +67,11 @@ class BackupEmailService {
       const zipCode = `"${client.zipCode || ''}"`;
       const profession = `"${client.profession || ''}"`;
       const maritalStatus = `"${client.maritalStatus || ''}"`;
-      const birthDate = client.birthDate ? `"${new Date(client.birthDate).toLocaleDateString('pt-BR')}"` : '""';
+      const birthDate = client.birthDate ? `"${new Date(client.birthDate).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}"` : '""';
       const representativeName = `"${(client.representativeName || '').replace(/"/g, '""')}"`;
       const representativeCpf = `"${client.representativeCpf || ''}"`;
       const notes = `"${(client.notes || '').replace(/"/g, '""')}"`;
-      const createdAt = `"${new Date(client.createdAt).toLocaleDateString('pt-BR')}"`;
+      const createdAt = `"${new Date(client.createdAt).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}"`;
 
       return `${personType},${name},${cpf},${rg},${email},${phone},${address},${city},${state},${zipCode},${profession},${maritalStatus},${birthDate},${representativeName},${representativeCpf},${notes},${createdAt}`;
     }).join('\n');
@@ -103,8 +103,8 @@ class BackupEmailService {
       const subject = `"${(caseItem.subject || '').replace(/"/g, '""')}"`;
       const value = caseItem.value ? `"R$ ${Number(caseItem.value).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}"` : '""';
       const status = `"${CASE_STATUS_LABELS[caseItem.status] || caseItem.status || ''}"`;
-      const lastSyncedAt = caseItem.lastSyncedAt ? `"${new Date(caseItem.lastSyncedAt).toLocaleString('pt-BR')}"` : '""';
-      const createdAt = `"${new Date(caseItem.createdAt).toLocaleDateString('pt-BR')}"`;
+      const lastSyncedAt = caseItem.lastSyncedAt ? `"${new Date(caseItem.lastSyncedAt).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}"` : '""';
+      const createdAt = `"${new Date(caseItem.createdAt).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}"`;
       const notes = `"${(caseItem.notes || '').replace(/"/g, '""')}"`;
 
       return `${processNumber},${clientName},${clientCpf},${court},${subject},${value},${status},${lastSyncedAt},${createdAt},${notes}`;
@@ -138,10 +138,11 @@ class BackupEmailService {
       const description = `"${(event.description || '').replace(/"/g, '""')}"`;
       const type = `"${EVENT_TYPE_LABELS[event.type] || event.type || ''}"`;
       const priority = `"${PRIORITY_LABELS[event.priority] || event.priority || ''}"`;
-      const date = `"${new Date(event.date).toLocaleString('pt-BR')}"`;
-      const endDate = event.endDate ? `"${new Date(event.endDate).toLocaleString('pt-BR')}"` : '""';
+      const date = `"${new Date(event.date).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}"`;
+      const endDate = event.endDate ? `"${new Date(event.endDate).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}"` : '""';
       const clientName = `"${(event.client?.name || '').replace(/"/g, '""')}"`;
       const processNumber = `"${event.case?.processNumber || ''}"`;
+
       const assignedUsers = `"${event.assignedUsers.map(a => a.user.name).join(', ')}"`;
       const completed = event.completed ? '"Sim"' : '"Não"';
       const googleMeetLink = `"${event.googleMeetLink || ''}"`;
@@ -193,9 +194,9 @@ class BackupEmailService {
         },
       });
 
-      // Data formatada para nome dos arquivos
-      const dateStr = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
-      const timeStr = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }).replace(':', 'h');
+      // Data formatada para nome dos arquivos (sempre no timezone de São Paulo)
+      const dateStr = new Date().toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' }).replace(/\//g, '-');
+      const timeStr = new Date().toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' }).replace(':', 'h');
 
       // Enviar email com anexos
       await transporter.sendMail({

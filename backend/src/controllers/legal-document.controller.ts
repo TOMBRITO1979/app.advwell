@@ -451,7 +451,7 @@ export const generatePDF = async (req: AuthRequest, res: Response) => {
        .fontSize(8)
        .font('Helvetica')
        .text(
-         `Documento gerado em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}`,
+         `Documento gerado em ${new Date().toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })} às ${new Date().toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo' })}`,
          margin,
          footerY,
          { align: 'center', width: pageWidth - margin * 2 }

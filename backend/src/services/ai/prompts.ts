@@ -61,7 +61,7 @@ export function formatMovementsForAI(movements: any[]): string {
     .sort((a, b) => new Date(b.movementDate).getTime() - new Date(a.movementDate).getTime())
     .slice(0, 10) // Limitar aos 10 movimentos mais recentes para economizar tokens
     .map((m, index) => {
-      const date = new Date(m.movementDate).toLocaleDateString('pt-BR');
+      const date = new Date(m.movementDate).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });
       return `${index + 1}. [${date}] ${m.movementName}${m.description ? ` - ${m.description}` : ''}`;
     })
     .join('\n');

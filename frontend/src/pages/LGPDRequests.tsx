@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
 import api from '../services/api';
 import toast from 'react-hot-toast';
+import { formatDate, formatTime } from '../utils/dateFormatter';
 import {
   Shield,
   Clock,
@@ -300,7 +301,7 @@ const LGPDRequests: React.FC = () => {
                       },
                       fields: [
                         { label: 'Tipo', value: typeInfo.label },
-                        { label: 'Data', value: new Date(request.requestedAt).toLocaleDateString('pt-BR') },
+                        { label: 'Data', value: formatDate(request.requestedAt) },
                       ],
                       onView: () => handleOpenModal(request),
                     };
@@ -348,10 +349,10 @@ const LGPDRequests: React.FC = () => {
                           </td>
                           <td className="px-4 py-4">
                             <p className="text-sm text-neutral-800">
-                              {new Date(request.requestedAt).toLocaleDateString('pt-BR')}
+                              {formatDate(request.requestedAt)}
                             </p>
                             <p className="text-xs text-neutral-500">
-                              {new Date(request.requestedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                              {formatTime(request.requestedAt)}
                             </p>
                           </td>
                           <td className="px-4 py-4">
@@ -399,7 +400,7 @@ const LGPDRequests: React.FC = () => {
                     <div>
                       <label className="text-xs text-neutral-500">Data da Solicitacao</label>
                       <p className="font-medium text-neutral-800">
-                        {new Date(selectedRequest.requestedAt).toLocaleDateString('pt-BR')}
+                        {formatDate(selectedRequest.requestedAt)}
                       </p>
                     </div>
                     <div>

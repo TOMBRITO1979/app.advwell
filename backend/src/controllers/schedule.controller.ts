@@ -111,6 +111,7 @@ export class ScheduleController {
 
           const conflictEvent = conflictingEvents[0];
           const conflictTime = new Date(conflictEvent.date).toLocaleString('pt-BR', {
+            timeZone: 'America/Sao_Paulo',
             dateStyle: 'short',
             timeStyle: 'short'
           });
@@ -455,6 +456,7 @@ export class ScheduleController {
 
             const conflictEvent = conflictingEvents[0];
             const conflictTime = new Date(conflictEvent.date).toLocaleString('pt-BR', {
+              timeZone: 'America/Sao_Paulo',
               dateStyle: 'short',
               timeStyle: 'short'
             });
@@ -824,8 +826,8 @@ export class ScheduleController {
           doc.y = doc.page.margins.top;
         }
 
-        const date = new Date(event.date).toLocaleDateString('pt-BR');
-        const time = new Date(event.date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        const date = new Date(event.date).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+        const time = new Date(event.date).toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' });
         const typeLabel = typeLabels[event.type] || event.type;
         const priorityLabel = priorityLabels[event.priority || 'MEDIA'] || 'Média';
         const status = event.completed ? 'Concluído' : 'Pendente';
@@ -939,8 +941,8 @@ export class ScheduleController {
       // Generate CSV
       const csvHeader = 'Data,Horário,Título,Tipo,Prioridade,Cliente,Processo,Responsável,Status,Descrição\n';
       const csvRows = events.map(event => {
-        const date = new Date(event.date).toLocaleDateString('pt-BR');
-        const time = new Date(event.date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        const date = new Date(event.date).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+        const time = new Date(event.date).toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' });
         const title = `"${(event.title || '').replace(/"/g, '""')}"`;
         const typeLabel = typeLabels[event.type] || event.type;
         const priorityLabel = priorityLabels[event.priority || 'MEDIA'] || 'Média';

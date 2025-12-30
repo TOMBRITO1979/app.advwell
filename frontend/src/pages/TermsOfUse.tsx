@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
 import { ArrowLeft, FileText, Scale, AlertCircle, CheckCircle, Users, Ban, Clock, AlertTriangle } from 'lucide-react';
+import { formatDate } from '../utils/dateFormatter';
 
 interface TermsContent {
   title: string;
@@ -70,7 +71,7 @@ const TermsOfUse: React.FC = () => {
                 <div>
                   <h1 className="text-3xl font-bold">{terms?.title || 'Termos de Uso'}</h1>
                   <p className="text-white/80 mt-1">
-                    Versao {terms?.version || '1.0'} - Atualizada em {terms?.lastUpdated || new Date().toLocaleDateString('pt-BR')}
+                    Versao {terms?.version || '1.0'} - Atualizada em {terms?.lastUpdated || formatDate(new Date())}
                   </p>
                 </div>
               </div>

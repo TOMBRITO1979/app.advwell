@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
 import api from '../services/api';
 import toast from 'react-hot-toast';
+import { formatDate } from '../utils/dateFormatter';
 import {
   User,
   Database,
@@ -236,7 +237,7 @@ const MyData: React.FC = () => {
                 <div>
                   <label className="text-sm text-neutral-500">Cadastrado em</label>
                   <p className="font-medium text-neutral-800">
-                    {new Date(userData.user.createdAt).toLocaleDateString('pt-BR')}
+                    {formatDate(userData.user.createdAt)}
                   </p>
                 </div>
                 <div>
@@ -335,10 +336,10 @@ const MyData: React.FC = () => {
                           {getConsentTypeLabel(consent.consentType)}
                         </p>
                         <p className="text-sm text-neutral-500">
-                          Versao {consent.version} - Aceito em {new Date(consent.consentedAt).toLocaleDateString('pt-BR')}
+                          Versao {consent.version} - Aceito em {formatDate(consent.consentedAt)}
                           {consent.revokedAt && (
                             <span className="text-danger-600">
-                              {' '}| Revogado em {new Date(consent.revokedAt).toLocaleDateString('pt-BR')}
+                              {' '}| Revogado em {formatDate(consent.revokedAt)}
                             </span>
                           )}
                         </p>
@@ -395,9 +396,9 @@ const MyData: React.FC = () => {
                         {getStatusBadge(request.status)}
                       </div>
                       <p className="text-sm text-neutral-500 mb-2">
-                        Solicitado em {new Date(request.requestedAt).toLocaleDateString('pt-BR')}
+                        Solicitado em {formatDate(request.requestedAt)}
                         {request.completedAt && (
-                          <span> | Concluido em {new Date(request.completedAt).toLocaleDateString('pt-BR')}</span>
+                          <span> | Concluido em {formatDate(request.completedAt)}</span>
                         )}
                       </p>
                       {request.description && (

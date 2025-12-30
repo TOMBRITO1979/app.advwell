@@ -103,8 +103,8 @@ export function addFooter(doc: PDFKit.PDFDocument, pageNumber?: number, totalPag
     .lineTo(pageWidth - margin, footerY)
     .stroke();
 
-  // Preparar textos do rodapé
-  const dateText = `Gerado em ${new Date().toLocaleString('pt-BR')}`;
+  // Preparar textos do rodapé (sempre no timezone de São Paulo)
+  const dateText = `Gerado em ${new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}`;
   const pageText = pageNumber && totalPages
     ? `Página ${pageNumber} de ${totalPages}`
     : pageNumber
@@ -387,9 +387,9 @@ export function formatCurrency(value: number): string {
 }
 
 /**
- * Formata data
+ * Formata data (sempre no timezone de São Paulo)
  */
 export function formatDate(date: Date | string | null): string {
   if (!date) return '-';
-  return new Date(date).toLocaleDateString('pt-BR');
+  return new Date(date).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });
 }

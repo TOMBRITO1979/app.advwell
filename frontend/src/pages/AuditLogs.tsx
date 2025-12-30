@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
 import api from '../services/api';
 import toast from 'react-hot-toast';
+import { formatDate } from '../utils/dateFormatter';
 import {
   History,
   RefreshCw,
@@ -231,13 +232,13 @@ const AuditLogs: React.FC = () => {
     if (typeof value === 'boolean') return value ? 'Sim' : 'Nao';
     if (typeof value === 'object') {
       if (value instanceof Date) {
-        return new Date(value).toLocaleDateString('pt-BR');
+        return formatDate(value);
       }
       return JSON.stringify(value);
     }
     // Verifica se e uma data ISO string
     if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(value)) {
-      return new Date(value).toLocaleDateString('pt-BR');
+      return formatDate(value);
     }
     return String(value);
   };

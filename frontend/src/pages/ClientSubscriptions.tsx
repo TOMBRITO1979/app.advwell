@@ -7,6 +7,7 @@ import Layout from '../components/Layout';
 import MobileCardList, { MobileCardItem } from '../components/MobileCardList';
 import api from '../services/api';
 import toast from 'react-hot-toast';
+import { formatDate } from '../utils/dateFormatter';
 
 interface ServicePlan {
   id: string;
@@ -342,7 +343,7 @@ export default function ClientSubscriptions() {
                 fields: [
                   { label: 'Plano', value: sub.servicePlan.name },
                   { label: 'Valor', value: `R$ ${sub.servicePlan.price.toFixed(2).replace('.', ',')} / ${intervalLabels[sub.servicePlan.interval]}` },
-                  { label: 'Periodo', value: sub.currentPeriodEnd ? `Ate ${new Date(sub.currentPeriodEnd).toLocaleDateString('pt-BR')}` : '-' },
+                  { label: 'Periodo', value: sub.currentPeriodEnd ? `Ate ${formatDate(sub.currentPeriodEnd)}` : '-' },
                 ],
               }))}
               emptyMessage="Nenhuma assinatura encontrada"
@@ -417,7 +418,7 @@ export default function ClientSubscriptions() {
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-500">
                         {sub.currentPeriodEnd ? (
-                          <>Ate {new Date(sub.currentPeriodEnd).toLocaleDateString('pt-BR')}</>
+                          <>Ate {formatDate(sub.currentPeriodEnd)}</>
                         ) : (
                           '-'
                         )}

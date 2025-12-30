@@ -634,7 +634,7 @@ export const exportCSV = async (req: AuthRequest, res: Response) => {
     // Generate CSV
     const csvHeader = 'Data,Tipo,Cliente,CPF,Descrição,Processo,Valor\n';
     const csvRows = transactions.map(transaction => {
-      const date = new Date(transaction.date).toLocaleDateString('pt-BR');
+      const date = new Date(transaction.date).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });
       const type = transaction.type === 'INCOME' ? 'Receita' : 'Despesa';
       const clientName = `"${transaction.client.name}"`;
       const cpf = transaction.client.cpf || '';
@@ -1106,7 +1106,7 @@ export const generateTransactionReceipt = async (req: AuthRequest, res: Response
     // ==================== RODAPÉ ====================
     doc.moveDown(4);
     doc.fontSize(pdfStyles.fonts.tiny).fillColor(pdfStyles.colors.gray);
-    doc.text(`Documento gerado em ${new Date().toLocaleString('pt-BR')}`, { align: 'center' });
+    doc.text(`Documento gerado em ${new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}`, { align: 'center' });
     doc.text('Este documento é válido como comprovante de transação.', { align: 'center' });
     doc.fillColor(pdfStyles.colors.black);
 
@@ -1332,7 +1332,7 @@ export const generateInstallmentReceipt = async (req: AuthRequest, res: Response
     // ==================== RODAPÉ ====================
     doc.moveDown(4);
     doc.fontSize(pdfStyles.fonts.tiny).fillColor(pdfStyles.colors.gray);
-    doc.text(`Documento gerado em ${new Date().toLocaleString('pt-BR')}`, { align: 'center' });
+    doc.text(`Documento gerado em ${new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}`, { align: 'center' });
     doc.text('Este documento é válido como comprovante de pagamento de parcela.', { align: 'center' });
     doc.fillColor(pdfStyles.colors.black);
 

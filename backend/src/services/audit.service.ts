@@ -89,8 +89,8 @@ export class AuditService {
     oldDeadline: Date | null,
     newDeadline: Date | null
   ): Promise<void> {
-    const oldDate = oldDeadline ? new Date(oldDeadline).toLocaleDateString('pt-BR') : 'Nenhum';
-    const newDate = newDeadline ? new Date(newDeadline).toLocaleDateString('pt-BR') : 'Nenhum';
+    const oldDate = oldDeadline ? new Date(oldDeadline).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' }) : 'Nenhum';
+    const newDate = newDeadline ? new Date(newDeadline).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' }) : 'Nenhum';
 
     await this.logCaseAction(
       caseId,

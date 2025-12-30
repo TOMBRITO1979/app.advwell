@@ -18,6 +18,7 @@ import Layout from '../components/Layout';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api';
 import toast from 'react-hot-toast';
+import { formatDate } from '../utils/dateFormatter';
 import {
   Users,
   Briefcase,
@@ -351,7 +352,7 @@ const Dashboard: React.FC = () => {
                         {deadline.clientName}
                       </p>
                       <p className="text-xs text-neutral-500 mt-1">
-                        {new Date(deadline.date).toLocaleDateString('pt-BR')}
+                        {formatDate(deadline.date)}
                       </p>
                     </div>
                     <div className={`flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full flex-shrink-0 ${

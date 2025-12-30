@@ -711,7 +711,7 @@ const Cases: React.FC = () => {
                         <div className="mobile-card-row">
                           <span className="mobile-card-label">Prazo</span>
                           <span className="mobile-card-value">
-                            {caseItem.deadline ? new Date(caseItem.deadline).toLocaleDateString('pt-BR') : '-'}
+                            {caseItem.deadline ? formatDate(caseItem.deadline) : '-'}
                           </span>
                         </div>
                       </div>
@@ -810,7 +810,7 @@ const Cases: React.FC = () => {
                             </span>
                           </td>
                           <td className="px-4 py-3 text-sm text-neutral-600">
-                            {caseItem.deadline ? new Date(caseItem.deadline).toLocaleDateString('pt-BR') : '-'}
+                            {caseItem.deadline ? formatDate(caseItem.deadline) : '-'}
                           </td>
                           <td className="px-4 py-3 text-sm">
                             <div className="flex items-center justify-center gap-2">
@@ -1406,7 +1406,7 @@ const Cases: React.FC = () => {
                             <Calendar size={16} className="mr-2" />
                             <span>Prazo</span>
                           </div>
-                          <p className="text-neutral-900 font-medium">{new Date(selectedCase.deadline).toLocaleDateString('pt-BR')}</p>
+                          <p className="text-neutral-900 font-medium">{formatDate(selectedCase.deadline)}</p>
                         </div>
                       )}
 
@@ -1612,7 +1612,7 @@ const Cases: React.FC = () => {
                                     {part.rg || '-'}
                                   </td>
                                   <td className="px-4 py-3 text-sm text-neutral-600">
-                                    {part.birthDate ? new Date(part.birthDate).toLocaleDateString('pt-BR') : '-'}
+                                    {part.birthDate ? formatDate(part.birthDate) : '-'}
                                   </td>
                                   <td className="px-4 py-3 text-sm">
                                     <button

@@ -38,7 +38,7 @@ function getUltimoAndamento(movimentos: any[]): string | null {
   );
 
   const ultimo = sorted[0];
-  const data = new Date(ultimo.dataHora).toLocaleDateString('pt-BR');
+  const data = new Date(ultimo.dataHora).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });
   return `${ultimo.nome} - ${data}`;
 }
 

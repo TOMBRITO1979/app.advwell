@@ -411,7 +411,7 @@ export class AccountsPayableController {
         const supplier = `"${account.supplier.replace(/"/g, '""')}"`;
         const description = `"${account.description.replace(/"/g, '""')}"`;
         const amount = Number(account.amount).toFixed(2);
-        const dueDate = new Date(account.dueDate).toLocaleDateString('pt-BR');
+        const dueDate = new Date(account.dueDate).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });
         const status = account.status === 'PAID' ? 'Pago' : account.status === 'PENDING' ? 'Pendente' : 'Vencido';
         const category = account.category || '';
         const notes = account.notes ? `"${account.notes.replace(/"/g, '""')}"` : '';
@@ -858,7 +858,7 @@ export class AccountsPayableController {
         const supplier = `"${account.supplier.replace(/"/g, '""')}"`;
         const description = `"${account.description.replace(/"/g, '""')}"`;
         const amount = Number(account.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        const paidDate = new Date(account.paidDate || account.dueDate).toLocaleDateString('pt-BR');
+        const paidDate = new Date(account.paidDate || account.dueDate).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });
         const cat = account.category || '';
 
         return `${supplier},${description},${amount},${paidDate},${cat}`;
