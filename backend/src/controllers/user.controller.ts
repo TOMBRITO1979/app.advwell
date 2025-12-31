@@ -8,6 +8,8 @@ import { config } from '../config';
 import crypto from 'crypto';
 import { securityAudit } from '../services/security-audit.service';
 import { appLogger } from '../utils/logger';
+import { generateSimpleToken } from '../utils/jwt';
+import { sendPortalWelcomeEmail } from '../utils/email';
 
 export class UserController {
   // Admin - Listar usuários da sua empresa
@@ -433,6 +435,216 @@ export class UserController {
     } catch (error) {
       appLogger.error('Erro ao fazer upload da foto', error as Error);
       res.status(500).json({ error: 'Erro ao fazer upload da foto' });
+    }
+  }
+
+  /**
+   * Criar usuário CLIENT vinculado a um cliente (para acesso ao portal)
+   * POST /api/users/client
+   */
+  async createClientUser(req: AuthRequest, res: Response) {
+    try {
+      if (!req.user!.companyId) {
+        return res.status(403).json({ error: 'Usuário não possui empresa associada' });
+      }
+      const companyId: string = req.user!.companyId;
+      const { email, name, clientId, password } = req.body;
+
+      // Validações
+      if (!email || !name || !clientId) {
+        return res.status(400).json({ error: 'Email, nome e clientId são obrigatórios' });
+      }
+
+      // Verificar se o email já existe
+      const existingUser = await prisma.user.findUnique({
+        where: { email },
+      });
+
+      if (existingUser) {
+        return res.status(400).json({ error: 'Email já cadastrado' });
+      }
+
+      // Verificar se o cliente existe e pertence à mesma empresa
+      const client = await prisma.client.findFirst({
+        where: {
+          id: clientId,
+          companyId,
+        },
+      });
+
+      if (!client) {
+        return res.status(404).json({ error: 'Cliente não encontrado' });
+      }
+
+      // Verificar se o cliente já tem um usuário vinculado
+      const existingClientUser = await prisma.user.findFirst({
+        where: { clientId },
+      });
+
+      if (existingClientUser) {
+        return res.status(400).json({
+          error: 'Cliente já possui acesso ao portal',
+          message: `O cliente já está vinculado ao usuário ${existingClientUser.email}`
+        });
+      }
+
+      // Gerar senha temporária se não fornecida
+      const tempPassword = password || crypto.randomBytes(8).toString('hex');
+      const hashedPassword = await bcrypt.hash(tempPassword, 12);
+
+      // Criar usuário CLIENT (já verificado - não precisa verificar email)
+      const user = await prisma.user.create({
+        data: {
+          name,
+          email,
+          password: hashedPassword,
+          role: 'CLIENT',
+          companyId,
+          clientId,
+          emailVerified: true, // CLIENT não precisa verificar email
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          active: true,
+          clientId: true,
+          createdAt: true,
+          linkedClient: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      });
+
+      // Buscar dados da empresa para o email
+      const company = await prisma.company.findUnique({
+        where: { id: companyId },
+        select: { name: true },
+      });
+
+      // Enviar email de boas-vindas com credenciais
+      try {
+        await sendPortalWelcomeEmail(
+          email,
+          name,
+          tempPassword,
+          company?.name || 'Escritório'
+        );
+        appLogger.info('Email de boas-vindas do portal enviado', { email, clientId });
+      } catch (emailError) {
+        appLogger.error('Erro ao enviar email de boas-vindas do portal', emailError as Error, { email });
+      }
+
+      // Log de auditoria
+      await securityAudit.logUserCreated(
+        user.id,
+        req.user!.userId,
+        companyId,
+        email,
+        'CLIENT',
+        req.ip
+      );
+
+      appLogger.info('Usuário CLIENT criado', { userId: user.id, clientId, companyId });
+
+      res.status(201).json({
+        ...user,
+        message: password ? undefined : 'Senha temporária enviada por email',
+        tempPassword: password ? undefined : tempPassword, // Retornar senha temporária apenas se foi gerada
+      });
+    } catch (error) {
+      appLogger.error('Erro ao criar usuário CLIENT', error as Error);
+      res.status(500).json({ error: 'Erro ao criar usuário do portal' });
+    }
+  }
+
+  /**
+   * Listar usuários do tipo CLIENT da empresa
+   * GET /api/users/clients
+   */
+  async listClientUsers(req: AuthRequest, res: Response) {
+    try {
+      if (!req.user!.companyId) {
+        return res.status(403).json({ error: 'Usuário não possui empresa associada' });
+      }
+      const companyId = req.user!.companyId;
+
+      const clientUsers = await prisma.user.findMany({
+        where: {
+          companyId,
+          role: 'CLIENT',
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          active: true,
+          emailVerified: true,
+          clientId: true,
+          createdAt: true,
+          linkedClient: {
+            select: {
+              id: true,
+              name: true,
+              cpf: true,
+              email: true,
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      res.json(clientUsers);
+    } catch (error) {
+      appLogger.error('Erro ao listar usuários CLIENT', error as Error);
+      res.status(500).json({ error: 'Erro ao listar usuários do portal' });
+    }
+  }
+
+  /**
+   * Remover acesso do portal de um cliente
+   * DELETE /api/users/client/:id
+   */
+  async deleteClientUser(req: AuthRequest, res: Response) {
+    try {
+      const { id } = req.params;
+      if (!req.user!.companyId) {
+        return res.status(403).json({ error: 'Usuário não possui empresa associada' });
+      }
+      const companyId = req.user!.companyId;
+
+      // Verificar se o usuário existe e é do tipo CLIENT
+      const user = await prisma.user.findFirst({
+        where: {
+          id,
+          companyId,
+          role: 'CLIENT',
+        },
+      });
+
+      if (!user) {
+        return res.status(404).json({ error: 'Usuário do portal não encontrado' });
+      }
+
+      // Deletar o usuário (não apenas desativar)
+      await prisma.user.delete({
+        where: { id },
+      });
+
+      // Log de auditoria
+      await securityAudit.logUserDeleted(id, req.user!.userId, companyId, user.email, req.ip);
+
+      appLogger.info('Usuário CLIENT removido', { userId: id, clientId: user.clientId, companyId });
+
+      res.json({ message: 'Acesso ao portal removido com sucesso' });
+    } catch (error) {
+      appLogger.error('Erro ao remover usuário CLIENT', error as Error);
+      res.status(500).json({ error: 'Erro ao remover acesso ao portal' });
     }
   }
 }

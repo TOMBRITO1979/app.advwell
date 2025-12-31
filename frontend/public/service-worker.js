@@ -1,36 +1,29 @@
-const CACHE_NAME = 'advwell-v85';
+const CACHE_NAME = 'advwell-v100';
 const urlsToCache = [
-  '/',
-  '/index.html'
+  '/'
 ];
 
 self.addEventListener('install', (event) => {
-  // Force immediate activation
+  // Force immediate activation - skip waiting
   self.skipWaiting();
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(urlsToCache))
-  );
 });
 
 self.addEventListener('fetch', (event) => {
-  // Network first, then cache
-  event.respondWith(
-    fetch(event.request)
-      .catch(() => caches.match(event.request))
-  );
+  // Always fetch from network, never cache JS/CSS
+  event.respondWith(fetch(event.request));
 });
 
 self.addEventListener('activate', (event) => {
+  // Take control of all pages immediately
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
+    Promise.all([
+      self.clients.claim(),
+      // Delete ALL caches
+      caches.keys().then((cacheNames) => {
+        return Promise.all(
+          cacheNames.map((cacheName) => caches.delete(cacheName))
+        );
+      })
+    ])
   );
 });

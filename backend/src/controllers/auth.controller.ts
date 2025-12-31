@@ -113,7 +113,10 @@ export class AuthController {
 
       const user = await prisma.user.findUnique({
         where: { email },
-        include: { company: true },
+        include: {
+          company: true,
+          linkedClient: true,  // Incluir cliente vinculado para usuários do portal
+        },
       });
 
       if (!user) {
@@ -195,26 +198,40 @@ export class AuthController {
         });
       }
 
-      const tokens = generateTokenPair({
+      // Incluir clientId no token se for usuário CLIENT
+      const tokenPayload = {
         userId: user.id,
         email: user.email,
         role: user.role,
         companyId: user.companyId || undefined,
-      });
+        clientId: user.role === 'CLIENT' ? user.clientId || undefined : undefined,
+      };
+
+      const tokens = generateTokenPair(tokenPayload);
 
       securityLogger.loginSuccess(email, user.id, req.ip);
+
+      // Resposta com dados adicionais para usuários CLIENT
+      const responseUser: any = {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        companyId: user.companyId,
+        companyName: user.company?.name,
+      };
+
+      // Adicionar informações do cliente vinculado se for CLIENT
+      if (user.role === 'CLIENT' && user.linkedClient) {
+        responseUser.clientId = user.clientId;
+        responseUser.clientName = user.linkedClient.name;
+        responseUser.isPortalUser = true;
+      }
 
       res.json({
         token: tokens.accessToken,
         refreshToken: tokens.refreshToken,
-        user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          companyId: user.companyId,
-          companyName: user.company?.name,
-        },
+        user: responseUser,
       });
     } catch (error) {
       appLogger.error('Erro no login:', error as Error);
@@ -304,12 +321,19 @@ export class AuthController {
           email: true,
           role: true,
           companyId: true,
+          clientId: true,
           hideSidebar: true,
           company: {
             select: {
               id: true,
               name: true,
               email: true,
+            },
+          },
+          linkedClient: {
+            select: {
+              id: true,
+              name: true,
             },
           },
         },
@@ -319,7 +343,14 @@ export class AuthController {
         return res.status(404).json({ error: 'Usuário não encontrado' });
       }
 
-      res.json(user);
+      // Adicionar informações extras para usuários CLIENT
+      const response: any = { ...user };
+      if (user.role === 'CLIENT' && user.linkedClient) {
+        response.clientName = user.linkedClient.name;
+        response.isPortalUser = true;
+      }
+
+      res.json(response);
     } catch (error) {
       appLogger.error('Erro ao buscar usuário:', error as Error);
       res.status(500).json({ error: 'Erro ao buscar dados do usuário' });
@@ -540,7 +571,10 @@ export class AuthController {
       // Busca o usuário
       const user = await prisma.user.findUnique({
         where: { id: decoded.userId },
-        include: { company: true },
+        include: {
+          company: true,
+          linkedClient: true,  // Incluir cliente vinculado para usuários do portal
+        },
       });
 
       if (!user || !user.active) {
@@ -551,25 +585,35 @@ export class AuthController {
         return res.status(401).json({ error: 'Empresa inativa' });
       }
 
-      // Gera novos tokens
+      // Gera novos tokens (incluir clientId para usuários CLIENT)
       const tokens = generateTokenPair({
         userId: user.id,
         email: user.email,
         role: user.role,
         companyId: user.companyId || undefined,
+        clientId: user.role === 'CLIENT' ? user.clientId || undefined : undefined,
       });
+
+      // Resposta com dados adicionais para usuários CLIENT
+      const responseUser: any = {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        companyId: user.companyId,
+        companyName: user.company?.name,
+      };
+
+      if (user.role === 'CLIENT' && user.linkedClient) {
+        responseUser.clientId = user.clientId;
+        responseUser.clientName = user.linkedClient.name;
+        responseUser.isPortalUser = true;
+      }
 
       res.json({
         token: tokens.accessToken,
         refreshToken: tokens.refreshToken,
-        user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          companyId: user.companyId,
-          companyName: user.company?.name,
-        },
+        user: responseUser,
       });
     } catch (error) {
       appLogger.error('Erro ao renovar token:', error as Error);

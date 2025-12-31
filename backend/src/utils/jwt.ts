@@ -12,6 +12,7 @@ export interface JwtPayload {
   email: string;
   role: string;
   companyId?: string;
+  clientId?: string;  // ID do cliente vinculado (para role=CLIENT no portal)
   jti?: string; // JWT ID para identificacao unica
 }
 

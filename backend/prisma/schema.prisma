@@ -83,6 +83,9 @@ model Company {
   campaignRecipients    CampaignRecipient[]
   subscriptionPayments  SubscriptionPayment[]
 
+  // Portal do cliente
+  announcements         Announcement[]
+
   @@map("companies")
 }
 
@@ -91,6 +94,15 @@ enum UserRole {
   SUPER_ADMIN
   ADMIN
   USER
+  CLIENT      // Portal do cliente - acesso restrito aos próprios dados
+}
+
+// Enum para prioridade de anúncios do portal
+enum AnnouncementPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
 }
 
 // Tabela de usuários
@@ -121,10 +133,14 @@ model User {
   // Configurações de interface
   hideSidebar               Boolean   @default(false) // Esconder sidebar para este usuário
 
+  // Vínculo com cliente (para usuários do tipo CLIENT no portal)
+  clientId                  String?   @unique         // ID do cliente vinculado (apenas para role=CLIENT)
+
   createdAt                 DateTime  @default(now())
   updatedAt                 DateTime  @updatedAt
 
   company                 Company?  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  linkedClient            Client?   @relation("UserClientLink", fields: [clientId], references: [id], onDelete: SetNull)
   permissions             Permission[]
   documents               Document[]
   scheduleEvents          ScheduleEvent[]
@@ -132,6 +148,7 @@ model User {
   emailCampaigns          EmailCampaign[]
   assignedEvents          EventAssignment[]
   casesAsDeadlineResponsible Case[]  @relation("CaseDeadlineResponsible")
+  announcements           Announcement[]    @relation("AnnouncementCreator")
   caseAuditLogs           CaseAuditLog[]
   legalDocumentsSigned    LegalDocument[] @relation("LegalDocumentSigner")
   legalDocumentsCreated   LegalDocument[] @relation("LegalDocumentCreator")
@@ -197,6 +214,7 @@ model Client {
   legalDocuments        LegalDocument[]       @relation("LegalDocumentClient")
   subscriptions         ClientSubscription[]
   leadsConverted        Lead[]                @relation("LeadToClient")
+  portalUser            User?                 @relation("UserClientLink")  // Usuário do portal vinculado
 
   @@unique([companyId, cpf]) // CPF único por empresa (NULL é permitido para múltiplos clientes)
   @@index([companyId])
@@ -1052,6 +1070,38 @@ model DataRequest {
   @@index([status])
   @@index([requestType])
   @@map("data_requests")
+}
+
+// ============================================================================
+// CLIENT PORTAL ANNOUNCEMENTS SYSTEM (Sistema de Avisos do Portal)
+// ============================================================================
+
+// Tabela de anúncios do portal do cliente
+model Announcement {
+  id          String               @id @default(uuid())
+  companyId   String
+
+  // Dados do anúncio
+  title       String
+  content     String               @db.Text
+  priority    AnnouncementPriority @default(NORMAL)
+  active      Boolean              @default(true)
+  publishedAt DateTime             @default(now())
+  expiresAt   DateTime?            // Data de expiração (opcional)
+
+  // Metadados
+  createdBy   String
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+
+  // Relations
+  company     Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  creator     User                 @relation("AnnouncementCreator", fields: [createdBy], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+  @@index([active, publishedAt])
+  @@index([companyId, active])
+  @@map("announcements")
 }
 
 // ============================================================================

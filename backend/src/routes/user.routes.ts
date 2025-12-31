@@ -87,4 +87,9 @@ router.post('/', createUserValidation, validate, userController.create);
 router.put('/:id', updateUserValidation, validate, userController.update);
 router.delete('/:id', userController.delete);
 
+// Rotas para gestão de usuários do portal (CLIENT)
+router.get('/portal-users', userController.listClientUsers);
+router.post('/portal-user', userController.createClientUser);
+router.delete('/portal-user/:id', userController.deleteClientUser);
+
 export default router;

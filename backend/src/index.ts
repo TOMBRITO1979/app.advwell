@@ -185,10 +185,10 @@ const getClientIp = (req: express.Request): string => {
 };
 
 // CORS deve vir antes do helmet
-// Em produção, apenas o frontend configurado é permitido
+// Em produção, apenas o frontend e portal são permitidos
 const allowedOrigins = config.nodeEnv === 'production'
-  ? [config.urls.frontend]
-  : [config.urls.frontend, 'http://localhost:5173'];
+  ? [config.urls.frontend, config.urls.portal]
+  : [config.urls.frontend, config.urls.portal, 'http://localhost:5173'];
 
 app.use(cors({
   origin: allowedOrigins,

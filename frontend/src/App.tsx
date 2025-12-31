@@ -42,6 +42,15 @@ const MyData = lazy(() => import('./pages/MyData'));
 const LGPDRequests = lazy(() => import('./pages/LGPDRequests'));
 const AuditLogs = lazy(() => import('./pages/AuditLogs'));
 const BackupSettings = lazy(() => import('./pages/BackupSettings'));
+const Announcements = lazy(() => import('./pages/Announcements'));
+
+// Portal pages
+const PortalDashboard = lazy(() => import('./portal/pages/PortalDashboard'));
+const PortalCases = lazy(() => import('./portal/pages/PortalCases'));
+const PortalCaseDetails = lazy(() => import('./portal/pages/PortalCaseDetails'));
+const PortalProfile = lazy(() => import('./portal/pages/PortalProfile'));
+const PortalCompany = lazy(() => import('./portal/pages/PortalCompany'));
+const PortalAnnouncements = lazy(() => import('./portal/pages/PortalAnnouncements'));
 
 // Loading spinner component
 const LoadingSpinner = () => (
@@ -53,14 +62,74 @@ const LoadingSpinner = () => (
   </div>
 );
 
+// Check if we're on the portal domain
+const isPortalDomain = () => {
+  return window.location.hostname === 'cliente.advwell.pro';
+};
+
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
-  const { token, isLoading } = useAuth();
+  const { token, isLoading, user } = useAuth();
 
   if (isLoading) {
     return <LoadingSpinner />;
   }
 
-  return token ? <>{children}</> : <Navigate to="/login" />;
+  if (!token) {
+    return <Navigate to="/login" />;
+  }
+
+  // Redirect CLIENT users to portal
+  if (user?.role === 'CLIENT') {
+    return <Navigate to="/portal" />;
+  }
+
+  return <>{children}</>;
+};
+
+// Route for portal pages - only accessible by CLIENT users
+const PortalRoute = ({ children }: { children: React.ReactNode }) => {
+  const { token, isLoading, user } = useAuth();
+
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
+
+  if (!token) {
+    return <Navigate to="/login" />;
+  }
+
+  // Only CLIENT users can access portal
+  // If on portal domain but not CLIENT, redirect to login (they shouldn't be here)
+  if (user?.role !== 'CLIENT') {
+    if (isPortalDomain()) {
+      return <Navigate to="/login" />;
+    }
+    return <Navigate to="/dashboard" />;
+  }
+
+  return <>{children}</>;
+};
+
+// Root redirect component - handles domain-based routing
+const RootRedirect = () => {
+  const { token, isLoading, user } = useAuth();
+
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
+
+  // If on portal domain, always redirect to /portal
+  if (isPortalDomain()) {
+    return <Navigate to="/portal" />;
+  }
+
+  // If logged in as CLIENT, go to portal
+  if (token && user?.role === 'CLIENT') {
+    return <Navigate to="/portal" />;
+  }
+
+  // Otherwise go to dashboard
+  return <Navigate to="/dashboard" />;
 };
 
 function App() {
@@ -311,7 +380,66 @@ function App() {
               </PrivateRoute>
             }
           />
-          <Route path="/" element={<Navigate to="/dashboard" />} />
+          <Route
+            path="/announcements"
+            element={
+              <PrivateRoute>
+                <Announcements />
+              </PrivateRoute>
+            }
+          />
+          {/* Portal routes for CLIENT users */}
+          <Route
+            path="/portal"
+            element={
+              <PortalRoute>
+                <PortalDashboard />
+              </PortalRoute>
+            }
+          />
+          <Route
+            path="/portal/cases"
+            element={
+              <PortalRoute>
+                <PortalCases />
+              </PortalRoute>
+            }
+          />
+          <Route
+            path="/portal/cases/:id"
+            element={
+              <PortalRoute>
+                <PortalCaseDetails />
+              </PortalRoute>
+            }
+          />
+          <Route
+            path="/portal/profile"
+            element={
+              <PortalRoute>
+                <PortalProfile />
+              </PortalRoute>
+            }
+          />
+          <Route
+            path="/portal/company"
+            element={
+              <PortalRoute>
+                <PortalCompany />
+              </PortalRoute>
+            }
+          />
+          <Route
+            path="/portal/announcements"
+            element={
+              <PortalRoute>
+                <PortalAnnouncements />
+              </PortalRoute>
+            }
+          />
+          <Route path="/" element={<RootRedirect />} />
+          {/* Catch-all route for 404 */}
+          <Route path="*" element={<RootRedirect />} />
         </Routes>
       </Suspense>
     </BrowserRouter>

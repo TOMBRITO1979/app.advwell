@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import Layout from '../components/Layout';
 import api from '../services/api';
 import toast from 'react-hot-toast';
-import { Plus, Search, Edit, Trash2, Eye, X, FileText, Loader2 } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Eye, X, FileText, Loader2, UserPlus, UserX, Mail } from 'lucide-react';
 import { ExportButton } from '../components/ui';
 import MobileCardList, { MobileCardItem } from '../components/MobileCardList';
 import { formatDate } from '../utils/dateFormatter';
@@ -77,6 +77,9 @@ const Clients: React.FC = () => {
   const [showImportModal, setShowImportModal] = useState(false);
   const [importResults, setImportResults] = useState<any>(null);
   const [loadingDetails, setLoadingDetails] = useState(false);
+  const [creatingPortalAccess, setCreatingPortalAccess] = useState(false);
+  const [portalUser, setPortalUser] = useState<{ id: string; email: string; tempPassword?: string } | null>(null);
+  const [portalPassword, setPortalPassword] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState<ClientFormData>({
@@ -266,10 +269,21 @@ const Clients: React.FC = () => {
   const handleViewDetails = async (client: Client) => {
     setShowDetailsModal(true);
     setLoadingDetails(true);
+    setPortalUser(null);
     try {
       // Buscar cliente por ID para obter os processos vinculados
       const response = await api.get(`/clients/${client.id}`);
       setSelectedClient(response.data);
+
+      // Buscar informações do usuário do portal
+      try {
+        const portalResponse = await api.get(`/users/portal-users?clientId=${client.id}`);
+        if (portalResponse.data && portalResponse.data.length > 0) {
+          setPortalUser(portalResponse.data[0]);
+        }
+      } catch {
+        // Cliente não tem acesso ao portal
+      }
     } catch (error) {
       console.error('Erro ao buscar detalhes do cliente:', error);
       // Fallback: usar dados da lista (sem processos)
@@ -277,6 +291,55 @@ const Clients: React.FC = () => {
       toast.error('Erro ao carregar processos do cliente');
     } finally {
       setLoadingDetails(false);
+    }
+  };
+
+  const handleCreatePortalAccess = async () => {
+    if (!selectedClient) return;
+    if (!selectedClient.email) {
+      toast.error('Cliente precisa ter um email cadastrado');
+      return;
+    }
+
+    setCreatingPortalAccess(true);
+    try {
+      const response = await api.post('/users/portal-user', {
+        clientId: selectedClient.id,
+        name: selectedClient.name,
+        email: selectedClient.email,
+        password: portalPassword || undefined, // Envia senha manual ou deixa o backend gerar
+      });
+      setPortalUser({
+        id: response.data.id,
+        email: response.data.email,
+        tempPassword: portalPassword || response.data.tempPassword // Mostra a senha que foi definida
+      });
+      setPortalPassword(''); // Limpa o campo
+      if (portalPassword) {
+        toast.success('Acesso criado com a senha definida!', { duration: 5000 });
+      } else if (response.data.tempPassword) {
+        toast.success('Acesso criado! Veja a senha temporária abaixo.', { duration: 5000 });
+      } else {
+        toast.success('Acesso ao portal criado!');
+      }
+    } catch (error: any) {
+      const message = error.response?.data?.error || 'Erro ao criar acesso ao portal';
+      toast.error(message);
+    } finally {
+      setCreatingPortalAccess(false);
+    }
+  };
+
+  const handleRemovePortalAccess = async () => {
+    if (!portalUser) return;
+    if (!confirm('Tem certeza que deseja remover o acesso ao portal deste cliente?')) return;
+
+    try {
+      await api.delete(`/users/portal-user/${portalUser.id}`);
+      setPortalUser(null);
+      toast.success('Acesso ao portal removido');
+    } catch (error) {
+      toast.error('Erro ao remover acesso ao portal');
     }
   };
 
@@ -1076,6 +1139,101 @@ const Clients: React.FC = () => {
                     <p className="text-neutral-500">Nenhum processo vinculado a este cliente</p>
                   </div>
                 )}
+              </div>
+
+              {/* Acesso ao Portal do Cliente */}
+              <div>
+                <h3 className="text-lg font-semibold text-neutral-900 mb-3">Acesso ao Portal</h3>
+                <div className="bg-neutral-50 rounded-lg p-4">
+                  {portalUser ? (
+                    <div className="space-y-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-success-100 rounded-full flex items-center justify-center">
+                            <Mail className="text-success-600" size={20} />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-neutral-900">Acesso ativo</p>
+                            <p className="text-sm text-neutral-500">{portalUser.email}</p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={handleRemovePortalAccess}
+                          className="inline-flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-error-600 hover:bg-error-50 rounded-lg transition-colors"
+                        >
+                          <UserX size={18} />
+                          Remover acesso
+                        </button>
+                      </div>
+                      {portalUser.tempPassword && (
+                        <div className="bg-warning-50 border border-warning-200 rounded-lg p-3">
+                          <p className="text-sm font-medium text-warning-800 mb-1">Senha Temporária (anote agora!):</p>
+                          <div className="flex items-center gap-2">
+                            <code className="bg-white px-3 py-1.5 rounded border text-lg font-mono font-bold text-neutral-900 select-all">
+                              {portalUser.tempPassword}
+                            </code>
+                            <button
+                              onClick={() => {
+                                navigator.clipboard.writeText(portalUser.tempPassword!);
+                                toast.success('Senha copiada!');
+                              }}
+                              className="px-3 py-1.5 text-sm bg-warning-100 hover:bg-warning-200 text-warning-800 rounded transition-colors"
+                            >
+                              Copiar
+                            </button>
+                          </div>
+                          <p className="text-xs text-warning-600 mt-2">
+                            Esta senha só aparece uma vez. Envie para o cliente ou peça que ele redefina pelo email.
+                          </p>
+                        </div>
+                      )}
+                      <p className="text-xs text-neutral-400">
+                        URL do portal: https://cliente.advwell.pro
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <div>
+                        <p className="text-sm text-neutral-600">
+                          {selectedClient.email
+                            ? 'Este cliente ainda não tem acesso ao portal.'
+                            : 'Cadastre um email para criar acesso ao portal.'}
+                        </p>
+                        <p className="text-xs text-neutral-400 mt-1">
+                          URL do portal: https://cliente.advwell.pro
+                        </p>
+                      </div>
+                      {selectedClient.email && (
+                        <div className="flex flex-col sm:flex-row gap-3">
+                          <div className="flex-1">
+                            <input
+                              type="text"
+                              value={portalPassword}
+                              onChange={(e) => setPortalPassword(e.target.value)}
+                              placeholder="Senha (deixe vazio para gerar automaticamente)"
+                              className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                            />
+                            <p className="text-xs text-neutral-400 mt-1">
+                              Min. 12 caracteres, com maiúscula, minúscula, número e especial
+                            </p>
+                          </div>
+                          <button
+                            onClick={handleCreatePortalAccess}
+                            disabled={creatingPortalAccess}
+                            className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg font-medium text-sm hover:bg-primary-700 transition-colors disabled:opacity-50 whitespace-nowrap"
+                          >
+                            {creatingPortalAccess ? (
+                              <Loader2 size={18} className="animate-spin" />
+                            ) : (
+                              <UserPlus size={18} />
+                            )}
+                            Criar acesso
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 

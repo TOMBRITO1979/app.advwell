@@ -5,9 +5,10 @@ interface User {
   id: string;
   name: string;
   email: string;
-  role: 'SUPER_ADMIN' | 'ADMIN' | 'USER';
+  role: 'SUPER_ADMIN' | 'ADMIN' | 'USER' | 'CLIENT';
   companyId?: string;
   companyName?: string;
+  clientId?: string;
   hideSidebar?: boolean;
 }
 

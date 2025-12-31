@@ -45,6 +45,7 @@ export const config = {
   urls: {
     api: process.env.API_URL || 'http://localhost:3000',
     frontend: process.env.FRONTEND_URL || 'http://localhost:5173',
+    portal: process.env.PORTAL_URL || 'https://cliente.advwell.pro',
   },
 
   datajud: {

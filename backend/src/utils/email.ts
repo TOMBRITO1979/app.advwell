@@ -534,3 +534,148 @@ ${safeUpdateMessage}
 
   await transporter.sendMail(mailOptions);
 };
+
+/**
+ * Envia email de boas-vindas para usuários do portal do cliente
+ * Inclui senha temporária e link de verificação
+ */
+export const sendPortalWelcomeEmail = async (
+  email: string,
+  name: string,
+  password: string,
+  companyName: string
+) => {
+  const safeName = sanitizeForEmail(name);
+  const safeCompanyName = sanitizeForEmail(companyName);
+  const portalUrl = config.urls.portal;
+
+  const mailOptions = {
+    from: config.smtp.from,
+    to: email,
+    subject: `Bem-vindo ao Portal do Cliente - ${safeCompanyName}`,
+    html: `
+      <!DOCTYPE html>
+      <html lang="pt-BR">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Portal do Cliente - ${safeCompanyName}</title>
+      </head>
+      <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f3f4f6;">
+        <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #f3f4f6;">
+          <tr>
+            <td style="padding: 40px 20px;">
+              <!-- Container principal -->
+              <table role="presentation" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); overflow: hidden;">
+
+                <!-- Header com gradiente -->
+                <tr>
+                  <td style="background-color: #43A047; background: linear-gradient(135deg, #43A047 0%, #2E7D32 100%); padding: 40px 30px; text-align: center;">
+                    <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 700; letter-spacing: -0.5px;">
+                      ${safeCompanyName}
+                    </h1>
+                    <p style="margin: 8px 0 0 0; color: #ffffff; font-size: 14px; font-weight: 500;">
+                      Portal do Cliente
+                    </p>
+                  </td>
+                </tr>
+
+                <!-- Conteúdo -->
+                <tr>
+                  <td style="padding: 40px 30px;">
+                    <!-- Ícone -->
+                    <div style="text-align: center; margin-bottom: 24px;">
+                      <div style="display: inline-block; width: 64px; height: 64px; background-color: #C8E6C9; border-radius: 50%; line-height: 64px; font-size: 32px;">
+                        👤
+                      </div>
+                    </div>
+
+                    <h2 style="margin: 0 0 16px 0; color: #111827; font-size: 24px; font-weight: 600; text-align: center;">
+                      Bem-vindo ao Portal do Cliente!
+                    </h2>
+
+                    <p style="margin: 0 0 16px 0; color: #4b5563; font-size: 16px; line-height: 1.6; text-align: center;">
+                      Olá <strong>${safeName}</strong>,
+                    </p>
+
+                    <p style="margin: 0 0 24px 0; color: #6b7280; font-size: 15px; line-height: 1.6; text-align: center;">
+                      O escritório <strong>${safeCompanyName}</strong> criou seu acesso ao Portal do Cliente. Através dele você poderá acompanhar seus processos e receber atualizações importantes.
+                    </p>
+
+                    <!-- Credenciais -->
+                    <div style="background-color: #f9fafb; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
+                      <p style="margin: 0 0 12px 0; color: #374151; font-size: 14px; font-weight: 600; text-align: center;">
+                        Suas credenciais de acesso:
+                      </p>
+                      <p style="margin: 0 0 8px 0; color: #6b7280; font-size: 14px; text-align: center;">
+                        <strong>Email:</strong> ${email}
+                      </p>
+                      <p style="margin: 0; color: #6b7280; font-size: 14px; text-align: center;">
+                        <strong>Senha:</strong> <code style="background-color: #e5e7eb; padding: 4px 8px; border-radius: 4px; font-family: monospace;">${password}</code>
+                      </p>
+                    </div>
+
+                    <!-- Botão de acesso ao portal -->
+                    <div style="text-align: center; margin: 24px 0;">
+                      <a href="${portalUrl}" style="display: inline-block; padding: 16px 48px; background-color: #43A047; background: linear-gradient(135deg, #43A047 0%, #2E7D32 100%); color: #ffffff !important; text-decoration: none; border-radius: 8px; font-size: 16px; font-weight: 600; box-shadow: 0 4px 12px rgba(67, 160, 71, 0.3);">
+                        Acessar o Portal
+                      </a>
+                    </div>
+
+                    <p style="margin: 0 0 16px 0; color: #6b7280; font-size: 14px; text-align: center;">
+                      Ou acesse diretamente: <a href="${portalUrl}" style="color: #43A047;">${portalUrl}</a>
+                    </p>
+
+                    <!-- Divider -->
+                    <div style="margin: 32px 0; border-top: 1px solid #e5e7eb;"></div>
+
+                    <!-- No Portal você pode -->
+                    <h3 style="margin: 0 0 16px 0; color: #374151; font-size: 16px; font-weight: 600;">
+                      No Portal você pode:
+                    </h3>
+                    <ul style="margin: 0 0 24px 0; padding-left: 20px; color: #6b7280; font-size: 14px; line-height: 1.8;">
+                      <li>Acompanhar seus processos em tempo real</li>
+                      <li>Ver o histórico de movimentações</li>
+                      <li>Receber avisos importantes do escritório</li>
+                      <li>Consultar os dados do escritório</li>
+                    </ul>
+
+                    <!-- Aviso de segurança -->
+                    <div style="padding: 16px; background-color: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 6px;">
+                      <p style="margin: 0; color: #92400e; font-size: 13px; line-height: 1.5;">
+                        <strong>🔐 Segurança:</strong> Recomendamos que você altere sua senha após o primeiro acesso. Não compartilhe suas credenciais com terceiros.
+                      </p>
+                    </div>
+
+                    <p style="margin: 24px 0 0 0; color: #6b7280; font-size: 14px; line-height: 1.6; text-align: center;">
+                      Atenciosamente,<br>
+                      <strong style="color: #43A047;">${safeCompanyName}</strong>
+                    </p>
+                  </td>
+                </tr>
+
+                <!-- Footer -->
+                <tr>
+                  <td style="padding: 30px; background-color: #f9fafb; border-top: 1px solid #e5e7eb;">
+                    <p style="margin: 0 0 8px 0; color: #6b7280; font-size: 13px; text-align: center;">
+                      Este é um email automático, por favor não responda.
+                    </p>
+                    <p style="margin: 0 0 16px 0; color: #6b7280; font-size: 13px; text-align: center;">
+                      <strong>${safeCompanyName}</strong> - Portal do Cliente
+                    </p>
+                    <p style="margin: 0; color: #9ca3af; font-size: 12px; text-align: center;">
+                      © 2025 AdvWell. Todos os direitos reservados.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+      </html>
+    `,
+  };
+
+  await transporter.sendMail(mailOptions);
+};

@@ -22,6 +22,8 @@ import auditLogRoutes from './audit-log.routes';
 import backupEmailRoutes from './backup-email.routes';
 import databaseBackupRoutes from './database-backup.routes';
 import holidaysRoutes from './holidays.routes';
+import portalRoutes from './portal.routes';
+import announcementsRoutes from './announcements.routes';
 
 const router = Router();
 
@@ -53,5 +55,7 @@ router.use('/audit-logs', auditLogRoutes); // Logs de auditoria (CRUD de cliente
 router.use('/backup-email', backupEmailRoutes); // Configuração de backup por email
 router.use('/database-backup', databaseBackupRoutes); // Backup do banco de dados para S3 (SUPER_ADMIN only)
 router.use('/holidays', holidaysRoutes); // Feriados nacionais (BrasilAPI com cache Redis)
+router.use('/portal', portalRoutes); // Portal do cliente (acesso restrito a usuários CLIENT)
+router.use('/announcements', announcementsRoutes); // Gestão de anúncios do portal (ADMIN)
 
 export default router;
