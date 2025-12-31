@@ -26,6 +26,7 @@ enum SubscriptionPlan {
 model Company {
   id        String   @id @default(uuid())
   name      String
+  subdomain String?  @unique  // Subdomínio único para portal de clientes (ex: silva-advocacia.advwell.pro)
   cnpj      String?  @unique
   email     String   @unique
   phone     String?
@@ -110,7 +111,7 @@ model User {
   id                        String    @id @default(uuid())
   companyId                 String?
   name                      String
-  email                     String    @unique
+  email                     String    // Email único por empresa (ver @@unique abaixo)
   password                  String
   role                      UserRole  @default(USER)
   active                    Boolean   @default(true)
@@ -156,7 +157,9 @@ model User {
   dataRequests            DataRequest[]
   auditLogs               AuditLog[]
 
+  @@unique([companyId, email])  // Email único por empresa (permite mesmo email em empresas diferentes)
   @@index([companyId])
+  @@index([email])  // Índice para buscas por email
   @@map("users")
 }
 

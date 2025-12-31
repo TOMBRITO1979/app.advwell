@@ -90,6 +90,10 @@ router.get('/own', requireAdmin, companyController.getOwn);
 router.put('/own', requireAdmin, updateCompanyValidation, validate, companyController.updateOwn);
 router.delete('/own', requireAdmin, companyController.deleteOwn);
 
+// Portal do Cliente - Subdomain Management
+router.get('/own/subdomain', requireAdmin, companyController.getSubdomain);
+router.put('/own/subdomain', requireAdmin, companyController.updateSubdomain);
+
 // API Key Management (Para integrações WhatsApp, N8N, etc)
 router.get('/own/api-key', requireAdmin, companyController.getApiKey);
 router.post('/own/api-key/regenerate', requireAdmin, companyController.regenerateApiKey);

@@ -31,6 +31,7 @@ export class CompanyController {
           select: {
             id: true,
             name: true,
+            subdomain: true,
             cnpj: true,
             email: true,
             phone: true,
@@ -69,8 +70,8 @@ export class CompanyController {
     try {
       const { companyName, cnpj, companyEmail, adminName, adminEmail, adminPassword } = req.body;
 
-      // Verifica se o email já existe
-      const existingUser = await prisma.user.findUnique({
+      // Verifica se o email já existe (globalmente para criação de novas empresas)
+      const existingUser = await prisma.user.findFirst({
         where: { email: adminEmail },
       });
 
@@ -124,13 +125,37 @@ export class CompanyController {
   async update(req: AuthRequest, res: Response) {
     try {
       const { id } = req.params;
-      const { name, cnpj, email, phone, address, city, state, zipCode, logo, active } = req.body;
+      const { name, cnpj, email, phone, address, city, state, zipCode, logo, active, subdomain } = req.body;
+
+      // Validar subdomain se foi enviado
+      if (subdomain !== undefined && subdomain !== null && subdomain !== '') {
+        const RESERVED_SUBDOMAINS = [
+          'app', 'api', 'www', 'cliente', 'clientes', 'admin', 'grafana',
+          'mail', 'smtp', 'ftp', 'blog', 'help', 'support', 'suporte',
+          'status', 'docs', 'dev', 'test', 'staging', 'prod', 'production'
+        ];
+
+        if (RESERVED_SUBDOMAINS.includes(subdomain)) {
+          return res.status(400).json({ error: 'Subdomínio reservado. Escolha outro nome.' });
+        }
+
+        if (!/^[a-z0-9-]+$/.test(subdomain) || subdomain.length < 3 || subdomain.length > 30) {
+          return res.status(400).json({ error: 'Subdomínio inválido. Use apenas letras minúsculas, números e hífens (3-30 caracteres).' });
+        }
+
+        // Verificar se já está em uso por outra empresa
+        const existing = await prisma.company.findUnique({ where: { subdomain } });
+        if (existing && existing.id !== id) {
+          return res.status(400).json({ error: 'Este subdomínio já está em uso por outra empresa.' });
+        }
+      }
 
       const company = await prisma.company.update({
         where: { id },
         data: {
           name,
-          ...(cnpj !== undefined && { cnpj: cnpj || null }), // Só atualiza cnpj se foi enviado
+          ...(cnpj !== undefined && { cnpj: cnpj || null }),
+          ...(subdomain !== undefined && { subdomain: subdomain || null }),
           email,
           phone,
           address,
@@ -517,6 +542,133 @@ export class CompanyController {
     } catch (error) {
       appLogger.error('Erro ao buscar último pagamento', error as Error);
       res.status(500).json({ error: 'Erro ao buscar último pagamento' });
+    }
+  }
+
+  // ============================================
+  // PORTAL DO CLIENTE - SUBDOMAIN MANAGEMENT
+  // ============================================
+
+  /**
+   * Admin - Atualizar subdomain do portal de clientes
+   * PUT /api/companies/own/subdomain
+   */
+  async updateSubdomain(req: AuthRequest, res: Response) {
+    try {
+      const companyId = req.user!.companyId;
+      const { subdomain } = req.body;
+
+      if (!companyId) {
+        return res.status(404).json({ error: 'Empresa não encontrada' });
+      }
+
+      // Validar formato do subdomain
+      if (!subdomain || typeof subdomain !== 'string') {
+        return res.status(400).json({ error: 'Subdomínio é obrigatório' });
+      }
+
+      const cleanSubdomain = subdomain.toLowerCase().trim();
+
+      // Validar caracteres (apenas letras minúsculas, números e hífens)
+      if (!/^[a-z0-9-]+$/.test(cleanSubdomain)) {
+        return res.status(400).json({
+          error: 'Subdomínio deve conter apenas letras minúsculas, números e hífens'
+        });
+      }
+
+      // Validar tamanho (3-30 caracteres)
+      if (cleanSubdomain.length < 3 || cleanSubdomain.length > 30) {
+        return res.status(400).json({
+          error: 'Subdomínio deve ter entre 3 e 30 caracteres'
+        });
+      }
+
+      // Não pode começar ou terminar com hífen
+      if (cleanSubdomain.startsWith('-') || cleanSubdomain.endsWith('-')) {
+        return res.status(400).json({
+          error: 'Subdomínio não pode começar ou terminar com hífen'
+        });
+      }
+
+      // Lista de subdomínios reservados
+      const reserved = [
+        'app', 'api', 'www', 'cliente', 'clientes', 'admin', 'grafana',
+        'mail', 'smtp', 'ftp', 'blog', 'help', 'support', 'suporte',
+        'status', 'docs', 'dev', 'test', 'staging', 'prod', 'production'
+      ];
+
+      if (reserved.includes(cleanSubdomain)) {
+        return res.status(400).json({
+          error: 'Este subdomínio é reservado e não pode ser usado'
+        });
+      }
+
+      // Verificar se já está em uso por outra empresa
+      const existing = await prisma.company.findUnique({
+        where: { subdomain: cleanSubdomain },
+      });
+
+      if (existing && existing.id !== companyId) {
+        return res.status(400).json({
+          error: 'Este subdomínio já está em uso por outro escritório'
+        });
+      }
+
+      // Atualizar subdomain
+      const company = await prisma.company.update({
+        where: { id: companyId },
+        data: { subdomain: cleanSubdomain },
+        select: {
+          id: true,
+          name: true,
+          subdomain: true,
+        },
+      });
+
+      res.json({
+        message: 'Subdomínio configurado com sucesso',
+        subdomain: company.subdomain,
+        portalUrl: `https://${company.subdomain}.advwell.pro`,
+      });
+    } catch (error) {
+      appLogger.error('Erro ao atualizar subdomain', error as Error);
+      res.status(500).json({ error: 'Erro ao atualizar subdomínio' });
+    }
+  }
+
+  /**
+   * Admin - Ver subdomain atual do portal
+   * GET /api/companies/own/subdomain
+   */
+  async getSubdomain(req: AuthRequest, res: Response) {
+    try {
+      const companyId = req.user!.companyId;
+
+      if (!companyId) {
+        return res.status(404).json({ error: 'Empresa não encontrada' });
+      }
+
+      const company = await prisma.company.findUnique({
+        where: { id: companyId },
+        select: {
+          id: true,
+          name: true,
+          subdomain: true,
+        },
+      });
+
+      if (!company) {
+        return res.status(404).json({ error: 'Empresa não encontrada' });
+      }
+
+      res.json({
+        subdomain: company.subdomain,
+        portalUrl: company.subdomain ? `https://${company.subdomain}.advwell.pro` : null,
+        hasSubdomain: !!company.subdomain,
+      });
+    } catch (error) {
+      appLogger.error('Erro ao buscar subdomain', error as Error);
+      res.status(500).json({ error: 'Erro ao buscar subdomínio' });
     }
   }
 

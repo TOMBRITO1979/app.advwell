@@ -21,7 +21,7 @@ interface AuthState {
   user: User | null;
   token: string | null;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string, subdomain?: string) => Promise<void>;
   register: (data: {
     name: string;
     email: string;
@@ -41,8 +41,12 @@ export const useAuth = create<AuthState>((set) => ({
   token: localStorage.getItem('token'),
   isLoading: true,
 
-  login: async (email, password) => {
-    const response = await api.post('/auth/login', { email, password });
+  login: async (email, password, subdomain?) => {
+    const payload: { email: string; password: string; subdomain?: string } = { email, password };
+    if (subdomain) {
+      payload.subdomain = subdomain;
+    }
+    const response = await api.post('/auth/login', payload);
     const { token, refreshToken, user } = response.data;
 
     localStorage.setItem('token', token);

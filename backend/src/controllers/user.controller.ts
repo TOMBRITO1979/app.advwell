@@ -82,13 +82,13 @@ export class UserController {
       const companyId: string = req.user!.companyId;
       const { name, email, password, permissions, hideSidebar } = req.body;
 
-      // Verifica se o email já existe
-      const existingUser = await prisma.user.findUnique({
-        where: { email },
+      // Verifica se o email já existe na mesma empresa
+      const existingUser = await prisma.user.findFirst({
+        where: { email, companyId },
       });
 
       if (existingUser) {
-        return res.status(400).json({ error: 'Email já cadastrado' });
+        return res.status(400).json({ error: 'Email já cadastrado nesta empresa' });
       }
 
       const hashedPassword = await bcrypt.hash(password, 12);
@@ -455,13 +455,13 @@ export class UserController {
         return res.status(400).json({ error: 'Email, nome e clientId são obrigatórios' });
       }
 
-      // Verificar se o email já existe
-      const existingUser = await prisma.user.findUnique({
-        where: { email },
+      // Verificar se o email já existe na mesma empresa
+      const existingUser = await prisma.user.findFirst({
+        where: { email, companyId },
       });
 
       if (existingUser) {
-        return res.status(400).json({ error: 'Email já cadastrado' });
+        return res.status(400).json({ error: 'Email já cadastrado nesta empresa' });
       }
 
       // Verificar se o cliente existe e pertence à mesma empresa

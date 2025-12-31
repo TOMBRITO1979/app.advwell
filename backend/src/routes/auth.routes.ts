@@ -84,6 +84,11 @@ const loginValidation = [
   body('password')
     .notEmpty()
     .withMessage('Senha é obrigatória'),
+  body('subdomain')
+    .optional()
+    .isString()
+    .matches(/^[a-z0-9-]+$/)
+    .withMessage('Subdomínio deve conter apenas letras minúsculas, números e hífens'),
 ];
 
 // Validações para forgot password
@@ -150,5 +155,8 @@ router.post('/logout-all', authenticate, authController.logoutAll);
 // Embed authentication - auto-login for Chatwell integration
 // SEGURANCA: Rate limiting especifico para prevenir forca bruta em API keys
 router.get('/embed/:token', embedAuthLimiter, authController.embedAuth);
+
+// Portal de clientes - busca informações do escritório pelo subdomain
+router.get('/company-by-subdomain/:subdomain', authController.getCompanyBySubdomain);
 
 export default router;

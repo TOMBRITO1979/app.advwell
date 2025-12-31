@@ -38,7 +38,7 @@ export class IntegrationController {
       }
 
       // Verifica se o usuário já existe
-      const existingUser = await prisma.user.findUnique({
+      const existingUser = await prisma.user.findFirst({
         where: { email },
         select: {
           id: true,

@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { useAuth } from './contexts/AuthContext';
 import ErrorBoundary from './components/ErrorBoundary';
+import { isPortalDomain } from './utils/subdomain';
 
 // Lazy load all pages for better performance
 const Login = lazy(() => import('./pages/Login'));
@@ -45,6 +46,7 @@ const BackupSettings = lazy(() => import('./pages/BackupSettings'));
 const Announcements = lazy(() => import('./pages/Announcements'));
 
 // Portal pages
+const PortalLogin = lazy(() => import('./portal/pages/PortalLogin'));
 const PortalDashboard = lazy(() => import('./portal/pages/PortalDashboard'));
 const PortalCases = lazy(() => import('./portal/pages/PortalCases'));
 const PortalCaseDetails = lazy(() => import('./portal/pages/PortalCaseDetails'));
@@ -61,11 +63,6 @@ const LoadingSpinner = () => (
     </div>
   </div>
 );
-
-// Check if we're on the portal domain
-const isPortalDomain = () => {
-  return window.location.hostname === 'cliente.advwell.pro';
-};
 
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   const { token, isLoading, user } = useAuth();
@@ -145,7 +142,7 @@ function App() {
         <Toaster position="top-right" />
         <Suspense fallback={<LoadingSpinner />}>
           <Routes>
-          <Route path="/login" element={<Login />} />
+          <Route path="/login" element={isPortalDomain() ? <PortalLogin /> : <Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />

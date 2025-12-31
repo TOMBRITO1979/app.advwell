@@ -185,13 +185,38 @@ const getClientIp = (req: express.Request): string => {
 };
 
 // CORS deve vir antes do helmet
-// Em produção, apenas o frontend e portal são permitidos
-const allowedOrigins = config.nodeEnv === 'production'
+// Em produção, permite frontend, portal e qualquer subdomain *.advwell.pro
+const allowedOriginsStatic = config.nodeEnv === 'production'
   ? [config.urls.frontend, config.urls.portal]
   : [config.urls.frontend, config.urls.portal, 'http://localhost:5173'];
 
 app.use(cors({
-  origin: allowedOrigins,
+  origin: (origin, callback) => {
+    // Permite requisições sem origin (ex: curl, postman, mobile apps)
+    if (!origin) {
+      return callback(null, true);
+    }
+
+    // Verifica se é uma origem estática permitida
+    if (allowedOriginsStatic.includes(origin)) {
+      return callback(null, true);
+    }
+
+    // Verifica se é um subdomain válido de advwell.pro (para portal de clientes)
+    // Padrão: https://{subdomain}.advwell.pro
+    const subdomainPattern = /^https:\/\/[a-z0-9-]+\.advwell\.pro$/;
+    if (subdomainPattern.test(origin)) {
+      return callback(null, true);
+    }
+
+    // Em desenvolvimento, permite localhost
+    if (config.nodeEnv !== 'production' && origin.includes('localhost')) {
+      return callback(null, true);
+    }
+
+    // Origem não permitida
+    callback(new Error('CORS not allowed'));
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'x-correlation-id', 'x-csrf-token'],

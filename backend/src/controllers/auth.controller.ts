@@ -11,8 +11,8 @@ export class AuthController {
     try {
       const { name, email, password, companyName, cnpj, consents } = req.body;
 
-      // Verifica se o email já existe
-      const existingUser = await prisma.user.findUnique({
+      // Verifica se o email já existe (globalmente para registro de novas empresas)
+      const existingUser = await prisma.user.findFirst({
         where: { email },
       });
 
@@ -107,17 +107,97 @@ export class AuthController {
     }
   }
 
-  async login(req: Request, res: Response) {
+  /**
+   * Busca informações da empresa pelo subdomain
+   * GET /api/auth/company-by-subdomain/:subdomain
+   *
+   * Usado pelo portal de clientes para exibir logo e nome do escritório na tela de login
+   */
+  async getCompanyBySubdomain(req: Request, res: Response) {
     try {
-      const { email, password } = req.body;
+      const { subdomain } = req.params;
 
-      const user = await prisma.user.findUnique({
-        where: { email },
-        include: {
-          company: true,
-          linkedClient: true,  // Incluir cliente vinculado para usuários do portal
+      if (!subdomain) {
+        return res.status(400).json({ error: 'Subdomínio não fornecido' });
+      }
+
+      // Validar formato do subdomain (apenas letras minúsculas, números e hífens)
+      if (!/^[a-z0-9-]+$/.test(subdomain)) {
+        return res.status(400).json({ error: 'Formato de subdomínio inválido' });
+      }
+
+      const company = await prisma.company.findUnique({
+        where: { subdomain },
+        select: {
+          id: true,
+          name: true,
+          logo: true,
+          active: true,
         },
       });
+
+      if (!company) {
+        return res.status(404).json({ error: 'Escritório não encontrado' });
+      }
+
+      if (!company.active) {
+        return res.status(404).json({ error: 'Escritório não encontrado' });
+      }
+
+      res.json({
+        id: company.id,
+        name: company.name,
+        logo: company.logo,
+      });
+    } catch (error) {
+      appLogger.error('Erro ao buscar empresa por subdomain:', error as Error);
+      res.status(500).json({ error: 'Erro ao buscar informações do escritório' });
+    }
+  }
+
+  async login(req: Request, res: Response) {
+    try {
+      const { email, password, subdomain } = req.body;
+
+      let user;
+
+      if (subdomain) {
+        // Login via portal de clientes (com subdomain)
+        // Busca a empresa pelo subdomain primeiro
+        const company = await prisma.company.findUnique({
+          where: { subdomain },
+        });
+
+        if (!company) {
+          return res.status(401).json({ error: 'Escritório não encontrado' });
+        }
+
+        if (!company.active) {
+          return res.status(401).json({ error: 'Escritório inativo' });
+        }
+
+        // Busca usuário por email + companyId
+        user = await prisma.user.findFirst({
+          where: {
+            email,
+            companyId: company.id,
+          },
+          include: {
+            company: true,
+            linkedClient: true,
+          },
+        });
+      } else {
+        // Login normal (app.advwell.pro) - busca primeiro usuário com esse email
+        // SUPER_ADMIN ou usuários únicos
+        user = await prisma.user.findFirst({
+          where: { email },
+          include: {
+            company: true,
+            linkedClient: true,
+          },
+        });
+      }
 
       if (!user) {
         return res.status(401).json({ error: 'Credenciais inválidas' });
@@ -243,7 +323,7 @@ export class AuthController {
     try {
       const { email } = req.body;
 
-      const user = await prisma.user.findUnique({
+      const user = await prisma.user.findFirst({
         where: { email },
       });
 
@@ -414,7 +494,7 @@ export class AuthController {
     try {
       const { email } = req.body;
 
-      const user = await prisma.user.findUnique({
+      const user = await prisma.user.findFirst({
         where: { email },
       });
 
