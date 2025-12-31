@@ -156,6 +156,7 @@ model User {
   consentLogs             ConsentLog[]
   dataRequests            DataRequest[]
   auditLogs               AuditLog[]
+  googleCalendarConfig    GoogleCalendarConfig?
 
   @@unique([companyId, email])  // Email único por empresa (permite mesmo email em empresas diferentes)
   @@index([companyId])
@@ -565,6 +566,9 @@ model ScheduleEvent {
 
   // Google Meet
   googleMeetLink String?         // Link do Google Calendar para criar reunião com Google Meet
+
+  // Google Calendar Sync
+  googleEventId  String?         // ID do evento no Google Calendar (para sincronização)
 
   // Metadados
   createdAt   DateTime          @default(now())
@@ -1169,4 +1173,31 @@ model AuditLog {
   @@index([companyId, entityType])
   @@index([companyId, createdAt])
   @@map("audit_logs")
+}
+
+// ============================================================================
+// GOOGLE CALENDAR INTEGRATION
+// ============================================================================
+
+// Configuração de integração Google Calendar por usuário
+model GoogleCalendarConfig {
+  id            String   @id @default(uuid())
+  userId        String   @unique  // Conexão por usuário (1:1)
+
+  // OAuth Tokens (criptografados com ENCRYPTION_KEY via AES-256-CBC)
+  accessToken   String   @db.Text
+  refreshToken  String   @db.Text
+  tokenExpiry   DateTime
+
+  // Metadados
+  email         String   // Email da conta Google conectada
+  enabled       Boolean  @default(true)   // Integração ativa
+  syncEnabled   Boolean  @default(true)   // Sincronização automática habilitada
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("google_calendar_configs")
 }

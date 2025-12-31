@@ -52,4 +52,10 @@ export const config = {
     apiKey: process.env.DATAJUD_API_KEY || '',
     baseUrl: 'https://api-publica.datajud.cnj.jus.br',
   },
+
+  google: {
+    clientId: process.env.GOOGLE_CLIENT_ID || '',
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+    redirectUri: process.env.GOOGLE_REDIRECT_URI || 'https://api.advwell.pro/api/google-calendar/callback',
+  },
 };

@@ -44,6 +44,7 @@ const LGPDRequests = lazy(() => import('./pages/LGPDRequests'));
 const AuditLogs = lazy(() => import('./pages/AuditLogs'));
 const BackupSettings = lazy(() => import('./pages/BackupSettings'));
 const Announcements = lazy(() => import('./pages/Announcements'));
+const GoogleCalendarSettings = lazy(() => import('./pages/GoogleCalendarSettings'));
 
 // Portal pages
 const PortalLogin = lazy(() => import('./portal/pages/PortalLogin'));
@@ -382,6 +383,14 @@ function App() {
             element={
               <PrivateRoute>
                 <Announcements />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/google-calendar"
+            element={
+              <PrivateRoute>
+                <GoogleCalendarSettings />
               </PrivateRoute>
             }
           />

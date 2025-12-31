@@ -24,6 +24,7 @@ import databaseBackupRoutes from './database-backup.routes';
 import holidaysRoutes from './holidays.routes';
 import portalRoutes from './portal.routes';
 import announcementsRoutes from './announcements.routes';
+import googleCalendarRoutes from './google-calendar.routes';
 
 const router = Router();
 
@@ -57,5 +58,6 @@ router.use('/database-backup', databaseBackupRoutes); // Backup do banco de dado
 router.use('/holidays', holidaysRoutes); // Feriados nacionais (BrasilAPI com cache Redis)
 router.use('/portal', portalRoutes); // Portal do cliente (acesso restrito a usuários CLIENT)
 router.use('/announcements', announcementsRoutes); // Gestão de anúncios do portal (ADMIN)
+router.use('/google-calendar', googleCalendarRoutes); // Integração Google Calendar (OAuth + sync)
 
 export default router;
