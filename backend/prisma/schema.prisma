@@ -218,6 +218,7 @@ model Client {
   subscriptions         ClientSubscription[]
   leadsConverted        Lead[]                @relation("LeadToClient")
   portalUser            User?                 @relation("UserClientLink")  // Usuário do portal vinculado
+  announcements         Announcement[]        // Avisos direcionados a este cliente
 
   @@unique([companyId, cpf]) // CPF único por empresa (NULL é permitido para múltiplos clientes)
   @@index([companyId])
@@ -1083,6 +1084,7 @@ model DataRequest {
 model Announcement {
   id          String               @id @default(uuid())
   companyId   String
+  clientId    String?              // Se preenchido, aviso é apenas para este cliente
 
   // Dados do anúncio
   title       String
@@ -1100,8 +1102,10 @@ model Announcement {
   // Relations
   company     Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
   creator     User                 @relation("AnnouncementCreator", fields: [createdBy], references: [id], onDelete: Cascade)
+  client      Client?              @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
   @@index([companyId])
+  @@index([clientId])
   @@index([active, publishedAt])
   @@index([companyId, active])
   @@map("announcements")

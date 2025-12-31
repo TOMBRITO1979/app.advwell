@@ -12,6 +12,8 @@ import {
   CheckCircle,
   X,
   Calendar,
+  Users,
+  User,
 } from 'lucide-react';
 import Layout from '../components/Layout';
 import api from '../services/api';
@@ -19,6 +21,11 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import toast from 'react-hot-toast';
 import DOMPurify from 'dompurify';
+
+interface Client {
+  id: string;
+  name: string;
+}
 
 interface Announcement {
   id: string;
@@ -28,6 +35,8 @@ interface Announcement {
   active: boolean;
   publishedAt: string;
   expiresAt: string | null;
+  clientId: string | null;
+  client: Client | null;
   creator: {
     id: string;
     name: string;
@@ -49,6 +58,7 @@ const getPriorityConfig = (priority: string) => {
 
 export default function Announcements() {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null);
@@ -59,11 +69,22 @@ export default function Announcements() {
     priority: 'NORMAL' as 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT',
     active: true,
     expiresAt: '',
+    clientId: '',
   });
 
   useEffect(() => {
     loadAnnouncements();
+    loadClients();
   }, []);
+
+  const loadClients = async () => {
+    try {
+      const response = await api.get('/clients?limit=1000');
+      setClients(response.data.data || []);
+    } catch (error) {
+      console.error('Erro ao carregar clientes:', error);
+    }
+  };
 
   const loadAnnouncements = async () => {
     try {
@@ -82,6 +103,7 @@ export default function Announcements() {
       const data = {
         ...formData,
         expiresAt: formData.expiresAt || null,
+        clientId: formData.clientId || null,
       };
 
       if (editingAnnouncement) {
@@ -128,6 +150,7 @@ export default function Announcements() {
         priority: announcement.priority,
         active: announcement.active,
         expiresAt: announcement.expiresAt ? announcement.expiresAt.split('T')[0] : '',
+        clientId: announcement.clientId || '',
       });
     } else {
       setEditingAnnouncement(null);
@@ -137,6 +160,7 @@ export default function Announcements() {
         priority: 'NORMAL',
         active: true,
         expiresAt: '',
+        clientId: '',
       });
     }
     setShowModal(true);
@@ -226,7 +250,7 @@ export default function Announcements() {
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-3 mb-2">
+                      <div className="flex items-center gap-3 mb-2 flex-wrap">
                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${priority.color}`}>
                           <PriorityIcon size={14} />
                           {priority.label}
@@ -237,6 +261,23 @@ export default function Announcements() {
                             : 'bg-gray-100 text-gray-600'
                         }`}>
                           {announcement.active ? 'Ativo' : 'Inativo'}
+                        </span>
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
+                          announcement.client
+                            ? 'bg-purple-100 text-purple-700'
+                            : 'bg-cyan-100 text-cyan-700'
+                        }`}>
+                          {announcement.client ? (
+                            <>
+                              <User size={14} />
+                              {announcement.client.name}
+                            </>
+                          ) : (
+                            <>
+                              <Users size={14} />
+                              Todos
+                            </>
+                          )}
                         </span>
                       </div>
                       <h3 className="text-lg font-semibold text-gray-900 mb-2">
@@ -363,6 +404,26 @@ export default function Announcements() {
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                     />
                   </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Destinatário
+                  </label>
+                  <select
+                    value={formData.clientId}
+                    onChange={(e) => setFormData({ ...formData, clientId: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  >
+                    <option value="">Todos os clientes</option>
+                    {clients.map((client) => (
+                      <option key={client.id} value={client.id}>
+                        {client.name}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="mt-1 text-xs text-gray-500">
+                    Selecione um cliente específico ou deixe em branco para todos
+                  </p>
                 </div>
                 <div className="flex items-center gap-3">
                   <input

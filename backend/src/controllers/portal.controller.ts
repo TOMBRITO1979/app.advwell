@@ -239,10 +239,12 @@ export class PortalController {
   /**
    * Lista os anúncios ativos do escritório
    * GET /api/portal/announcements
+   * Mostra avisos globais (clientId = null) e avisos específicos para o cliente logado
    */
   async getAnnouncements(req: AuthRequest, res: Response) {
     try {
       const companyId = req.user!.companyId;
+      const clientId = req.user!.clientId;
       const now = new Date();
 
       const announcements = await prisma.announcement.findMany({
@@ -250,9 +252,21 @@ export class PortalController {
           companyId,
           active: true,
           publishedAt: { lte: now },
-          OR: [
-            { expiresAt: null },
-            { expiresAt: { gt: now } },
+          AND: [
+            // Filtro de expiração
+            {
+              OR: [
+                { expiresAt: null },
+                { expiresAt: { gt: now } },
+              ],
+            },
+            // Filtro de cliente: global (null) ou específico para este cliente
+            {
+              OR: [
+                { clientId: null },
+                { clientId: clientId },
+              ],
+            },
           ],
         },
         select: {
@@ -261,6 +275,7 @@ export class PortalController {
           content: true,
           priority: true,
           publishedAt: true,
+          clientId: true,
           creator: {
             select: {
               name: true,
@@ -334,15 +349,25 @@ export class PortalController {
           orderBy: { movementDate: 'desc' },
           take: 5,
         }),
-        // Anúncios ativos
+        // Anúncios ativos (globais + específicos para este cliente)
         prisma.announcement.count({
           where: {
             companyId,
             active: true,
             publishedAt: { lte: now },
-            OR: [
-              { expiresAt: null },
-              { expiresAt: { gt: now } },
+            AND: [
+              {
+                OR: [
+                  { expiresAt: null },
+                  { expiresAt: { gt: now } },
+                ],
+              },
+              {
+                OR: [
+                  { clientId: null },
+                  { clientId: clientId },
+                ],
+              },
             ],
           },
         }),

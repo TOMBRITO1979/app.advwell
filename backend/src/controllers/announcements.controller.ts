@@ -11,17 +11,26 @@ export class AnnouncementsController {
   async list(req: AuthRequest, res: Response) {
     try {
       const companyId = req.user!.companyId;
-      const { active } = req.query;
+      const { active, clientId } = req.query;
 
       const whereClause: any = { companyId };
       if (active !== undefined) {
         whereClause.active = active === 'true';
+      }
+      if (clientId) {
+        whereClause.clientId = clientId;
       }
 
       const announcements = await prisma.announcement.findMany({
         where: whereClause,
         include: {
           creator: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          client: {
             select: {
               id: true,
               name: true,
@@ -81,10 +90,20 @@ export class AnnouncementsController {
     try {
       const companyId = req.user!.companyId;
       const userId = req.user!.userId;
-      const { title, content, priority, active, publishedAt, expiresAt } = req.body;
+      const { title, content, priority, active, publishedAt, expiresAt, clientId } = req.body;
 
       if (!title || !content) {
         return res.status(400).json({ error: 'Título e conteúdo são obrigatórios' });
+      }
+
+      // Se clientId foi fornecido, validar que pertence à empresa
+      if (clientId) {
+        const client = await prisma.client.findFirst({
+          where: { id: clientId, companyId },
+        });
+        if (!client) {
+          return res.status(400).json({ error: 'Cliente não encontrado' });
+        }
       }
 
       const announcement = await prisma.announcement.create({
@@ -97,6 +116,7 @@ export class AnnouncementsController {
           active: active !== false,
           publishedAt: publishedAt ? new Date(publishedAt) : new Date(),
           expiresAt: expiresAt ? new Date(expiresAt) : null,
+          clientId: clientId || null,
         },
         include: {
           creator: {
@@ -105,10 +125,16 @@ export class AnnouncementsController {
               name: true,
             },
           },
+          client: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
         },
       });
 
-      appLogger.info('Anúncio criado', { announcementId: announcement.id, companyId });
+      appLogger.info('Anúncio criado', { announcementId: announcement.id, companyId, clientId });
 
       res.status(201).json(announcement);
     } catch (error) {
@@ -125,7 +151,7 @@ export class AnnouncementsController {
     try {
       const { id } = req.params;
       const companyId = req.user!.companyId;
-      const { title, content, priority, active, publishedAt, expiresAt } = req.body;
+      const { title, content, priority, active, publishedAt, expiresAt, clientId } = req.body;
 
       // Verificar se existe e pertence à empresa
       const existing = await prisma.announcement.findFirst({
@@ -136,6 +162,16 @@ export class AnnouncementsController {
         return res.status(404).json({ error: 'Anúncio não encontrado' });
       }
 
+      // Se clientId foi fornecido, validar que pertence à empresa
+      if (clientId) {
+        const client = await prisma.client.findFirst({
+          where: { id: clientId, companyId },
+        });
+        if (!client) {
+          return res.status(400).json({ error: 'Cliente não encontrado' });
+        }
+      }
+
       const updateData: any = {};
       if (title !== undefined) updateData.title = title;
       if (content !== undefined) updateData.content = content;
@@ -143,12 +179,19 @@ export class AnnouncementsController {
       if (active !== undefined) updateData.active = active;
       if (publishedAt !== undefined) updateData.publishedAt = new Date(publishedAt);
       if (expiresAt !== undefined) updateData.expiresAt = expiresAt ? new Date(expiresAt) : null;
+      if (clientId !== undefined) updateData.clientId = clientId || null;
 
       const announcement = await prisma.announcement.update({
         where: { id },
         data: updateData,
         include: {
           creator: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          client: {
             select: {
               id: true,
               name: true,
