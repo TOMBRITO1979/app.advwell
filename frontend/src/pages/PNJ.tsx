@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
 import api from '../services/api';
 import toast from 'react-hot-toast';
+import { ExportButton } from '../components/ui';
 import {
   Plus,
   Search,
@@ -711,23 +712,16 @@ const PNJPage: React.FC = () => {
               <span className="hidden sm:inline">Novo PNJ</span>
               <span className="sm:hidden">Novo</span>
             </button>
-            <button
+            <ExportButton
+              type="csv"
               onClick={handleExportCSV}
+              loading={exporting}
               disabled={exporting || pnjs.length === 0}
-              className="inline-flex items-center justify-center gap-2 px-2 sm:px-4 py-2 rounded-lg bg-white text-neutral-700 border border-neutral-300 hover:bg-neutral-50 font-medium text-sm transition-all duration-200 min-h-[44px] disabled:opacity-50"
-            >
-              {exporting ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
-              <span className="hidden sm:inline">Exportar CSV</span>
-              <span className="sm:hidden">Exportar</span>
-            </button>
-            <button
+            />
+            <ExportButton
+              type="import"
               onClick={() => setShowImportModal(true)}
-              className="inline-flex items-center justify-center gap-2 px-2 sm:px-4 py-2 rounded-lg bg-white text-neutral-700 border border-neutral-300 hover:bg-neutral-50 font-medium text-sm transition-all duration-200 min-h-[44px]"
-            >
-              <Upload size={18} />
-              <span className="hidden sm:inline">Importar CSV</span>
-              <span className="sm:hidden">Importar</span>
-            </button>
+            />
           </div>
         </div>
 
