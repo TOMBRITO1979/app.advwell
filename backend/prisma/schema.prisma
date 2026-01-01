@@ -90,6 +90,9 @@ model Company {
   // Google Calendar
   googleCalendarCompanyConfig  GoogleCalendarCompanyConfig?
 
+  // PNJ - Processos Não Judiciais
+  pnjs                  PNJ[]
+
   @@map("companies")
 }
 
@@ -161,6 +164,10 @@ model User {
   auditLogs               AuditLog[]
   googleCalendarConfig    GoogleCalendarConfig?
 
+  // PNJ - Processos Não Judiciais
+  pnjsCreated             PNJ[]         @relation("PNJCreator")
+  pnjMovementsCreated     PNJMovement[] @relation("PNJMovementCreator")
+
   @@unique([companyId, email])  // Email único por empresa (permite mesmo email em empresas diferentes)
   @@index([companyId])
   @@index([email])  // Índice para buscas por email
@@ -223,6 +230,7 @@ model Client {
   leadsConverted        Lead[]                @relation("LeadToClient")
   portalUser            User?                 @relation("UserClientLink")  // Usuário do portal vinculado
   announcements         Announcement[]        // Avisos direcionados a este cliente
+  pnjs                  PNJ[]                 // Processos Não Judiciais
 
   @@unique([companyId, cpf]) // CPF único por empresa (NULL é permitido para múltiplos clientes)
   @@index([companyId])
@@ -1224,4 +1232,107 @@ model GoogleCalendarConfig {
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("google_calendar_configs")
+}
+
+// ============================================================================
+// PNJ - PROCESSOS NÃO JUDICIAIS
+// ============================================================================
+
+// Enum para status do PNJ
+enum PNJStatus {
+  ACTIVE    // Ativo
+  ARCHIVED  // Arquivado
+  CLOSED    // Encerrado
+}
+
+// Enum para tipo de parte do PNJ
+enum PNJPartType {
+  AUTHOR        // Autor/Requerente
+  DEFENDANT     // Réu/Requerido
+  INTERESTED    // Interessado
+  THIRD_PARTY   // Terceiro
+  OTHER         // Outro
+}
+
+// Tabela de Processos Não Judiciais
+model PNJ {
+  id          String    @id @default(uuid())
+  companyId   String
+  clientId    String?
+
+  // Dados principais
+  number      String              // Número do processo
+  protocol    String?             // Protocolo
+  title       String              // Título/Descrição
+  description String?   @db.Text  // Descrição detalhada
+  status      PNJStatus @default(ACTIVE)
+
+  // Datas
+  openDate    DateTime  @default(now())
+  closeDate   DateTime?
+
+  // Metadados
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdBy   String?
+
+  // Relacionamentos
+  company     Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  client      Client?   @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  creator     User?     @relation("PNJCreator", fields: [createdBy], references: [id], onDelete: SetNull)
+
+  parts       PNJPart[]
+  movements   PNJMovement[]
+
+  @@index([companyId])
+  @@index([clientId])
+  @@index([number])
+  @@index([companyId, status])
+  @@map("pnjs")
+}
+
+// Tabela de Partes do PNJ
+model PNJPart {
+  id        String      @id @default(uuid())
+  pnjId     String
+
+  // Dados da parte
+  name      String
+  document  String?     // CPF/CNPJ
+  type      PNJPartType
+  notes     String?     @db.Text
+
+  // Metadados
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  // Relacionamentos
+  pnj       PNJ         @relation(fields: [pnjId], references: [id], onDelete: Cascade)
+
+  @@index([pnjId])
+  @@map("pnj_parts")
+}
+
+// Tabela de Andamentos do PNJ
+model PNJMovement {
+  id          String   @id @default(uuid())
+  pnjId       String
+
+  // Dados do andamento
+  date        DateTime @default(now())
+  description String   @db.Text
+  notes       String?  @db.Text
+
+  // Metadados
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?
+
+  // Relacionamentos
+  pnj         PNJ      @relation(fields: [pnjId], references: [id], onDelete: Cascade)
+  creator     User?    @relation("PNJMovementCreator", fields: [createdBy], references: [id], onDelete: SetNull)
+
+  @@index([pnjId])
+  @@index([date])
+  @@map("pnj_movements")
 }

@@ -187,6 +187,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { path: '/schedule', label: 'Agenda', icon: Calendar },
     { path: '/clients', label: 'Clientes', icon: Users },
     { path: '/cases', label: 'Processos', icon: FileText },
+    { path: '/pnj', label: 'PNJ', icon: FileText },
     { path: '/deadlines', label: 'Prazos', icon: Clock },
     { path: '/hearings', label: 'Audiências', icon: Gavel },
     { path: '/updates', label: 'Atualizações', icon: Bell },

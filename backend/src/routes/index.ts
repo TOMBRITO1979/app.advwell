@@ -17,6 +17,7 @@ import aiConfigRoutes from './ai-config.routes';
 import legalDocumentRoutes from './legal-document.routes';
 import subscriptionRoutes from './subscription.routes';
 import leadRoutes from './lead.routes';
+import pnjRoutes from './pnj.routes';
 import lgpdRoutes from './lgpd.routes';
 import auditLogRoutes from './audit-log.routes';
 import backupEmailRoutes from './backup-email.routes';
@@ -52,6 +53,7 @@ router.use('/ai-config', aiConfigRoutes); // Configuração de IA por empresa
 router.use('/legal-documents', legalDocumentRoutes); // Documentos jurídicos (recibos, contratos, etc.)
 router.use('/subscription', subscriptionRoutes); // Assinatura e pagamentos (Stripe)
 router.use('/leads', leadRoutes); // Gestão de leads (potenciais clientes)
+router.use('/pnj', pnjRoutes); // Processos Não Judiciais (PNJ)
 router.use('/lgpd', lgpdRoutes); // Rotas LGPD (consentimento, direitos do titular)
 router.use('/audit-logs', auditLogRoutes); // Logs de auditoria (CRUD de clientes e processos)
 router.use('/backup-email', backupEmailRoutes); // Configuração de backup por email
