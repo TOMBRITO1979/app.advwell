@@ -294,15 +294,27 @@ const WhatsAppSettings: React.FC = () => {
                 <Shield size={16} className="inline mr-2" />
                 Webhook Verify Token (opcional)
               </label>
-              <input
-                type="text"
-                value={formData.webhookVerifyToken}
-                onChange={(e) => setFormData({ ...formData, webhookVerifyToken: e.target.value })}
-                placeholder="Token para verificação do webhook"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 min-h-[44px]"
-              />
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={formData.webhookVerifyToken}
+                  onChange={(e) => setFormData({ ...formData, webhookVerifyToken: e.target.value })}
+                  placeholder="Token para verificação do webhook"
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 min-h-[44px]"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const token = 'advwell_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+                    setFormData({ ...formData, webhookVerifyToken: token });
+                  }}
+                  className="px-4 py-2 bg-neutral-100 text-neutral-700 hover:bg-neutral-200 rounded-md transition-colors whitespace-nowrap"
+                >
+                  Gerar Token
+                </button>
+              </div>
               <p className="text-xs text-neutral-500 mt-1">
-                Use este token ao configurar o webhook no Meta Business
+                Use este token ao configurar o webhook no Meta Business. Clique em "Gerar Token" para criar um automaticamente.
               </p>
             </div>
 
@@ -352,19 +364,57 @@ const WhatsAppSettings: React.FC = () => {
 
         {/* Webhook Info */}
         {hasConfig && (
-          <div className="bg-neutral-50 rounded-lg p-4">
-            <h3 className="font-semibold text-neutral-900 mb-3">
-              Configuração do Webhook
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h3 className="font-semibold text-blue-900 mb-3">
+              Configuração do Webhook no Meta Business
             </h3>
-            <div className="text-sm space-y-2">
-              <div className="flex items-center gap-2">
-                <span className="text-neutral-600">URL do Webhook:</span>
-                <code className="bg-white px-2 py-1 rounded border text-xs">
-                  https://api.advwell.pro/api/whatsapp-webhook
-                </code>
+            <div className="text-sm space-y-3">
+              <div>
+                <span className="text-blue-700 font-medium">1. URL de Callback:</span>
+                <div className="flex items-center gap-2 mt-1">
+                  <code className="bg-white px-3 py-2 rounded border text-xs flex-1 font-mono">
+                    https://api.advwell.pro/api/whatsapp-webhook
+                  </code>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText('https://api.advwell.pro/api/whatsapp-webhook');
+                      toast.success('URL copiada!');
+                    }}
+                    className="px-3 py-2 bg-blue-100 text-blue-700 hover:bg-blue-200 rounded text-xs font-medium"
+                  >
+                    Copiar
+                  </button>
+                </div>
               </div>
-              <div className="text-neutral-600">
-                <strong>Campos para assinar:</strong> messages, message_status_updates
+              <div>
+                <span className="text-blue-700 font-medium">2. Token de Verificação:</span>
+                <div className="flex items-center gap-2 mt-1">
+                  <code className="bg-white px-3 py-2 rounded border text-xs flex-1 font-mono">
+                    {formData.webhookVerifyToken || '(configure acima e salve)'}
+                  </code>
+                  {formData.webhookVerifyToken && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(formData.webhookVerifyToken);
+                        toast.success('Token copiado!');
+                      }}
+                      className="px-3 py-2 bg-blue-100 text-blue-700 hover:bg-blue-200 rounded text-xs font-medium"
+                    >
+                      Copiar
+                    </button>
+                  )}
+                </div>
+              </div>
+              <div>
+                <span className="text-blue-700 font-medium">3. Campos para assinar:</span>
+                <div className="mt-1 text-blue-600">
+                  messages, message_status_updates
+                </div>
+              </div>
+              <div className="pt-2 border-t border-blue-200 text-blue-600">
+                <strong>Nota:</strong> Configure o webhook no Meta Business Suite para receber confirmações de entrega e leitura das mensagens.
               </div>
             </div>
           </div>
