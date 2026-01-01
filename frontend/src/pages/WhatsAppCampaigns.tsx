@@ -59,7 +59,12 @@ interface ImportedRecipient {
   clientId: string;
   name: string;
   phone: string;
-  variables: { nome: string };
+  variables: Record<string, string>;
+}
+
+interface TemplateVariable {
+  index: number;
+  example?: string;
 }
 
 const WhatsAppCampaigns: React.FC = () => {
@@ -78,6 +83,11 @@ const WhatsAppCampaigns: React.FC = () => {
     name: '',
     templateId: '',
   });
+  const [templateVars, setTemplateVars] = useState<Record<string, string>>({});
+  const [selectedTemplateInfo, setSelectedTemplateInfo] = useState<{
+    variables: TemplateVariable[];
+    bodyText: string;
+  } | null>(null);
 
   const [recipients, setRecipients] = useState<ImportedRecipient[]>([]);
   const [importFilter, setImportFilter] = useState({ tag: '', limit: 500 });
@@ -154,6 +164,52 @@ const WhatsAppCampaigns: React.FC = () => {
     }
   };
 
+  // Parse template to find variables like {{1}}, {{2}}, etc.
+  const parseTemplateVariables = (templateId: string) => {
+    const template = templates.find(t => t.id === templateId);
+    if (!template) {
+      setSelectedTemplateInfo(null);
+      setTemplateVars({});
+      return;
+    }
+
+    // Find body component
+    const components = (template as any).components || [];
+    const bodyComponent = components.find((c: any) => c.type === 'BODY');
+    const bodyText = bodyComponent?.text || '';
+
+    // Find all {{n}} variables
+    const matches = bodyText.match(/\{\{(\d+)\}\}/g) || [];
+    const variables: TemplateVariable[] = matches.map((match: string) => {
+      const index = parseInt(match.replace(/\{\{|\}\}/g, ''));
+      // Get example if available
+      const examples = bodyComponent?.example?.body_text?.[0] || [];
+      return {
+        index,
+        example: examples[index - 1] || undefined,
+      };
+    });
+
+    // Remove duplicates
+    const uniqueVars = variables.filter((v, i, arr) =>
+      arr.findIndex(x => x.index === v.index) === i
+    ).sort((a, b) => a.index - b.index);
+
+    setSelectedTemplateInfo({
+      variables: uniqueVars,
+      bodyText,
+    });
+
+    // Initialize template vars (var 1 will be filled from client name)
+    const initialVars: Record<string, string> = {};
+    uniqueVars.forEach(v => {
+      if (v.index > 1) {
+        initialVars[`var${v.index}`] = v.example || '';
+      }
+    });
+    setTemplateVars(initialVars);
+  };
+
   const handleImportClients = async () => {
     setImporting(true);
     try {
@@ -161,7 +217,22 @@ const WhatsAppCampaigns: React.FC = () => {
         filter: importFilter.tag ? { tag: importFilter.tag } : undefined,
         limit: importFilter.limit,
       });
-      setRecipients(response.data.recipients);
+
+      // Build variables for each recipient
+      const importedRecipients = response.data.recipients.map((r: any) => {
+        const vars: Record<string, string> = { '1': r.name }; // Variable 1 is always the name
+        // Add other template variables
+        Object.keys(templateVars).forEach(key => {
+          const varIndex = key.replace('var', '');
+          vars[varIndex] = templateVars[key];
+        });
+        return {
+          ...r,
+          variables: vars,
+        };
+      });
+
+      setRecipients(importedRecipients);
       setShowImportModal(false);
       toast.success(`${response.data.total} clientes importados!`);
     } catch (error: any) {
@@ -263,6 +334,8 @@ const WhatsAppCampaigns: React.FC = () => {
     setFormData({ name: '', templateId: '' });
     setRecipients([]);
     setImportFilter({ tag: '', limit: 500 });
+    setTemplateVars({});
+    setSelectedTemplateInfo(null);
   };
 
   const formatDate = formatDateTime;
@@ -556,7 +629,11 @@ const WhatsAppCampaigns: React.FC = () => {
                     <select
                       required
                       value={formData.templateId}
-                      onChange={(e) => setFormData({ ...formData, templateId: e.target.value })}
+                      onChange={(e) => {
+                        setFormData({ ...formData, templateId: e.target.value });
+                        parseTemplateVariables(e.target.value);
+                        setRecipients([]); // Clear recipients when template changes
+                      }}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md min-h-[44px]"
                     >
                       <option value="">Selecione um template aprovado</option>
@@ -570,6 +647,40 @@ const WhatsAppCampaigns: React.FC = () => {
                       Apenas templates aprovados pela Meta aparecem aqui
                     </p>
                   </div>
+
+                  {/* Template Variables */}
+                  {selectedTemplateInfo && selectedTemplateInfo.variables.length > 0 && (
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <label className="block text-sm font-medium text-blue-700 mb-2">
+                        Variáveis do Template
+                      </label>
+                      <p className="text-xs text-blue-600 mb-3">
+                        Modelo: <code className="bg-blue-100 px-1 rounded">{selectedTemplateInfo.bodyText}</code>
+                      </p>
+                      <div className="space-y-2">
+                        <p className="text-xs text-blue-600">
+                          <strong>{'{{1}}'}</strong> = Nome do cliente (preenchido automaticamente)
+                        </p>
+                        {selectedTemplateInfo.variables.filter(v => v.index > 1).map((v) => (
+                          <div key={v.index} className="flex items-center gap-2">
+                            <label className="text-sm text-blue-700 w-16">
+                              {`{{${v.index}}}`}
+                            </label>
+                            <input
+                              type="text"
+                              value={templateVars[`var${v.index}`] || ''}
+                              onChange={(e) => setTemplateVars({
+                                ...templateVars,
+                                [`var${v.index}`]: e.target.value
+                              })}
+                              placeholder={v.example || `Valor para variável ${v.index}`}
+                              className="flex-1 px-3 py-1.5 border border-blue-300 rounded text-sm"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Destinatários */}
                   <div className="bg-green-50 border border-green-200 rounded-lg p-4">
