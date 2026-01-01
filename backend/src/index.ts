@@ -12,10 +12,12 @@ import prisma from './utils/prisma';
 import { redis, cache } from './utils/redis';
 import { enqueueDailySync, getQueueStats } from './queues/sync.queue';
 import { getEmailQueueStats } from './queues/email.queue';
+import { getWhatsAppQueueStats } from './queues/whatsapp.queue';
 import crypto from 'crypto';
 import backupEmailService from './services/backup-email.service';
 import databaseBackupService from './services/database-backup.service';
 import auditCleanupService from './services/audit-cleanup.service';
+import { processAppointmentReminders } from './jobs/appointment-reminder.job';
 import { errorHandler, notFoundHandler } from './middleware/error-handler';
 import { csrfProtection, getCsrfToken } from './middleware/csrf';
 import { appLogger } from './utils/logger';
@@ -435,6 +437,20 @@ app.get('/health/detailed', async (req, res) => {
     };
   }
 
+  // 3.2 WhatsApp queue stats
+  try {
+    const whatsappQueueStats = await getWhatsAppQueueStats();
+    health.checks.whatsappQueue = {
+      status: 'operational',
+      ...whatsappQueueStats
+    };
+  } catch (error) {
+    health.checks.whatsappQueue = {
+      status: 'unavailable',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    };
+  }
+
   // 4. Memory usage
   const memUsage = process.memoryUsage();
   health.checks.memory = {
@@ -634,6 +650,36 @@ CRON_ENABLED && cron.schedule('0 4 * * 0', async () => {
     appLogger.info('Audit cleanup completed', { instanceId: INSTANCE_ID, deletedCount: result.deletedCount });
   } catch (error) {
     appLogger.error('Error in audit cleanup', error as Error, { instanceId: INSTANCE_ID });
+  }
+}, { timezone: CRON_TIMEZONE });
+
+// WHATSAPP: Lembretes automáticos de consulta - a cada hora
+// Verifica eventos das próximas 24h e envia lembretes via WhatsApp
+CRON_ENABLED && cron.schedule('0 * * * *', async () => {
+  const { isLeader, fencingToken } = await tryBecomeLeader();
+
+  if (!isLeader) {
+    appLogger.debug('Not leader, skipping appointment reminders', { instanceId: INSTANCE_ID });
+    return;
+  }
+
+  if (!await validateLeadership()) {
+    appLogger.warn('Leadership validation failed, aborting appointment reminders', { instanceId: INSTANCE_ID });
+    return;
+  }
+
+  appLogger.info('Starting appointment reminder job', { instanceId: INSTANCE_ID, fencingToken });
+
+  try {
+    const result = await processAppointmentReminders();
+    appLogger.info('Appointment reminder job completed', {
+      instanceId: INSTANCE_ID,
+      processed: result.processed,
+      success: result.success,
+      failed: result.failed,
+    });
+  } catch (error) {
+    appLogger.error('Error in appointment reminder job', error as Error, { instanceId: INSTANCE_ID });
   }
 }, { timezone: CRON_TIMEZONE });
 

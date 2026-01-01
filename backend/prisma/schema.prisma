@@ -94,6 +94,13 @@ model Company {
   pnjs                  PNJ[]
   pnjDocuments          PNJDocument[]
 
+  // WhatsApp Business API
+  whatsAppConfig              WhatsAppConfig?
+  whatsAppTemplates           WhatsAppTemplate[]
+  whatsAppCampaigns           WhatsAppCampaign[]
+  whatsAppCampaignRecipients  WhatsAppCampaignRecipient[]
+  whatsAppMessages            WhatsAppMessage[]
+
   @@map("companies")
 }
 
@@ -169,6 +176,9 @@ model User {
   pnjsCreated             PNJ[]         @relation("PNJCreator")
   pnjMovementsCreated     PNJMovement[] @relation("PNJMovementCreator")
   pnjDocumentsUploaded    PNJDocument[] @relation("PNJDocumentUploader")
+
+  // WhatsApp Business API
+  whatsAppCampaigns       WhatsAppCampaign[]
 
   @@unique([companyId, email])  // Email único por empresa (permite mesmo email em empresas diferentes)
   @@index([companyId])
@@ -1374,4 +1384,160 @@ model PNJDocument {
   @@index([pnjId])
   @@index([companyId])
   @@map("pnj_documents")
+}
+
+// ============================================================================
+// WHATSAPP BUSINESS API INTEGRATION
+// ============================================================================
+
+// Configuração WhatsApp Business API por empresa
+model WhatsAppConfig {
+  id                String   @id @default(uuid())
+  companyId         String   @unique  // Uma configuração por empresa
+
+  // Meta Business API credentials
+  phoneNumberId     String   // ID do número no Meta Business
+  businessAccountId String   // ID da conta Business (WABA)
+  accessToken       String   @db.Text  // Token permanente (criptografado AES-256)
+
+  // Configurações
+  isActive          Boolean  @default(true)
+  webhookVerifyToken String? // Token para verificação do webhook
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  company           Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@map("whatsapp_configs")
+}
+
+// Templates pré-aprovados pela Meta
+model WhatsAppTemplate {
+  id           String   @id @default(uuid())
+  companyId    String
+
+  name         String   // Nome do template na Meta (ex: "appointment_reminder")
+  category     String   // MARKETING, UTILITY, AUTHENTICATION
+  language     String   @default("pt_BR")
+  components   Json     // Estrutura do template (header, body, footer, buttons)
+  status       String   @default("PENDING") // PENDING, APPROVED, REJECTED
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  company      Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  campaigns    WhatsAppCampaign[]
+
+  @@unique([companyId, name])
+  @@index([companyId])
+  @@index([status])
+  @@map("whatsapp_templates")
+}
+
+// Campanhas de WhatsApp (similar a EmailCampaign)
+model WhatsAppCampaign {
+  id              String         @id @default(uuid())
+  companyId       String
+
+  name            String
+  templateId      String
+
+  status          CampaignStatus @default(draft)
+  totalRecipients Int            @default(0)
+  sentCount       Int            @default(0)
+  failedCount     Int            @default(0)
+  deliveredCount  Int            @default(0)
+  readCount       Int            @default(0)
+
+  scheduledAt     DateTime?
+  sentAt          DateTime?
+
+  createdBy       String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  company         Company                     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  template        WhatsAppTemplate            @relation(fields: [templateId], references: [id], onDelete: Restrict)
+  user            User?                       @relation(fields: [createdBy], references: [id], onDelete: SetNull)
+  recipients      WhatsAppCampaignRecipient[]
+
+  @@index([companyId])
+  @@index([status])
+  @@map("whatsapp_campaigns")
+}
+
+// Destinatários de campanha WhatsApp
+model WhatsAppCampaignRecipient {
+  id             String          @id @default(uuid())
+  campaignId     String
+  companyId      String          // Isolamento de tenant
+
+  recipientPhone String
+  recipientName  String?
+  variables      Json?           // Variáveis para o template
+
+  status         RecipientStatus @default(pending)
+  messageId      String?         // ID da mensagem retornado pela Meta
+  sentAt         DateTime?
+  deliveredAt    DateTime?
+  readAt         DateTime?
+  errorMessage   String?         @db.Text
+
+  createdAt      DateTime        @default(now())
+
+  campaign       WhatsAppCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  company        Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+  @@index([campaignId])
+  @@index([status])
+  @@map("whatsapp_campaign_recipients")
+}
+
+// Enum para tipo de mensagem WhatsApp
+enum WhatsAppMessageType {
+  CAMPAIGN    // Mensagem de campanha marketing
+  REMINDER    // Lembrete de consulta/evento
+  MANUAL      // Mensagem manual
+}
+
+// Log de todas as mensagens WhatsApp (campanhas + lembretes)
+model WhatsAppMessage {
+  id           String               @id @default(uuid())
+  companyId    String
+
+  // Referências opcionais
+  campaignId   String?              // Para mensagens de campanha
+  eventId      String?              // Para lembretes de consulta
+  clientId     String?              // Cliente destinatário
+
+  // Dados da mensagem
+  type         WhatsAppMessageType  @default(MANUAL)
+  phone        String
+  templateName String
+  variables    Json?                // Variáveis substituídas no template
+
+  // Status da Meta API
+  messageId    String?              // ID retornado pela Meta (wamid.xxx)
+  status       String               @default("pending") // pending, sent, delivered, read, failed
+  errorCode    String?              // Código de erro da Meta
+  errorMessage String?              @db.Text
+
+  // Timestamps de status
+  sentAt       DateTime?
+  deliveredAt  DateTime?
+  readAt       DateTime?
+  failedAt     DateTime?
+
+  createdAt    DateTime             @default(now())
+
+  company      Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+  @@index([companyId, status])
+  @@index([companyId, eventId])
+  @@index([messageId])
+  @@index([createdAt])
+  @@map("whatsapp_messages")
 }

@@ -27,11 +27,17 @@ import portalRoutes from './portal.routes';
 import announcementsRoutes from './announcements.routes';
 import googleCalendarRoutes from './google-calendar.routes';
 import googleCalendarConfigRoutes from './google-calendar-config.routes';
+import whatsappConfigRoutes from './whatsapp-config.routes';
+import whatsappCampaignRoutes from './whatsapp-campaign.routes';
+import whatsappWebhookRoutes from './whatsapp-webhook.routes';
 
 const router = Router();
 
 // Auth routes (sem rate limit por empresa - nao autenticado)
 router.use('/auth', authRoutes);
+
+// WhatsApp Webhook (sem autenticação - verificado por token)
+router.use('/whatsapp-webhook', whatsappWebhookRoutes);
 
 // Nota: companyRateLimit é aplicado em cada route file após authenticate
 // para garantir que req.user esteja disponível
@@ -63,5 +69,7 @@ router.use('/portal', portalRoutes); // Portal do cliente (acesso restrito a usu
 router.use('/announcements', announcementsRoutes); // Gestão de anúncios do portal (ADMIN)
 router.use('/google-calendar', googleCalendarRoutes); // Integração Google Calendar (OAuth + sync)
 router.use('/google-calendar-config', googleCalendarConfigRoutes); // Configuração Google Calendar por empresa (ADMIN)
+router.use('/whatsapp-config', whatsappConfigRoutes); // Configuração WhatsApp Business API por empresa (ADMIN)
+router.use('/whatsapp-campaigns', whatsappCampaignRoutes); // Campanhas de marketing WhatsApp (ADMIN)
 
 export default router;
