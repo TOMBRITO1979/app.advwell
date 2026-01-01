@@ -14,6 +14,11 @@ import {
   Clock,
   Loader2,
   User,
+  Upload,
+  Download,
+  Link,
+  File,
+  ExternalLink,
 } from 'lucide-react';
 import MobileCardList, { MobileCardItem } from '../components/MobileCardList';
 import { formatDate } from '../utils/dateFormatter';
@@ -42,6 +47,27 @@ interface PNJMovement {
   };
 }
 
+type StorageType = 'upload' | 'link';
+type ExternalType = 'google_drive' | 'google_docs' | 'minio' | 'other';
+
+interface PNJDocument {
+  id: string;
+  name: string;
+  description?: string;
+  storageType: StorageType;
+  fileUrl?: string;
+  fileKey?: string;
+  fileSize?: number;
+  fileType?: string;
+  externalUrl?: string;
+  externalType?: ExternalType;
+  createdAt: string;
+  user?: {
+    id: string;
+    name: string;
+  };
+}
+
 interface PNJ {
   id: string;
   number: string;
@@ -64,9 +90,11 @@ interface PNJ {
   };
   parts?: PNJPart[];
   movements?: PNJMovement[];
+  documents?: PNJDocument[];
   _count?: {
     parts: number;
     movements: number;
+    documents: number;
   };
   createdAt: string;
   updatedAt: string;
@@ -127,7 +155,7 @@ const PNJPage: React.FC = () => {
   const [saving, setSaving] = useState(false);
 
   // Tab state for details modal
-  const [activeTab, setActiveTab] = useState<'data' | 'parts' | 'movements'>('data');
+  const [activeTab, setActiveTab] = useState<'data' | 'parts' | 'movements' | 'documents'>('data');
 
   // Part form state
   const [showPartModal, setShowPartModal] = useState(false);
@@ -169,6 +197,16 @@ const PNJPage: React.FC = () => {
   const [inlineMovementDate, setInlineMovementDate] = useState(new Date().toISOString().split('T')[0]);
   const [inlineMovementDescription, setInlineMovementDescription] = useState('');
   const [savingInlineMovement, setSavingInlineMovement] = useState(false);
+
+  // Document upload state
+  const [showDocumentModal, setShowDocumentModal] = useState(false);
+  const [documentMode, setDocumentMode] = useState<'upload' | 'link'>('upload');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [documentName, setDocumentName] = useState('');
+  const [documentDescription, setDocumentDescription] = useState('');
+  const [externalUrl, setExternalUrl] = useState('');
+  const [externalType, setExternalType] = useState<ExternalType>('other');
+  const [uploadingDocument, setUploadingDocument] = useState(false);
 
   useEffect(() => {
     loadPNJs();
@@ -479,6 +517,116 @@ const PNJPage: React.FC = () => {
     } finally {
       setSavingInlineMovement(false);
     }
+  };
+
+  // ============================================================================
+  // DOCUMENTOS
+  // ============================================================================
+
+  const resetDocumentForm = () => {
+    setDocumentMode('upload');
+    setSelectedFile(null);
+    setDocumentName('');
+    setDocumentDescription('');
+    setExternalUrl('');
+    setExternalType('other');
+  };
+
+  const handleAddDocument = () => {
+    resetDocumentForm();
+    setShowDocumentModal(true);
+  };
+
+  const handleDocumentSubmit = async () => {
+    if (!selectedPNJ) return;
+
+    if (documentMode === 'upload') {
+      if (!selectedFile) {
+        toast.error('Selecione um arquivo');
+        return;
+      }
+
+      setUploadingDocument(true);
+      try {
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+        formData.append('name', documentName || selectedFile.name);
+        if (documentDescription) formData.append('description', documentDescription);
+
+        await api.post(`/pnj/${selectedPNJ.id}/documents/upload`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        toast.success('Documento enviado com sucesso!');
+        setShowDocumentModal(false);
+        resetDocumentForm();
+        // Reload PNJ details
+        const response = await api.get(`/pnj/${selectedPNJ.id}`);
+        setSelectedPNJ(response.data);
+      } catch (error: any) {
+        toast.error(error.response?.data?.error || 'Erro ao enviar documento');
+      } finally {
+        setUploadingDocument(false);
+      }
+    } else {
+      if (!documentName.trim()) {
+        toast.error('Nome e obrigatorio');
+        return;
+      }
+      if (!externalUrl.trim()) {
+        toast.error('URL e obrigatoria');
+        return;
+      }
+
+      setUploadingDocument(true);
+      try {
+        await api.post(`/pnj/${selectedPNJ.id}/documents/link`, {
+          name: documentName,
+          description: documentDescription,
+          externalUrl,
+          externalType,
+        });
+        toast.success('Link adicionado com sucesso!');
+        setShowDocumentModal(false);
+        resetDocumentForm();
+        // Reload PNJ details
+        const response = await api.get(`/pnj/${selectedPNJ.id}`);
+        setSelectedPNJ(response.data);
+      } catch (error: any) {
+        toast.error(error.response?.data?.error || 'Erro ao adicionar link');
+      } finally {
+        setUploadingDocument(false);
+      }
+    }
+  };
+
+  const handleDeleteDocument = async (doc: PNJDocument) => {
+    if (!selectedPNJ) return;
+    if (!window.confirm(`Tem certeza que deseja excluir "${doc.name}"?`)) return;
+
+    try {
+      await api.delete(`/pnj/${selectedPNJ.id}/documents/${doc.id}`);
+      toast.success('Documento removido com sucesso!');
+      // Reload PNJ details
+      const response = await api.get(`/pnj/${selectedPNJ.id}`);
+      setSelectedPNJ(response.data);
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Erro ao remover documento');
+    }
+  };
+
+  const handleDownloadDocument = (doc: PNJDocument) => {
+    if (doc.storageType === 'upload' && doc.fileUrl) {
+      window.open(doc.fileUrl, '_blank', 'noopener,noreferrer');
+    } else if (doc.storageType === 'link' && doc.externalUrl) {
+      window.open(doc.externalUrl, '_blank', 'noopener,noreferrer');
+    }
+  };
+
+  const formatFileSize = (bytes?: number) => {
+    if (!bytes) return '-';
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
   const formatDateDisplay = (dateString?: string) => formatDate(dateString) || '-';
@@ -876,6 +1024,17 @@ const PNJPage: React.FC = () => {
                   <Clock size={16} className="inline mr-2" />
                   Andamentos ({selectedPNJ.movements?.length || 0})
                 </button>
+                <button
+                  onClick={() => setActiveTab('documents')}
+                  className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                    activeTab === 'documents'
+                      ? 'border-primary-500 text-primary-600'
+                      : 'border-transparent text-neutral-500 hover:text-neutral-700'
+                  }`}
+                >
+                  <File size={16} className="inline mr-2" />
+                  Documentos ({selectedPNJ.documents?.length || 0})
+                </button>
               </div>
             </div>
 
@@ -1028,6 +1187,76 @@ const PNJPage: React.FC = () => {
                     </div>
                   ) : (
                     <p className="text-center py-8 text-neutral-500">Nenhum andamento cadastrado</p>
+                  )}
+                </div>
+              )}
+
+              {/* Tab: Documentos */}
+              {activeTab === 'documents' && (
+                <div className="space-y-4">
+                  <div className="flex justify-end">
+                    <button
+                      onClick={handleAddDocument}
+                      className="inline-flex items-center gap-2 px-3 py-2 bg-primary-100 text-primary-700 border border-primary-200 hover:bg-primary-200 rounded-lg font-medium text-sm transition-all duration-200"
+                    >
+                      <Plus size={18} />
+                      Adicionar Documento
+                    </button>
+                  </div>
+
+                  {selectedPNJ.documents && selectedPNJ.documents.length > 0 ? (
+                    <div className="space-y-3">
+                      {selectedPNJ.documents.map((doc) => (
+                        <div key={doc.id} className="bg-neutral-50 rounded-lg p-4">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2">
+                                {doc.storageType === 'upload' ? (
+                                  <File size={18} className="text-primary-600" />
+                                ) : (
+                                  <Link size={18} className="text-blue-600" />
+                                )}
+                                <span className="font-medium text-neutral-900">{doc.name}</span>
+                              </div>
+                              {doc.description && (
+                                <p className="mt-1 text-sm text-neutral-600">{doc.description}</p>
+                              )}
+                              <div className="mt-2 flex items-center gap-4 text-xs text-neutral-500">
+                                {doc.storageType === 'upload' && (
+                                  <>
+                                    <span>{doc.fileType}</span>
+                                    <span>{formatFileSize(doc.fileSize)}</span>
+                                  </>
+                                )}
+                                {doc.storageType === 'link' && doc.externalType && (
+                                  <span className="capitalize">{doc.externalType.replace('_', ' ')}</span>
+                                )}
+                                <span>{formatDateDisplay(doc.createdAt)}</span>
+                                {doc.user && <span>por {doc.user.name}</span>}
+                              </div>
+                            </div>
+                            <div className="flex gap-2 ml-4">
+                              <button
+                                onClick={() => handleDownloadDocument(doc)}
+                                className="p-1.5 text-primary-600 hover:bg-primary-50 rounded"
+                                title={doc.storageType === 'upload' ? 'Baixar' : 'Abrir link'}
+                              >
+                                {doc.storageType === 'upload' ? <Download size={16} /> : <ExternalLink size={16} />}
+                              </button>
+                              <button
+                                onClick={() => handleDeleteDocument(doc)}
+                                className="p-1.5 text-error-600 hover:bg-error-50 rounded"
+                                title="Excluir"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-center py-8 text-neutral-500">Nenhum documento cadastrado</p>
                   )}
                 </div>
               )}
@@ -1310,6 +1539,179 @@ const PNJPage: React.FC = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Adicionar Documento */}
+      {showDocumentModal && (
+        <div className="modal-overlay">
+          <div className="modal-container sm:max-w-md">
+            <div className="modal-header">
+              <h2 className="text-lg font-bold text-neutral-900">
+                Adicionar Documento
+              </h2>
+              <button
+                onClick={() => {
+                  setShowDocumentModal(false);
+                  resetDocumentForm();
+                }}
+                className="p-2 text-neutral-400 hover:text-neutral-600 rounded-lg hover:bg-neutral-100"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className="modal-body">
+              {/* Tabs: Upload ou Link */}
+              <div className="flex border-b border-neutral-200 mb-4">
+                <button
+                  type="button"
+                  onClick={() => setDocumentMode('upload')}
+                  className={`flex-1 py-2 text-sm font-medium border-b-2 transition-colors ${
+                    documentMode === 'upload'
+                      ? 'border-primary-500 text-primary-600'
+                      : 'border-transparent text-neutral-500 hover:text-neutral-700'
+                  }`}
+                >
+                  <Upload size={16} className="inline mr-2" />
+                  Upload
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDocumentMode('link')}
+                  className={`flex-1 py-2 text-sm font-medium border-b-2 transition-colors ${
+                    documentMode === 'link'
+                      ? 'border-primary-500 text-primary-600'
+                      : 'border-transparent text-neutral-500 hover:text-neutral-700'
+                  }`}
+                >
+                  <Link size={16} className="inline mr-2" />
+                  Link Externo
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                {documentMode === 'upload' ? (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                        Arquivo <span className="text-error-500">*</span>
+                      </label>
+                      <input
+                        type="file"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            setSelectedFile(file);
+                            if (!documentName) setDocumentName(file.name);
+                          }
+                        }}
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:font-medium file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
+                        accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.jpg,.jpeg,.png,.gif,.zip,.rar"
+                      />
+                      {selectedFile && (
+                        <p className="mt-1 text-xs text-neutral-500">
+                          {selectedFile.name} ({formatFileSize(selectedFile.size)})
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                        Nome do documento
+                      </label>
+                      <input
+                        type="text"
+                        value={documentName}
+                        onChange={(e) => setDocumentName(e.target.value)}
+                        placeholder="Nome do arquivo se diferente"
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                        Nome <span className="text-error-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={documentName}
+                        onChange={(e) => setDocumentName(e.target.value)}
+                        placeholder="Nome do documento"
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                        URL <span className="text-error-500">*</span>
+                      </label>
+                      <input
+                        type="url"
+                        value={externalUrl}
+                        onChange={(e) => setExternalUrl(e.target.value)}
+                        placeholder="https://..."
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                        Tipo de link
+                      </label>
+                      <select
+                        value={externalType}
+                        onChange={(e) => setExternalType(e.target.value as ExternalType)}
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                      >
+                        <option value="google_drive">Google Drive</option>
+                        <option value="google_docs">Google Docs</option>
+                        <option value="minio">MinIO/S3</option>
+                        <option value="other">Outro</option>
+                      </select>
+                    </div>
+                  </>
+                )}
+
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    Descricao
+                  </label>
+                  <textarea
+                    value={documentDescription}
+                    onChange={(e) => setDocumentDescription(e.target.value)}
+                    rows={2}
+                    placeholder="Descricao opcional"
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-neutral-200">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowDocumentModal(false);
+                    resetDocumentForm();
+                  }}
+                  className="px-4 py-2 bg-white border border-neutral-300 hover:bg-neutral-50 text-neutral-700 rounded-lg font-medium text-sm min-h-[44px]"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDocumentSubmit}
+                  disabled={uploadingDocument}
+                  className="px-4 py-2 bg-primary-100 text-primary-700 border border-primary-200 hover:bg-primary-200 rounded-lg font-medium text-sm min-h-[44px] disabled:opacity-50 inline-flex items-center gap-2"
+                >
+                  {uploadingDocument ? <Loader2 size={18} className="animate-spin" /> : <Upload size={18} />}
+                  {documentMode === 'upload' ? 'Enviar' : 'Adicionar'}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

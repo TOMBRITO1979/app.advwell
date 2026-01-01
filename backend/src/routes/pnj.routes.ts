@@ -5,6 +5,7 @@ import pnjController from '../controllers/pnj.controller';
 import { authenticate } from '../middleware/auth';
 import { validateTenant } from '../middleware/tenant';
 import { companyRateLimit } from '../middleware/company-rate-limit';
+import { upload, validateUploadContent } from '../middleware/upload';
 
 const router = Router();
 
@@ -122,5 +123,17 @@ router.delete('/:id/parts/:partId', pnjController.removePart);
 router.post('/:id/movements', movementValidation, validate, pnjController.addMovement);
 router.put('/:id/movements/:movementId', movementValidation, validate, pnjController.updateMovement);
 router.delete('/:id/movements/:movementId', pnjController.removeMovement);
+
+// ============================================================================
+// Documentos do PNJ
+// ============================================================================
+router.get('/:id/documents', pnjController.listDocuments);
+router.post('/:id/documents/upload', upload.single('file'), validateUploadContent, pnjController.uploadDocument);
+router.post('/:id/documents/link', [
+  body('name').trim().isLength({ min: 1, max: 300 }).withMessage('Nome deve ter entre 1 e 300 caracteres'),
+  body('externalUrl').trim().isURL().withMessage('URL inválida'),
+  body('externalType').optional().isIn(['google_drive', 'google_docs', 'minio', 'other']).withMessage('Tipo inválido'),
+], validate, pnjController.addExternalLink);
+router.delete('/:id/documents/:documentId', pnjController.deleteDocument);
 
 export default router;

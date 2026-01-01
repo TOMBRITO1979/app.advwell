@@ -239,7 +239,7 @@ services:
 
   # OTIMIZADO: 16GB server - 2 replicas para 50-80 escritorios
   backend:
-    image: tomautomations/advtom-backend:v1.8.1
+    image: tomautomations/advtom-backend:v1.8.3
     environment:
       # Timezone Brasil (São Paulo)
       - TZ=${TZ:-America/Sao_Paulo}
@@ -346,7 +346,7 @@ services:
         - "traefik.docker.network=network_public"
 
   frontend:
-    image: tomautomations/advtom-frontend:v1.8.2
+    image: tomautomations/advtom-frontend:v1.8.3
     environment:
       - TZ=${TZ:-America/Sao_Paulo}
       - VITE_API_URL=${VITE_API_URL}

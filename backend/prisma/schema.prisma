@@ -92,6 +92,7 @@ model Company {
 
   // PNJ - Processos Não Judiciais
   pnjs                  PNJ[]
+  pnjDocuments          PNJDocument[]
 
   @@map("companies")
 }
@@ -167,6 +168,7 @@ model User {
   // PNJ - Processos Não Judiciais
   pnjsCreated             PNJ[]         @relation("PNJCreator")
   pnjMovementsCreated     PNJMovement[] @relation("PNJMovementCreator")
+  pnjDocumentsUploaded    PNJDocument[] @relation("PNJDocumentUploader")
 
   @@unique([companyId, email])  // Email único por empresa (permite mesmo email em empresas diferentes)
   @@index([companyId])
@@ -1283,6 +1285,7 @@ model PNJ {
 
   parts       PNJPart[]
   movements   PNJMovement[]
+  documents   PNJDocument[]
 
   @@index([companyId])
   @@index([clientId])
@@ -1335,4 +1338,40 @@ model PNJMovement {
   @@index([pnjId])
   @@index([date])
   @@map("pnj_movements")
+}
+
+// Tabela de Documentos do PNJ
+model PNJDocument {
+  id          String        @id @default(uuid())
+  pnjId       String
+  companyId   String
+
+  // Dados do documento
+  name        String
+  description String?
+  storageType StorageType   @default(upload)
+
+  // Para uploads (S3)
+  fileUrl     String?
+  fileKey     String?       // Chave no S3
+  fileSize    Int?          // Tamanho em bytes
+  fileType    String?       // MIME type
+
+  // Para links externos
+  externalUrl  String?
+  externalType ExternalType?
+
+  // Metadados
+  uploadedBy  String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // Relacionamentos
+  pnj         PNJ           @relation(fields: [pnjId], references: [id], onDelete: Cascade)
+  company     Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user        User?         @relation("PNJDocumentUploader", fields: [uploadedBy], references: [id], onDelete: SetNull)
+
+  @@index([pnjId])
+  @@index([companyId])
+  @@map("pnj_documents")
 }

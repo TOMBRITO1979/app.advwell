@@ -3,6 +3,7 @@ import { AuthRequest } from '../middleware/auth';
 import prisma from '../utils/prisma';
 import { sanitizeString } from '../utils/sanitize';
 import { appLogger } from '../utils/logger';
+import { uploadToS3, deleteFromS3, getSignedS3Url } from '../utils/s3';
 
 export class PNJController {
   /**
@@ -111,11 +112,40 @@ export class PNJController {
               },
             },
           },
+          documents: {
+            orderBy: { createdAt: 'desc' },
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          },
         },
       });
 
       if (!pnj) {
         return res.status(404).json({ error: 'PNJ não encontrado' });
+      }
+
+      // Gerar URLs assinadas para documentos do S3
+      if (pnj.documents && pnj.documents.length > 0) {
+        const documentsWithUrls = await Promise.all(
+          pnj.documents.map(async (doc) => {
+            if (doc.storageType === 'upload' && doc.fileKey) {
+              try {
+                const signedUrl = await getSignedS3Url(doc.fileKey);
+                return { ...doc, fileUrl: signedUrl };
+              } catch (error) {
+                return doc;
+              }
+            }
+            return doc;
+          })
+        );
+        return res.json({ ...pnj, documents: documentsWithUrls });
       }
 
       res.json(pnj);
@@ -595,6 +625,253 @@ export class PNJController {
     } catch (error) {
       appLogger.error('Erro ao remover andamento do PNJ:', error as Error);
       res.status(500).json({ error: 'Erro ao remover andamento' });
+    }
+  }
+
+  // ============================================================================
+  // DOCUMENTOS DO PNJ
+  // ============================================================================
+
+  /**
+   * Listar documentos do PNJ
+   */
+  async listDocuments(req: AuthRequest, res: Response) {
+    try {
+      const { id } = req.params;
+      const companyId = req.user!.companyId;
+
+      // Verificar se PNJ existe e pertence à empresa
+      const pnj = await prisma.pNJ.findFirst({
+        where: {
+          id,
+          companyId: companyId!,
+        },
+      });
+
+      if (!pnj) {
+        return res.status(404).json({ error: 'PNJ não encontrado' });
+      }
+
+      const documents = await prisma.pNJDocument.findMany({
+        where: {
+          pnjId: id,
+          companyId: companyId!,
+        },
+        orderBy: { createdAt: 'desc' },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      });
+
+      // Gerar URLs assinadas para documentos do S3
+      const documentsWithUrls = await Promise.all(
+        documents.map(async (doc) => {
+          if (doc.storageType === 'upload' && doc.fileKey) {
+            try {
+              const signedUrl = await getSignedS3Url(doc.fileKey);
+              return { ...doc, fileUrl: signedUrl };
+            } catch (error) {
+              appLogger.error('Erro ao gerar URL assinada:', error as Error);
+              return doc;
+            }
+          }
+          return doc;
+        })
+      );
+
+      res.json(documentsWithUrls);
+    } catch (error) {
+      appLogger.error('Erro ao listar documentos do PNJ:', error as Error);
+      res.status(500).json({ error: 'Erro ao listar documentos' });
+    }
+  }
+
+  /**
+   * Upload de documento para o PNJ
+   */
+  async uploadDocument(req: AuthRequest, res: Response) {
+    try {
+      const { id } = req.params;
+      const companyId = req.user!.companyId;
+      const userId = req.user!.userId;
+      const { name, description } = req.body;
+      const file = req.file;
+
+      if (!companyId) {
+        return res.status(403).json({ error: 'Usuário não possui empresa associada' });
+      }
+
+      // Verificar se PNJ existe e pertence à empresa
+      const pnj = await prisma.pNJ.findFirst({
+        where: {
+          id,
+          companyId,
+        },
+      });
+
+      if (!pnj) {
+        return res.status(404).json({ error: 'PNJ não encontrado' });
+      }
+
+      if (!file) {
+        return res.status(400).json({ error: 'Arquivo é obrigatório' });
+      }
+
+      // Upload para S3
+      const { key, url } = await uploadToS3(file, companyId);
+
+      // Criar registro no banco
+      const document = await prisma.pNJDocument.create({
+        data: {
+          pnjId: id,
+          companyId,
+          name: sanitizeString(name) || file.originalname,
+          description: sanitizeString(description) || null,
+          storageType: 'upload',
+          fileUrl: url,
+          fileKey: key,
+          fileSize: file.size,
+          fileType: file.mimetype,
+          uploadedBy: userId,
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      });
+
+      appLogger.info('Documento PNJ uploaded', { documentId: document.id, pnjId: id, companyId });
+
+      res.status(201).json(document);
+    } catch (error) {
+      appLogger.error('Erro ao fazer upload de documento do PNJ:', error as Error);
+      res.status(500).json({ error: 'Erro ao fazer upload do documento' });
+    }
+  }
+
+  /**
+   * Adicionar link externo como documento do PNJ
+   */
+  async addExternalLink(req: AuthRequest, res: Response) {
+    try {
+      const { id } = req.params;
+      const companyId = req.user!.companyId;
+      const userId = req.user!.userId;
+      const { name, description, externalUrl, externalType } = req.body;
+
+      if (!companyId) {
+        return res.status(403).json({ error: 'Usuário não possui empresa associada' });
+      }
+
+      // Verificar se PNJ existe e pertence à empresa
+      const pnj = await prisma.pNJ.findFirst({
+        where: {
+          id,
+          companyId,
+        },
+      });
+
+      if (!pnj) {
+        return res.status(404).json({ error: 'PNJ não encontrado' });
+      }
+
+      if (!name || !name.trim()) {
+        return res.status(400).json({ error: 'Nome é obrigatório' });
+      }
+
+      if (!externalUrl || !externalUrl.trim()) {
+        return res.status(400).json({ error: 'URL é obrigatória' });
+      }
+
+      // Criar registro no banco
+      const document = await prisma.pNJDocument.create({
+        data: {
+          pnjId: id,
+          companyId,
+          name: sanitizeString(name) || name.trim(),
+          description: sanitizeString(description) || null,
+          storageType: 'link',
+          externalUrl: externalUrl.trim(),
+          externalType: externalType || 'other',
+          uploadedBy: userId,
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      });
+
+      appLogger.info('Link externo PNJ adicionado', { documentId: document.id, pnjId: id, companyId });
+
+      res.status(201).json(document);
+    } catch (error) {
+      appLogger.error('Erro ao adicionar link externo do PNJ:', error as Error);
+      res.status(500).json({ error: 'Erro ao adicionar link' });
+    }
+  }
+
+  /**
+   * Deletar documento do PNJ
+   */
+  async deleteDocument(req: AuthRequest, res: Response) {
+    try {
+      const { id, documentId } = req.params;
+      const companyId = req.user!.companyId;
+
+      // Verificar se PNJ existe e pertence à empresa
+      const pnj = await prisma.pNJ.findFirst({
+        where: {
+          id,
+          companyId: companyId!,
+        },
+      });
+
+      if (!pnj) {
+        return res.status(404).json({ error: 'PNJ não encontrado' });
+      }
+
+      // Verificar se o documento existe
+      const document = await prisma.pNJDocument.findFirst({
+        where: {
+          id: documentId,
+          pnjId: id,
+          companyId: companyId!,
+        },
+      });
+
+      if (!document) {
+        return res.status(404).json({ error: 'Documento não encontrado' });
+      }
+
+      // Se for upload, deletar do S3
+      if (document.storageType === 'upload' && document.fileKey) {
+        await deleteFromS3(document.fileKey);
+      }
+
+      // Deletar do banco
+      await prisma.pNJDocument.delete({
+        where: { id: documentId },
+      });
+
+      appLogger.info('Documento PNJ deletado', { documentId, pnjId: id, companyId });
+
+      res.json({ message: 'Documento removido com sucesso' });
+    } catch (error) {
+      appLogger.error('Erro ao deletar documento do PNJ:', error as Error);
+      res.status(500).json({ error: 'Erro ao remover documento' });
     }
   }
 }
