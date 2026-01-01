@@ -53,6 +53,7 @@ const PortalLogin = lazy(() => import('./portal/pages/PortalLogin'));
 const PortalDashboard = lazy(() => import('./portal/pages/PortalDashboard'));
 const PortalCases = lazy(() => import('./portal/pages/PortalCases'));
 const PortalCaseDetails = lazy(() => import('./portal/pages/PortalCaseDetails'));
+const PortalPNJDetails = lazy(() => import('./portal/pages/PortalPNJDetails'));
 const PortalProfile = lazy(() => import('./portal/pages/PortalProfile'));
 const PortalCompany = lazy(() => import('./portal/pages/PortalCompany'));
 const PortalAnnouncements = lazy(() => import('./portal/pages/PortalAnnouncements'));
@@ -434,6 +435,14 @@ function App() {
             element={
               <PortalRoute>
                 <PortalCaseDetails />
+              </PortalRoute>
+            }
+          />
+          <Route
+            path="/portal/pnjs/:id"
+            element={
+              <PortalRoute>
+                <PortalPNJDetails />
               </PortalRoute>
             }
           />

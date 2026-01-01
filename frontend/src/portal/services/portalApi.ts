@@ -87,6 +87,42 @@ export interface PortalAnnouncement {
   };
 }
 
+// PNJ Types
+export interface PortalPNJ {
+  id: string;
+  number: string;
+  protocol: string | null;
+  title: string;
+  description: string | null;
+  status: 'ACTIVE' | 'ARCHIVED' | 'FINISHED';
+  openDate: string;
+  closeDate: string | null;
+  createdAt: string;
+  updatedAt: string;
+  lastMovement: {
+    id: string;
+    description: string;
+    date: string;
+  } | null;
+}
+
+export interface PortalPNJDetails extends Omit<PortalPNJ, 'lastMovement'> {
+  parts: {
+    id: string;
+    type: 'PARTE_CONTRARIA' | 'INTERESSADO' | 'TESTEMUNHA' | 'OUTRO';
+    name: string;
+    document: string | null;
+  }[];
+}
+
+export interface PortalPNJMovement {
+  id: string;
+  description: string;
+  date: string;
+  notes: string | null;
+  createdAt: string;
+}
+
 export interface PortalDashboardStats {
   totalCases: number;
   activeCases: number;
@@ -139,6 +175,22 @@ export const portalApi = {
 
   getAnnouncements: async (): Promise<PortalAnnouncement[]> => {
     const response = await api.get('/portal/announcements');
+    return response.data;
+  },
+
+  // PNJ endpoints
+  getPNJs: async (): Promise<PortalPNJ[]> => {
+    const response = await api.get('/portal/pnjs');
+    return response.data;
+  },
+
+  getPNJDetails: async (id: string): Promise<PortalPNJDetails> => {
+    const response = await api.get(`/portal/pnjs/${id}`);
+    return response.data;
+  },
+
+  getPNJMovements: async (id: string): Promise<PortalPNJMovement[]> => {
+    const response = await api.get(`/portal/pnjs/${id}/movements`);
     return response.data;
   },
 };

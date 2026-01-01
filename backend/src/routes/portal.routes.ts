@@ -17,10 +17,15 @@ router.get('/profile', portalController.getProfile);
 // Dados do escritório
 router.get('/company', portalController.getCompany);
 
-// Processos
+// Processos Judiciais
 router.get('/cases', portalController.getCases);
 router.get('/cases/:id', portalController.getCaseDetails);
 router.get('/cases/:id/movements', portalController.getCaseMovements);
+
+// Processos Não Judiciais (PNJ)
+router.get('/pnjs', portalController.getPNJs);
+router.get('/pnjs/:id', portalController.getPNJDetails);
+router.get('/pnjs/:id/movements', portalController.getPNJMovements);
 
 // Anúncios
 router.get('/announcements', portalController.getAnnouncements);

@@ -296,6 +296,152 @@ export class PortalController {
   }
 
   /**
+   * Lista os PNJs do cliente
+   * GET /api/portal/pnjs
+   */
+  async getPNJs(req: AuthRequest, res: Response) {
+    try {
+      const clientId = req.user!.clientId;
+      const companyId = req.user!.companyId;
+
+      const pnjs = await prisma.pNJ.findMany({
+        where: {
+          clientId,
+          companyId,
+        },
+        select: {
+          id: true,
+          number: true,
+          protocol: true,
+          title: true,
+          description: true,
+          status: true,
+          openDate: true,
+          closeDate: true,
+          createdAt: true,
+          updatedAt: true,
+          movements: {
+            orderBy: { date: 'desc' },
+            take: 1,
+            select: {
+              id: true,
+              description: true,
+              date: true,
+            },
+          },
+        },
+        orderBy: { updatedAt: 'desc' },
+      });
+
+      // Formatar resposta com último movimento
+      const formattedPNJs = pnjs.map(pnj => ({
+        ...pnj,
+        lastMovement: pnj.movements[0] || null,
+        movements: undefined,
+      }));
+
+      res.json(formattedPNJs);
+    } catch (error) {
+      appLogger.error('Erro ao listar PNJs do cliente:', error as Error);
+      res.status(500).json({ error: 'Erro ao buscar processos não judiciais' });
+    }
+  }
+
+  /**
+   * Retorna detalhes de um PNJ específico
+   * GET /api/portal/pnjs/:id
+   */
+  async getPNJDetails(req: AuthRequest, res: Response) {
+    try {
+      const { id } = req.params;
+      const clientId = req.user!.clientId;
+      const companyId = req.user!.companyId;
+
+      const pnjDetails = await prisma.pNJ.findFirst({
+        where: {
+          id,
+          clientId,
+          companyId,
+        },
+        select: {
+          id: true,
+          number: true,
+          protocol: true,
+          title: true,
+          description: true,
+          status: true,
+          openDate: true,
+          closeDate: true,
+          createdAt: true,
+          updatedAt: true,
+          parts: {
+            select: {
+              id: true,
+              type: true,
+              name: true,
+              document: true,
+            },
+          },
+        },
+      });
+
+      if (!pnjDetails) {
+        return res.status(404).json({ error: 'Processo não judicial não encontrado' });
+      }
+
+      res.json(pnjDetails);
+    } catch (error) {
+      appLogger.error('Erro ao buscar detalhes do PNJ:', error as Error);
+      res.status(500).json({ error: 'Erro ao buscar detalhes do processo não judicial' });
+    }
+  }
+
+  /**
+   * Lista as movimentações de um PNJ
+   * GET /api/portal/pnjs/:id/movements
+   */
+  async getPNJMovements(req: AuthRequest, res: Response) {
+    try {
+      const { id } = req.params;
+      const clientId = req.user!.clientId;
+      const companyId = req.user!.companyId;
+
+      // Verificar se o PNJ pertence ao cliente
+      const pnjExists = await prisma.pNJ.findFirst({
+        where: {
+          id,
+          clientId,
+          companyId,
+        },
+        select: { id: true },
+      });
+
+      if (!pnjExists) {
+        return res.status(404).json({ error: 'Processo não judicial não encontrado' });
+      }
+
+      const movements = await prisma.pNJMovement.findMany({
+        where: {
+          pnjId: id,
+        },
+        select: {
+          id: true,
+          description: true,
+          date: true,
+          notes: true,
+          createdAt: true,
+        },
+        orderBy: { date: 'desc' },
+      });
+
+      res.json(movements);
+    } catch (error) {
+      appLogger.error('Erro ao listar movimentações do PNJ:', error as Error);
+      res.status(500).json({ error: 'Erro ao buscar movimentações' });
+    }
+  }
+
+  /**
    * Retorna estatísticas do dashboard do portal
    * GET /api/portal/dashboard
    */
