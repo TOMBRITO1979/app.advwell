@@ -208,6 +208,12 @@ const PNJPage: React.FC = () => {
   const [externalType, setExternalType] = useState<ExternalType>('other');
   const [uploadingDocument, setUploadingDocument] = useState(false);
 
+  // CSV import state
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [importing, setImporting] = useState(false);
+  const [exporting, setExporting] = useState(false);
+
   useEffect(() => {
     loadPNJs();
     loadClients();
@@ -631,6 +637,61 @@ const PNJPage: React.FC = () => {
 
   const formatDateDisplay = (dateString?: string) => formatDate(dateString) || '-';
 
+  // ============================================================================
+  // CSV EXPORT/IMPORT
+  // ============================================================================
+
+  const handleExportCSV = async () => {
+    setExporting(true);
+    try {
+      const response = await api.get('/pnj/export/csv', {
+        params: { search, status: statusFilter },
+        responseType: 'blob',
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `pnj_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success('Exportacao concluida!');
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Erro ao exportar CSV');
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const handleImportCSV = async () => {
+    if (!importFile) {
+      toast.error('Selecione um arquivo CSV');
+      return;
+    }
+
+    setImporting(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', importFile);
+      const response = await api.post('/pnj/import/csv', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      const { imported, skipped, total, errors } = response.data;
+      toast.success(`Importacao concluida: ${imported} de ${total} registros importados${skipped > 0 ? `, ${skipped} ignorados` : ''}`);
+      if (errors && errors.length > 0) {
+        console.warn('Erros na importacao:', errors);
+      }
+      setShowImportModal(false);
+      setImportFile(null);
+      loadPNJs();
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Erro ao importar CSV');
+    } finally {
+      setImporting(false);
+    }
+  };
+
   return (
     <Layout>
       <div className="space-y-4 sm:space-y-6">
@@ -641,7 +702,7 @@ const PNJPage: React.FC = () => {
           </h1>
 
           {/* Action Buttons */}
-          <div className="flex gap-2 sm:gap-3">
+          <div className="flex flex-wrap gap-2 sm:gap-3">
             <button
               onClick={handleNewPNJ}
               className="inline-flex items-center justify-center gap-2 px-2 sm:px-4 py-2 rounded-lg bg-primary-100 text-primary-700 border border-primary-200 hover:bg-primary-200 font-medium text-sm transition-all duration-200 min-h-[44px]"
@@ -649,6 +710,23 @@ const PNJPage: React.FC = () => {
               <Plus size={20} />
               <span className="hidden sm:inline">Novo PNJ</span>
               <span className="sm:hidden">Novo</span>
+            </button>
+            <button
+              onClick={handleExportCSV}
+              disabled={exporting || pnjs.length === 0}
+              className="inline-flex items-center justify-center gap-2 px-2 sm:px-4 py-2 rounded-lg bg-white text-neutral-700 border border-neutral-300 hover:bg-neutral-50 font-medium text-sm transition-all duration-200 min-h-[44px] disabled:opacity-50"
+            >
+              {exporting ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
+              <span className="hidden sm:inline">Exportar CSV</span>
+              <span className="sm:hidden">Exportar</span>
+            </button>
+            <button
+              onClick={() => setShowImportModal(true)}
+              className="inline-flex items-center justify-center gap-2 px-2 sm:px-4 py-2 rounded-lg bg-white text-neutral-700 border border-neutral-300 hover:bg-neutral-50 font-medium text-sm transition-all duration-200 min-h-[44px]"
+            >
+              <Upload size={18} />
+              <span className="hidden sm:inline">Importar CSV</span>
+              <span className="sm:hidden">Importar</span>
             </button>
           </div>
         </div>
@@ -1709,6 +1787,85 @@ const PNJPage: React.FC = () => {
                 >
                   {uploadingDocument ? <Loader2 size={18} className="animate-spin" /> : <Upload size={18} />}
                   {documentMode === 'upload' ? 'Enviar' : 'Adicionar'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Importar CSV */}
+      {showImportModal && (
+        <div className="modal-overlay">
+          <div className="modal-container sm:max-w-md">
+            <div className="modal-header">
+              <h2 className="text-lg font-bold text-neutral-900">
+                Importar PNJs via CSV
+              </h2>
+              <button
+                onClick={() => {
+                  setShowImportModal(false);
+                  setImportFile(null);
+                }}
+                className="p-2 text-neutral-400 hover:text-neutral-600 rounded-lg hover:bg-neutral-100"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className="modal-body">
+              <div className="space-y-4">
+                <div className="bg-neutral-50 rounded-lg p-4 text-sm text-neutral-600">
+                  <p className="font-medium text-neutral-700 mb-2">Formato do arquivo CSV:</p>
+                  <p>Colunas aceitas:</p>
+                  <ul className="list-disc list-inside mt-1 space-y-1">
+                    <li><strong>Numero*</strong> - Numero do PNJ (obrigatorio)</li>
+                    <li><strong>Titulo*</strong> - Titulo (obrigatorio)</li>
+                    <li><strong>Protocolo</strong> - Protocolo</li>
+                    <li><strong>Descricao</strong> - Descricao</li>
+                    <li><strong>Status</strong> - Ativo, Arquivado ou Encerrado</li>
+                    <li><strong>Data Abertura</strong> - DD/MM/AAAA ou AAAA-MM-DD</li>
+                    <li><strong>Cliente</strong> - Nome do cliente</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    Arquivo CSV <span className="text-error-500">*</span>
+                  </label>
+                  <input
+                    type="file"
+                    accept=".csv"
+                    onChange={(e) => setImportFile(e.target.files?.[0] || null)}
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:font-medium file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
+                  />
+                  {importFile && (
+                    <p className="mt-1 text-xs text-neutral-500">
+                      Arquivo selecionado: {importFile.name}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-neutral-200">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowImportModal(false);
+                    setImportFile(null);
+                  }}
+                  className="px-4 py-2 bg-white border border-neutral-300 hover:bg-neutral-50 text-neutral-700 rounded-lg font-medium text-sm min-h-[44px]"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={handleImportCSV}
+                  disabled={importing || !importFile}
+                  className="px-4 py-2 bg-primary-100 text-primary-700 border border-primary-200 hover:bg-primary-200 rounded-lg font-medium text-sm min-h-[44px] disabled:opacity-50 inline-flex items-center gap-2"
+                >
+                  {importing ? <Loader2 size={18} className="animate-spin" /> : <Upload size={18} />}
+                  Importar
                 </button>
               </div>
             </div>

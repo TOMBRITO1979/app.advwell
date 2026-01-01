@@ -105,6 +105,8 @@ const movementValidation = [
 // CRUD de PNJ
 // ============================================================================
 router.get('/', pnjController.list);
+router.get('/export/csv', pnjController.exportCSV);
+router.post('/import/csv', upload.single('file'), pnjController.importCSV);
 router.get('/:id', pnjController.getById);
 router.post('/', pnjValidation, validate, pnjController.create);
 router.put('/:id', pnjValidation, validate, pnjController.update);

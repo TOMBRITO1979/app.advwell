@@ -4,6 +4,7 @@ import prisma from '../utils/prisma';
 import { sanitizeString } from '../utils/sanitize';
 import { appLogger } from '../utils/logger';
 import { uploadToS3, deleteFromS3, getSignedS3Url } from '../utils/s3';
+import { parse } from 'csv-parse/sync';
 
 export class PNJController {
   /**
@@ -872,6 +873,265 @@ export class PNJController {
     } catch (error) {
       appLogger.error('Erro ao deletar documento do PNJ:', error as Error);
       res.status(500).json({ error: 'Erro ao remover documento' });
+    }
+  }
+
+  // ============================================================================
+  // EXPORTAÇÃO E IMPORTAÇÃO CSV
+  // ============================================================================
+
+  /**
+   * Exportar PNJs para CSV
+   */
+  async exportCSV(req: AuthRequest, res: Response) {
+    try {
+      const companyId = req.user!.companyId;
+      const { status, search } = req.query;
+
+      if (!companyId) {
+        return res.status(403).json({ error: 'Usuário não possui empresa associada' });
+      }
+
+      // Build where clause
+      const where: any = { companyId };
+
+      if (status && status !== 'all') {
+        where.status = status;
+      }
+
+      if (search) {
+        where.OR = [
+          { number: { contains: search as string, mode: 'insensitive' } },
+          { title: { contains: search as string, mode: 'insensitive' } },
+          { protocol: { contains: search as string, mode: 'insensitive' } },
+        ];
+      }
+
+      const pnjs = await prisma.pNJ.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          client: {
+            select: {
+              name: true,
+            },
+          },
+          parts: true,
+          movements: {
+            orderBy: { date: 'desc' },
+            take: 1, // Apenas o último andamento
+          },
+        },
+      });
+
+      // Helper to escape CSV fields
+      const escapeCSV = (value: string | null | undefined): string => {
+        if (!value) return '';
+        const str = String(value);
+        if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+          return `"${str.replace(/"/g, '""')}"`;
+        }
+        return str;
+      };
+
+      // Helper to format date
+      const formatDate = (date: Date | string | null | undefined): string => {
+        if (!date) return '';
+        const d = new Date(date);
+        return d.toLocaleDateString('pt-BR');
+      };
+
+      // CSV Header
+      const csvHeader = 'Numero,Protocolo,Titulo,Descricao,Status,Data Abertura,Data Encerramento,Cliente,Partes,Ultimo Andamento\n';
+
+      // Status labels
+      const statusLabels: Record<string, string> = {
+        ACTIVE: 'Ativo',
+        ARCHIVED: 'Arquivado',
+        CLOSED: 'Encerrado',
+      };
+
+      // CSV Rows
+      const csvRows = pnjs.map((pnj) => {
+        const number = escapeCSV(pnj.number);
+        const protocol = escapeCSV(pnj.protocol);
+        const title = escapeCSV(pnj.title);
+        const description = escapeCSV(pnj.description);
+        const status = statusLabels[pnj.status] || pnj.status;
+        const openDate = formatDate(pnj.openDate);
+        const closeDate = formatDate(pnj.closeDate);
+        const clientName = escapeCSV(pnj.client?.name);
+        const parts = escapeCSV(pnj.parts?.map(p => p.name).join('; '));
+        const lastMovement = escapeCSV(pnj.movements?.[0]?.description);
+
+        return `${number},${protocol},${title},${description},${status},${openDate},${closeDate},${clientName},${parts},${lastMovement}`;
+      }).join('\n');
+
+      const csv = csvHeader + csvRows;
+
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader('Content-Disposition', `attachment; filename=pnj_${new Date().toISOString().split('T')[0]}.csv`);
+      res.send('\ufeff' + csv); // BOM for Excel UTF-8 recognition
+    } catch (error) {
+      appLogger.error('Erro ao exportar PNJs para CSV:', error as Error);
+      res.status(500).json({ error: 'Erro ao exportar CSV' });
+    }
+  }
+
+  /**
+   * Importar PNJs via CSV
+   */
+  async importCSV(req: AuthRequest, res: Response) {
+    try {
+      const companyId = req.user!.companyId;
+      const createdBy = req.user!.userId;
+
+      if (!companyId) {
+        return res.status(403).json({ error: 'Usuário não possui empresa associada' });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({ error: 'Nenhum arquivo enviado' });
+      }
+
+      // Remove BOM if present
+      const csvContent = req.file.buffer.toString('utf-8').replace(/^\ufeff/, '');
+
+      // Parse CSV
+      const records = parse(csvContent, {
+        columns: true,
+        skip_empty_lines: true,
+        trim: true,
+        bom: true,
+      }) as Record<string, string>[];
+
+      if (!records || records.length === 0) {
+        return res.status(400).json({ error: 'Arquivo CSV vazio ou inválido' });
+      }
+
+      // Status mapping
+      const statusMap: Record<string, string> = {
+        'ativo': 'ACTIVE',
+        'active': 'ACTIVE',
+        'arquivado': 'ARCHIVED',
+        'archived': 'ARCHIVED',
+        'encerrado': 'CLOSED',
+        'closed': 'CLOSED',
+      };
+
+      // Parse date helper
+      const parseDate = (dateStr: string): Date | null => {
+        if (!dateStr) return null;
+        // Try DD/MM/YYYY format
+        const parts = dateStr.split('/');
+        if (parts.length === 3) {
+          const [day, month, year] = parts;
+          return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+        }
+        // Try ISO format
+        const d = new Date(dateStr);
+        return isNaN(d.getTime()) ? null : d;
+      };
+
+      let imported = 0;
+      let skipped = 0;
+      const errors: string[] = [];
+
+      for (let i = 0; i < records.length; i++) {
+        const record = records[i];
+        const rowNum = i + 2; // +2 because row 1 is header
+
+        try {
+          // Get required fields
+          const number = record['Numero'] || record['numero'] || record['Number'];
+          const title = record['Titulo'] || record['titulo'] || record['Title'];
+
+          if (!number || !title) {
+            errors.push(`Linha ${rowNum}: Numero e Titulo sao obrigatorios`);
+            skipped++;
+            continue;
+          }
+
+          // Check if already exists
+          const existing = await prisma.pNJ.findFirst({
+            where: {
+              companyId,
+              number: number.trim(),
+            },
+          });
+
+          if (existing) {
+            errors.push(`Linha ${rowNum}: PNJ ${number} ja existe`);
+            skipped++;
+            continue;
+          }
+
+          // Get optional fields
+          const protocol = record['Protocolo'] || record['protocolo'] || record['Protocol'] || null;
+          const description = record['Descricao'] || record['descricao'] || record['Description'] || null;
+          const statusRaw = (record['Status'] || record['status'] || 'ativo').toLowerCase();
+          const status = statusMap[statusRaw] || 'ACTIVE';
+          const openDateStr = record['Data Abertura'] || record['data_abertura'] || record['OpenDate'];
+          const closeDateStr = record['Data Encerramento'] || record['data_encerramento'] || record['CloseDate'];
+
+          const openDate = parseDate(openDateStr) || new Date();
+          const closeDate = parseDate(closeDateStr);
+
+          // Find client by name if provided
+          let clientId: string | null = null;
+          const clientName = record['Cliente'] || record['cliente'] || record['Client'];
+          if (clientName) {
+            const client = await prisma.client.findFirst({
+              where: {
+                companyId,
+                name: { contains: clientName.trim(), mode: 'insensitive' },
+              },
+            });
+            if (client) {
+              clientId = client.id;
+            }
+          }
+
+          // Create PNJ
+          await prisma.pNJ.create({
+            data: {
+              companyId,
+              number: sanitizeString(number.trim()) || number.trim(),
+              protocol: protocol ? sanitizeString(protocol.trim()) : null,
+              title: sanitizeString(title.trim()) || title.trim(),
+              description: description ? sanitizeString(description) : null,
+              status: status as any,
+              openDate,
+              closeDate,
+              clientId,
+              createdBy,
+            },
+          });
+
+          imported++;
+        } catch (err: any) {
+          errors.push(`Linha ${rowNum}: ${err.message || 'Erro desconhecido'}`);
+          skipped++;
+        }
+      }
+
+      appLogger.info('Importacao CSV de PNJs concluida', {
+        companyId,
+        imported,
+        skipped,
+        total: records.length,
+      });
+
+      res.json({
+        message: `Importacao concluida: ${imported} importados, ${skipped} ignorados`,
+        imported,
+        skipped,
+        total: records.length,
+        errors: errors.length > 0 ? errors.slice(0, 10) : undefined, // Show first 10 errors
+      });
+    } catch (error: any) {
+      appLogger.error('Erro ao importar PNJs via CSV:', error as Error);
+      res.status(500).json({ error: error.message || 'Erro ao importar CSV' });
     }
   }
 }
