@@ -160,10 +160,34 @@ const PNJPage: React.FC = () => {
     openDate: new Date().toISOString().split('T')[0],
   });
 
+  // Client search/autocomplete state
+  const [clientSearch, setClientSearch] = useState('');
+  const [showClientDropdown, setShowClientDropdown] = useState(false);
+  const [filteredClients, setFilteredClients] = useState<Client[]>([]);
+
+  // Inline movement form state (at bottom of details modal)
+  const [inlineMovementDate, setInlineMovementDate] = useState(new Date().toISOString().split('T')[0]);
+  const [inlineMovementDescription, setInlineMovementDescription] = useState('');
+  const [savingInlineMovement, setSavingInlineMovement] = useState(false);
+
   useEffect(() => {
     loadPNJs();
     loadClients();
   }, [search, statusFilter]);
+
+  // Filter clients based on search text
+  useEffect(() => {
+    if (clientSearch.trim()) {
+      const filtered = clients.filter((client) =>
+        client.name.toLowerCase().includes(clientSearch.toLowerCase())
+      );
+      setFilteredClients(filtered);
+      setShowClientDropdown(true);
+    } else {
+      setFilteredClients([]);
+      setShowClientDropdown(false);
+    }
+  }, [clientSearch, clients]);
 
   const loadPNJs = async () => {
     try {
@@ -250,8 +274,21 @@ const PNJPage: React.FC = () => {
       clientId: pnj.clientId || '',
       openDate: pnj.openDate ? pnj.openDate.split('T')[0] : new Date().toISOString().split('T')[0],
     });
+    // Set client search text for autocomplete
+    setClientSearch(pnj.client?.name || '');
     setEditMode(true);
     setShowModal(true);
+  };
+
+  const handleSelectClient = (client: Client) => {
+    setFormData({ ...formData, clientId: client.id });
+    setClientSearch(client.name);
+    setShowClientDropdown(false);
+  };
+
+  const handleClearClient = () => {
+    setFormData({ ...formData, clientId: '' });
+    setClientSearch('');
   };
 
   const handleDelete = async (pnj: PNJ) => {
@@ -281,6 +318,7 @@ const PNJPage: React.FC = () => {
 
   const handleNewPNJ = () => {
     resetForm();
+    setClientSearch('');
     setEditMode(false);
     setSelectedPNJ(null);
     setShowModal(true);
@@ -412,6 +450,34 @@ const PNJPage: React.FC = () => {
       setSelectedPNJ(response.data);
     } catch (error: any) {
       toast.error(error.response?.data?.error || 'Erro ao excluir andamento');
+    }
+  };
+
+  // Inline movement form submission (at bottom of modal)
+  const handleAddInlineMovement = async () => {
+    if (!selectedPNJ) return;
+    if (!inlineMovementDescription.trim()) {
+      toast.error('Descricao do andamento e obrigatoria');
+      return;
+    }
+
+    setSavingInlineMovement(true);
+    try {
+      await api.post(`/pnj/${selectedPNJ.id}/movements`, {
+        date: inlineMovementDate,
+        description: inlineMovementDescription,
+      });
+      toast.success('Andamento adicionado com sucesso!');
+      // Reset form
+      setInlineMovementDate(new Date().toISOString().split('T')[0]);
+      setInlineMovementDescription('');
+      // Reload PNJ details
+      const response = await api.get(`/pnj/${selectedPNJ.id}`);
+      setSelectedPNJ(response.data);
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Erro ao adicionar andamento');
+    } finally {
+      setSavingInlineMovement(false);
     }
   };
 
@@ -654,22 +720,51 @@ const PNJPage: React.FC = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
+                  <div className="relative">
                     <label className="block text-sm font-medium text-neutral-700 mb-1">
                       Cliente
                     </label>
-                    <select
-                      value={formData.clientId}
-                      onChange={(e) => setFormData({ ...formData, clientId: e.target.value })}
-                      className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
-                    >
-                      <option value="">Selecione...</option>
-                      {clients.map((client) => (
-                        <option key={client.id} value={client.id}>
-                          {client.name}
-                        </option>
-                      ))}
-                    </select>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        placeholder="Digite para buscar..."
+                        value={clientSearch}
+                        onChange={(e) => {
+                          setClientSearch(e.target.value);
+                          if (!e.target.value) {
+                            setFormData({ ...formData, clientId: '' });
+                          }
+                        }}
+                        onFocus={() => {
+                          if (clientSearch.trim()) setShowClientDropdown(true);
+                        }}
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] pr-8"
+                      />
+                      {formData.clientId && (
+                        <button
+                          type="button"
+                          onClick={handleClearClient}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
+                        >
+                          <X size={16} />
+                        </button>
+                      )}
+                    </div>
+                    {/* Client dropdown */}
+                    {showClientDropdown && filteredClients.length > 0 && (
+                      <div className="absolute z-50 w-full mt-1 bg-white border border-neutral-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                        {filteredClients.map((client) => (
+                          <button
+                            key={client.id}
+                            type="button"
+                            onClick={() => handleSelectClient(client)}
+                            className="w-full px-3 py-2 text-left hover:bg-neutral-100 text-sm text-neutral-700"
+                          >
+                            {client.name}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-neutral-700 mb-1">
@@ -934,6 +1029,77 @@ const PNJPage: React.FC = () => {
                   ) : (
                     <p className="text-center py-8 text-neutral-500">Nenhum andamento cadastrado</p>
                   )}
+                </div>
+              )}
+            </div>
+
+            {/* Inline Movement Form - Always visible at bottom */}
+            <div className="border-t border-neutral-200 px-4 sm:px-6 py-4 bg-neutral-50">
+              <h3 className="text-sm font-semibold text-neutral-700 mb-3 flex items-center gap-2">
+                <Plus size={16} />
+                Adicionar Movimento
+              </h3>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="sm:w-36">
+                  <input
+                    type="date"
+                    value={inlineMovementDate}
+                    onChange={(e) => setInlineMovementDate(e.target.value)}
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm min-h-[40px]"
+                  />
+                </div>
+                <div className="flex-1">
+                  <input
+                    type="text"
+                    placeholder="Descricao do andamento..."
+                    value={inlineMovementDescription}
+                    onChange={(e) => setInlineMovementDescription(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !savingInlineMovement) {
+                        e.preventDefault();
+                        handleAddInlineMovement();
+                      }
+                    }}
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm min-h-[40px]"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={handleAddInlineMovement}
+                  disabled={savingInlineMovement || !inlineMovementDescription.trim()}
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-primary-600 text-white hover:bg-primary-700 rounded-lg font-medium text-sm transition-all duration-200 min-h-[40px] disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {savingInlineMovement ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
+                  Adicionar
+                </button>
+              </div>
+
+              {/* Recent movements list (newest first) */}
+              {selectedPNJ.movements && selectedPNJ.movements.length > 0 && (
+                <div className="mt-4 space-y-2 max-h-48 overflow-y-auto">
+                  {selectedPNJ.movements.map((movement) => (
+                    <div key={movement.id} className="flex items-start gap-3 p-2 bg-white rounded border border-neutral-200 text-sm">
+                      <span className="text-neutral-500 whitespace-nowrap flex items-center gap-1">
+                        <Clock size={12} />
+                        {formatDateDisplay(movement.date)}
+                      </span>
+                      <span className="flex-1 text-neutral-700">{movement.description}</span>
+                      <div className="flex gap-1">
+                        <button
+                          onClick={() => handleEditMovement(movement)}
+                          className="p-1 text-primary-600 hover:bg-primary-50 rounded"
+                        >
+                          <Edit size={14} />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteMovement(movement)}
+                          className="p-1 text-error-600 hover:bg-error-50 rounded"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
