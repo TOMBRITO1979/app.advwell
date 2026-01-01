@@ -82,6 +82,7 @@ interface PNJ {
   client?: {
     id: string;
     name: string;
+    cpf?: string;
     email?: string;
     phone?: string;
   };
@@ -732,7 +733,7 @@ const PNJPage: React.FC = () => {
               <Search size={20} className="text-neutral-400" />
               <input
                 type="text"
-                placeholder="Buscar por numero, protocolo ou titulo..."
+                placeholder="Buscar por numero, protocolo, titulo, cliente, CPF ou telefone..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="flex-1 px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 min-h-[44px]"
@@ -775,6 +776,7 @@ const PNJPage: React.FC = () => {
                     fields: [
                       { label: 'Protocolo', value: pnj.protocol || '-' },
                       { label: 'Cliente', value: pnj.client?.name || '-' },
+                      { label: 'CPF/Tel', value: pnj.client ? [pnj.client.cpf, pnj.client.phone].filter(Boolean).join(' | ') || '-' : '-' },
                       { label: 'Data', value: formatDateDisplay(pnj.openDate) },
                     ],
                     onView: () => handleViewDetails(pnj),
@@ -819,7 +821,20 @@ const PNJPage: React.FC = () => {
                         <td className="px-4 py-3 text-sm font-medium text-neutral-900">{pnj.number}</td>
                         <td className="px-4 py-3 text-sm text-neutral-600">{pnj.protocol || '-'}</td>
                         <td className="px-4 py-3 text-sm text-neutral-600 max-w-[200px] truncate">{pnj.title}</td>
-                        <td className="px-4 py-3 text-sm text-neutral-600">{pnj.client?.name || '-'}</td>
+                        <td className="px-4 py-3 text-sm text-neutral-600">
+                          {pnj.client ? (
+                            <div>
+                              <div className="font-medium">{pnj.client.name}</div>
+                              {(pnj.client.cpf || pnj.client.phone) && (
+                                <div className="text-xs text-neutral-400">
+                                  {pnj.client.cpf && <span>{pnj.client.cpf}</span>}
+                                  {pnj.client.cpf && pnj.client.phone && <span> | </span>}
+                                  {pnj.client.phone && <span>{pnj.client.phone}</span>}
+                                </div>
+                              )}
+                            </div>
+                          ) : '-'}
+                        </td>
                         <td className="px-4 py-3 text-sm">
                           <span
                             className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[pnj.status].bg} ${statusColors[pnj.status].text}`}

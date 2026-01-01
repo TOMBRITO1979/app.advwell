@@ -28,6 +28,9 @@ export class PNJController {
             { number: { contains: String(search), mode: 'insensitive' as const } },
             { protocol: { contains: String(search), mode: 'insensitive' as const } },
             { title: { contains: String(search), mode: 'insensitive' as const } },
+            { client: { name: { contains: String(search), mode: 'insensitive' as const } } },
+            { client: { cpf: { contains: String(search), mode: 'insensitive' as const } } },
+            { client: { phone: { contains: String(search), mode: 'insensitive' as const } } },
           ],
         }),
         ...(status && status !== 'ALL' && { status: String(status) }),
@@ -45,6 +48,8 @@ export class PNJController {
               select: {
                 id: true,
                 name: true,
+                cpf: true,
+                phone: true,
               },
             },
             _count: {
