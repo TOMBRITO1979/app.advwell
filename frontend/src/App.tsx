@@ -25,6 +25,7 @@ const AccountsPayable = lazy(() => import('./pages/AccountsPayable'));
 const Settings = lazy(() => import('./pages/Settings'));
 const Profile = lazy(() => import('./pages/Profile'));
 const SMTPSettings = lazy(() => import('./pages/SMTPSettings'));
+const WhatsAppSettings = lazy(() => import('./pages/WhatsAppSettings'));
 const AIConfig = lazy(() => import('./pages/AIConfig'));
 const Campaigns = lazy(() => import('./pages/Campaigns'));
 const Users = lazy(() => import('./pages/Users'));
@@ -314,6 +315,14 @@ function App() {
             element={
               <PrivateRoute>
                 <SMTPSettings />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/whatsapp-settings"
+            element={
+              <PrivateRoute>
+                <WhatsAppSettings />
               </PrivateRoute>
             }
           />

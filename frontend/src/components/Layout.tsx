@@ -34,6 +34,7 @@ import {
   History,
   Database,
   Key,
+  MessageCircle,
 } from 'lucide-react';
 
 interface SubscriptionStatus {
@@ -220,6 +221,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const credentialsItems = (user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') ? [
     { path: '/stripe-config', label: 'Config. Stripe', icon: CreditCard },
     { path: '/smtp-settings', label: 'Config. SMTP', icon: Mail },
+    { path: '/whatsapp-settings', label: 'Config. WhatsApp', icon: MessageCircle },
     { path: '/backup-settings', label: 'Email Backup', icon: Database },
     { path: '/ai-config', label: 'Config. IA', icon: Bot },
     { path: '/google-calendar-config', label: 'Config. Google Cal.', icon: Calendar },
