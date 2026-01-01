@@ -53,37 +53,74 @@ interface WhatsAppConfig {
 
 class WhatsAppService {
   /**
-   * Formata número de telefone brasileiro para o padrão internacional do WhatsApp
-   * Aceita formatos: (11) 99999-9999, 11999999999, +5511999999999
-   * Retorna: 5511999999999
+   * Formata número de telefone para o padrão internacional do WhatsApp
+   * Suporta números internacionais e brasileiros
+   *
+   * Formatos aceitos:
+   * - +1234567890 (internacional com +)
+   * - 1234567890 (internacional sem +, já com código do país)
+   * - (11) 99999-9999 (brasileiro)
+   * - 11999999999 (brasileiro sem formatação)
+   *
+   * Retorna: número apenas com dígitos (ex: 5511999999999 ou 14077608242)
    */
-  formatBrazilianPhone(phone: string): string {
+  formatPhone(phone: string): string {
+    // Verifica se tem + no início (número internacional explícito)
+    const hasPlus = phone.trim().startsWith('+');
+
     // Remove todos os caracteres não numéricos
     let cleaned = phone.replace(/\D/g, '');
 
-    // Se já começa com 55, verifica se tem o tamanho correto
-    if (cleaned.startsWith('55')) {
-      // 55 + DDD (2) + número (8 ou 9) = 12 ou 13 dígitos
-      if (cleaned.length === 12 || cleaned.length === 13) {
+    // Se tinha +, o número já tem código do país - retorna como está
+    if (hasPlus && cleaned.length >= 10) {
+      return cleaned;
+    }
+
+    // Lista de códigos de país comuns (1-3 dígitos)
+    // Se o número já começa com um código de país válido, retorna como está
+    const countryCodes = [
+      '1',    // EUA, Canadá
+      '44',   // Reino Unido
+      '351',  // Portugal
+      '34',   // Espanha
+      '33',   // França
+      '49',   // Alemanha
+      '39',   // Itália
+      '55',   // Brasil
+      '54',   // Argentina
+      '56',   // Chile
+      '57',   // Colômbia
+      '52',   // México
+      '51',   // Peru
+      '598',  // Uruguai
+      '595',  // Paraguai
+    ];
+
+    // Verifica se já começa com código de país conhecido
+    for (const code of countryCodes) {
+      if (cleaned.startsWith(code) && cleaned.length >= 10) {
         return cleaned;
       }
     }
 
-    // Se tem 10 ou 11 dígitos (DDD + número), adiciona 55
+    // Se tem 10 ou 11 dígitos sem código de país, assume brasileiro e adiciona 55
     if (cleaned.length === 10 || cleaned.length === 11) {
       return `55${cleaned}`;
     }
 
-    // Se tem 8 ou 9 dígitos (só número sem DDD), retorna como está
-    // (precisaria do DDD para funcionar, mas vamos tentar)
+    // Se tem 8 ou 9 dígitos (só número sem DDD), avisa e retorna como está
     if (cleaned.length === 8 || cleaned.length === 9) {
       appLogger.warn('WhatsApp: Número sem DDD', { phone, cleaned });
       return cleaned;
     }
 
-    // Retorna o número limpo mesmo que não seja válido
-    // A API da Meta vai retornar erro se for inválido
+    // Retorna o número limpo - a API da Meta vai retornar erro se for inválido
     return cleaned;
+  }
+
+  // Alias para compatibilidade
+  formatBrazilianPhone(phone: string): string {
+    return this.formatPhone(phone);
   }
 
   /**
