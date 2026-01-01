@@ -19,6 +19,7 @@ import {
   UserCog,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   Bell,
   CreditCard,
   Mail,
@@ -32,6 +33,7 @@ import {
   Shield,
   History,
   Database,
+  Key,
 } from 'lucide-react';
 
 interface SubscriptionStatus {
@@ -63,6 +65,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false);
+  const [credentialsOpen, setCredentialsOpen] = React.useState(false);
   const [subscriptionStatus, setSubscriptionStatus] = React.useState<SubscriptionStatus | null>(null);
   const [showSubscriptionBanner, setShowSubscriptionBanner] = React.useState(true);
   const [accountsDueToday, setAccountsDueToday] = React.useState<AccountsDueToday | null>(null);
@@ -205,32 +208,45 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   // Itens restantes na ordem original
   menuItems.push({ path: '/client-subscriptions', label: 'Planos', icon: CreditCard });
-  menuItems.push({ path: '/stripe-config', label: 'Config. Stripe', icon: CreditCard });
 
   // Itens administrativos
   if (user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') {
-    menuItems.push({ path: '/smtp-settings', label: 'Config. SMTP', icon: Settings });
-    menuItems.push({ path: '/backup-settings', label: 'Email Backup', icon: Database });
-    menuItems.push({ path: '/ai-config', label: 'Config. IA', icon: Bot });
     menuItems.push({ path: '/google-calendar', label: 'Google Calendar', icon: Calendar });
-    menuItems.push({ path: '/google-calendar-config', label: 'Config. Google Cal.', icon: Calendar });
     menuItems.push({ path: '/users', label: 'Usuários', icon: UserCog });
-    menuItems.push({ path: '/lgpd-requests', label: 'LGPD Requests', icon: Shield });
-    menuItems.push({ path: '/audit-logs', label: 'Logs de Auditoria', icon: History });
-    menuItems.push({ path: '/subscription', label: 'Assinatura', icon: Crown });
+  }
+
+  // Submenu de Credenciais (apenas para ADMIN e SUPER_ADMIN)
+  const credentialsItems = (user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') ? [
+    { path: '/stripe-config', label: 'Config. Stripe', icon: CreditCard },
+    { path: '/smtp-settings', label: 'Config. SMTP', icon: Mail },
+    { path: '/backup-settings', label: 'Email Backup', icon: Database },
+    { path: '/ai-config', label: 'Config. IA', icon: Bot },
+    { path: '/google-calendar-config', label: 'Config. Google Cal.', icon: Calendar },
+  ] : [];
+
+  // Itens após Credenciais
+  const afterCredentialsItems: typeof menuItems = [];
+
+  // Configurações vem logo após Credenciais
+  afterCredentialsItems.push({ path: '/settings', label: 'Configurações', icon: Settings });
+  // Meus Dados vem após Configurações
+  afterCredentialsItems.push({ path: '/meus-dados', label: 'Meus Dados', icon: Shield });
+
+  if (user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') {
+    afterCredentialsItems.push({ path: '/lgpd-requests', label: 'LGPD Requests', icon: Shield });
+    afterCredentialsItems.push({ path: '/audit-logs', label: 'Logs de Auditoria', icon: History });
+    afterCredentialsItems.push({ path: '/subscription', label: 'Assinatura', icon: Crown });
   }
 
   if (user?.role === 'SUPER_ADMIN') {
-    menuItems.push({ path: '/companies', label: 'Empresas', icon: Building2 });
-    menuItems.push({ path: '/subscription-alerts', label: 'Alertas Assinatura', icon: AlertTriangle });
+    afterCredentialsItems.push({ path: '/companies', label: 'Empresas', icon: Building2 });
+    afterCredentialsItems.push({ path: '/subscription-alerts', label: 'Alertas Assinatura', icon: AlertTriangle });
   }
 
-  menuItems.push({ path: '/meus-dados', label: 'Meus Dados', icon: Shield });
   // Logs de Auditoria para todos os usuários (USER vê apenas seus próprios logs)
   if (user?.role === 'USER') {
-    menuItems.push({ path: '/audit-logs', label: 'Meus Logs', icon: History });
+    afterCredentialsItems.push({ path: '/audit-logs', label: 'Meus Logs', icon: History });
   }
-  menuItems.push({ path: '/settings', label: 'Configurações', icon: Settings });
 
   // Determinar se deve mostrar o banner de assinatura
   const shouldShowSubscriptionBanner =
@@ -452,6 +468,81 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                         )}
                       </div>
                     )}
+                  </Link>
+                );
+              })}
+
+              {/* Submenu Credenciais */}
+              {credentialsItems.length > 0 && (
+                <>
+                  <button
+                    onClick={() => setCredentialsOpen(!credentialsOpen)}
+                    className={`w-full flex items-center ${
+                      sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-6'
+                    } py-3 transition-all duration-200 font-medium text-neutral-700 hover:bg-neutral-50 hover:text-primary-600`}
+                    title={sidebarCollapsed ? 'Credenciais' : ''}
+                  >
+                    <Key size={20} />
+                    {!sidebarCollapsed && (
+                      <div className="flex items-center justify-between flex-1">
+                        <span className="text-sm">Credenciais</span>
+                        <ChevronDown
+                          size={16}
+                          className={`transition-transform duration-200 ${credentialsOpen ? 'rotate-180' : ''}`}
+                        />
+                      </div>
+                    )}
+                  </button>
+                  {(credentialsOpen || sidebarCollapsed) && (
+                    <div className={sidebarCollapsed ? '' : 'bg-neutral-50'}>
+                      {credentialsItems.map((item) => {
+                        const Icon = item.icon;
+                        const isActive = location.pathname === item.path;
+                        return (
+                          <Link
+                            key={item.path}
+                            to={item.path}
+                            className={`flex items-center ${
+                              sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-6 pl-10'
+                            } py-2.5 transition-all duration-200 font-medium ${
+                              isActive
+                                ? 'bg-primary-50 text-primary-600 border-r-4 border-primary-500'
+                                : 'text-neutral-600 hover:bg-neutral-100 hover:text-primary-600'
+                            }`}
+                            onClick={() => setSidebarOpen(false)}
+                            title={sidebarCollapsed ? item.label : ''}
+                          >
+                            <Icon size={18} />
+                            {!sidebarCollapsed && <span className="text-sm">{item.label}</span>}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* Itens após Credenciais */}
+              {afterCredentialsItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = location.pathname.startsWith(item.path);
+
+                return (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    className={`flex items-center ${
+                      sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-6'
+                    } py-3 transition-all duration-200 font-medium ${
+                      isActive
+                        ? 'bg-primary-50 text-primary-600 border-r-4 border-primary-500'
+                        : 'text-neutral-700 hover:bg-neutral-50 hover:text-primary-600'
+                    }`}
+                    onClick={() => setSidebarOpen(false)}
+                    title={sidebarCollapsed ? item.label : ''}
+                  >
+                    <Icon size={20} />
+                    {!sidebarCollapsed && <span className="text-sm">{item.label}</span>}
                   </Link>
                 );
               })}
