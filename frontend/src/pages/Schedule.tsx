@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Plus, Search, CheckCircle, Circle, Edit2, Trash2, Eye, List, Grid3X3, ChevronLeft, ChevronRight, Download, FileText, FileSpreadsheet } from 'lucide-react';
+import { Calendar, Plus, Search, CheckCircle, Circle, Edit2, Trash2, Eye, List, Grid3X3, ChevronLeft, ChevronRight, Download, FileText, FileSpreadsheet, MessageCircle } from 'lucide-react';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import Layout from '../components/Layout';
@@ -23,6 +23,7 @@ interface Client {
   id: string;
   name: string;
   cpf?: string;
+  phone?: string;
 }
 
 interface Case {
@@ -439,6 +440,21 @@ const Schedule: React.FC = () => {
     }
   };
 
+  const handleSendWhatsApp = async (event: ScheduleEvent) => {
+    if (!event.client?.phone) {
+      toast.error('Cliente não possui telefone cadastrado');
+      return;
+    }
+
+    try {
+      const response = await api.post(`/schedule/${event.id}/send-whatsapp`);
+      toast.success(response.data.message || 'Mensagem de confirmação enviada!');
+    } catch (error: any) {
+      console.error('Erro ao enviar WhatsApp:', error);
+      toast.error(error.response?.data?.details || error.response?.data?.error || 'Erro ao enviar mensagem');
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       title: '',
@@ -838,6 +854,15 @@ const Schedule: React.FC = () => {
                                   <Calendar size={18} />
                                 </button>
                               </>
+                            )}
+                            {event.client?.phone && (
+                              <button
+                                onClick={() => handleSendWhatsApp(event)}
+                                className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-green-600 hover:text-green-700 hover:bg-green-50 rounded-md transition-all duration-200"
+                                title="Enviar confirmação via WhatsApp"
+                              >
+                                <MessageCircle size={18} />
+                              </button>
                             )}
                             <button
                               onClick={() => handleView(event)}

@@ -511,6 +511,7 @@ class GoogleCalendarService {
       TAREFA: '2',       // Sálvia (verde claro)
       PRAZO: '11',       // Vermelho
       AUDIENCIA: '5',    // Amarelo
+      PERICIA: '6',      // Laranja
       GOOGLE_MEET: '7',  // Turquesa
     };
 

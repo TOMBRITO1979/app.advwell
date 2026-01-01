@@ -15,7 +15,7 @@ router.use(authenticate, companyRateLimit, validateTenant);
 // Validações
 const createValidation = [
   body('title').trim().notEmpty().withMessage('Título é obrigatório').isLength({ max: 200 }).withMessage('Título muito longo'),
-  body('type').isIn(['COMPROMISSO', 'TAREFA', 'PRAZO', 'AUDIENCIA', 'GOOGLE_MEET']).withMessage('Tipo inválido'),
+  body('type').isIn(['COMPROMISSO', 'TAREFA', 'PRAZO', 'AUDIENCIA', 'PERICIA', 'GOOGLE_MEET']).withMessage('Tipo inválido'),
   body('date').isISO8601().withMessage('Data é obrigatória e deve ser válida'),
   body('endDate').optional({ nullable: true }).isISO8601().withMessage('Data de fim inválida'),
   body('clientId').optional({ nullable: true }).isUUID().withMessage('ID do cliente inválido'),
@@ -26,7 +26,7 @@ const createValidation = [
 const updateValidation = [
   param('id').isUUID().withMessage('ID inválido'),
   body('title').optional().trim().notEmpty().withMessage('Título não pode ser vazio').isLength({ max: 200 }),
-  body('type').optional().isIn(['COMPROMISSO', 'TAREFA', 'PRAZO', 'AUDIENCIA', 'GOOGLE_MEET']).withMessage('Tipo inválido'),
+  body('type').optional().isIn(['COMPROMISSO', 'TAREFA', 'PRAZO', 'AUDIENCIA', 'PERICIA', 'GOOGLE_MEET']).withMessage('Tipo inválido'),
   body('date').optional().isISO8601().withMessage('Data inválida'),
   body('endDate').optional({ nullable: true }).isISO8601().withMessage('Data de fim inválida'),
   validate,
@@ -50,5 +50,6 @@ router.post('/', createValidation, scheduleController.create);
 router.put('/:id', updateValidation, scheduleController.update);
 router.delete('/:id', idValidation, scheduleController.delete);
 router.patch('/:id/toggle-complete', idValidation, scheduleController.toggleComplete);
+router.post('/:id/send-whatsapp', idValidation, scheduleController.sendWhatsAppConfirmation);
 
 export default router;

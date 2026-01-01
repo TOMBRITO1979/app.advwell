@@ -4,6 +4,7 @@ import prisma from '../utils/prisma';
 import { generateGoogleMeetLink } from '../utils/googleMeet';
 import { auditLogService } from '../services/audit-log.service';
 import googleCalendarService from '../services/google-calendar.service';
+import whatsappService from '../services/whatsapp.service';
 import { appLogger } from '../utils/logger';
 import * as pdfStyles from '../utils/pdfStyles';
 
@@ -320,7 +321,7 @@ export class ScheduleController {
           orderBy: { date: 'asc' },
           include: {
             client: {
-              select: { id: true, name: true, cpf: true }
+              select: { id: true, name: true, cpf: true, phone: true }
             },
             case: {
               select: { id: true, processNumber: true, subject: true }
@@ -1104,6 +1105,106 @@ export class ScheduleController {
     } catch (error) {
       appLogger.error('Erro ao gerar CSV da agenda', error as Error);
       res.status(500).json({ error: 'Erro ao gerar CSV' });
+    }
+  }
+
+  // Enviar confirmação de agendamento via WhatsApp
+  async sendWhatsAppConfirmation(req: AuthRequest, res: Response) {
+    try {
+      const { id } = req.params;
+      const companyId = req.user!.companyId;
+
+      if (!companyId) {
+        return res.status(403).json({ error: 'Usuário não possui empresa associada' });
+      }
+
+      // Buscar evento com cliente
+      const event = await prisma.scheduleEvent.findFirst({
+        where: {
+          id,
+          companyId,
+        },
+        include: {
+          client: {
+            select: { id: true, name: true, phone: true }
+          },
+        },
+      });
+
+      if (!event) {
+        return res.status(404).json({ error: 'Evento não encontrado' });
+      }
+
+      if (!event.client) {
+        return res.status(400).json({ error: 'Este evento não possui cliente associado' });
+      }
+
+      if (!event.client.phone) {
+        return res.status(400).json({ error: 'Cliente não possui telefone cadastrado' });
+      }
+
+      // Mapear tipo de evento para texto legível
+      const eventTypeLabels: Record<string, string> = {
+        'COMPROMISSO': 'Compromisso',
+        'TAREFA': 'Tarefa',
+        'PRAZO': 'Prazo',
+        'AUDIENCIA': 'Audiência',
+        'PERICIA': 'Perícia',
+        'GOOGLE_MEET': 'Google Meet',
+      };
+
+      const eventTypeLabel = eventTypeLabels[event.type] || event.type;
+
+      // Formatar data e hora
+      const eventDate = new Date(event.date);
+      const formattedDate = eventDate.toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        timeZone: 'America/Sao_Paulo',
+      });
+      const formattedTime = eventDate.toLocaleTimeString('pt-BR', {
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: 'America/Sao_Paulo',
+      });
+
+      // Enviar mensagem via WhatsApp
+      const result = await whatsappService.sendTemplate({
+        companyId,
+        phone: event.client.phone,
+        templateName: 'confirmacao_de_agendamento',
+        variables: {
+          tipo: eventTypeLabel,
+          data: formattedDate,
+          horario: formattedTime,
+        },
+        eventId: event.id,
+        clientId: event.client.id,
+        messageType: 'REMINDER',
+      });
+
+      if (!result.success) {
+        return res.status(400).json({
+          error: 'Falha ao enviar mensagem WhatsApp',
+          details: result.error,
+        });
+      }
+
+      appLogger.info('WhatsApp: Confirmação de agendamento enviada', {
+        eventId: event.id,
+        clientId: event.client.id,
+        messageId: result.messageId,
+      });
+
+      res.json({
+        success: true,
+        message: 'Mensagem de confirmação enviada com sucesso',
+        messageId: result.messageId,
+      });
+    } catch (error) {
+      appLogger.error('Erro ao enviar confirmação de agendamento via WhatsApp', error as Error);
+      res.status(500).json({ error: 'Erro ao enviar confirmação de agendamento' });
     }
   }
 }
