@@ -554,6 +554,7 @@ enum ScheduleEventType {
   TAREFA       // Tarefa interna
   PRAZO        // Prazo processual
   AUDIENCIA    // Audiência judicial
+  PERICIA      // Perícia judicial
   GOOGLE_MEET  // Reunião Google Meet
 }
 

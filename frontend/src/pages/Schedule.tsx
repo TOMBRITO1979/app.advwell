@@ -52,7 +52,7 @@ interface ScheduleEvent {
   id: string;
   title: string;
   description?: string;
-  type: 'COMPROMISSO' | 'TAREFA' | 'PRAZO' | 'AUDIENCIA' | 'GOOGLE_MEET';
+  type: 'COMPROMISSO' | 'TAREFA' | 'PRAZO' | 'AUDIENCIA' | 'PERICIA' | 'GOOGLE_MEET';
   priority: 'BAIXA' | 'MEDIA' | 'ALTA' | 'URGENTE';
   date: string;
   endDate?: string;
@@ -68,7 +68,7 @@ interface ScheduleEvent {
 interface ScheduleFormData {
   title: string;
   description: string;
-  type: 'COMPROMISSO' | 'TAREFA' | 'PRAZO' | 'AUDIENCIA' | 'GOOGLE_MEET';
+  type: 'COMPROMISSO' | 'TAREFA' | 'PRAZO' | 'AUDIENCIA' | 'PERICIA' | 'GOOGLE_MEET';
   priority: 'BAIXA' | 'MEDIA' | 'ALTA' | 'URGENTE';
   date: string;
   endDate: string;
@@ -138,6 +138,7 @@ const Schedule: React.FC = () => {
     TAREFA: 'Tarefa',
     PRAZO: 'Prazo',
     AUDIENCIA: 'Audiência',
+    PERICIA: 'Perícia',
     GOOGLE_MEET: 'Google Meet',
   };
 
@@ -146,6 +147,7 @@ const Schedule: React.FC = () => {
     TAREFA: 'bg-success-100 text-success-800',
     PRAZO: 'bg-red-100 text-red-800',
     AUDIENCIA: 'bg-primary-100 text-primary-800',
+    PERICIA: 'bg-amber-100 text-amber-800',
     GOOGLE_MEET: 'bg-orange-100 text-orange-800',
   };
 
@@ -319,14 +321,15 @@ const Schedule: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validação: Cliente e Processo obrigatórios para AUDIENCIA
-    if (formData.type === 'AUDIENCIA') {
+    // Validação: Cliente e Processo obrigatórios para AUDIENCIA e PERICIA
+    if (formData.type === 'AUDIENCIA' || formData.type === 'PERICIA') {
+      const tipoEvento = formData.type === 'AUDIENCIA' ? 'audiências' : 'perícias';
       if (!selectedClient) {
-        toast.error('Para audiências, é obrigatório selecionar um cliente');
+        toast.error(`Para ${tipoEvento}, é obrigatório selecionar um cliente`);
         return;
       }
       if (!selectedCase) {
-        toast.error('Para audiências, é obrigatório selecionar um processo');
+        toast.error(`Para ${tipoEvento}, é obrigatório selecionar um processo`);
         return;
       }
     }
@@ -663,6 +666,7 @@ const Schedule: React.FC = () => {
             <option value="TAREFA">Tarefa</option>
             <option value="PRAZO">Prazo</option>
             <option value="AUDIENCIA">Audiência</option>
+            <option value="PERICIA">Perícia</option>
           </select>
 
           {/* Filter by status */}
@@ -702,7 +706,8 @@ const Schedule: React.FC = () => {
                       color: event.type === 'COMPROMISSO' ? 'blue' :
                              event.type === 'TAREFA' ? 'green' :
                              event.type === 'PRAZO' ? 'red' :
-                             event.type === 'AUDIENCIA' ? 'purple' : 'yellow',
+                             event.type === 'AUDIENCIA' ? 'purple' :
+                             event.type === 'PERICIA' ? 'yellow' : 'gray',
                     },
                     fields: [
                       { label: 'Prioridade', value: priorityLabels[event.priority || 'MEDIA'] },
@@ -1100,6 +1105,7 @@ const Schedule: React.FC = () => {
                     <option value="TAREFA">Tarefa</option>
                     <option value="PRAZO">Prazo</option>
                     <option value="AUDIENCIA">Audiência</option>
+                    <option value="PERICIA">Perícia</option>
                     <option value="GOOGLE_MEET">Google Meet</option>
                   </select>
                 </div>
@@ -1153,7 +1159,7 @@ const Schedule: React.FC = () => {
                   {/* Client Autocomplete */}
                   <div className="relative">
                     <label className="block text-sm font-medium text-neutral-700 mb-1">
-                      Cliente {formData.type === 'AUDIENCIA' ? '*' : '(opcional)'}
+                      Cliente {(formData.type === 'AUDIENCIA' || formData.type === 'PERICIA') ? '*' : '(opcional)'}
                     </label>
                     <input
                       type="text"
@@ -1162,7 +1168,7 @@ const Schedule: React.FC = () => {
                       onFocus={() => setShowClientSuggestions(true)}
                       onBlur={() => setTimeout(() => setShowClientSuggestions(false), 200)}
                       className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] ${
-                        formData.type === 'AUDIENCIA' && !selectedClient
+                        (formData.type === 'AUDIENCIA' || formData.type === 'PERICIA') && !selectedClient
                           ? 'border-red-300 bg-red-50'
                           : 'border-gray-300'
                       }`}
@@ -1210,7 +1216,7 @@ const Schedule: React.FC = () => {
                   {/* Case Autocomplete */}
                   <div className="relative">
                     <label className="block text-sm font-medium text-neutral-700 mb-1">
-                      Processo {formData.type === 'AUDIENCIA' ? '*' : '(opcional)'}
+                      Processo {(formData.type === 'AUDIENCIA' || formData.type === 'PERICIA') ? '*' : '(opcional)'}
                       {selectedClient && caseSuggestions.length > 0 && !selectedCase && (
                         <span className="ml-2 text-xs text-info-600">
                           ({caseSuggestions.length} processo{caseSuggestions.length > 1 ? 's' : ''} do cliente)
@@ -1229,7 +1235,7 @@ const Schedule: React.FC = () => {
                       }}
                       onBlur={() => setTimeout(() => setShowCaseSuggestions(false), 200)}
                       className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] ${
-                        formData.type === 'AUDIENCIA' && !selectedCase
+                        (formData.type === 'AUDIENCIA' || formData.type === 'PERICIA') && !selectedCase
                           ? 'border-red-300 bg-red-50'
                           : 'border-gray-300'
                       }`}
