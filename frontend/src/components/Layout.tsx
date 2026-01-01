@@ -213,6 +213,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     menuItems.push({ path: '/backup-settings', label: 'Email Backup', icon: Database });
     menuItems.push({ path: '/ai-config', label: 'Config. IA', icon: Bot });
     menuItems.push({ path: '/google-calendar', label: 'Google Calendar', icon: Calendar });
+    menuItems.push({ path: '/google-calendar-config', label: 'Config. Google Cal.', icon: Calendar });
     menuItems.push({ path: '/users', label: 'Usuários', icon: UserCog });
     menuItems.push({ path: '/lgpd-requests', label: 'LGPD Requests', icon: Shield });
     menuItems.push({ path: '/audit-logs', label: 'Logs de Auditoria', icon: History });

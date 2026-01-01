@@ -45,6 +45,7 @@ const AuditLogs = lazy(() => import('./pages/AuditLogs'));
 const BackupSettings = lazy(() => import('./pages/BackupSettings'));
 const Announcements = lazy(() => import('./pages/Announcements'));
 const GoogleCalendarSettings = lazy(() => import('./pages/GoogleCalendarSettings'));
+const GoogleCalendarCompanySettings = lazy(() => import('./pages/GoogleCalendarCompanySettings'));
 
 // Portal pages
 const PortalLogin = lazy(() => import('./portal/pages/PortalLogin'));
@@ -391,6 +392,14 @@ function App() {
             element={
               <PrivateRoute>
                 <GoogleCalendarSettings />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/google-calendar-config"
+            element={
+              <PrivateRoute>
+                <GoogleCalendarCompanySettings />
               </PrivateRoute>
             }
           />

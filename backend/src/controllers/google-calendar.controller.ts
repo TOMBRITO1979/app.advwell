@@ -6,12 +6,16 @@ import { config } from '../config';
 
 export class GoogleCalendarController {
   /**
-   * Verifica se o Google Calendar está configurado no servidor
+   * Verifica se o Google Calendar está configurado para a empresa do usuário
    * GET /api/google-calendar/configured
    */
   async isConfigured(req: AuthRequest, res: Response) {
     try {
-      const configured = googleCalendarService.isConfigured();
+      const companyId = req.user!.companyId;
+      if (!companyId) {
+        return res.json({ configured: false });
+      }
+      const configured = await googleCalendarService.isConfigured(companyId);
       res.json({ configured });
     } catch (error) {
       appLogger.error('Erro ao verificar configuração do Google Calendar', error as Error);
@@ -40,14 +44,22 @@ export class GoogleCalendarController {
    */
   async getAuthUrl(req: AuthRequest, res: Response) {
     try {
-      if (!googleCalendarService.isConfigured()) {
+      const companyId = req.user!.companyId;
+      if (!companyId) {
+        return res.status(403).json({
+          error: 'Usuário não possui empresa associada',
+        });
+      }
+
+      const configured = await googleCalendarService.isConfigured(companyId);
+      if (!configured) {
         return res.status(400).json({
-          error: 'Google Calendar não está configurado no servidor',
+          error: 'Google Calendar não está configurado para esta empresa. O administrador precisa configurar as credenciais.',
         });
       }
 
       const userId = req.user!.userId;
-      const authUrl = googleCalendarService.getAuthUrl(userId);
+      const authUrl = await googleCalendarService.getAuthUrl(userId);
 
       res.json({ authUrl });
     } catch (error) {

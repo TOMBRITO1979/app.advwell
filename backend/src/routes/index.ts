@@ -25,6 +25,7 @@ import holidaysRoutes from './holidays.routes';
 import portalRoutes from './portal.routes';
 import announcementsRoutes from './announcements.routes';
 import googleCalendarRoutes from './google-calendar.routes';
+import googleCalendarConfigRoutes from './google-calendar-config.routes';
 
 const router = Router();
 
@@ -59,5 +60,6 @@ router.use('/holidays', holidaysRoutes); // Feriados nacionais (BrasilAPI com ca
 router.use('/portal', portalRoutes); // Portal do cliente (acesso restrito a usuários CLIENT)
 router.use('/announcements', announcementsRoutes); // Gestão de anúncios do portal (ADMIN)
 router.use('/google-calendar', googleCalendarRoutes); // Integração Google Calendar (OAuth + sync)
+router.use('/google-calendar-config', googleCalendarConfigRoutes); // Configuração Google Calendar por empresa (ADMIN)
 
 export default router;

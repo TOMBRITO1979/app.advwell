@@ -130,17 +130,18 @@ export default function GoogleCalendarSettings() {
                 Google Calendar nao configurado
               </h3>
               <p className="text-yellow-700 dark:text-yellow-300 mt-1">
-                Para habilitar a integracao com o Google Calendar, e necessario configurar as
-                credenciais do Google Cloud Console no servidor.
+                Para habilitar a integracao com o Google Calendar, o administrador da empresa
+                precisa configurar as credenciais do Google Cloud Console.
               </p>
-              <p className="text-yellow-700 dark:text-yellow-300 mt-3 text-sm">
-                Variaveis de ambiente necessarias:
+              <p className="text-yellow-700 dark:text-yellow-300 mt-3">
+                <a
+                  href="/google-calendar-config"
+                  className="inline-flex items-center gap-1 text-yellow-800 dark:text-yellow-200 underline hover:text-yellow-900 dark:hover:text-yellow-100"
+                >
+                  <Settings className="w-4 h-4" />
+                  Ir para configuracoes do Google Calendar
+                </a>
               </p>
-              <ul className="list-disc list-inside text-yellow-700 dark:text-yellow-300 text-sm mt-1 ml-2">
-                <li>GOOGLE_CLIENT_ID</li>
-                <li>GOOGLE_CLIENT_SECRET</li>
-                <li>GOOGLE_REDIRECT_URI</li>
-              </ul>
             </div>
           </div>
         </div>

@@ -1,6 +1,5 @@
 import { google, calendar_v3 } from 'googleapis';
 import { OAuth2Client } from 'google-auth-library';
-import { config } from '../config';
 import prisma from '../utils/prisma';
 import { encrypt, decrypt } from '../utils/encryption';
 import { appLogger } from '../utils/logger';
@@ -9,13 +8,35 @@ import { ScheduleEvent, ScheduleEventType, Priority } from '@prisma/client';
 // Scopes necessários para Google Calendar
 const SCOPES = ['https://www.googleapis.com/auth/calendar.events'];
 
-// Criar cliente OAuth2
-function createOAuth2Client(): OAuth2Client {
+// Interface para credenciais da empresa
+interface CompanyGoogleCredentials {
+  clientId: string;
+  clientSecret: string;
+  redirectUri: string;
+}
+
+// Criar cliente OAuth2 com credenciais da empresa
+function createOAuth2Client(credentials: CompanyGoogleCredentials): OAuth2Client {
   return new google.auth.OAuth2(
-    config.google.clientId,
-    config.google.clientSecret,
-    config.google.redirectUri
+    credentials.clientId,
+    credentials.clientSecret,
+    credentials.redirectUri
   );
+}
+
+// Obter companyId do usuário
+async function getCompanyIdFromUser(userId: string): Promise<string | null> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { companyId: true },
+  });
+  return user?.companyId || null;
+}
+
+// Obter redirect URI padrão
+function getDefaultRedirectUri(): string {
+  const apiUrl = process.env.API_URL || 'https://api.advwell.pro';
+  return `${apiUrl}/api/google-calendar/callback`;
 }
 
 // Interface para representar dados de evento simplificados
@@ -32,10 +53,32 @@ interface EventData {
 
 class GoogleCalendarService {
   /**
-   * Verifica se o Google Calendar está configurado (Client ID e Secret definidos)
+   * Obtém credenciais do Google Calendar da empresa
+   * @param companyId ID da empresa
    */
-  isConfigured(): boolean {
-    return !!(config.google.clientId && config.google.clientSecret);
+  async getCompanyCredentials(companyId: string): Promise<CompanyGoogleCredentials | null> {
+    const config = await prisma.googleCalendarCompanyConfig.findUnique({
+      where: { companyId },
+    });
+
+    if (!config || !config.isActive) {
+      return null;
+    }
+
+    return {
+      clientId: config.clientId,
+      clientSecret: decrypt(config.clientSecret),
+      redirectUri: config.redirectUri || getDefaultRedirectUri(),
+    };
+  }
+
+  /**
+   * Verifica se o Google Calendar está configurado para a empresa
+   * @param companyId ID da empresa
+   */
+  async isConfigured(companyId: string): Promise<boolean> {
+    const credentials = await this.getCompanyCredentials(companyId);
+    return credentials !== null;
   }
 
   /**
@@ -43,15 +86,21 @@ class GoogleCalendarService {
    * @param userId ID do usuário
    * @param state State parameter para validação CSRF
    */
-  getAuthUrl(userId: string, state?: string): string {
-    if (!this.isConfigured()) {
-      throw new Error('Google Calendar não está configurado');
+  async getAuthUrl(userId: string, state?: string): Promise<string> {
+    const companyId = await getCompanyIdFromUser(userId);
+    if (!companyId) {
+      throw new Error('Usuário não possui empresa associada');
     }
 
-    const oauth2Client = createOAuth2Client();
+    const credentials = await this.getCompanyCredentials(companyId);
+    if (!credentials) {
+      throw new Error('Google Calendar não está configurado para esta empresa');
+    }
 
-    // Incluir userId no state para identificar o usuário no callback
-    const stateData = JSON.stringify({ userId, nonce: state || Date.now().toString() });
+    const oauth2Client = createOAuth2Client(credentials);
+
+    // Incluir userId e companyId no state para identificar no callback
+    const stateData = JSON.stringify({ userId, companyId, nonce: state || Date.now().toString() });
     const encodedState = Buffer.from(stateData).toString('base64');
 
     const authUrl = oauth2Client.generateAuthUrl({
@@ -70,12 +119,8 @@ class GoogleCalendarService {
    * @param state State parameter para validação
    */
   async handleCallback(code: string, state: string): Promise<{ userId: string; email: string }> {
-    if (!this.isConfigured()) {
-      throw new Error('Google Calendar não está configurado');
-    }
-
-    // Decodificar state para obter userId
-    let stateData: { userId: string; nonce: string };
+    // Decodificar state para obter userId e companyId
+    let stateData: { userId: string; companyId: string; nonce: string };
     try {
       const decodedState = Buffer.from(state, 'base64').toString('utf-8');
       stateData = JSON.parse(decodedState);
@@ -84,7 +129,12 @@ class GoogleCalendarService {
       throw new Error('State inválido');
     }
 
-    const oauth2Client = createOAuth2Client();
+    const credentials = await this.getCompanyCredentials(stateData.companyId);
+    if (!credentials) {
+      throw new Error('Google Calendar não está configurado para esta empresa');
+    }
+
+    const oauth2Client = createOAuth2Client(credentials);
 
     // Trocar código por tokens
     const { tokens } = await oauth2Client.getToken(code);
@@ -143,13 +193,24 @@ class GoogleCalendarService {
   async refreshTokenIfNeeded(userId: string): Promise<OAuth2Client | null> {
     const gcConfig = await prisma.googleCalendarConfig.findUnique({
       where: { userId },
+      include: { user: { select: { companyId: true } } },
     });
 
     if (!gcConfig || !gcConfig.enabled) {
       return null;
     }
 
-    const oauth2Client = createOAuth2Client();
+    const companyId = gcConfig.user.companyId;
+    if (!companyId) {
+      return null;
+    }
+
+    const credentials = await this.getCompanyCredentials(companyId);
+    if (!credentials) {
+      return null;
+    }
+
+    const oauth2Client = createOAuth2Client(credentials);
 
     // Descriptografar tokens
     const accessToken = decrypt(gcConfig.accessToken);
@@ -355,6 +416,7 @@ class GoogleCalendarService {
   async disconnect(userId: string): Promise<boolean> {
     const gcConfig = await prisma.googleCalendarConfig.findUnique({
       where: { userId },
+      include: { user: { select: { companyId: true } } },
     });
 
     if (!gcConfig) {
@@ -363,14 +425,19 @@ class GoogleCalendarService {
 
     try {
       // Tentar revogar o token no Google
-      const oauth2Client = createOAuth2Client();
-      const accessToken = decrypt(gcConfig.accessToken);
+      const companyId = gcConfig.user.companyId;
+      const credentials = companyId ? await this.getCompanyCredentials(companyId) : null;
 
-      try {
-        await oauth2Client.revokeToken(accessToken);
-      } catch (revokeError) {
-        // Ignorar erro de revogação (token pode já estar expirado/revogado)
-        appLogger.warn('Erro ao revogar token do Google (ignorando)', revokeError);
+      if (credentials) {
+        const oauth2Client = createOAuth2Client(credentials);
+        const accessToken = decrypt(gcConfig.accessToken);
+
+        try {
+          await oauth2Client.revokeToken(accessToken);
+        } catch (revokeError) {
+          // Ignorar erro de revogação (token pode já estar expirado/revogado)
+          appLogger.warn('Erro ao revogar token do Google (ignorando)', revokeError);
+        }
       }
 
       // Remover configuração do banco
