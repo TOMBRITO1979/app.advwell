@@ -224,6 +224,8 @@ export class ScheduleController {
   async list(req: AuthRequest, res: Response) {
     try {
       const companyId = req.user!.companyId;
+      const userId = req.user!.userId;
+      const userRole = req.user!.role;
       const {
         page = 1,
         limit = 20,
@@ -247,15 +249,36 @@ export class ScheduleController {
         companyId,
       };
 
+      // Visibilidade baseada em role:
+      // - ADMIN e SUPER_ADMIN veem todos os eventos
+      // - USER ve apenas eventos onde esta atribuido ou que criou
+      if (userRole === 'USER') {
+        where.AND = [
+          {
+            OR: [
+              { createdBy: userId },
+              { assignedUsers: { some: { userId: userId } } },
+            ],
+          },
+        ];
+      }
+
       // Filtro de busca unificada: título, descrição, nome do cliente, telefone do cliente ou nome do advogado
       if (search) {
-        where.OR = [
-          { title: { contains: String(search), mode: 'insensitive' as const } },
-          { description: { contains: String(search), mode: 'insensitive' as const } },
-          { client: { name: { contains: String(search), mode: 'insensitive' as const } } },
-          { client: { phone: { contains: String(search), mode: 'insensitive' as const } } },
-          { assignedUsers: { some: { user: { name: { contains: String(search), mode: 'insensitive' as const } } } } },
-        ];
+        const searchFilter = {
+          OR: [
+            { title: { contains: String(search), mode: 'insensitive' as const } },
+            { description: { contains: String(search), mode: 'insensitive' as const } },
+            { client: { name: { contains: String(search), mode: 'insensitive' as const } } },
+            { client: { phone: { contains: String(search), mode: 'insensitive' as const } } },
+            { assignedUsers: { some: { user: { name: { contains: String(search), mode: 'insensitive' as const } } } } },
+          ],
+        };
+        if (where.AND) {
+          where.AND.push(searchFilter);
+        } else {
+          where.AND = [searchFilter];
+        }
       }
 
       // Filtro por tipo
@@ -334,12 +357,26 @@ export class ScheduleController {
     try {
       const { id } = req.params;
       const companyId = req.user!.companyId;
+      const userId = req.user!.userId;
+      const userRole = req.user!.role;
+
+      // Construir filtro base
+      const where: any = {
+        id,
+        companyId: companyId!,
+      };
+
+      // Visibilidade baseada em role:
+      // - USER ve apenas eventos onde esta atribuido ou que criou
+      if (userRole === 'USER') {
+        where.OR = [
+          { createdBy: userId },
+          { assignedUsers: { some: { userId: userId } } },
+        ];
+      }
 
       const event = await prisma.scheduleEvent.findFirst({
-        where: {
-          id,
-          companyId: companyId!,
-        },
+        where,
         include: {
           client: {
             select: { id: true, name: true, cpf: true, phone: true, email: true }
@@ -692,20 +729,34 @@ export class ScheduleController {
   async upcoming(req: AuthRequest, res: Response) {
     try {
       const companyId = req.user!.companyId;
+      const userId = req.user!.userId;
+      const userRole = req.user!.role;
       const { limit = 5 } = req.query;
 
       if (!companyId) {
         return res.status(403).json({ error: 'Usuário não possui empresa associada' });
       }
 
-      const events = await prisma.scheduleEvent.findMany({
-        where: {
-          companyId,
-          completed: false,
-          date: {
-            gte: new Date(), // Eventos futuros
-          },
+      // Construir filtro base
+      const where: any = {
+        companyId,
+        completed: false,
+        date: {
+          gte: new Date(), // Eventos futuros
         },
+      };
+
+      // Visibilidade baseada em role:
+      // - USER ve apenas eventos onde esta atribuido ou que criou
+      if (userRole === 'USER') {
+        where.OR = [
+          { createdBy: userId },
+          { assignedUsers: { some: { userId: userId } } },
+        ];
+      }
+
+      const events = await prisma.scheduleEvent.findMany({
+        where,
         take: Number(limit),
         orderBy: { date: 'asc' },
         include: {
@@ -729,26 +780,52 @@ export class ScheduleController {
   async getTasksDueToday(req: AuthRequest, res: Response) {
     try {
       const companyId = req.user!.companyId;
+      const userId = req.user!.userId;
+      const userRole = req.user!.role;
 
       if (!companyId) {
         return res.status(403).json({ error: 'Usuário não possui empresa associada' });
       }
 
       // Usar query raw SQL para comparar apenas a data (ignorando timezone)
-      const tasks = await prisma.$queryRaw<Array<{
-        id: string;
-        title: string;
-        date: Date;
-      }>>`
-        SELECT id, title, date
-        FROM schedule_events
-        WHERE "companyId" = ${companyId}
-          AND type = 'TAREFA'
-          AND completed = false
-          AND date IS NOT NULL
-          AND DATE(date) = CURRENT_DATE
-        ORDER BY date ASC
-      `;
+      // Visibilidade baseada em role:
+      // - ADMIN e SUPER_ADMIN veem todas as tarefas
+      // - USER ve apenas tarefas onde esta atribuido ou que criou
+      let tasks: Array<{ id: string; title: string; date: Date; }>;
+
+      if (userRole === 'USER') {
+        tasks = await prisma.$queryRaw<Array<{
+          id: string;
+          title: string;
+          date: Date;
+        }>>`
+          SELECT DISTINCT se.id, se.title, se.date
+          FROM schedule_events se
+          LEFT JOIN event_assignments ea ON se.id = ea."eventId"
+          WHERE se."companyId" = ${companyId}
+            AND se.type = 'TAREFA'
+            AND se.completed = false
+            AND se.date IS NOT NULL
+            AND DATE(se.date) = CURRENT_DATE
+            AND (se."createdBy" = ${userId} OR ea."userId" = ${userId})
+          ORDER BY se.date ASC
+        `;
+      } else {
+        tasks = await prisma.$queryRaw<Array<{
+          id: string;
+          title: string;
+          date: Date;
+        }>>`
+          SELECT id, title, date
+          FROM schedule_events
+          WHERE "companyId" = ${companyId}
+            AND type = 'TAREFA'
+            AND completed = false
+            AND date IS NOT NULL
+            AND DATE(date) = CURRENT_DATE
+          ORDER BY date ASC
+        `;
+      }
 
       res.json({
         count: tasks.length,
