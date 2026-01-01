@@ -26,6 +26,7 @@ const Settings = lazy(() => import('./pages/Settings'));
 const Profile = lazy(() => import('./pages/Profile'));
 const SMTPSettings = lazy(() => import('./pages/SMTPSettings'));
 const WhatsAppSettings = lazy(() => import('./pages/WhatsAppSettings'));
+const WhatsAppCampaigns = lazy(() => import('./pages/WhatsAppCampaigns'));
 const AIConfig = lazy(() => import('./pages/AIConfig'));
 const Campaigns = lazy(() => import('./pages/Campaigns'));
 const Users = lazy(() => import('./pages/Users'));
@@ -347,6 +348,14 @@ function App() {
             element={
               <PrivateRoute>
                 <Campaigns />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/whatsapp-campaigns"
+            element={
+              <PrivateRoute>
+                <WhatsAppCampaigns />
               </PrivateRoute>
             }
           />

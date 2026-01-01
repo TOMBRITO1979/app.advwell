@@ -201,6 +201,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   // Campanhas e Avisos vem após Leads (apenas para Admin)
   if (user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') {
     menuItems.push({ path: '/campaigns', label: 'Campanhas', icon: Mail });
+    menuItems.push({ path: '/whatsapp-campaigns', label: 'Campanhas WhatsApp', icon: MessageCircle });
     menuItems.push({ path: '/announcements', label: 'Avisos', icon: Megaphone });
   }
 
