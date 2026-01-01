@@ -237,8 +237,30 @@ class WhatsAppService {
 
       if (axiosError.response?.data?.error) {
         const metaError = axiosError.response.data.error;
-        errorMessage = metaError.message || errorMessage;
         errorCode = metaError.code?.toString();
+
+        // Traduzir códigos de erro comuns da Meta para mensagens amigáveis
+        const errorMessages: Record<string, string> = {
+          '132000': `Template "${templateName}" não encontrado ou não aprovado. Verifique se o template existe no Meta Business Suite e está aprovado.`,
+          '132001': 'Parâmetros do template inválidos. Verifique se o número de variáveis corresponde ao template.',
+          '132005': 'Template possui parâmetros mas nenhum foi enviado.',
+          '132007': 'Política de template violada. O template pode ter sido rejeitado.',
+          '132012': 'Template pausado por baixa qualidade.',
+          '132015': 'Template desativado.',
+          '131047': 'Não é possível enviar para este número. O usuário não iniciou conversa nas últimas 24h.',
+          '131051': 'Tipo de mensagem não suportado.',
+          '131052': 'Download de mídia falhou.',
+          '131053': 'Upload de mídia falhou.',
+          '130429': 'Limite de taxa excedido. Muitas mensagens em pouco tempo.',
+          '131031': 'Conta não verificada ou sem permissões.',
+          '100': 'Parâmetro inválido na requisição.',
+          '190': 'Token de acesso inválido ou expirado.',
+          '200': 'Permissão negada. Verifique as permissões do app.',
+          '368': 'Conta bloqueada temporariamente por spam.',
+          '80007': 'Limite de taxa da conta excedido.',
+        };
+
+        errorMessage = errorMessages[errorCode || ''] || metaError.message || errorMessage;
       } else if (error instanceof Error) {
         errorMessage = error.message;
       }
