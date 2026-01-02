@@ -1170,12 +1170,13 @@ export class ScheduleController {
       });
 
       // Enviar mensagem via WhatsApp
+      // Template atual tem 3 vars: {{1}}=nome, {{2}}=data, {{3}}=horario
       const result = await whatsappService.sendTemplate({
         companyId,
         phone: event.client.phone,
         templateName: 'confirmacao_de_agendamento',
         variables: {
-          tipo: eventTypeLabel,
+          nome: event.client.name,
           data: formattedDate,
           horario: formattedTime,
         },
