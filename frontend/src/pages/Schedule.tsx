@@ -90,10 +90,8 @@ const Schedule: React.FC = () => {
   const [filterCompleted, setFilterCompleted] = useState<string>('');
 
   // Estado para controle de visualização (tabela ou calendário)
-  // Mobile: lista por padrão, Desktop: calendário por padrão
-  const [viewMode, setViewMode] = useState<'table' | 'calendar'>(() => {
-    return window.innerWidth < 768 ? 'table' : 'calendar';
-  });
+  // Tabela é o padrão para todos os dispositivos
+  const [viewMode, setViewMode] = useState<'table' | 'calendar'>('table');
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(() => {
     const today = new Date();
     const dayOfWeek = today.getDay(); // 0 = Domingo
@@ -748,6 +746,9 @@ const Schedule: React.FC = () => {
                         Status
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                        Data
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
                         Tipo
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
@@ -755,9 +756,6 @@ const Schedule: React.FC = () => {
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
                         Título
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                        Data
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
                         Cliente
@@ -789,6 +787,9 @@ const Schedule: React.FC = () => {
                             )}
                           </button>
                         </td>
+                        <td className="px-4 py-3 text-sm text-neutral-600">
+                          {formatDateTime(event.date)}
+                        </td>
                         <td className="px-4 py-3">
                           <span className={`px-2 py-1 text-xs font-medium rounded-full ${eventTypeColors[event.type]}`}>
                             {eventTypeLabels[event.type]}
@@ -803,9 +804,6 @@ const Schedule: React.FC = () => {
                           <div className={event.completed ? 'line-through text-neutral-500' : 'text-neutral-900'}>
                             {event.title}
                           </div>
-                        </td>
-                        <td className="px-4 py-3 text-sm text-neutral-600">
-                          {formatDateTime(event.date)}
                         </td>
                         <td className="px-4 py-3 text-sm text-neutral-600">
                           {event.client?.name || '-'}
