@@ -185,33 +185,52 @@ export class ScheduleController {
       // Log de auditoria
       await auditLogService.logScheduleEventCreate(event, req);
 
-      // Google Calendar Sync: Criar evento no Google Calendar do usuário
-      if (createdBy) {
-        try {
-          const isSyncEnabled = await googleCalendarService.isSyncEnabled(createdBy);
-          if (isSyncEnabled) {
-            const googleEventId = await googleCalendarService.createEvent(createdBy, {
-              id: event.id,
-              title: event.title,
-              description: event.description,
-              date: event.date,
-              endDate: event.endDate,
-              type: event.type,
-              priority: event.priority,
-              googleMeetLink: event.googleMeetLink,
-            });
+      // Google Calendar Sync: Criar evento no Google Calendar de todos os usuários envolvidos
+      // Inclui o criador + todos os usuários atribuídos
+      const usersToSync = new Set<string>();
+      if (createdBy) usersToSync.add(createdBy);
+      if (assignedUserIds && Array.isArray(assignedUserIds)) {
+        assignedUserIds.forEach((uid: string) => usersToSync.add(uid));
+      }
 
-            // Salvar googleEventId se foi criado com sucesso
+      const eventData = {
+        id: event.id,
+        title: event.title,
+        description: event.description,
+        date: event.date,
+        endDate: event.endDate,
+        type: event.type,
+        priority: event.priority,
+        googleMeetLink: event.googleMeetLink,
+      };
+
+      for (const userId of usersToSync) {
+        try {
+          const isSyncEnabled = await googleCalendarService.isSyncEnabled(userId);
+          if (isSyncEnabled) {
+            const googleEventId = await googleCalendarService.createEvent(userId, eventData);
+
             if (googleEventId) {
-              await prisma.scheduleEvent.update({
-                where: { id: event.id },
-                data: { googleEventId },
+              // Salvar na tabela de sincronização por usuário
+              await prisma.scheduleEventGoogleSync.create({
+                data: {
+                  eventId: event.id,
+                  userId,
+                  googleEventId,
+                },
               });
+
+              // Manter compatibilidade: salvar no campo legado se for o criador
+              if (userId === createdBy) {
+                await prisma.scheduleEvent.update({
+                  where: { id: event.id },
+                  data: { googleEventId },
+                });
+              }
             }
           }
         } catch (syncError) {
-          // Log erro mas não falha a operação principal
-          appLogger.error('Erro ao sincronizar com Google Calendar', syncError as Error);
+          appLogger.error('Erro ao sincronizar com Google Calendar', syncError as Error, { userId });
         }
       }
 
@@ -619,24 +638,72 @@ export class ScheduleController {
       // Log de auditoria
       await auditLogService.logScheduleEventUpdate(oldEvent, updatedEvent, req);
 
-      // Google Calendar Sync: Atualizar evento no Google Calendar
-      if (updatedEvent.createdBy && updatedEvent.googleEventId) {
+      // Google Calendar Sync: Atualizar/Criar/Remover eventos no Google Calendar
+      const eventData = {
+        id: updatedEvent.id,
+        title: updatedEvent.title,
+        description: updatedEvent.description,
+        date: updatedEvent.date,
+        endDate: updatedEvent.endDate,
+        type: updatedEvent.type,
+        priority: updatedEvent.priority,
+        googleMeetLink: updatedEvent.googleMeetLink,
+      };
+
+      // Buscar sincronizações existentes
+      const existingSyncs = await prisma.scheduleEventGoogleSync.findMany({
+        where: { eventId: updatedEvent.id },
+      });
+      const existingSyncMap = new Map(existingSyncs.map(s => [s.userId, s]));
+
+      // Determinar usuários que devem ter o evento sincronizado
+      const usersToSync = new Set<string>();
+      if (updatedEvent.createdBy) usersToSync.add(updatedEvent.createdBy);
+
+      // Buscar usuários atribuídos atuais
+      const currentAssignments = await prisma.eventAssignment.findMany({
+        where: { eventId: updatedEvent.id },
+        select: { userId: true },
+      });
+      currentAssignments.forEach(a => usersToSync.add(a.userId));
+
+      // Atualizar ou criar sincronizações
+      for (const userId of usersToSync) {
         try {
-          const isSyncEnabled = await googleCalendarService.isSyncEnabled(updatedEvent.createdBy);
-          if (isSyncEnabled) {
-            await googleCalendarService.updateEvent(updatedEvent.createdBy, updatedEvent.googleEventId, {
-              id: updatedEvent.id,
-              title: updatedEvent.title,
-              description: updatedEvent.description,
-              date: updatedEvent.date,
-              endDate: updatedEvent.endDate,
-              type: updatedEvent.type,
-              priority: updatedEvent.priority,
-              googleMeetLink: updatedEvent.googleMeetLink,
-            });
+          const isSyncEnabled = await googleCalendarService.isSyncEnabled(userId);
+          if (!isSyncEnabled) continue;
+
+          const existingSync = existingSyncMap.get(userId);
+
+          if (existingSync) {
+            // Atualizar evento existente
+            await googleCalendarService.updateEvent(userId, existingSync.googleEventId, eventData);
+          } else {
+            // Criar novo evento
+            const googleEventId = await googleCalendarService.createEvent(userId, eventData);
+            if (googleEventId) {
+              await prisma.scheduleEventGoogleSync.create({
+                data: { eventId: updatedEvent.id, userId, googleEventId },
+              });
+            }
           }
         } catch (syncError) {
-          appLogger.error('Erro ao atualizar no Google Calendar', syncError as Error);
+          appLogger.error('Erro ao sincronizar com Google Calendar', syncError as Error, { userId });
+        }
+      }
+
+      // Remover sincronizações de usuários que não estão mais envolvidos
+      for (const [syncUserId, syncRecord] of existingSyncMap) {
+        if (!usersToSync.has(syncUserId)) {
+          try {
+            const isSyncEnabled = await googleCalendarService.isSyncEnabled(syncUserId);
+            if (isSyncEnabled) {
+              await googleCalendarService.deleteEvent(syncUserId, syncRecord.googleEventId);
+            }
+            await prisma.scheduleEventGoogleSync.delete({ where: { id: syncRecord.id } });
+          } catch (syncError) {
+            appLogger.error('Erro ao remover do Google Calendar', syncError as Error, { userId: syncUserId });
+          }
         }
       }
 
@@ -663,15 +730,34 @@ export class ScheduleController {
         return res.status(404).json({ error: 'Evento não encontrado' });
       }
 
-      // Google Calendar Sync: Remover evento do Google Calendar antes de deletar
-      if (event.createdBy && event.googleEventId) {
+      // Google Calendar Sync: Remover evento de todos os Google Calendars sincronizados
+      const syncs = await prisma.scheduleEventGoogleSync.findMany({
+        where: { eventId: id },
+      });
+
+      for (const syncRecord of syncs) {
         try {
-          const isSyncEnabled = await googleCalendarService.isSyncEnabled(event.createdBy);
+          const isSyncEnabled = await googleCalendarService.isSyncEnabled(syncRecord.userId);
           if (isSyncEnabled) {
-            await googleCalendarService.deleteEvent(event.createdBy, event.googleEventId);
+            await googleCalendarService.deleteEvent(syncRecord.userId, syncRecord.googleEventId);
           }
         } catch (syncError) {
-          appLogger.error('Erro ao remover do Google Calendar', syncError as Error);
+          appLogger.error('Erro ao remover do Google Calendar', syncError as Error, { userId: syncRecord.userId });
+        }
+      }
+
+      // Fallback: também tentar remover pelo campo legado se existir
+      if (event.createdBy && event.googleEventId) {
+        const alreadyDeleted = syncs.some(s => s.userId === event.createdBy && s.googleEventId === event.googleEventId);
+        if (!alreadyDeleted) {
+          try {
+            const isSyncEnabled = await googleCalendarService.isSyncEnabled(event.createdBy);
+            if (isSyncEnabled) {
+              await googleCalendarService.deleteEvent(event.createdBy, event.googleEventId);
+            }
+          } catch (syncError) {
+            appLogger.error('Erro ao remover do Google Calendar (legado)', syncError as Error);
+          }
         }
       }
 

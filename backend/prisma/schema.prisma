@@ -162,6 +162,7 @@ model User {
   accountsPayable         AccountPayable[]
   emailCampaigns          EmailCampaign[]
   assignedEvents          EventAssignment[]
+  scheduleEventGoogleSyncs ScheduleEventGoogleSync[]
   casesAsDeadlineResponsible Case[]  @relation("CaseDeadlineResponsible")
   announcements           Announcement[]    @relation("AnnouncementCreator")
   caseAuditLogs           CaseAuditLog[]
@@ -604,6 +605,7 @@ model ScheduleEvent {
   case        Case?             @relation(fields: [caseId], references: [id], onDelete: Cascade)
   user        User?             @relation(fields: [createdBy], references: [id], onDelete: SetNull)
   assignedUsers EventAssignment[]
+  googleSyncs   ScheduleEventGoogleSync[]
 
   @@index([companyId])
   @@index([date])
@@ -627,6 +629,24 @@ model EventAssignment {
   @@unique([eventId, userId])
   @@index([companyId])
   @@map("event_assignments")
+}
+
+// Sincronização de eventos com Google Calendar por usuário
+model ScheduleEventGoogleSync {
+  id            String        @id @default(uuid())
+  eventId       String
+  userId        String
+  googleEventId String        // ID do evento no Google Calendar do usuário
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  event         ScheduleEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+  @@index([eventId])
+  @@index([userId])
+  @@map("schedule_event_google_syncs")
 }
 
 // Enum para status de conta a pagar
