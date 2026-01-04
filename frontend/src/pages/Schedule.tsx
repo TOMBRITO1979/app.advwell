@@ -164,31 +164,34 @@ const Schedule: React.FC = () => {
     URGENTE: 'bg-red-100 text-red-800',
   };
 
-  // Função para ordenar eventos: hoje primeiro, depois futuros em ordem cronológica, passados no final
+  // Função para ordenar eventos: atuais/futuros primeiro em ordem cronológica, passados no final
   const sortEventsByDate = (eventsToSort: ScheduleEvent[]): ScheduleEvent[] => {
+    if (!eventsToSort || eventsToSort.length === 0) return [];
+
     const now = new Date();
-    // Início do dia de hoje (meia-noite)
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+    const nowMs = now.getTime();
 
     return [...eventsToSort].sort((a, b) => {
       const dateA = new Date(a.date);
       const dateB = new Date(b.date);
+      const timeA = dateA.getTime();
+      const timeB = dateB.getTime();
 
-      // Verifica se é passado (antes do início de hoje)
-      const isPastA = dateA.getTime() < todayStart.getTime();
-      const isPastB = dateB.getTime() < todayStart.getTime();
+      // Verifica se já passou (antes do momento atual)
+      const isPastA = timeA < nowMs;
+      const isPastB = timeB < nowMs;
 
       // Eventos passados vão para o final
       if (isPastA && !isPastB) return 1;  // A é passado, B não -> B vem primeiro
       if (!isPastA && isPastB) return -1; // A não é passado, B é -> A vem primeiro
 
-      // Ambos são passados: mais recente primeiro
+      // Ambos são passados: mais recente primeiro (ordem decrescente)
       if (isPastA && isPastB) {
-        return dateB.getTime() - dateA.getTime();
+        return timeB - timeA;
       }
 
-      // Ambos são hoje ou futuro: ordem cronológica (mais próximo primeiro)
-      return dateA.getTime() - dateB.getTime();
+      // Ambos são atuais ou futuros: ordem cronológica (mais próximo primeiro)
+      return timeA - timeB;
     });
   };
 
@@ -276,8 +279,10 @@ const Schedule: React.FC = () => {
       if (filterCompleted) params.completed = filterCompleted;
 
       const response = await api.get('/schedule', { params });
+      // Garantir que temos um array de eventos
+      const eventsData = response.data?.data || response.data || [];
       // Ordenar eventos: hoje primeiro, depois futuros, por último passados
-      const sortedEvents = sortEventsByDate(response.data.data);
+      const sortedEvents = sortEventsByDate(Array.isArray(eventsData) ? eventsData : []);
       setEvents(sortedEvents);
     } catch (error) {
       console.error('Erro ao buscar eventos:', error);
