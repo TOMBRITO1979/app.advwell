@@ -164,36 +164,31 @@ const Schedule: React.FC = () => {
     URGENTE: 'bg-red-100 text-red-800',
   };
 
-  // Função para ordenar eventos: hoje primeiro, depois futuros, por último passados
+  // Função para ordenar eventos: hoje primeiro, depois futuros em ordem cronológica, passados no final
   const sortEventsByDate = (eventsToSort: ScheduleEvent[]): ScheduleEvent[] => {
     const now = new Date();
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
+    // Início do dia de hoje (meia-noite)
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
 
     return [...eventsToSort].sort((a, b) => {
       const dateA = new Date(a.date);
       const dateB = new Date(b.date);
 
-      const isAToday = dateA >= todayStart && dateA < todayEnd;
-      const isBToday = dateB >= todayStart && dateB < todayEnd;
-      const isAFuture = dateA >= todayEnd;
-      const isBFuture = dateB >= todayEnd;
-      const isAPast = dateA < todayStart;
-      const isBPast = dateB < todayStart;
+      // Verifica se é passado (antes do início de hoje)
+      const isPastA = dateA.getTime() < todayStart.getTime();
+      const isPastB = dateB.getTime() < todayStart.getTime();
 
-      // Prioridade: Hoje > Futuro > Passado
-      if (isAToday && !isBToday) return -1;
-      if (!isAToday && isBToday) return 1;
-      if (isAFuture && isBPast) return -1;
-      if (isAPast && isBFuture) return 1;
+      // Eventos passados vão para o final
+      if (isPastA && !isPastB) return 1;  // A é passado, B não -> B vem primeiro
+      if (!isPastA && isPastB) return -1; // A não é passado, B é -> A vem primeiro
 
-      // Dentro da mesma categoria, ordenar por data
-      // Hoje e Futuro: ordem crescente (mais próximo primeiro)
-      // Passado: ordem decrescente (mais recente primeiro)
-      if (isAPast && isBPast) {
-        return dateB.getTime() - dateA.getTime(); // Mais recente primeiro
+      // Ambos são passados: mais recente primeiro
+      if (isPastA && isPastB) {
+        return dateB.getTime() - dateA.getTime();
       }
-      return dateA.getTime() - dateB.getTime(); // Mais próximo primeiro
+
+      // Ambos são hoje ou futuro: ordem cronológica (mais próximo primeiro)
+      return dateA.getTime() - dateB.getTime();
     });
   };
 
