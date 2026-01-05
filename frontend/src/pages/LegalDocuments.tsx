@@ -392,26 +392,26 @@ const LegalDocuments: React.FC = () => {
                 <table className="w-full">
                   <thead className="bg-neutral-50">
                     <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
                         Título
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
                         Parte (Cliente)
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
                         Data
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
                         Assinante
                       </th>
-                      <th className="px-4 py-3 text-center text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-neutral-900 uppercase tracking-wider">
                         Ações
                       </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-neutral-200 bg-white">
                     {documents.map((doc) => (
-                      <tr key={doc.id} className="hover:bg-neutral-50 transition-colors">
+                      <tr key={doc.id} className="odd:bg-white even:bg-neutral-50 hover:bg-success-100 transition-colors">
                         <td className="px-4 py-3 text-sm">
                           <div className="flex items-center gap-2">
                             <FileText size={18} className="text-primary-600" />

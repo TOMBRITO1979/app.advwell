@@ -429,26 +429,26 @@ const Companies: React.FC = () => {
               <table className="w-full">
                 <thead className="bg-neutral-50">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
                       Empresa
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
                       Assinatura
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
                       Estatísticas
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
                       Status
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
                       Ações
                     </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-neutral-200">
                   {companies.map((company) => (
-                    <tr key={company.id} className="hover:bg-neutral-50">
+                    <tr key={company.id} className="odd:bg-white even:bg-neutral-50 hover:bg-success-100 transition-colors">
                       <td className="px-4 py-3 text-sm">
                         <div>
                           <p className="font-medium text-neutral-900">{company.name}</p>
@@ -898,26 +898,26 @@ const Companies: React.FC = () => {
                   <table className="w-full">
                     <thead className="bg-neutral-50">
                       <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                        <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
                           Nome
                         </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                        <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
                           Email
                         </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                        <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
                           Função
                         </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                        <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
                           Status
                         </th>
-                        <th className="px-4 py-3 text-center text-xs font-medium text-neutral-500 uppercase">
+                        <th className="px-4 py-3 text-center text-sm font-semibold text-neutral-900 uppercase">
                           Ações
                         </th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-neutral-200">
                       {usersData.users.map((user) => (
-                        <tr key={user.id} className="hover:bg-neutral-50">
+                        <tr key={user.id} className="odd:bg-white even:bg-neutral-50 hover:bg-success-100 transition-colors">
                           <td className="px-4 py-3 text-sm font-medium text-neutral-900">
                             {user.name}
                           </td>

@@ -381,38 +381,38 @@ const AccountsPayable: React.FC = () => {
 
             {/* Desktop Table View */}
             <div className="desktop-table-view overflow-x-auto">
-              <table className="min-w-full divide-y divide-neutral-200" style={{ minWidth: '700px' }}>
+              <table className="w-full table-fixed divide-y divide-neutral-200">
                 <thead className="bg-neutral-50">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                    <th className="w-[25%] px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
                       Fornecedor
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                    <th className="w-[30%] px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
                       Descrição
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                    <th className="w-[12%] px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
                       Valor
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                    <th className="w-[12%] px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
                       Vencimento
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                    <th className="w-[10%] px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
                       Status
                     </th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-neutral-500 uppercase">
+                    <th className="w-[11%] px-4 py-3 text-right text-sm font-semibold text-neutral-900 uppercase">
                       Ações
                     </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-neutral-200">
                   {accounts.map((account) => (
-                    <tr key={account.id} className="hover:bg-neutral-50">
-                      <td className="px-4 py-3 text-sm text-neutral-900">
+                    <tr key={account.id} className="odd:bg-white even:bg-neutral-50 hover:bg-success-100 transition-colors">
+                      <td className="px-4 py-3 text-sm text-neutral-900 truncate" title={account.supplier}>
                         {account.supplier}
                       </td>
-                      <td className="px-4 py-3 text-sm text-neutral-600">
-                        <div className="flex items-center gap-2">
-                          {account.description}
+                      <td className="px-4 py-3 text-sm text-neutral-600 truncate" title={account.description}>
+                        <div className="flex items-center gap-2 truncate">
+                          <span className="truncate">{account.description}</span>
                           {(account as any).isRecurring && (
                             <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-primary-100 text-primary-800" title="Conta recorrente">
                               <Repeat size={16} className="mr-1" />
@@ -582,22 +582,22 @@ const AccountsPayable: React.FC = () => {
 
                     {/* Payments Table */}
                     <div className="border border-gray-200 rounded-lg overflow-hidden">
-                      <table className="min-w-full divide-y divide-neutral-200">
+                      <table className="w-full table-fixed divide-y divide-neutral-200">
                         <thead className="bg-neutral-50">
                           <tr>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                            <th className="w-[22%] px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
                               Fornecedor
                             </th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                            <th className="w-[30%] px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
                               Descrição
                             </th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                            <th className="w-[16%] px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
                               Categoria
                             </th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                            <th className="w-[14%] px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
                               Valor
                             </th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                            <th className="w-[18%] px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
                               Data Pagamento
                             </th>
                           </tr>
@@ -611,14 +611,14 @@ const AccountsPayable: React.FC = () => {
                             </tr>
                           ) : (
                             statementData.accounts.map((account) => (
-                              <tr key={account.id} className="hover:bg-neutral-50">
-                                <td className="px-4 py-3 text-sm text-neutral-900">
+                              <tr key={account.id} className="odd:bg-white even:bg-neutral-50 hover:bg-success-100 transition-colors">
+                                <td className="px-4 py-3 text-sm text-neutral-900 truncate" title={account.supplier}>
                                   {account.supplier}
                                 </td>
-                                <td className="px-4 py-3 text-sm text-neutral-600">
+                                <td className="px-4 py-3 text-sm text-neutral-600 truncate" title={account.description}>
                                   {account.description}
                                 </td>
-                                <td className="px-4 py-3 text-sm text-neutral-600">
+                                <td className="px-4 py-3 text-sm text-neutral-600 truncate" title={account.category || '-'}>
                                   {account.category || '-'}
                                 </td>
                                 <td className="px-4 py-3 text-sm font-medium text-neutral-900">

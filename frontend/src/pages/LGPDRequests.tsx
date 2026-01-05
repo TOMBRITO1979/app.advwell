@@ -315,18 +315,18 @@ const LGPDRequests: React.FC = () => {
                 <table className="w-full">
                   <thead className="bg-neutral-50 border-b border-neutral-200">
                     <tr>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">Solicitante</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">Tipo</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">Status</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">Data</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">Acoes</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">Solicitante</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">Tipo</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">Status</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">Data</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">Acoes</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-neutral-200">
                     {filteredRequests.map((request) => {
                       const typeInfo = getRequestTypeLabel(request.requestType);
                       return (
-                        <tr key={request.id} className="hover:bg-neutral-50">
+                        <tr key={request.id} className="odd:bg-white even:bg-neutral-50 hover:bg-success-100 transition-colors">
                           <td className="px-4 py-4">
                             <div className="flex items-center gap-3">
                               <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">

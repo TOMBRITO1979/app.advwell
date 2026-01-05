@@ -171,29 +171,29 @@ const Updates: React.FC = () => {
             <table className="min-w-full divide-y divide-neutral-200">
               <thead className="bg-neutral-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
                     Processo
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
                     Cliente
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
                     Assunto
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
                     Último Andamento
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
                     Atualizado em
                   </th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-center text-sm font-semibold text-neutral-900 uppercase tracking-wider">
                     Ações
                   </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-neutral-200">
                 {updates.map((update) => (
-                  <tr key={update.id} className="hover:bg-neutral-50">
+                  <tr key={update.id} className="odd:bg-white even:bg-neutral-50 hover:bg-success-100 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-medium text-neutral-900">

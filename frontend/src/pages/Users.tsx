@@ -261,26 +261,26 @@ const Users: React.FC = () => {
                 <table className="w-full">
                   <thead className="bg-neutral-50">
                     <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
                         Usuário
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
                         Email
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
                         Permissões
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
                         Status
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
                         Ações
                       </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-neutral-200">
                     {users.map((user) => (
-                      <tr key={user.id} className="hover:bg-neutral-50">
+                      <tr key={user.id} className="odd:bg-white even:bg-neutral-50 hover:bg-success-100 transition-colors">
                         <td className="px-4 py-3 text-sm">
                           <div>
                             <p className="font-medium text-neutral-900">{user.name}</p>

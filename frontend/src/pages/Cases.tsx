@@ -755,22 +755,22 @@ const Cases: React.FC = () => {
                 <table className="w-full">
                   <thead className="bg-neutral-50">
                     <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
                         Número
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
                         Cliente
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
                         Assunto
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
                         Status
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
                         Prazo
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
                         Ações
                       </th>
                     </tr>
@@ -790,7 +790,7 @@ const Cases: React.FC = () => {
                         FINISHED: 'Finalizado',
                       };
                       return (
-                        <tr key={caseItem.id} className="hover:bg-neutral-50">
+                        <tr key={caseItem.id} className="odd:bg-white even:bg-neutral-50 hover:bg-success-100 transition-colors">
                           <td className="px-4 py-3 text-sm">
                             <button
                               onClick={() => handleCaseClick(caseItem.id)}
@@ -1561,22 +1561,22 @@ const Cases: React.FC = () => {
                         <table className="min-w-full divide-y divide-neutral-200 border border-neutral-200 rounded-lg">
                           <thead className="bg-neutral-50">
                             <tr>
-                              <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                              <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
                                 Tipo
                               </th>
-                              <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                              <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
                                 Nome
                               </th>
-                              <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                              <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
                                 CPF/CNPJ
                               </th>
-                              <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                              <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
                                 RG
                               </th>
-                              <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                              <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
                                 Nascimento
                               </th>
-                              <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                              <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
                                 Ações
                               </th>
                             </tr>
@@ -1596,7 +1596,7 @@ const Cases: React.FC = () => {
                               };
 
                               return (
-                                <tr key={part.id} className="hover:bg-neutral-50">
+                                <tr key={part.id} className="odd:bg-white even:bg-neutral-50 hover:bg-success-100 transition-colors">
                                   <td className="px-4 py-3 whitespace-nowrap">
                                     <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${typeBadgeColors[part.type]}`}>
                                       {typeLabels[part.type]}

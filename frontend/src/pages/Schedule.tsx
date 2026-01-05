@@ -742,38 +742,38 @@ const Schedule: React.FC = () => {
                 <table className="min-w-full divide-y divide-neutral-200">
                   <thead className="bg-neutral-50">
                     <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
                         Status
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
                         Data
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
                         Tipo
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
                         Prioridade
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
                         Título
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
                         Cliente
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
                         Processo
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
                         Atribuído
                       </th>
-                      <th className="px-4 py-3 text-right text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-right text-sm font-semibold text-neutral-900 uppercase tracking-wider">
                         Ações
                       </th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-neutral-200">
                     {events.map((event) => (
-                      <tr key={event.id} className="hover:bg-neutral-50">
+                      <tr key={event.id} className="odd:bg-white even:bg-neutral-50 hover:bg-success-100 transition-colors">
                         <td className="px-4 py-3">
                           <button
                             onClick={() => handleToggleComplete(event)}
@@ -978,7 +978,7 @@ const Schedule: React.FC = () => {
                                 } ${eventTypeColors[event.type].replace('text-', 'border-l-4 border-').split(' ')[0]} bg-white border border-neutral-200`}
                               >
                                 <div className="flex items-center gap-1 mb-1">
-                                  <span className="text-xs font-medium text-neutral-500">
+                                  <span className="text-sm font-semibold text-neutral-900">
                                     {formatEventTime(event.date)}
                                   </span>
                                   {event.completed && (

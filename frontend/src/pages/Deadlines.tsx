@@ -244,28 +244,28 @@ const Deadlines: React.FC = () => {
                 <table className="w-full">
                   <thead className="bg-neutral-50">
                     <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
                         Urgência
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
                         Número do Processo
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
                         Cliente
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
                         Assunto
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
                         Prazo
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
                         Dias Restantes
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
                         Status
                       </th>
-                      <th className="px-4 py-3 text-center text-xs font-medium text-neutral-500 uppercase">
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-neutral-900 uppercase">
                         Ações
                       </th>
                     </tr>
@@ -276,7 +276,7 @@ const Deadlines: React.FC = () => {
                       const deadlineColor = getDeadlineColor(daysRemaining);
 
                       return (
-                        <tr key={caseItem.id} className={`hover:bg-neutral-50 ${caseItem.deadlineCompleted ? 'bg-success-50' : ''}`}>
+                        <tr key={caseItem.id} className={`odd:bg-white even:bg-neutral-50 hover:bg-success-100 transition-colors ${caseItem.deadlineCompleted ? 'bg-success-50' : ''}`}>
                           <td className="px-4 py-3 text-sm">
                             <div className="flex items-center justify-center">
                               {caseItem.deadlineCompleted ? (

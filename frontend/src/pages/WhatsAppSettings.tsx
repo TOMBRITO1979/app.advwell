@@ -458,7 +458,7 @@ const WhatsAppSettings: React.FC = () => {
                   </thead>
                   <tbody className="divide-y divide-neutral-200">
                     {templates.map((template) => (
-                      <tr key={template.id} className="hover:bg-neutral-50">
+                      <tr key={template.id} className="odd:bg-white even:bg-neutral-50 hover:bg-success-100 transition-colors">
                         <td className="px-4 py-3">
                           <code className="text-sm bg-neutral-100 px-2 py-1 rounded">
                             {template.name}

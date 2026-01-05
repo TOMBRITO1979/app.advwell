@@ -429,7 +429,7 @@ const AuditLogs: React.FC = () => {
                 const isExpanded = expandedLogId === log.id;
 
                 return (
-                  <div key={log.id} className="hover:bg-neutral-50">
+                  <div key={log.id} className="odd:bg-white even:bg-neutral-50 hover:bg-success-100 transition-colors">
                     {/* Log Header */}
                     <div
                       className="p-4 cursor-pointer"
@@ -507,7 +507,7 @@ const AuditLogs: React.FC = () => {
                           {/* Changed Fields */}
                           {log.action === 'UPDATE' && log.changedFields.length > 0 && (
                             <div className="space-y-2">
-                              <p className="text-xs font-medium text-neutral-500 uppercase tracking-wide">
+                              <p className="text-sm font-semibold text-neutral-900 uppercase tracking-wide">
                                 Campos alterados:
                               </p>
                               <div className="space-y-1">
@@ -536,7 +536,7 @@ const AuditLogs: React.FC = () => {
                           {/* Create - New Values */}
                           {log.action === 'CREATE' && log.newValues && (
                             <div className="space-y-2">
-                              <p className="text-xs font-medium text-neutral-500 uppercase tracking-wide">
+                              <p className="text-sm font-semibold text-neutral-900 uppercase tracking-wide">
                                 Dados criados:
                               </p>
                               <div className="grid grid-cols-2 gap-2 text-sm">
@@ -555,7 +555,7 @@ const AuditLogs: React.FC = () => {
                           {/* Delete - Old Values */}
                           {log.action === 'DELETE' && log.oldValues && (
                             <div className="space-y-2">
-                              <p className="text-xs font-medium text-neutral-500 uppercase tracking-wide">
+                              <p className="text-sm font-semibold text-neutral-900 uppercase tracking-wide">
                                 Dados excluidos:
                               </p>
                               <div className="grid grid-cols-2 gap-2 text-sm">

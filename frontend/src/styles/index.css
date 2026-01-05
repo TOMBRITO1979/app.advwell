@@ -103,7 +103,7 @@ body {
   }
 
   .mobile-card-label {
-    @apply text-xs font-medium text-neutral-500 uppercase;
+    @apply text-sm font-semibold text-neutral-900 uppercase;
   }
 
   .mobile-card-value {

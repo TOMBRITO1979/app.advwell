@@ -510,19 +510,19 @@ const WhatsAppCampaigns: React.FC = () => {
               <table className="min-w-full divide-y divide-neutral-200">
                 <thead className="bg-neutral-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Nome</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Template</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Status</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Enviados</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Entregues</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Lidos</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Data</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-neutral-500 uppercase">Ações</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">Nome</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">Template</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">Status</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">Enviados</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">Entregues</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">Lidos</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">Data</th>
+                    <th className="px-6 py-3 text-right text-sm font-semibold text-neutral-900 uppercase">Ações</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-neutral-200">
                   {campaigns.map((campaign) => (
-                    <tr key={campaign.id} className="hover:bg-neutral-50">
+                    <tr key={campaign.id} className="odd:bg-white even:bg-neutral-50 hover:bg-success-100 transition-colors">
                       <td className="px-6 py-4 text-sm font-medium text-neutral-900">
                         {campaign.name}
                       </td>
