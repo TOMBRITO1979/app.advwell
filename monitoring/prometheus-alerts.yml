@@ -323,6 +323,81 @@ groups:
           description: "Servico {{ $labels.service }} nao tem nenhuma replica rodando!"
 
   # ============================================
+  # Dedicated PostgreSQL VPS Alerts (5.78.137.1)
+  # ============================================
+  - name: postgres-dedicated
+    rules:
+      # PostgreSQL VPS Down
+      - alert: PostgresVPSDown
+        expr: pg_up{server="dedicated"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "PostgreSQL VPS esta fora do ar"
+          description: "PostgreSQL na VPS dedicada (5.78.137.1) nao esta respondendo!"
+
+      # PostgreSQL VPS Memory High (12GB de 16GB para PostgreSQL)
+      - alert: PostgresVPSMemoryHigh
+        expr: (1 - (node_memory_MemAvailable_bytes{server="dedicated"} / node_memory_MemTotal_bytes{server="dedicated"})) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "PostgreSQL VPS memoria alta"
+          description: "VPS PostgreSQL usando {{ $value | printf \"%.1f\" }}% da memoria"
+
+      # PostgreSQL VPS Memory Critical
+      - alert: PostgresVPSMemoryCritical
+        expr: (1 - (node_memory_MemAvailable_bytes{server="dedicated"} / node_memory_MemTotal_bytes{server="dedicated"})) * 100 > 90
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "PostgreSQL VPS memoria CRITICA"
+          description: "VPS PostgreSQL usando {{ $value | printf \"%.1f\" }}% da memoria. Risco de OOM!"
+
+      # PostgreSQL VPS Disk High
+      - alert: PostgresVPSDiskHigh
+        expr: (1 - (node_filesystem_avail_bytes{server="dedicated",fstype!~"tmpfs|overlay"} / node_filesystem_size_bytes{server="dedicated",fstype!~"tmpfs|overlay"})) * 100 > 80
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "PostgreSQL VPS disco quase cheio"
+          description: "VPS PostgreSQL com disco {{ $value | printf \"%.1f\" }}% cheio"
+
+      # PostgreSQL VPS CPU High
+      - alert: PostgresVPSCPUHigh
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle",server="dedicated"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "PostgreSQL VPS CPU alta"
+          description: "VPS PostgreSQL com CPU em {{ $value | printf \"%.1f\" }}%"
+
+      # PostgreSQL VPS Connections High (400 de 500)
+      - alert: PostgresVPSConnectionsHigh
+        expr: pg_stat_activity_count{server="dedicated"} > 400
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "PostgreSQL VPS muitas conexoes"
+          description: "PostgreSQL VPS com {{ $value }} conexoes (limite: 500)"
+
+      # Network unreachable (main server can't reach VPS)
+      - alert: PostgresVPSUnreachable
+        expr: up{job="postgres-dedicated"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "PostgreSQL VPS inacessivel"
+          description: "Servidor principal nao consegue acessar a VPS do PostgreSQL!"
+
+  # ============================================
   # Capacity Planning Alerts
   # ============================================
   - name: capacity

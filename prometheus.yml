@@ -47,9 +47,18 @@ scrape_configs:
   # ============================================
   # PostgreSQL Monitoring (via postgres_exporter)
   # ============================================
+  # Main server (legacy - points to dedicated VPS)
   - job_name: 'postgres'
     static_configs:
       - targets: ['postgres-exporter:9187']
+
+  # Dedicated PostgreSQL VPS (5.78.137.1)
+  - job_name: 'postgres-dedicated'
+    static_configs:
+      - targets: ['5.78.137.1:9187']
+        labels:
+          instance: 'postgres-vps'
+          server: 'dedicated'
 
   # ============================================
   # Redis Monitoring (via redis_exporter)
@@ -64,6 +73,16 @@ scrape_configs:
   - job_name: 'node'
     static_configs:
       - targets: ['node-exporter:9100']
+        labels:
+          server: 'main'
+
+  # Dedicated PostgreSQL VPS - System metrics
+  - job_name: 'node-postgres-vps'
+    static_configs:
+      - targets: ['5.78.137.1:9100']
+        labels:
+          instance: 'postgres-vps'
+          server: 'dedicated'
 
   # ============================================
   # Backend API Health Checks (via blackbox probe)

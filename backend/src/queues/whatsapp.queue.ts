@@ -4,6 +4,9 @@ import { whatsappService } from '../services/whatsapp.service';
 import { createRedisClient } from '../utils/redis';
 import { appLogger } from '../utils/logger';
 
+// ISSUE 1 FIX: Controle de processadores para evitar duplicação em múltiplas replicas
+const ENABLE_QUEUE_PROCESSORS = process.env.ENABLE_QUEUE_PROCESSORS !== 'false'; // Default: true
+
 // Configuração da fila usando createRedisClient (suporta Sentinel)
 const whatsappQueue = new Queue('whatsapp-messages', {
   createClient: () => createRedisClient(),
@@ -21,6 +24,10 @@ const whatsappQueue = new Queue('whatsapp-messages', {
 // ============================================================================
 // PROCESSADORES DE JOBS
 // ============================================================================
+
+// ISSUE 1 FIX: Só registrar processadores se habilitado (evita jobs duplicados em múltiplas replicas)
+if (ENABLE_QUEUE_PROCESSORS) {
+  appLogger.info('Registering WhatsApp queue processors...');
 
 /**
  * Processa envio de mensagem de campanha
@@ -220,6 +227,10 @@ whatsappQueue.on('stalled', (job) => {
     jobId: job.id,
   });
 });
+
+} else {
+  appLogger.info('WhatsApp queue processors DISABLED (ENABLE_QUEUE_PROCESSORS=false)');
+}
 
 // ============================================================================
 // FUNÇÕES EXPORTADAS

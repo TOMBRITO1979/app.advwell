@@ -9,8 +9,15 @@ import { appLogger } from '../utils/logger';
 const SYNC_CONCURRENCY = parseInt(process.env.SYNC_CONCURRENCY || '5');
 const SYNC_BATCH_SIZE = parseInt(process.env.SYNC_BATCH_SIZE || '50');
 const SYNC_INCREMENTAL = process.env.SYNC_INCREMENTAL !== 'false'; // Default: true
+// ISSUE 1 FIX: Controle de processadores para evitar duplicação em múltiplas replicas
+const ENABLE_QUEUE_PROCESSORS = process.env.ENABLE_QUEUE_PROCESSORS !== 'false'; // Default: true
 
-appLogger.info('Sync Queue config', { concurrency: SYNC_CONCURRENCY, batch: SYNC_BATCH_SIZE, incremental: SYNC_INCREMENTAL });
+appLogger.info('Sync Queue config', {
+  concurrency: SYNC_CONCURRENCY,
+  batch: SYNC_BATCH_SIZE,
+  incremental: SYNC_INCREMENTAL,
+  processorsEnabled: ENABLE_QUEUE_PROCESSORS
+});
 
 // TAREFA 4.1: Queue configuration usando createRedisClient (suporta Sentinel)
 const syncQueue = new Queue('datajud-sync', {
@@ -46,6 +53,10 @@ function getUltimoAndamento(movimentos: any[]): string | null {
 function generateMovementHash(caseId: string, codigo: number, dataHora: string): string {
   return `${caseId}-${codigo}-${new Date(dataHora).getTime()}`;
 }
+
+// ISSUE 1 FIX: Só registrar processadores se habilitado (evita jobs duplicados em múltiplas replicas)
+if (ENABLE_QUEUE_PROCESSORS) {
+  appLogger.info('Registering sync queue processors...');
 
 // Process individual case sync
 syncQueue.process('sync-case', SYNC_CONCURRENCY, async (job) => {
@@ -258,6 +269,10 @@ syncQueue.on('failed', (job, err) => {
 syncQueue.on('stalled', (job) => {
   appLogger.warn('Job stalled', { jobName: job.name });
 });
+
+} else {
+  appLogger.info('Sync queue processors DISABLED (ENABLE_QUEUE_PROCESSORS=false)');
+}
 
 // Helper functions
 // SEGURANCA: Sync diario agora itera por empresa para garantir isolamento de tenant

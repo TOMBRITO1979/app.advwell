@@ -6,6 +6,9 @@ import { replaceTemplateVariables } from '../utils/email-templates';
 import { createRedisClient } from '../utils/redis';
 import { appLogger } from '../utils/logger';
 
+// ISSUE 1 FIX: Controle de processadores para evitar duplicação em múltiplas replicas
+const ENABLE_QUEUE_PROCESSORS = process.env.ENABLE_QUEUE_PROCESSORS !== 'false'; // Default: true
+
 // TAREFA 4.1: Queue configuration usando createRedisClient (suporta Sentinel)
 const emailQueue = new Queue('email-campaign', {
   createClient: (type) => {
@@ -22,6 +25,10 @@ const emailQueue = new Queue('email-campaign', {
     removeOnFail: 500,
   },
 });
+
+// ISSUE 1 FIX: Só registrar processadores se habilitado (evita jobs duplicados em múltiplas replicas)
+if (ENABLE_QUEUE_PROCESSORS) {
+  appLogger.info('Registering email queue processors...');
 
 // Process individual email sending
 emailQueue.process('send-email', 10, async (job) => {
@@ -162,6 +169,10 @@ emailQueue.on('completed', (job, result) => {
 emailQueue.on('failed', (job, err) => {
   appLogger.error('Email job failed', err as Error, { jobName: job.name });
 });
+
+} else {
+  appLogger.info('Email queue processors DISABLED (ENABLE_QUEUE_PROCESSORS=false)');
+}
 
 // Helper function to enqueue campaign emails
 export const enqueueCampaignEmails = async (campaignId: string) => {

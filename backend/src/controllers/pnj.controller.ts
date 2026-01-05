@@ -357,6 +357,7 @@ export class PNJController {
       const part = await prisma.pNJPart.create({
         data: {
           pnjId: id,
+          companyId: companyId!, // ISSUE 2 FIX: Isolamento direto de tenant
           name: sanitizeString(name) || name.trim(),
           document: document?.trim() || null,
           type,
@@ -507,6 +508,7 @@ export class PNJController {
       const movement = await prisma.pNJMovement.create({
         data: {
           pnjId: id,
+          companyId: companyId!, // ISSUE 2 FIX: Isolamento direto de tenant
           date: date ? new Date(date) : new Date(),
           description: sanitizeString(description) || description.trim(),
           notes: sanitizeString(notes) || null,

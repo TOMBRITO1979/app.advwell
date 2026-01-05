@@ -93,6 +93,8 @@ model Company {
   // PNJ - Processos Não Judiciais
   pnjs                  PNJ[]
   pnjDocuments          PNJDocument[]
+  pnjParts              PNJPart[]       // ISSUE 2 FIX: Isolamento direto de tenant
+  pnjMovements          PNJMovement[]   // ISSUE 2 FIX: Isolamento direto de tenant
 
   // WhatsApp Business API
   whatsAppConfig              WhatsAppConfig?
@@ -1329,6 +1331,7 @@ model PNJ {
 model PNJPart {
   id        String      @id @default(uuid())
   pnjId     String
+  companyId String      // ISSUE 2 FIX: Isolamento direto de tenant
 
   // Dados da parte
   name      String
@@ -1342,8 +1345,10 @@ model PNJPart {
 
   // Relacionamentos
   pnj       PNJ         @relation(fields: [pnjId], references: [id], onDelete: Cascade)
+  company   Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   @@index([pnjId])
+  @@index([companyId])
   @@map("pnj_parts")
 }
 
@@ -1351,6 +1356,7 @@ model PNJPart {
 model PNJMovement {
   id          String   @id @default(uuid())
   pnjId       String
+  companyId   String   // ISSUE 2 FIX: Isolamento direto de tenant
 
   // Dados do andamento
   date        DateTime @default(now())
@@ -1364,9 +1370,11 @@ model PNJMovement {
 
   // Relacionamentos
   pnj         PNJ      @relation(fields: [pnjId], references: [id], onDelete: Cascade)
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
   creator     User?    @relation("PNJMovementCreator", fields: [createdBy], references: [id], onDelete: SetNull)
 
   @@index([pnjId])
+  @@index([companyId])
   @@index([date])
   @@map("pnj_movements")
 }
