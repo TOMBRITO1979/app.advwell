@@ -22,6 +22,19 @@ export interface CaseMovementData {
   description?: string | null;
 }
 
+// Token usage information
+export interface TokenUsage {
+  promptTokens: number;
+  completionTokens: number;
+  totalTokens: number;
+}
+
+// AI response with token usage
+export interface AIResponse {
+  text: string;
+  usage?: TokenUsage;
+}
+
 // AI Provider Interface - All providers must implement this
 export interface IAIProvider {
   /**
@@ -38,6 +51,13 @@ export interface IAIProvider {
    * @returns Generated text
    */
   generateText(prompt: string): Promise<string>;
+
+  /**
+   * Generate text from a custom prompt with token usage
+   * @param prompt - The prompt to send to the AI
+   * @returns Generated text with token usage
+   */
+  generateTextWithUsage(prompt: string): Promise<AIResponse>;
 
   /**
    * Test the connection with the AI provider

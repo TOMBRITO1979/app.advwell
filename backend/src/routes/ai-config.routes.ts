@@ -66,4 +66,11 @@ router.post('/test-provider', testProviderValidation, controller.testProviderCon
  */
 router.get('/models', controller.getAvailableModels);
 
+/**
+ * GET /api/ai-config/token-usage
+ * Get token usage statistics for current company
+ * Query params: startDate, endDate, groupBy
+ */
+router.get('/token-usage', controller.getTokenUsageStats);
+
 export default router;

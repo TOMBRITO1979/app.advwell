@@ -91,7 +91,12 @@ const ToDo: React.FC = () => {
 
       const response = await api.get('/schedule', { params });
       // Backend retorna { data: [...], total, page, limit }
-      setTodos(response.data.data || []);
+      // Ordenar: tarefas pendentes primeiro, concluídas no final
+      const sortedTodos = (response.data.data || []).sort((a: Todo, b: Todo) => {
+        if (a.completed === b.completed) return 0;
+        return a.completed ? 1 : -1;
+      });
+      setTodos(sortedTodos);
     } catch (error: any) {
       console.error('Erro ao carregar tarefas:', error);
       toast.error(error.response?.data?.error || 'Erro ao carregar tarefas');

@@ -1,6 +1,6 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { appLogger } from '../../../utils/logger';
-import { IAIProvider, CaseMovementData, CaseInfo } from '../../../types/ai.types';
+import { IAIProvider, CaseMovementData, CaseInfo, AIResponse } from '../../../types/ai.types';
 import { SYSTEM_PROMPT, generateUserPrompt, formatMovementsForAI } from '../prompts';
 
 /**
@@ -71,6 +71,14 @@ export class GeminiProvider implements IAIProvider {
    * Generate text from a custom prompt
    */
   async generateText(prompt: string): Promise<string> {
+    const response = await this.generateTextWithUsage(prompt);
+    return response.text;
+  }
+
+  /**
+   * Generate text from a custom prompt with token usage
+   */
+  async generateTextWithUsage(prompt: string): Promise<AIResponse> {
     try {
       const genModel = this.client.getGenerativeModel({ model: this.model });
       const result = await genModel.generateContent(prompt);
@@ -81,7 +89,17 @@ export class GeminiProvider implements IAIProvider {
         throw new Error('Gemini returned empty response');
       }
 
-      return text;
+      // Gemini retorna usage metadata
+      const usageMetadata = response.usageMetadata;
+
+      return {
+        text,
+        usage: usageMetadata ? {
+          promptTokens: usageMetadata.promptTokenCount || 0,
+          completionTokens: usageMetadata.candidatesTokenCount || 0,
+          totalTokens: usageMetadata.totalTokenCount || 0,
+        } : undefined,
+      };
     } catch (error: any) {
       appLogger.error('Gemini generateText Error', error as Error);
 

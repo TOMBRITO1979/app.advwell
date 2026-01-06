@@ -1,6 +1,6 @@
 import OpenAI from 'openai';
 import { appLogger } from '../../../utils/logger';
-import { IAIProvider, CaseMovementData, CaseInfo } from '../../../types/ai.types';
+import { IAIProvider, CaseMovementData, CaseInfo, AIResponse } from '../../../types/ai.types';
 import { SYSTEM_PROMPT, generateUserPrompt, formatMovementsForAI } from '../prompts';
 
 /**
@@ -84,6 +84,14 @@ export class OpenAIProvider implements IAIProvider {
    * Generate text from a custom prompt
    */
   async generateText(prompt: string): Promise<string> {
+    const response = await this.generateTextWithUsage(prompt);
+    return response.text;
+  }
+
+  /**
+   * Generate text from a custom prompt with token usage
+   */
+  async generateTextWithUsage(prompt: string): Promise<AIResponse> {
     try {
       const response = await this.client.chat.completions.create({
         model: this.model,
@@ -103,7 +111,14 @@ export class OpenAIProvider implements IAIProvider {
         throw new Error('OpenAI returned empty response');
       }
 
-      return text;
+      return {
+        text,
+        usage: response.usage ? {
+          promptTokens: response.usage.prompt_tokens,
+          completionTokens: response.usage.completion_tokens,
+          totalTokens: response.usage.total_tokens,
+        } : undefined,
+      };
     } catch (error: any) {
       appLogger.error('OpenAI generateText Error', error as Error);
 

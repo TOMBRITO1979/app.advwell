@@ -66,6 +66,9 @@ export const listLegalDocuments = async (req: AuthRequest, res: Response) => {
               name: true,
             },
           },
+          parties: {
+            orderBy: { createdAt: 'asc' },
+          },
         },
         orderBy: { createdAt: 'desc' },
         skip,
@@ -129,6 +132,9 @@ export const getLegalDocument = async (req: AuthRequest, res: Response) => {
             name: true,
           },
         },
+        parties: {
+          orderBy: { createdAt: 'asc' },
+        },
       },
     });
 
@@ -154,8 +160,8 @@ export const createLegalDocument = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ error: 'Empresa não identificada' });
     }
 
-    if (!title || !content) {
-      return res.status(400).json({ error: 'Título e conteúdo são obrigatórios' });
+    if (!title) {
+      return res.status(400).json({ error: 'Título é obrigatório' });
     }
 
     // Verificar se o cliente existe
@@ -305,6 +311,140 @@ export const deleteLegalDocument = async (req: AuthRequest, res: Response) => {
   }
 };
 
+// Helper para renderizar texto com formatação markdown no PDF
+const renderFormattedText = (doc: any, text: string, options: any = {}) => {
+  const { align = 'justify', lineGap = 3 } = options;
+  const pageWidth = 595.28;
+  const margin = 50;
+  const contentWidth = pageWidth - margin * 2;
+
+  // Regex para encontrar formatações markdown
+  // **__texto__** ou __**texto**__ = negrito + sublinhado
+  // **texto** = negrito
+  // __texto__ = sublinhado
+  const formatRegex = /(\*\*__(.+?)__\*\*|__\*\*(.+?)\*\*__|__(.+?)__|(?<!\*)\*\*(.+?)\*\*(?!\*))/g;
+
+  // Dividir texto em parágrafos
+  const paragraphs = text.split(/\n\n+/);
+
+  paragraphs.forEach((paragraph, pIndex) => {
+    if (pIndex > 0) {
+      doc.moveDown(0.8);
+    }
+
+    // Dividir parágrafo em linhas para melhor controle
+    const lines = paragraph.split(/\n/);
+
+    lines.forEach((line, lineIndex) => {
+      if (lineIndex > 0) {
+        doc.moveDown(0.3);
+      }
+
+      // Encontrar todos os segmentos formatados e não formatados
+      const segments: { text: string; bold: boolean; underline: boolean }[] = [];
+      let lastIndex = 0;
+      let match;
+
+      // Regex que não captura sequências de apenas underscores (linhas de assinatura)
+      const lineFormatRegex = /(\*\*__([^_]+?)__\*\*|__\*\*([^_]+?)\*\*__|__([^_]+?)__|\*\*([^*]+?)\*\*)/g;
+
+      while ((match = lineFormatRegex.exec(line)) !== null) {
+        // Adicionar texto antes do match
+        if (match.index > lastIndex) {
+          segments.push({
+            text: line.substring(lastIndex, match.index),
+            bold: false,
+            underline: false,
+          });
+        }
+
+        // Determinar o tipo de formatação
+        const fullMatch = match[0];
+        let content = '';
+        let bold = false;
+        let underline = false;
+
+        if (match[2] || match[3]) {
+          // **__texto__** ou __**texto**__ = negrito + sublinhado
+          content = match[2] || match[3];
+          bold = true;
+          underline = true;
+        } else if (match[4]) {
+          // __texto__ = sublinhado
+          content = match[4];
+          underline = true;
+        } else if (match[5]) {
+          // **texto** = negrito
+          content = match[5];
+          bold = true;
+        }
+
+        segments.push({ text: content, bold, underline });
+        lastIndex = match.index + fullMatch.length;
+      }
+
+      // Adicionar texto restante
+      if (lastIndex < line.length) {
+        segments.push({
+          text: line.substring(lastIndex),
+          bold: false,
+          underline: false,
+        });
+      }
+
+      // Se não há segmentos, é uma linha vazia ou sem formatação
+      if (segments.length === 0) {
+        segments.push({ text: line, bold: false, underline: false });
+      }
+
+      // Renderizar cada segmento
+      let xPos = margin;
+      const startY = doc.y;
+
+      segments.forEach((segment, sIndex) => {
+        if (!segment.text) return;
+
+        // Definir fonte
+        const fontName = segment.bold ? 'Helvetica-Bold' : 'Helvetica';
+        doc.font(fontName).fontSize(11);
+
+        // Calcular largura do texto
+        const textWidth = doc.widthOfString(segment.text);
+
+        // Para o primeiro segmento, usar o método text normal para iniciar a linha
+        if (sIndex === 0) {
+          doc.text(segment.text, margin, doc.y, {
+            continued: segments.length > 1,
+            align: segments.length === 1 ? align : 'left',
+            lineGap,
+            width: contentWidth,
+          });
+        } else {
+          doc.text(segment.text, {
+            continued: sIndex < segments.length - 1,
+          });
+        }
+
+        // Desenhar sublinhado se necessário
+        if (segment.underline) {
+          const currentX = doc.x - textWidth;
+          const currentY = doc.y + 2;
+          doc.save()
+             .strokeColor('#000000')
+             .lineWidth(0.5)
+             .moveTo(currentX, currentY)
+             .lineTo(currentX + textWidth, currentY)
+             .stroke()
+             .restore();
+        }
+      });
+    });
+  });
+
+  // Restaurar fonte padrão
+  doc.font('Helvetica').fontSize(11);
+};
+
 // Gerar PDF do documento
 export const generatePDF = async (req: AuthRequest, res: Response) => {
   try {
@@ -336,7 +476,15 @@ export const generatePDF = async (req: AuthRequest, res: Response) => {
     }
 
     const PDFDocument = require('pdfkit');
-    const doc = new PDFDocument({ margin: 50, size: 'A4' });
+    const doc = new PDFDocument({
+      margins: {
+        top: 50,
+        bottom: 50,
+        left: 50,
+        right: 50,
+      },
+      size: 'A4',
+    });
 
     const filename = `documento_${document.id.substring(0, 8)}.pdf`;
 
@@ -345,8 +493,9 @@ export const generatePDF = async (req: AuthRequest, res: Response) => {
 
     doc.pipe(res);
 
-    const pageWidth = doc.page.width;
-    const margin = doc.page.margins.left;
+    // Dimensões da página A4
+    const pageWidth = 595.28;
+    const margin = 50;
 
     // ==================== HEADER MODERNO DA EMPRESA ====================
     if (document.company) {
@@ -381,47 +530,47 @@ export const generatePDF = async (req: AuthRequest, res: Response) => {
         doc.text(contactParts.join(' | '), { align: 'center' });
       }
 
-      doc.moveDown(1);
+      doc.moveDown(0.5);
       doc.strokeColor(pdfStyles.colors.primary)
          .lineWidth(2)
          .moveTo(margin, doc.y)
          .lineTo(pageWidth - margin, doc.y)
          .stroke();
-      doc.moveDown(1.5);
+      doc.moveDown(1);
     }
 
     // ==================== TÍTULO DO DOCUMENTO ====================
     doc.fillColor(pdfStyles.colors.black)
-       .fontSize(16)
+       .fontSize(14)
        .font('Helvetica-Bold')
        .text(document.title.toUpperCase(), { align: 'center' });
-    doc.moveDown(2);
+    doc.moveDown(1.5);
 
     // ==================== CONTEÚDO DO DOCUMENTO ====================
-    doc.fillColor(pdfStyles.colors.black)
-       .fontSize(12)
-       .font('Helvetica')
-       .text(document.content, {
-         align: 'justify',
-         lineGap: 5,
-       });
+    doc.fillColor(pdfStyles.colors.black);
 
-    doc.moveDown(3);
+    // Usar função de renderização com suporte a markdown (negrito, sublinhado)
+    if (document.content) {
+      renderFormattedText(doc, document.content, { align: 'justify', lineGap: 3 });
+    }
 
-    // ==================== DATA ====================
-    const documentDate = new Date(document.documentDate).toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric',
-    });
-
-    const cidade = document.company?.city || 'Local';
-    doc.fontSize(12).font('Helvetica').text(`${cidade}, ${documentDate}`, { align: 'center' });
-
-    doc.moveDown(4);
-
-    // ==================== ASSINATURA ====================
+    // ==================== DATA E ASSINATURA (só se tiver assinante) ====================
     if (document.signer) {
+      doc.moveDown(2);
+
+      // Data
+      const documentDate = new Date(document.documentDate).toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+      });
+
+      const cidade = document.company?.city || 'Local';
+      doc.fontSize(11).font('Helvetica').text(`${cidade}, ${documentDate}`, { align: 'center' });
+
+      doc.moveDown(2.5);
+
+      // Linha de assinatura
       doc.strokeColor(pdfStyles.colors.grayDark)
          .lineWidth(1)
          .moveTo(pageWidth / 2 - 100, doc.y)
@@ -439,24 +588,7 @@ export const generatePDF = async (req: AuthRequest, res: Response) => {
       }
     }
 
-    // ==================== RODAPÉ ====================
-    const footerY = doc.page.height - 40;
-    doc.strokeColor(pdfStyles.colors.grayLight)
-       .lineWidth(1)
-       .moveTo(margin, footerY - 10)
-       .lineTo(pageWidth - margin, footerY - 10)
-       .stroke();
-
-    doc.fillColor(pdfStyles.colors.gray)
-       .fontSize(8)
-       .font('Helvetica')
-       .text(
-         `Documento gerado em ${new Date().toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })} às ${new Date().toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo' })}`,
-         margin,
-         footerY,
-         { align: 'center', width: pageWidth - margin * 2 }
-       );
-
+    // Finalizar documento (sem rodapé por enquanto para testar)
     doc.end();
   } catch (error) {
     appLogger.error('Erro ao gerar PDF:', error as Error);
@@ -502,45 +634,126 @@ export const reviewWithAI = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    // Prompt para revisão e correção
-    const prompt = `Você é um revisor profissional de textos jurídicos. Analise o documento abaixo e:
+    // Prompt para revisão e criação de documentos jurídicos
+    const contentIsEmpty = !document.content || document.content.trim().length < 100;
 
-1. Identifique erros de digitação, concordância verbal, concordância de gênero e pontuação
-2. Forneça o texto CORRIGIDO completo
+    let prompt: string;
 
-Documento a ser revisado:
+    if (contentIsEmpty) {
+      // MODO CRIAÇÃO - documento vazio ou com pouco conteúdo
+      prompt = `VOCÊ É UMA ADVOGADA ESPECIALISTA EM REDAÇÃO DE DOCUMENTOS JURÍDICOS.
 
-Título: ${document.title}
+SUA TAREFA: CRIAR um documento jurídico completo do tipo "${document.title}".
 
+${document.content && document.content.trim().length > 0 ? `QUALIFICAÇÃO DAS PARTES (mantenha no início do documento):
+${document.content}
+
+` : ''}INSTRUÇÕES OBRIGATÓRIAS:
+1. Crie um documento "${document.title}" COMPLETO e PROFISSIONAL
+2. NÃO INCLUA O TÍTULO NO INÍCIO DO DOCUMENTO - o título "${document.title}" já será inserido automaticamente pelo sistema
+3. Comece diretamente com o corpo do documento (preâmbulo, qualificação das partes, etc.)
+4. O documento deve ter estrutura adequada com todas as cláusulas necessárias
+5. Use linguagem jurídica formal em português brasileiro
+6. Inclua todos os elementos típicos deste tipo de documento
+7. O documento deve ter qualidade de um advogado com notável saber jurídico
+8. NÃO diga que não pode criar ou que precisa de mais informações
+9. CRIE o documento modelo completo agora
+
+FORMATAÇÃO OBRIGATÓRIA:
+- Os NOMES DAS PARTES devem estar em **negrito** (use **NOME** no texto)
+- NUNCA use underscore (_) no documento. Para linhas use apenas HÍFENS (-)
+- Exemplo de nome formatado: **JOÃO DA SILVA**
+
+FORMATAÇÃO DAS ASSINATURAS (MUITO IMPORTANTE):
+- Cada bloco de assinatura deve estar ALINHADO À ESQUERDA
+- Formato OBRIGATÓRIO para cada assinatura (com quebra de linha):
+
+--------------------------------------------------
+**NOME DA PESSOA**
+
+- Deixe uma linha em branco entre cada bloco de assinatura
+- A linha de hífens deve ter 50 caracteres
+- O nome deve estar em negrito e na linha ABAIXO da linha de hífens
+- NÃO coloque tudo na mesma linha
+
+Responda APENAS com este JSON (sem markdown):
+{
+  "erros": [],
+  "sugestoes": [],
+  "textoCorrigido": "COLE AQUI O DOCUMENTO COMPLETO QUE VOCÊ CRIOU (SEM O TÍTULO)"
+}`;
+    } else {
+      // MODO REVISÃO - documento com conteúdo para revisar
+      prompt = `Você é uma revisora profissional de textos jurídicos de um escritório de advocacia.
+
+DOCUMENTO PARA REVISÃO:
+Tipo: ${document.title}
 Conteúdo:
 ${document.content}
 
-Responda EXATAMENTE neste formato JSON (sem markdown, apenas o JSON puro):
+TAREFA: Revise o documento buscando:
+1. Erros de digitação
+2. Erros de gramática e concordância
+3. Pontuação incorreta
+4. Terminologias jurídicas inadequadas para este tipo de documento
+5. Problemas de estrutura
+
+DIRETRIZES:
+- Corrija todos os erros encontrados
+- Mantenha o estilo original do autor
+- Use português brasileiro formal
+
+Responda APENAS com este JSON (sem markdown):
 {
-  "erros": [
-    {"tipo": "tipo do erro", "original": "texto original", "correcao": "correção sugerida"}
-  ],
+  "erros": [{"tipo": "tipo do erro", "original": "texto errado", "correcao": "texto correto"}],
   "sugestoes": ["sugestão 1", "sugestão 2"],
-  "textoCorrigido": "O texto completo do documento com todas as correções aplicadas"
+  "textoCorrigido": "O documento completo com todas as correções aplicadas"
 }
 
 Se não houver erros, retorne erros como array vazio e textoCorrigido igual ao original.`;
+    }
 
-    const reviewText = await provider.generateText(prompt);
+    const aiResponse = await provider.generateTextWithUsage(prompt);
+
+    // Salvar uso de tokens no banco de dados
+    if (aiResponse.usage && companyId) {
+      try {
+        await prisma.aITokenUsage.create({
+          data: {
+            aiConfigId: aiConfig.id,
+            companyId: companyId,
+            operation: contentIsEmpty ? 'generate_document' : 'review_document',
+            promptTokens: aiResponse.usage.promptTokens,
+            completionTokens: aiResponse.usage.completionTokens,
+            totalTokens: aiResponse.usage.totalTokens,
+            model: aiConfig.model,
+            provider: aiConfig.provider,
+            metadata: { documentId: document.id, title: document.title },
+          },
+        });
+      } catch (saveError) {
+        appLogger.error('Erro ao salvar uso de tokens:', saveError as Error);
+        // Não falha a operação por erro ao salvar métricas
+      }
+    }
 
     // Tentar parsear o JSON da resposta
     let review: any = { erros: [], sugestoes: [], textoCorrigido: document.content };
     try {
       // Remover possíveis marcadores de código markdown
-      const cleanJson = reviewText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      const cleanJson = aiResponse.text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
       review = JSON.parse(cleanJson);
+      // Substituir underscores por hífens em linhas (3 ou mais underscores seguidos)
+      if (review.textoCorrigido) {
+        review.textoCorrigido = review.textoCorrigido.replace(/_{3,}/g, (match: string) => '-'.repeat(match.length));
+      }
     } catch (parseError) {
       // Se não conseguir parsear, retorna o texto como está
       review = {
         erros: [],
         sugestoes: [],
         textoCorrigido: document.content,
-        reviewText: reviewText // Texto original da IA para debug
+        reviewText: aiResponse.text // Texto original da IA para debug
       };
     }
 
@@ -549,10 +762,181 @@ Se não houver erros, retorne erros como array vazio e textoCorrigido igual ao o
       title: document.title,
       originalContent: document.content,
       review,
+      tokenUsage: aiResponse.usage,
     });
   } catch (error: any) {
     appLogger.error('Erro ao revisar documento:', error as Error);
     res.status(500).json({ error: 'Erro ao revisar documento com IA. Tente novamente.' });
+  }
+};
+
+// Gerar ou revisar documento com IA (sem precisar salvar antes)
+export const generateOrReviewWithAI = async (req: AuthRequest, res: Response) => {
+  try {
+    const { title, content, mode } = req.body; // mode: 'generate' ou 'review'
+    const companyId = req.user!.companyId;
+
+    if (!title) {
+      return res.status(400).json({ error: 'Título é obrigatório' });
+    }
+
+    // Buscar configuração de IA da empresa
+    const aiConfig = await prisma.aIConfig.findUnique({
+      where: { companyId },
+    });
+
+    if (!aiConfig || !aiConfig.enabled) {
+      return res.status(400).json({
+        error: 'Configuração de IA não encontrada ou desabilitada. Configure a IA em Configurações > IA.'
+      });
+    }
+
+    // Importar serviço de IA
+    const { AIService } = require('../services/ai/ai.service');
+
+    // Obter provider de IA
+    const provider = await AIService.getProvider(companyId);
+
+    if (!provider) {
+      return res.status(400).json({
+        error: 'IA não configurada para esta empresa. Configure em Config. IA.'
+      });
+    }
+
+    let prompt: string;
+
+    if (mode === 'generate') {
+      // MODO CRIAÇÃO
+      prompt = `VOCÊ É UMA ADVOGADA ESPECIALISTA EM REDAÇÃO DE DOCUMENTOS JURÍDICOS.
+
+SUA TAREFA: CRIAR um documento jurídico completo do tipo "${title}".
+
+${content && content.trim().length > 0 ? `QUALIFICAÇÃO DAS PARTES (mantenha no início do documento):
+${content}
+
+` : ''}INSTRUÇÕES OBRIGATÓRIAS:
+1. Crie um documento "${title}" COMPLETO e PROFISSIONAL
+2. NÃO INCLUA O TÍTULO NO INÍCIO DO DOCUMENTO - o título "${title}" já será inserido automaticamente pelo sistema
+3. Comece diretamente com o corpo do documento (preâmbulo, qualificação das partes, etc.)
+4. O documento deve ter estrutura adequada com todas as cláusulas necessárias
+5. Use linguagem jurídica formal em português brasileiro
+6. Inclua todos os elementos típicos deste tipo de documento
+7. O documento deve ter qualidade de um advogado com notável saber jurídico
+8. NÃO diga que não pode criar ou que precisa de mais informações
+9. CRIE o documento modelo completo agora
+
+FORMATAÇÃO OBRIGATÓRIA:
+- Os NOMES DAS PARTES devem estar em **negrito** (use **NOME** no texto)
+- NUNCA use underscore (_) no documento. Para linhas use apenas HÍFENS (-)
+- Exemplo de nome formatado: **JOÃO DA SILVA**
+
+FORMATAÇÃO DAS ASSINATURAS (MUITO IMPORTANTE):
+- Cada bloco de assinatura deve estar ALINHADO À ESQUERDA
+- Formato OBRIGATÓRIO para cada assinatura (com quebra de linha):
+
+--------------------------------------------------
+**NOME DA PESSOA**
+
+- Deixe uma linha em branco entre cada bloco de assinatura
+- A linha de hífens deve ter 50 caracteres
+- O nome deve estar em negrito e na linha ABAIXO da linha de hífens
+- NÃO coloque tudo na mesma linha
+
+Responda APENAS com este JSON (sem markdown):
+{
+  "erros": [],
+  "sugestoes": [],
+  "textoCorrigido": "COLE AQUI O DOCUMENTO COMPLETO QUE VOCÊ CRIOU (SEM O TÍTULO)"
+}`;
+    } else {
+      // MODO REVISÃO
+      if (!content || content.trim().length < 50) {
+        return res.status(400).json({
+          error: 'Para revisar, o documento precisa ter conteúdo (mínimo 50 caracteres)'
+        });
+      }
+
+      prompt = `Você é uma revisora profissional de textos jurídicos de um escritório de advocacia.
+
+DOCUMENTO PARA REVISÃO:
+Tipo: ${title}
+Conteúdo:
+${content}
+
+TAREFA: Revise o documento buscando:
+1. Erros de digitação
+2. Erros de gramática e concordância
+3. Pontuação incorreta
+4. Terminologias jurídicas inadequadas para este tipo de documento
+5. Problemas de estrutura
+
+DIRETRIZES:
+- Corrija todos os erros encontrados
+- Mantenha o estilo original do autor
+- Use português brasileiro formal
+
+Responda APENAS com este JSON (sem markdown):
+{
+  "erros": [{"tipo": "tipo do erro", "original": "texto errado", "correcao": "texto correto"}],
+  "sugestoes": ["sugestão 1", "sugestão 2"],
+  "textoCorrigido": "O documento completo com todas as correções aplicadas"
+}
+
+Se não houver erros, retorne erros como array vazio e textoCorrigido igual ao original.`;
+    }
+
+    const aiResponse = await provider.generateTextWithUsage(prompt);
+
+    // Salvar uso de tokens no banco de dados
+    if (aiResponse.usage && companyId) {
+      try {
+        await prisma.aITokenUsage.create({
+          data: {
+            aiConfigId: aiConfig.id,
+            companyId: companyId,
+            operation: mode === 'generate' ? 'generate_document' : 'review_document',
+            promptTokens: aiResponse.usage.promptTokens,
+            completionTokens: aiResponse.usage.completionTokens,
+            totalTokens: aiResponse.usage.totalTokens,
+            model: aiConfig.model,
+            provider: aiConfig.provider,
+            metadata: { title, mode },
+          },
+        });
+      } catch (saveError) {
+        appLogger.error('Erro ao salvar uso de tokens:', saveError as Error);
+        // Não falha a operação por erro ao salvar métricas
+      }
+    }
+
+    // Tentar parsear o JSON da resposta
+    let review: any = { erros: [], sugestoes: [], textoCorrigido: content || '' };
+    try {
+      const cleanJson = aiResponse.text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      review = JSON.parse(cleanJson);
+      // Substituir underscores por hífens em linhas (3 ou mais underscores seguidos)
+      if (review.textoCorrigido) {
+        review.textoCorrigido = review.textoCorrigido.replace(/_{3,}/g, (match: string) => '-'.repeat(match.length));
+      }
+    } catch (parseError) {
+      review = {
+        erros: [],
+        sugestoes: [],
+        textoCorrigido: content || '',
+        reviewText: aiResponse.text
+      };
+    }
+
+    res.json({
+      title,
+      originalContent: content || '',
+      mode,
+      review,
+      tokenUsage: aiResponse.usage,
+    });
+  } catch (error: any) {
+    appLogger.error('Erro ao gerar/revisar documento:', error as Error);
+    res.status(500).json({ error: 'Erro ao processar documento com IA. Tente novamente.' });
   }
 };
 
@@ -618,5 +1002,153 @@ export const getClientQualification = async (req: AuthRequest, res: Response) =>
   } catch (error) {
     appLogger.error('Erro ao buscar qualificação:', error as Error);
     res.status(500).json({ error: 'Erro ao buscar qualificação do cliente' });
+  }
+};
+
+// ==================== PARTES DO DOCUMENTO ====================
+
+// Listar partes de um documento
+export const listDocumentParties = async (req: AuthRequest, res: Response) => {
+  try {
+    const { documentId } = req.params;
+    const companyId = req.user?.companyId;
+
+    if (!companyId) {
+      return res.status(403).json({ error: 'Usuário não possui empresa associada' });
+    }
+
+    // Verificar se o documento existe
+    const document = await prisma.legalDocument.findFirst({
+      where: { id: documentId, companyId },
+    });
+
+    if (!document) {
+      return res.status(404).json({ error: 'Documento não encontrado' });
+    }
+
+    const parties = await prisma.legalDocumentParty.findMany({
+      where: { legalDocumentId: documentId, companyId },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    res.json(parties);
+  } catch (error) {
+    appLogger.error('Erro ao listar partes:', error as Error);
+    res.status(500).json({ error: 'Erro ao listar partes do documento' });
+  }
+};
+
+// Adicionar parte ao documento
+export const addDocumentParty = async (req: AuthRequest, res: Response) => {
+  try {
+    const { documentId } = req.params;
+    const { name, type, cpfCnpj, oab, email, phone, notes } = req.body;
+    const companyId = req.user?.companyId;
+
+    if (!companyId) {
+      return res.status(403).json({ error: 'Usuário não possui empresa associada' });
+    }
+
+    if (!name) {
+      return res.status(400).json({ error: 'Nome da parte é obrigatório' });
+    }
+
+    // Verificar se o documento existe
+    const document = await prisma.legalDocument.findFirst({
+      where: { id: documentId, companyId },
+    });
+
+    if (!document) {
+      return res.status(404).json({ error: 'Documento não encontrado' });
+    }
+
+    const party = await prisma.legalDocumentParty.create({
+      data: {
+        legalDocumentId: documentId,
+        companyId,
+        name: sanitizeString(name) || name,
+        type: type || 'OUTRO',
+        cpfCnpj: cpfCnpj ? sanitizeString(cpfCnpj) : null,
+        oab: oab ? sanitizeString(oab) : null,
+        email: email ? sanitizeString(email) : null,
+        phone: phone ? sanitizeString(phone) : null,
+        notes: notes ? sanitizeString(notes) : null,
+      },
+    });
+
+    res.status(201).json(party);
+  } catch (error) {
+    appLogger.error('Erro ao adicionar parte:', error as Error);
+    res.status(500).json({ error: 'Erro ao adicionar parte ao documento' });
+  }
+};
+
+// Atualizar parte do documento
+export const updateDocumentParty = async (req: AuthRequest, res: Response) => {
+  try {
+    const { documentId, partyId } = req.params;
+    const { name, type, cpfCnpj, oab, email, phone, notes } = req.body;
+    const companyId = req.user?.companyId;
+
+    if (!companyId) {
+      return res.status(403).json({ error: 'Usuário não possui empresa associada' });
+    }
+
+    // Verificar se a parte existe
+    const existingParty = await prisma.legalDocumentParty.findFirst({
+      where: { id: partyId, legalDocumentId: documentId, companyId },
+    });
+
+    if (!existingParty) {
+      return res.status(404).json({ error: 'Parte não encontrada' });
+    }
+
+    const party = await prisma.legalDocumentParty.update({
+      where: { id: partyId },
+      data: {
+        ...(name && { name: sanitizeString(name) || name }),
+        ...(type && { type }),
+        ...(cpfCnpj !== undefined && { cpfCnpj: cpfCnpj ? sanitizeString(cpfCnpj) : null }),
+        ...(oab !== undefined && { oab: oab ? sanitizeString(oab) : null }),
+        ...(email !== undefined && { email: email ? sanitizeString(email) : null }),
+        ...(phone !== undefined && { phone: phone ? sanitizeString(phone) : null }),
+        ...(notes !== undefined && { notes: notes ? sanitizeString(notes) : null }),
+      },
+    });
+
+    res.json(party);
+  } catch (error) {
+    appLogger.error('Erro ao atualizar parte:', error as Error);
+    res.status(500).json({ error: 'Erro ao atualizar parte do documento' });
+  }
+};
+
+// Remover parte do documento
+export const removeDocumentParty = async (req: AuthRequest, res: Response) => {
+  try {
+    const { documentId, partyId } = req.params;
+    const companyId = req.user?.companyId;
+
+    if (!companyId) {
+      return res.status(403).json({ error: 'Usuário não possui empresa associada' });
+    }
+
+    // Verificar se a parte existe
+    const party = await prisma.legalDocumentParty.findFirst({
+      where: { id: partyId, legalDocumentId: documentId, companyId },
+    });
+
+    if (!party) {
+      return res.status(404).json({ error: 'Parte não encontrada' });
+    }
+
+    await prisma.legalDocumentParty.delete({
+      where: { id: partyId },
+    });
+
+    res.json({ message: 'Parte removida com sucesso' });
+  } catch (error) {
+    appLogger.error('Erro ao remover parte:', error as Error);
+    res.status(500).json({ error: 'Erro ao remover parte do documento' });
   }
 };

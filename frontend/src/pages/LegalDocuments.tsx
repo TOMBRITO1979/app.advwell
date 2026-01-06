@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
 import api from '../services/api';
 import toast from 'react-hot-toast';
@@ -12,9 +12,10 @@ import {
   Download,
   Sparkles,
   X,
-  User,
   Calendar,
   PenTool,
+  Users,
+  Scale,
 } from 'lucide-react';
 import MobileCardList, { MobileCardItem } from '../components/MobileCardList';
 
@@ -24,6 +25,35 @@ interface Client {
   cpf?: string;
   personType?: string;
 }
+
+// Interface para partes de processos (CasePart)
+interface CasePart {
+  id: string;
+  type: 'AUTOR' | 'REU' | 'REPRESENTANTE_LEGAL';
+  name: string;
+  cpfCnpj?: string;
+  phone?: string;
+  address?: string;
+  email?: string; // Agora é Nacionalidade
+  civilStatus?: string;
+  profession?: string;
+  rg?: string;
+  birthDate?: string;
+}
+
+interface CaseWithParts {
+  id: string;
+  processNumber: string;
+  subject: string;
+  client?: { id: string; name: string };
+  parts?: CasePart[];
+}
+
+const CASE_PART_TYPE_LABELS: Record<string, string> = {
+  AUTOR: 'Autor',
+  REU: 'Réu',
+  REPRESENTANTE_LEGAL: 'Representante Legal',
+};
 
 interface UserType {
   id: string;
@@ -52,20 +82,12 @@ interface FormData {
 
 const LegalDocuments: React.FC = () => {
   const [documents, setDocuments] = useState<LegalDocument[]>([]);
-  const [clients, setClients] = useState<Client[]>([]);
   const [users, setUsers] = useState<UserType[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState<LegalDocument | null>(null);
-
-  // Autocomplete states
-  const [clientSearchText, setClientSearchText] = useState('');
-  const [showClientSuggestions, setShowClientSuggestions] = useState(false);
-  const [filteredClients, setFilteredClients] = useState<Client[]>([]);
-
-  const clientInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState<FormData>({
     title: '',
@@ -80,25 +102,32 @@ const LegalDocuments: React.FC = () => {
   const [reviewResult, setReviewResult] = useState<any>(null);
   const [reviewLoading, setReviewLoading] = useState(false);
   const [applyingCorrection, setApplyingCorrection] = useState(false);
+  const [generatingDocument, setGeneratingDocument] = useState(false);
+  const [reviewingDocument, setReviewingDocument] = useState(false);
+
+  // Estado para processos e partes
+  const [cases, setCases] = useState<CaseWithParts[]>([]);
+  const [selectedCaseId, setSelectedCaseId] = useState<string>('');
+  const [caseParts, setCaseParts] = useState<CasePart[]>([]);
+  const [selectedPartIds, setSelectedPartIds] = useState<string[]>([]);
+  const [loadingParts, setLoadingParts] = useState(false);
+  const [caseSearchText, setCaseSearchText] = useState<string>('');
+
+  // Toggle para incluir assinatura do sistema no PDF
+  const [includeSignature, setIncludeSignature] = useState(true);
+
+  // Tokens usados pela última operação de IA
+  const [lastTokenUsage, setLastTokenUsage] = useState<{
+    promptTokens: number;
+    completionTokens: number;
+    totalTokens: number;
+  } | null>(null);
 
   useEffect(() => {
     loadDocuments();
-    loadClients();
     loadUsers();
+    loadCases();
   }, [search]);
-
-  // Filter clients based on search text
-  useEffect(() => {
-    if (clientSearchText) {
-      const filtered = clients.filter(client =>
-        client.name.toLowerCase().includes(clientSearchText.toLowerCase()) ||
-        (client.cpf && client.cpf.includes(clientSearchText))
-      );
-      setFilteredClients(filtered);
-    } else {
-      setFilteredClients(clients);
-    }
-  }, [clientSearchText, clients]);
 
   const loadDocuments = async () => {
     try {
@@ -114,21 +143,144 @@ const LegalDocuments: React.FC = () => {
     }
   };
 
-  const loadClients = async () => {
-    try {
-      const response = await api.get('/clients', { params: { limit: 1000 } });
-      setClients(response.data.data || response.data);
-    } catch (error) {
-      console.error('Erro ao carregar clientes:', error);
-    }
-  };
-
   const loadUsers = async () => {
     try {
       const response = await api.get('/users', { params: { companyOnly: 'true' } });
       setUsers(response.data.data || response.data);
     } catch (error) {
       console.error('Erro ao carregar usuários:', error);
+    }
+  };
+
+  const loadCases = async () => {
+    try {
+      const response = await api.get('/cases', { params: { limit: 1000 } });
+      setCases(response.data.data || response.data);
+    } catch (error) {
+      console.error('Erro ao carregar processos:', error);
+    }
+  };
+
+  const loadCaseParts = async (caseId: string) => {
+    if (!caseId) {
+      setCaseParts([]);
+      setSelectedPartIds([]);
+      return;
+    }
+
+    setLoadingParts(true);
+    try {
+      const response = await api.get(`/cases/${caseId}/parts`);
+      const parts = response.data || [];
+      setCaseParts(parts);
+      // Não selecionar automaticamente - usuário escolhe quais partes quer
+      setSelectedPartIds([]);
+    } catch (error) {
+      console.error('Erro ao carregar partes do processo:', error);
+      setCaseParts([]);
+      setSelectedPartIds([]);
+    } finally {
+      setLoadingParts(false);
+    }
+  };
+
+  // Filtrar processos pela busca
+  const filteredCases = cases.filter(caseItem => {
+    if (!caseSearchText.trim()) return true;
+    const searchLower = caseSearchText.toLowerCase();
+
+    // Buscar por número do processo
+    if (caseItem.processNumber?.toLowerCase().includes(searchLower)) return true;
+
+    // Buscar por nome do cliente
+    if (caseItem.client?.name?.toLowerCase().includes(searchLower)) return true;
+
+    // Buscar por assunto
+    if (caseItem.subject?.toLowerCase().includes(searchLower)) return true;
+
+    return false;
+  });
+
+  // Gerar qualificação formatada das partes selecionadas
+  const generatePartiesQualification = (): string => {
+    const selectedParts = caseParts.filter(p => selectedPartIds.includes(p.id));
+    if (selectedParts.length === 0) return '';
+
+    return selectedParts.map(part => {
+      const lines: string[] = [];
+
+      // Nome em maiúsculas
+      lines.push(part.name.toUpperCase());
+
+      // Nacionalidade (campo email), estado civil, profissão
+      const qualifications: string[] = [];
+      if (part.email) qualifications.push(part.email.toLowerCase()); // Nacionalidade
+      if (part.civilStatus) qualifications.push(part.civilStatus.toLowerCase());
+      if (part.profession) qualifications.push(part.profession.toLowerCase());
+
+      if (qualifications.length > 0) {
+        lines.push(qualifications.join(', '));
+      }
+
+      // CPF, RG e Identidade/Inscrição (campo phone)
+      const docs: string[] = [];
+      if (part.cpfCnpj) docs.push(`inscrito(a) no CPF sob o nº ${part.cpfCnpj}`);
+      if (part.rg) docs.push(`RG nº ${part.rg}`);
+      // Campo phone: Identidade (Rep. Legal), Inscrição (Réu) ou Telefone (Autor)
+      if (part.phone) {
+        if (part.type === 'REPRESENTANTE_LEGAL') {
+          docs.push(`portador(a) da identidade nº ${part.phone}`);
+        } else if (part.type === 'REU') {
+          docs.push(`inscrição ${part.phone}`);
+        }
+        // Para AUTOR, phone é telefone - não incluir na qualificação
+      }
+      if (docs.length > 0) {
+        lines.push(docs.join(', '));
+      }
+
+      // Endereço
+      if (part.address) {
+        lines.push(`residente e domiciliado(a) em ${part.address}`);
+      }
+
+      return lines.join(', ');
+    }).join(';\n\n');
+  };
+
+  const handleInsertPartiesQualification = () => {
+    if (selectedPartIds.length === 0) {
+      toast.error('Selecione pelo menos uma parte');
+      return;
+    }
+
+    const qualification = generatePartiesQualification();
+
+    // Tentar substituir placeholder ou adicionar ao final
+    let newContent = formData.content;
+    const patterns = [
+      /\[QUALIFICA[ÇC][ÃA]O\s*(COMPLETA)?\s*(DAS?\s*PARTES?)?\]/gi,
+      /\[PARTES?\]/gi,
+      /\[AUTOR(ES)?\]/gi,
+    ];
+
+    let replaced = false;
+    for (const pattern of patterns) {
+      if (pattern.test(newContent)) {
+        pattern.lastIndex = 0;
+        newContent = newContent.replace(pattern, qualification);
+        replaced = true;
+        break;
+      }
+    }
+
+    if (replaced) {
+      setFormData({ ...formData, content: newContent });
+      toast.success('Qualificação das partes inserida no documento!');
+    } else {
+      // Copiar para área de transferência se não encontrou placeholder
+      navigator.clipboard.writeText(qualification);
+      toast.success('Qualificação copiada para área de transferência!');
     }
   };
 
@@ -140,7 +292,12 @@ const LegalDocuments: React.FC = () => {
       clientId: '',
       signerId: '',
     });
-    setClientSearchText('');
+    setSelectedCaseId('');
+    setCaseParts([]);
+    setSelectedPartIds([]);
+    setCaseSearchText('');
+    setIncludeSignature(true); // Reset toggle para o padrão
+    setLastTokenUsage(null); // Limpar tokens
   };
 
   const handleNew = () => {
@@ -159,7 +316,10 @@ const LegalDocuments: React.FC = () => {
       clientId: doc.client?.id || '',
       signerId: doc.signer?.id || '',
     });
-    setClientSearchText(doc.client?.name || '');
+    setSelectedCaseId('');
+    setCaseParts([]);
+    setSelectedPartIds([]);
+    setIncludeSignature(!!doc.signer); // Liga se tem assinante, desliga se não tem
     setEditMode(true);
     setShowModal(true);
   };
@@ -181,8 +341,8 @@ const LegalDocuments: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.title.trim() || !formData.content.trim()) {
-      toast.error('Título e conteúdo são obrigatórios');
+    if (!formData.title.trim()) {
+      toast.error('Título é obrigatório');
       return;
     }
 
@@ -190,9 +350,9 @@ const LegalDocuments: React.FC = () => {
       const payload = {
         title: formData.title,
         content: formData.content,
-        documentDate: formData.documentDate,
+        documentDate: includeSignature ? formData.documentDate : null,
         clientId: formData.clientId || null,
-        signerId: formData.signerId || null,
+        signerId: includeSignature ? (formData.signerId || null) : null,
       };
 
       if (editMode && selectedDocument) {
@@ -208,61 +368,6 @@ const LegalDocuments: React.FC = () => {
       loadDocuments();
     } catch (error: any) {
       toast.error(error.response?.data?.error || 'Erro ao salvar documento');
-    }
-  };
-
-  const handleClientSelect = (client: Client) => {
-    setFormData({ ...formData, clientId: client.id });
-    setClientSearchText(client.name);
-    setShowClientSuggestions(false);
-  };
-
-  const handleInsertQualification = async () => {
-    if (!formData.clientId) {
-      toast.error('Selecione um cliente primeiro');
-      return;
-    }
-
-    try {
-      const response = await api.get(`/legal-documents/client/${formData.clientId}/qualification`);
-      const qualification = response.data.qualification;
-
-      let newContent = formData.content;
-      let replaced = false;
-
-      // Lista de padrões para substituir (primeiro encontrado será substituído)
-      const patterns = [
-        // Padrão NOTIFICANTE/OUTORGANTE/CONTRATANTE com qualificação completa
-        /(\[NOME COMPLETO\])[^\[]*(\[NACIONALIDADE\])[^\[]*(\[ESTADO CIVIL\])[^\[]*(\[PROFISSÃO\])[^\[]*(inscrito\(a\) no CPF sob o nº \[CPF\])[^\[]*(RG nº \[RG\][^\[]*)?(residente e domiciliado\(a\) em \[ENDEREÇO COMPLETO\])/gi,
-        // Padrão mais simples: [NOME COMPLETO] seguido de qualificação
-        /\[NOME COMPLETO\][^\.]*\[ENDEREÇO COMPLETO\]/gi,
-        // Apenas [QUALIFICAÇÃO COMPLETA] ou [QUALIFICAÇÃO]
-        /\[QUALIFICA[ÇC][ÃA]O\s*(COMPLETA)?\]/gi,
-        // [PARTE] ou [CLIENTE]
-        /\[PARTE\]|\[CLIENTE\]/gi,
-      ];
-
-      for (const pattern of patterns) {
-        if (pattern.test(newContent)) {
-          // Resetar o lastIndex do regex
-          pattern.lastIndex = 0;
-          // Substituir apenas a primeira ocorrência
-          newContent = newContent.replace(pattern, qualification);
-          replaced = true;
-          break;
-        }
-      }
-
-      if (replaced) {
-        setFormData({ ...formData, content: newContent });
-        toast.success('Qualificação inserida no documento!');
-      } else {
-        // Se não encontrou padrão, copia para área de transferência
-        await navigator.clipboard.writeText(qualification);
-        toast.success('Nenhum placeholder encontrado. Qualificação copiada - cole (Ctrl+V) onde desejar.');
-      }
-    } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Erro ao buscar qualificação');
     }
   };
 
@@ -322,6 +427,92 @@ const LegalDocuments: React.FC = () => {
       toast.error(error.response?.data?.error || 'Erro ao aplicar correções');
     } finally {
       setApplyingCorrection(false);
+    }
+  };
+
+  // Gerar documento com IA (no modal, sem salvar)
+  const handleGenerateWithAI = async () => {
+    if (!formData.title.trim()) {
+      toast.error('Informe o título do documento');
+      return;
+    }
+
+    setGeneratingDocument(true);
+    setLastTokenUsage(null);
+    try {
+      const response = await api.post('/legal-documents/ai/generate', {
+        title: formData.title,
+        content: formData.content || '',
+        mode: 'generate',
+      });
+
+      if (response.data?.review?.textoCorrigido) {
+        setFormData(prev => ({
+          ...prev,
+          content: response.data.review.textoCorrigido,
+        }));
+
+        // Salvar uso de tokens
+        if (response.data?.tokenUsage) {
+          setLastTokenUsage(response.data.tokenUsage);
+        }
+
+        toast.success('Documento gerado com sucesso!');
+      } else {
+        toast.error('Não foi possível gerar o documento');
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Erro ao gerar documento com IA');
+    } finally {
+      setGeneratingDocument(false);
+    }
+  };
+
+  // Revisar documento com IA (no modal, sem salvar)
+  const handleReviewInModal = async () => {
+    if (!formData.title.trim()) {
+      toast.error('Informe o título do documento');
+      return;
+    }
+
+    if (!formData.content || formData.content.trim().length < 50) {
+      toast.error('O documento precisa ter pelo menos 50 caracteres para revisão');
+      return;
+    }
+
+    setReviewingDocument(true);
+    setLastTokenUsage(null);
+    try {
+      const response = await api.post('/legal-documents/ai/generate', {
+        title: formData.title,
+        content: formData.content,
+        mode: 'review',
+      });
+
+      if (response.data?.review?.textoCorrigido) {
+        setFormData(prev => ({
+          ...prev,
+          content: response.data.review.textoCorrigido,
+        }));
+
+        // Salvar uso de tokens
+        if (response.data?.tokenUsage) {
+          setLastTokenUsage(response.data.tokenUsage);
+        }
+
+        const erros = response.data.review.erros || [];
+        if (erros.length > 0) {
+          toast.success(`Documento revisado! ${erros.length} correção(ões) aplicada(s).`);
+        } else {
+          toast.success('Documento revisado! Nenhum erro encontrado.');
+        }
+      } else {
+        toast.error('Não foi possível revisar o documento');
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Erro ao revisar documento com IA');
+    } finally {
+      setReviewingDocument(false);
     }
   };
 
@@ -515,115 +706,230 @@ const LegalDocuments: React.FC = () => {
                   />
                 </div>
 
-                {/* Cliente (Parte) */}
-                <div className="relative">
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">
-                    <User size={16} className="inline mr-1" />
-                    Parte (Cliente)
+                {/* Seleção de Processo e Partes */}
+                <div className="border border-neutral-200 rounded-lg p-4 bg-neutral-50">
+                  <label className="block text-sm font-medium text-neutral-700 mb-3">
+                    <Scale size={16} className="inline mr-1" />
+                    Partes do Processo
                   </label>
-                  <div className="flex gap-2">
-                    <div className="flex-1 relative">
-                      <input
-                        ref={clientInputRef}
-                        type="text"
-                        value={clientSearchText}
-                        onChange={(e) => {
-                          setClientSearchText(e.target.value);
-                          setShowClientSuggestions(true);
-                          if (!e.target.value) {
-                            setFormData({ ...formData, clientId: '' });
-                          }
-                        }}
-                        onFocus={() => setShowClientSuggestions(true)}
-                        onBlur={() => setTimeout(() => setShowClientSuggestions(false), 200)}
-                        placeholder="Buscar cliente..."
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
-                      />
-                      {showClientSuggestions && filteredClients.length > 0 && (
-                        <div className="absolute z-10 w-full mt-1 bg-white border border-neutral-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
-                          {filteredClients.map((client) => (
-                            <div
-                              key={client.id}
-                              onClick={() => handleClientSelect(client)}
-                              className="px-4 py-2 hover:bg-neutral-100 cursor-pointer"
-                            >
-                              <p className="font-medium text-neutral-900">{client.name}</p>
-                              {client.cpf && (
-                                <p className="text-xs text-neutral-500">{client.cpf}</p>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                    <button
-                      type="button"
-                      onClick={handleInsertQualification}
-                      disabled={!formData.clientId}
-                      className="px-3 py-2 bg-primary-100 hover:bg-primary-200 text-primary-700 rounded-md text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] whitespace-nowrap"
-                      title="Inserir qualificação completa do cliente"
+
+                  {/* Busca e Seletor de Processo */}
+                  <div className="mb-3">
+                    <label className="block text-xs font-medium text-neutral-600 mb-1">
+                      Buscar Processo
+                    </label>
+                    <input
+                      type="text"
+                      value={caseSearchText}
+                      onChange={(e) => setCaseSearchText(e.target.value)}
+                      placeholder="Digite nº processo, nome do cliente ou assunto..."
+                      className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] mb-2"
+                    />
+                    <select
+                      value={selectedCaseId}
+                      onChange={(e) => {
+                        setSelectedCaseId(e.target.value);
+                        loadCaseParts(e.target.value);
+                      }}
+                      className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                     >
-                      + Qualificação
-                    </button>
+                      <option value="">Selecione um processo... ({filteredCases.length} encontrados)</option>
+                      {filteredCases.map((caseItem) => (
+                        <option key={caseItem.id} value={caseItem.id}>
+                          {caseItem.processNumber} - {caseItem.subject?.substring(0, 50)}
+                          {caseItem.client?.name ? ` (${caseItem.client.name})` : ''}
+                        </option>
+                      ))}
+                    </select>
                   </div>
-                  <p className="text-xs text-neutral-500 mt-1">
-                    Substitui automaticamente [NOME COMPLETO]...[ENDEREÇO COMPLETO] pela qualificação do cliente
+
+                  {/* Lista de Partes com Checkbox */}
+                  {loadingParts ? (
+                    <p className="text-sm text-neutral-500">Carregando partes...</p>
+                  ) : caseParts.length > 0 ? (
+                    <div className="space-y-2 mb-3">
+                      <label className="block text-xs font-medium text-neutral-600 mb-1">
+                        Selecione as partes para incluir a qualificação
+                      </label>
+                      {caseParts.map((part) => (
+                        <label
+                          key={part.id}
+                          className="flex items-start gap-3 p-2 border border-neutral-200 rounded-md bg-white cursor-pointer hover:bg-neutral-50"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={selectedPartIds.includes(part.id)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedPartIds([...selectedPartIds, part.id]);
+                              } else {
+                                setSelectedPartIds(selectedPartIds.filter(id => id !== part.id));
+                              }
+                            }}
+                            className="mt-1 h-4 w-4 text-primary-600 border-neutral-300 rounded focus:ring-primary-500"
+                          />
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-neutral-900">{part.name}</span>
+                              <span className="text-xs px-2 py-0.5 bg-primary-100 text-primary-700 rounded-full">
+                                {CASE_PART_TYPE_LABELS[part.type] || part.type}
+                              </span>
+                            </div>
+                            <div className="text-xs text-neutral-500 mt-1">
+                              {[
+                                part.email && `${part.email}`, // Nacionalidade
+                                part.civilStatus,
+                                part.profession,
+                                part.cpfCnpj && `CPF: ${part.cpfCnpj}`,
+                              ].filter(Boolean).join(' | ')}
+                            </div>
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                  ) : selectedCaseId ? (
+                    <p className="text-sm text-neutral-500 mb-3">
+                      Nenhuma parte cadastrada neste processo.
+                    </p>
+                  ) : (
+                    <p className="text-sm text-neutral-500 mb-3">
+                      Selecione um processo para ver as partes disponíveis.
+                    </p>
+                  )}
+
+                  {/* Botão de inserir qualificação */}
+                  <button
+                    type="button"
+                    onClick={handleInsertPartiesQualification}
+                    disabled={selectedPartIds.length === 0}
+                    className="w-full px-3 py-2 bg-success-100 hover:bg-success-200 text-success-700 border border-success-200 rounded-md text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
+                  >
+                    <Users size={16} className="inline mr-1" />
+                    Inserir Qualificação das Partes Selecionadas ({selectedPartIds.length})
+                  </button>
+                  <p className="text-xs text-neutral-500 mt-2">
+                    Substitui [QUALIFICAÇÃO] ou [PARTES] no documento, ou copia para área de transferência.
                   </p>
                 </div>
 
                 {/* Conteúdo */}
                 <div>
                   <label className="block text-sm font-medium text-neutral-700 mb-1">
-                    Texto do Documento *
+                    Texto do Documento
                   </label>
                   <textarea
                     value={formData.content}
                     onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                    placeholder="Digite o conteúdo do documento..."
+                    placeholder="Deixe vazio para a IA criar o documento com base no título, ou digite o conteúdo para revisão..."
                     rows={12}
                     className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    required
                   />
                 </div>
 
-                {/* Data e Assinante */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">
-                      <Calendar size={16} className="inline mr-1" />
-                      Data do Documento
-                    </label>
-                    <input
-                      type="date"
-                      value={formData.documentDate}
-                      onChange={(e) => setFormData({ ...formData, documentDate: e.target.value })}
-                      className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                {/* Toggle para Data e Assinante */}
+                <div className="flex items-center justify-between p-3 bg-neutral-50 rounded-lg border border-neutral-200">
+                  <div className="flex items-center gap-2">
+                    <PenTool size={18} className="text-neutral-600" />
+                    <div>
+                      <span className="text-sm font-medium text-neutral-700">Assinatura do Sistema</span>
+                      <p className="text-xs text-neutral-500">
+                        {includeSignature
+                          ? 'Data e assinante serão adicionados ao PDF'
+                          : 'Desativado (use quando a IA já gerou as linhas de assinatura)'}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setIncludeSignature(!includeSignature)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      includeSignature ? 'bg-primary-600' : 'bg-neutral-300'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        includeSignature ? 'translate-x-6' : 'translate-x-1'
+                      }`}
                     />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">
-                      <PenTool size={16} className="inline mr-1" />
-                      Profissional Assinante
-                    </label>
-                    <select
-                      value={formData.signerId}
-                      onChange={(e) => setFormData({ ...formData, signerId: e.target.value })}
-                      className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
-                    >
-                      <option value="">Selecione o assinante...</option>
-                      {users.map((user) => (
-                        <option key={user.id} value={user.id}>
-                          {user.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                  </button>
                 </div>
+
+                {/* Data e Assinante - só mostra se o toggle estiver ativo */}
+                {includeSignature && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                        <Calendar size={16} className="inline mr-1" />
+                        Data do Documento
+                      </label>
+                      <input
+                        type="date"
+                        value={formData.documentDate}
+                        onChange={(e) => setFormData({ ...formData, documentDate: e.target.value })}
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                        <PenTool size={16} className="inline mr-1" />
+                        Profissional Assinante
+                      </label>
+                      <select
+                        value={formData.signerId}
+                        onChange={(e) => setFormData({ ...formData, signerId: e.target.value })}
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                      >
+                        <option value="">Selecione o assinante...</option>
+                        {users.map((user) => (
+                          <option key={user.id} value={user.id}>
+                            {user.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                )}
+
               </div>
 
-              {/* Botões */}
-              <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-neutral-200">
+              {/* Botões de IA */}
+              <div className="flex flex-wrap items-center gap-2 mt-4 pt-4 border-t border-neutral-200">
+                <button
+                  type="button"
+                  onClick={handleGenerateWithAI}
+                  disabled={generatingDocument || reviewingDocument || !formData.title.trim()}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-purple-100 text-purple-700 border border-purple-200 rounded-md hover:bg-purple-200 transition-colors min-h-[44px] disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Sparkles size={18} />
+                  {generatingDocument ? 'Gerando...' : 'Gerar Documento'}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleReviewInModal}
+                  disabled={generatingDocument || reviewingDocument || !formData.content || formData.content.trim().length < 50}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 border border-blue-200 rounded-md hover:bg-blue-200 transition-colors min-h-[44px] disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <PenTool size={18} />
+                  {reviewingDocument ? 'Revisando...' : 'Revisar Documento'}
+                </button>
+
+                {/* Indicador de tokens usados */}
+                {lastTokenUsage && (
+                  <div className="ml-auto flex items-center gap-2 text-xs text-neutral-500 bg-neutral-100 px-3 py-1.5 rounded-full">
+                    <Sparkles size={12} className="text-purple-500" />
+                    <span>
+                      <strong>{lastTokenUsage.totalTokens.toLocaleString()}</strong> tokens
+                      <span className="hidden sm:inline text-neutral-400 ml-1">
+                        ({lastTokenUsage.promptTokens.toLocaleString()} + {lastTokenUsage.completionTokens.toLocaleString()})
+                      </span>
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Botões de Ação */}
+              <div className="flex justify-end gap-3 mt-4">
                 <button
                   type="button"
                   onClick={() => {

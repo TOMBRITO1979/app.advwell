@@ -66,7 +66,9 @@ model Company {
   smtpConfig            SMTPConfig?
   emailCampaigns        EmailCampaign[]
   aiConfig              AIConfig?
+  aiTokenUsages         AITokenUsage[]
   legalDocuments        LegalDocument[]
+  legalDocumentParties  LegalDocumentParty[]
   stripeConfig          StripeConfig?
   servicePlans          ServicePlan[]
   clientSubscriptions   ClientSubscription[]
@@ -728,8 +730,32 @@ model AIConfig {
 
   // Relations
   company         Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  tokenUsages     AITokenUsage[]
 
   @@map("ai_configs")
+}
+
+// Histórico de uso de tokens de IA
+model AITokenUsage {
+  id                String     @id @default(uuid())
+  aiConfigId        String
+  companyId         String
+  operation         String     // 'generate_document', 'review_document', 'summarize_case', etc.
+  promptTokens      Int
+  completionTokens  Int
+  totalTokens       Int
+  model             String     // Modelo usado na operação
+  provider          String     // Provider usado (openai, gemini)
+  metadata          Json?      // Dados extras (ex: documentId, caseId)
+  createdAt         DateTime   @default(now())
+
+  // Relations
+  aiConfig          AIConfig   @relation(fields: [aiConfigId], references: [id], onDelete: Cascade)
+  company           Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId, createdAt])
+  @@index([aiConfigId, createdAt])
+  @@map("ai_token_usages")
 }
 
 // ============================================================================
@@ -995,6 +1021,15 @@ model Lead {
 // LEGAL DOCUMENTS SYSTEM
 // ============================================================================
 
+// Enum para tipo de parte em documentos jurídicos
+enum PartyType {
+  AUTOR       // Autor/Requerente
+  REU         // Réu/Requerido
+  ADVOGADO    // Advogado
+  TESTEMUNHA  // Testemunha
+  OUTRO       // Outro tipo
+}
+
 // Tabela de documentos jurídicos (recibos, contratos, procurações, etc.)
 model LegalDocument {
   id          String   @id @default(uuid())
@@ -1019,8 +1054,38 @@ model LegalDocument {
   client      Client?  @relation("LegalDocumentClient", fields: [clientId], references: [id], onDelete: SetNull)
   signer      User?    @relation("LegalDocumentSigner", fields: [signerId], references: [id], onDelete: SetNull)
   creator     User?    @relation("LegalDocumentCreator", fields: [createdBy], references: [id], onDelete: SetNull)
+  parties     LegalDocumentParty[]
 
   @@map("legal_documents")
+}
+
+// Tabela de partes do documento jurídico (múltiplos autores, réus, advogados)
+model LegalDocumentParty {
+  id              String    @id @default(uuid())
+  legalDocumentId String
+  companyId       String
+
+  // Dados da parte
+  name            String    // Nome completo
+  type            PartyType @default(OUTRO)
+  cpfCnpj         String?   // CPF ou CNPJ
+  oab             String?   // Número OAB (apenas para advogados)
+  email           String?
+  phone           String?
+  notes           String?   // Observações
+
+  // Metadados
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  legalDocument   LegalDocument @relation(fields: [legalDocumentId], references: [id], onDelete: Cascade)
+  company         Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([legalDocumentId])
+  @@index([companyId])
+  @@index([type])
+  @@map("legal_document_parties")
 }
 
 // ============================================================================

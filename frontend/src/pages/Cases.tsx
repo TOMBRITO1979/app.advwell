@@ -1152,11 +1152,14 @@ const Cases: React.FC = () => {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-1">Telefone</label>
+                        <label className="block text-sm font-medium text-neutral-700 mb-1">
+                          {partFormData.type === 'REPRESENTANTE_LEGAL' ? 'Identidade' : partFormData.type === 'REU' ? 'Inscrição' : 'Telefone'}
+                        </label>
                         <input
                           type="text"
                           value={partFormData.phone}
                           onChange={(e) => setPartFormData({ ...partFormData, phone: e.target.value })}
+                          placeholder={partFormData.type === 'REPRESENTANTE_LEGAL' ? 'Ex: RG 12.345.678-9' : partFormData.type === 'REU' ? 'Ex: OAB, CRECI, etc.' : ''}
                           className="block w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                         />
                       </div>
@@ -1176,11 +1179,12 @@ const Cases: React.FC = () => {
                       <>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                           <div>
-                            <label className="block text-sm font-medium text-neutral-700 mb-1">Email</label>
+                            <label className="block text-sm font-medium text-neutral-700 mb-1">Nacionalidade</label>
                             <input
-                              type="email"
+                              type="text"
                               value={partFormData.email}
                               onChange={(e) => setPartFormData({ ...partFormData, email: e.target.value })}
+                              placeholder="Ex: Brasileiro(a)"
                               className="block w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                             />
                           </div>
@@ -1843,30 +1847,32 @@ const Cases: React.FC = () => {
                 />
               </div>
 
-              {/* Telefone */}
+              {/* Telefone / Identidade / Inscrição */}
               <div>
                 <label className="block text-sm font-medium text-neutral-700 mb-1">
-                  Telefone
+                  {editingPart.type === 'REPRESENTANTE_LEGAL' ? 'Identidade' : editingPart.type === 'REU' ? 'Inscrição' : 'Telefone'}
                 </label>
                 <input
                   type="text"
                   value={editingPart.phone || ''}
                   onChange={(e) => setEditingPart({ ...editingPart, phone: e.target.value })}
+                  placeholder={editingPart.type === 'REPRESENTANTE_LEGAL' ? 'Ex: RG 12.345.678-9' : editingPart.type === 'REU' ? 'Ex: OAB, CRECI, etc.' : ''}
                   className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                 />
               </div>
 
-              {/* Email (apenas para AUTOR) */}
+              {/* Nacionalidade (apenas para AUTOR) */}
               {editingPart.type === 'AUTOR' && (
                 <>
                   <div>
                     <label className="block text-sm font-medium text-neutral-700 mb-1">
-                      Email
+                      Nacionalidade
                     </label>
                     <input
-                      type="email"
+                      type="text"
                       value={editingPart.email || ''}
                       onChange={(e) => setEditingPart({ ...editingPart, email: e.target.value })}
+                      placeholder="Ex: Brasileiro(a)"
                       className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                     />
                   </div>

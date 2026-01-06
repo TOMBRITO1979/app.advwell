@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
 import api from '../services/api';
 import toast from 'react-hot-toast';
-import { Bot, Save, TestTube, AlertCircle, CheckCircle } from 'lucide-react';
+import { Bot, Save, TestTube, AlertCircle, CheckCircle, BarChart3, Coins } from 'lucide-react';
 
 interface AIConfig {
   id?: string;
@@ -24,12 +24,51 @@ interface AvailableModels {
   groq: ModelOption[];
 }
 
+interface TokenUsageStats {
+  period: {
+    start: string;
+    end: string;
+  };
+  totals: {
+    promptTokens: number;
+    completionTokens: number;
+    totalTokens: number;
+    operationCount: number;
+  };
+  operationBreakdown: Record<string, {
+    promptTokens: number;
+    completionTokens: number;
+    totalTokens: number;
+    count: number;
+  }>;
+  dailyUsage: Array<{
+    date: string;
+    promptTokens: number;
+    completionTokens: number;
+    totalTokens: number;
+    count: number;
+  }>;
+  recentOperations: Array<{
+    id: string;
+    operation: string;
+    promptTokens: number;
+    completionTokens: number;
+    totalTokens: number;
+    model: string;
+    provider: string;
+    createdAt: string;
+  }>;
+}
+
 const AIConfigPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
   const [hasConfig, setHasConfig] = useState(false);
   const [availableModels, setAvailableModels] = useState<AvailableModels | null>(null);
+  const [tokenUsage, setTokenUsage] = useState<TokenUsageStats | null>(null);
+  const [loadingUsage, setLoadingUsage] = useState(false);
+  const [usagePeriod, setUsagePeriod] = useState<'7' | '30' | '90'>('30');
 
   const [config, setConfig] = useState<AIConfig>({
     provider: 'openai',
@@ -45,6 +84,12 @@ const AIConfigPage: React.FC = () => {
     loadConfig();
     loadAvailableModels();
   }, []);
+
+  useEffect(() => {
+    if (hasConfig) {
+      loadTokenUsage();
+    }
+  }, [hasConfig, usagePeriod]);
 
   const loadConfig = async () => {
     try {
@@ -69,6 +114,40 @@ const AIConfigPage: React.FC = () => {
     } catch (error) {
       toast.error('Erro ao carregar modelos disponíveis');
     }
+  };
+
+  const loadTokenUsage = async () => {
+    setLoadingUsage(true);
+    try {
+      const days = parseInt(usagePeriod);
+      const endDate = new Date();
+      const startDate = new Date(endDate.getTime() - days * 24 * 60 * 60 * 1000);
+
+      const response = await api.get('/ai-config/token-usage', {
+        params: {
+          startDate: startDate.toISOString(),
+          endDate: endDate.toISOString(),
+        },
+      });
+      setTokenUsage(response.data);
+    } catch (error) {
+      // Silently fail - no usage yet is expected
+    } finally {
+      setLoadingUsage(false);
+    }
+  };
+
+  const formatNumber = (num: number): string => {
+    return new Intl.NumberFormat('pt-BR').format(num);
+  };
+
+  const getOperationLabel = (operation: string): string => {
+    const labels: Record<string, string> = {
+      'generate_document': 'Gerar Documento',
+      'review_document': 'Revisar Documento',
+      'summarize_case': 'Resumir Processo',
+    };
+    return labels[operation] || operation;
   };
 
   const handleProviderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -419,6 +498,128 @@ const AIConfigPage: React.FC = () => {
                   </p>
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* Token Usage Statistics */}
+          {hasConfig && (
+            <div className="mt-6 bg-white rounded-lg shadow-md p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-neutral-700 flex items-center gap-2">
+                  <BarChart3 className="h-5 w-5" />
+                  Uso de Tokens
+                </h2>
+                <select
+                  value={usagePeriod}
+                  onChange={(e) => setUsagePeriod(e.target.value as '7' | '30' | '90')}
+                  className="px-3 py-1.5 border border-neutral-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                >
+                  <option value="7">Últimos 7 dias</option>
+                  <option value="30">Últimos 30 dias</option>
+                  <option value="90">Últimos 90 dias</option>
+                </select>
+              </div>
+
+              {loadingUsage ? (
+                <div className="flex items-center justify-center h-32">
+                  <div className="animate-spin h-6 w-6 border-2 border-primary-600 border-t-transparent rounded-full"></div>
+                </div>
+              ) : tokenUsage && tokenUsage.totals.operationCount > 0 ? (
+                <div className="space-y-6">
+                  {/* Summary Cards */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="bg-neutral-50 rounded-lg p-4">
+                      <div className="flex items-center gap-2 text-neutral-600 text-sm mb-1">
+                        <Coins className="h-4 w-4" />
+                        Total de Tokens
+                      </div>
+                      <div className="text-2xl font-bold text-neutral-800">
+                        {formatNumber(tokenUsage.totals.totalTokens)}
+                      </div>
+                    </div>
+                    <div className="bg-neutral-50 rounded-lg p-4">
+                      <div className="text-neutral-600 text-sm mb-1">Tokens de Entrada</div>
+                      <div className="text-xl font-semibold text-neutral-700">
+                        {formatNumber(tokenUsage.totals.promptTokens)}
+                      </div>
+                    </div>
+                    <div className="bg-neutral-50 rounded-lg p-4">
+                      <div className="text-neutral-600 text-sm mb-1">Tokens de Saída</div>
+                      <div className="text-xl font-semibold text-neutral-700">
+                        {formatNumber(tokenUsage.totals.completionTokens)}
+                      </div>
+                    </div>
+                    <div className="bg-neutral-50 rounded-lg p-4">
+                      <div className="text-neutral-600 text-sm mb-1">Operações</div>
+                      <div className="text-xl font-semibold text-neutral-700">
+                        {formatNumber(tokenUsage.totals.operationCount)}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Operation Breakdown */}
+                  {Object.keys(tokenUsage.operationBreakdown).length > 0 && (
+                    <div>
+                      <h3 className="text-sm font-medium text-neutral-600 mb-3">Por Tipo de Operação</h3>
+                      <div className="space-y-2">
+                        {Object.entries(tokenUsage.operationBreakdown).map(([operation, data]) => (
+                          <div key={operation} className="flex items-center justify-between p-3 bg-neutral-50 rounded-lg">
+                            <div>
+                              <span className="font-medium text-neutral-700">{getOperationLabel(operation)}</span>
+                              <span className="text-neutral-500 text-sm ml-2">({data.count} {data.count === 1 ? 'vez' : 'vezes'})</span>
+                            </div>
+                            <span className="font-mono text-sm text-neutral-600">
+                              {formatNumber(data.totalTokens)} tokens
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Recent Operations */}
+                  {tokenUsage.recentOperations.length > 0 && (
+                    <div>
+                      <h3 className="text-sm font-medium text-neutral-600 mb-3">Operações Recentes</h3>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="text-left text-neutral-500 border-b">
+                              <th className="pb-2 font-medium">Data</th>
+                              <th className="pb-2 font-medium">Operação</th>
+                              <th className="pb-2 font-medium text-right">Tokens</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {tokenUsage.recentOperations.map((op) => (
+                              <tr key={op.id} className="border-b border-neutral-100">
+                                <td className="py-2 text-neutral-600">
+                                  {new Date(op.createdAt).toLocaleString('pt-BR', {
+                                    day: '2-digit',
+                                    month: '2-digit',
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                  })}
+                                </td>
+                                <td className="py-2 text-neutral-700">{getOperationLabel(op.operation)}</td>
+                                <td className="py-2 text-right font-mono text-neutral-600">
+                                  {formatNumber(op.totalTokens)}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-neutral-500">
+                  <BarChart3 className="h-12 w-12 mx-auto mb-3 opacity-30" />
+                  <p>Nenhum uso de tokens registrado no período selecionado.</p>
+                  <p className="text-sm mt-1">Os dados aparecerão aqui quando você usar a IA.</p>
+                </div>
+              )}
             </div>
           )}
         </div>

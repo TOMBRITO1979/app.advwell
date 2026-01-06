@@ -209,3 +209,121 @@ export const getAvailableModels = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ error: 'Erro ao buscar modelos disponíveis' });
   }
 };
+
+/**
+ * Get token usage statistics for current company
+ * Query params:
+ *   - startDate: Start date (ISO string, defaults to 30 days ago)
+ *   - endDate: End date (ISO string, defaults to now)
+ *   - groupBy: 'day' | 'week' | 'month' (defaults to 'day')
+ */
+export const getTokenUsageStats = async (req: AuthRequest, res: Response) => {
+  try {
+    const companyId = req.user!.companyId!;
+    const { startDate, endDate, groupBy = 'day' } = req.query;
+
+    // Default dates: last 30 days
+    const end = endDate ? new Date(String(endDate)) : new Date();
+    const start = startDate
+      ? new Date(String(startDate))
+      : new Date(end.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+    // Get all usage records in the period
+    const usageRecords = await prisma.aITokenUsage.findMany({
+      where: {
+        companyId,
+        createdAt: {
+          gte: start,
+          lte: end,
+        },
+      },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    // Calculate totals
+    const totals = {
+      promptTokens: 0,
+      completionTokens: 0,
+      totalTokens: 0,
+      operationCount: usageRecords.length,
+    };
+
+    const operationBreakdown: Record<string, {
+      promptTokens: number;
+      completionTokens: number;
+      totalTokens: number;
+      count: number;
+    }> = {};
+
+    const dailyUsage: Record<string, {
+      date: string;
+      promptTokens: number;
+      completionTokens: number;
+      totalTokens: number;
+      count: number;
+    }> = {};
+
+    for (const record of usageRecords) {
+      // Add to totals
+      totals.promptTokens += record.promptTokens;
+      totals.completionTokens += record.completionTokens;
+      totals.totalTokens += record.totalTokens;
+
+      // Add to operation breakdown
+      if (!operationBreakdown[record.operation]) {
+        operationBreakdown[record.operation] = {
+          promptTokens: 0,
+          completionTokens: 0,
+          totalTokens: 0,
+          count: 0,
+        };
+      }
+      operationBreakdown[record.operation].promptTokens += record.promptTokens;
+      operationBreakdown[record.operation].completionTokens += record.completionTokens;
+      operationBreakdown[record.operation].totalTokens += record.totalTokens;
+      operationBreakdown[record.operation].count += 1;
+
+      // Add to daily usage
+      const dateKey = record.createdAt.toISOString().split('T')[0];
+      if (!dailyUsage[dateKey]) {
+        dailyUsage[dateKey] = {
+          date: dateKey,
+          promptTokens: 0,
+          completionTokens: 0,
+          totalTokens: 0,
+          count: 0,
+        };
+      }
+      dailyUsage[dateKey].promptTokens += record.promptTokens;
+      dailyUsage[dateKey].completionTokens += record.completionTokens;
+      dailyUsage[dateKey].totalTokens += record.totalTokens;
+      dailyUsage[dateKey].count += 1;
+    }
+
+    // Get recent operations (last 10)
+    const recentOperations = usageRecords.slice(-10).reverse().map(r => ({
+      id: r.id,
+      operation: r.operation,
+      promptTokens: r.promptTokens,
+      completionTokens: r.completionTokens,
+      totalTokens: r.totalTokens,
+      model: r.model,
+      provider: r.provider,
+      createdAt: r.createdAt,
+    }));
+
+    res.json({
+      period: {
+        start: start.toISOString(),
+        end: end.toISOString(),
+      },
+      totals,
+      operationBreakdown,
+      dailyUsage: Object.values(dailyUsage),
+      recentOperations,
+    });
+  } catch (error) {
+    appLogger.error('Error fetching token usage stats:', error as Error);
+    res.status(500).json({ error: 'Erro ao buscar estatísticas de uso de tokens' });
+  }
+};
