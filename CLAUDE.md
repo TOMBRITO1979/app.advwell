@@ -11,7 +11,7 @@ AdvWell is a multitenant SaaS for Brazilian law firms with DataJud CNJ integrati
 - Backend API: https://api.advwell.pro
 - Grafana: https://grafana.advwell.pro
 
-**Current Version:** v1.8.22 (Backend) | v1.8.20 (Frontend)
+**Current Version:** v1.8.43 (Backend) | v1.8.36 (Frontend)
 
 ## Technology Stack
 
@@ -80,6 +80,7 @@ Jobs processed by dedicated worker (not API replicas):
 | Queue config | `backend/src/queues/*.ts` |
 | Auth middleware | `backend/src/middleware/auth.ts` |
 | Tenant middleware | `backend/src/middleware/tenant.ts` |
+| AI service | `backend/src/services/ai/ai.service.ts` |
 | DataJud service | `backend/src/services/datajud.service.ts` |
 | Docker config | `docker-compose.yml` |
 
@@ -106,17 +107,10 @@ Jobs processed by dedicated worker (not API replicas):
 
 ### New Database Table
 1. Update `backend/prisma/schema.prisma`
-2. Run migration: `npx prisma migrate dev --name add_table`
+2. Create migration SQL: `backend/migrations_manual/`
+3. Apply: `cat migration.sql | ssh root@5.78.137.1 "docker exec -i advwell-postgres psql -U postgres -d advtom"`
 
 ## Monitoring
 
 - **Grafana**: https://grafana.advwell.pro
 - **Prometheus**: Internal (prometheus:9090)
-- **Alerts**: `monitoring/prometheus-alerts.yml`
-
-## Documentation
-
-- `docs/AUDITORIA_COMPLETA.md` - Security audit
-- `docs/RUNBOOKS.md` - Operational procedures
-- `docs/CAPACITY_LIMITS.md` - Load test results
-- `docs/DEPLOY_CHECKLIST.md` - Deploy checklist
