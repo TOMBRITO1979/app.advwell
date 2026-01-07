@@ -34,6 +34,7 @@ const Companies = lazy(() => import('./pages/Companies'));
 const LegalDocuments = lazy(() => import('./pages/LegalDocuments'));
 const Hearings = lazy(() => import('./pages/Hearings'));
 const Leads = lazy(() => import('./pages/Leads'));
+const LeadAnalytics = lazy(() => import('./pages/LeadAnalytics'));
 const Tags = lazy(() => import('./pages/Tags'));
 const PNJ = lazy(() => import('./pages/PNJ'));
 const Subscription = lazy(() => import('./pages/Subscription'));
@@ -60,6 +61,7 @@ const PortalPNJDetails = lazy(() => import('./portal/pages/PortalPNJDetails'));
 const PortalProfile = lazy(() => import('./portal/pages/PortalProfile'));
 const PortalCompany = lazy(() => import('./portal/pages/PortalCompany'));
 const PortalAnnouncements = lazy(() => import('./portal/pages/PortalAnnouncements'));
+const PortalDocuments = lazy(() => import('./portal/pages/PortalDocuments'));
 
 // Loading spinner component
 const LoadingSpinner = () => (
@@ -189,6 +191,14 @@ function App() {
             element={
               <PrivateRoute>
                 <Leads />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/lead-analytics"
+            element={
+              <PrivateRoute>
+                <LeadAnalytics />
               </PrivateRoute>
             }
           />
@@ -494,6 +504,14 @@ function App() {
             element={
               <PortalRoute>
                 <PortalAnnouncements />
+              </PortalRoute>
+            }
+          />
+          <Route
+            path="/portal/documents"
+            element={
+              <PortalRoute>
+                <PortalDocuments />
               </PortalRoute>
             }
           />

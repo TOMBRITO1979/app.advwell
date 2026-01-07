@@ -49,6 +49,25 @@ export const uploadToS3 = async (
   return { key, url };
 };
 
+// Upload de buffer com key customizada (para assinaturas e documentos compartilhados)
+export const uploadBufferToS3 = async (
+  buffer: Buffer,
+  key: string,
+  contentType: string
+): Promise<string> => {
+  const command = new PutObjectCommand({
+    Bucket: config.aws.s3BucketName,
+    Key: key,
+    Body: buffer,
+    ContentType: contentType,
+    ServerSideEncryption: 'AES256',
+  });
+
+  await s3Client.send(command);
+
+  return `https://${config.aws.s3BucketName}.s3.${config.aws.region}.amazonaws.com/${key}`;
+};
+
 // Deletar arquivo do S3
 export const deleteFromS3 = async (key: string): Promise<boolean> => {
   try {
@@ -73,6 +92,28 @@ export const getSignedS3Url = async (key: string): Promise<string> => {
   });
 
   return await getSignedUrl(s3Client, command, { expiresIn: 3600 });
+};
+
+// Baixar objeto do S3 como Buffer
+export const getObjectFromS3 = async (key: string): Promise<Buffer> => {
+  const command = new GetObjectCommand({
+    Bucket: config.aws.s3BucketName,
+    Key: key,
+  });
+
+  const response = await s3Client.send(command);
+
+  if (!response.Body) {
+    throw new Error('Arquivo não encontrado no S3');
+  }
+
+  // Converter stream para buffer
+  const chunks: Uint8Array[] = [];
+  for await (const chunk of response.Body as AsyncIterable<Uint8Array>) {
+    chunks.push(chunk);
+  }
+
+  return Buffer.concat(chunks);
 };
 
 export const getSignedS3DownloadUrl = async (key: string, filename: string): Promise<string> => {

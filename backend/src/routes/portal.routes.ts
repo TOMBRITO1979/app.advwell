@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { authenticate } from '../middleware/auth';
 import { requireClient } from '../middleware/clientAuth';
 import portalController from '../controllers/portal.controller';
+import { upload } from '../middleware/upload';
 
 const router = Router();
 
@@ -29,5 +30,12 @@ router.get('/pnjs/:id/movements', portalController.getPNJMovements);
 
 // Anúncios
 router.get('/announcements', portalController.getAnnouncements);
+
+// Documentos Compartilhados
+router.get('/documents', portalController.getDocuments);
+router.get('/documents/:id', portalController.getDocumentDetails);
+router.post('/documents/:id/download', portalController.downloadDocument);
+router.post('/documents/:id/sign', portalController.signDocument);
+router.post('/documents/upload', upload.single('file'), portalController.uploadDocument);
 
 export default router;

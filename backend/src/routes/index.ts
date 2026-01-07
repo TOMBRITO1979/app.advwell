@@ -17,6 +17,7 @@ import aiConfigRoutes from './ai-config.routes';
 import legalDocumentRoutes from './legal-document.routes';
 import subscriptionRoutes from './subscription.routes';
 import leadRoutes from './lead.routes';
+import leadAnalyticsRoutes from './lead-analytics.routes';
 import tagRoutes from './tag.routes';
 import pnjRoutes from './pnj.routes';
 import lgpdRoutes from './lgpd.routes';
@@ -31,6 +32,7 @@ import googleCalendarConfigRoutes from './google-calendar-config.routes';
 import whatsappConfigRoutes from './whatsapp-config.routes';
 import whatsappCampaignRoutes from './whatsapp-campaign.routes';
 import whatsappWebhookRoutes from './whatsapp-webhook.routes';
+import sharedDocumentRoutes from './shared-document.routes';
 
 const router = Router();
 
@@ -60,6 +62,7 @@ router.use('/ai-config', aiConfigRoutes); // Configuração de IA por empresa
 router.use('/legal-documents', legalDocumentRoutes); // Documentos jurídicos (recibos, contratos, etc.)
 router.use('/subscription', subscriptionRoutes); // Assinatura e pagamentos (Stripe)
 router.use('/leads', leadRoutes); // Gestão de leads (potenciais clientes)
+router.use('/lead-analytics', leadAnalyticsRoutes); // Analytics e relatórios de leads
 router.use('/tags', tagRoutes); // Sistema de tags centralizado (para clientes e leads)
 router.use('/pnj', pnjRoutes); // Processos Não Judiciais (PNJ)
 router.use('/lgpd', lgpdRoutes); // Rotas LGPD (consentimento, direitos do titular)
@@ -73,5 +76,6 @@ router.use('/google-calendar', googleCalendarRoutes); // Integração Google Cal
 router.use('/google-calendar-config', googleCalendarConfigRoutes); // Configuração Google Calendar por empresa (ADMIN)
 router.use('/whatsapp-config', whatsappConfigRoutes); // Configuração WhatsApp Business API por empresa (ADMIN)
 router.use('/whatsapp-campaigns', whatsappCampaignRoutes); // Campanhas de marketing WhatsApp (ADMIN)
+router.use('/', sharedDocumentRoutes); // Documentos compartilhados entre escritório e cliente (Portal)
 
 export default router;

@@ -141,6 +141,30 @@ export interface PortalDashboard {
   }[];
 }
 
+// Document Types
+export interface PortalDocument {
+  id: string;
+  name: string;
+  description: string | null;
+  fileUrl: string;
+  fileKey: string;
+  fileSize: number;
+  fileType: string;
+  sharedAt: string;
+  requiresSignature: boolean;
+  allowDownload: boolean;
+  status: 'PENDING' | 'VIEWED' | 'DOWNLOADED' | 'SIGNED' | 'UPLOADED';
+  signedAt: string | null;
+  signatureUrl: string | null;
+  viewedAt: string | null;
+  downloadedAt: string | null;
+  uploadedByClient: boolean;
+  uploadedAt: string | null;
+  sharedBy: {
+    name: string;
+  };
+}
+
 // API calls
 export const portalApi = {
   getDashboard: async (): Promise<PortalDashboard> => {
@@ -191,6 +215,39 @@ export const portalApi = {
 
   getPNJMovements: async (id: string): Promise<PortalPNJMovement[]> => {
     const response = await api.get(`/portal/pnjs/${id}/movements`);
+    return response.data;
+  },
+
+  // Document endpoints
+  getDocuments: async (): Promise<PortalDocument[]> => {
+    const response = await api.get('/portal/documents');
+    return response.data;
+  },
+
+  getDocumentDetails: async (id: string): Promise<PortalDocument> => {
+    const response = await api.get(`/portal/documents/${id}`);
+    return response.data;
+  },
+
+  downloadDocument: async (id: string): Promise<{ downloadUrl: string }> => {
+    const response = await api.post(`/portal/documents/${id}/download`);
+    return response.data;
+  },
+
+  signDocument: async (id: string, signatureImage: string): Promise<{ message: string; signedAt: string }> => {
+    const response = await api.post(`/portal/documents/${id}/sign`, { signatureImage });
+    return response.data;
+  },
+
+  uploadDocument: async (file: File, name: string, description?: string): Promise<PortalDocument> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('name', name);
+    if (description) formData.append('description', description);
+
+    const response = await api.post('/portal/documents/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
     return response.data;
   },
 };

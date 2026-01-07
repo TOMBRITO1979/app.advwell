@@ -110,6 +110,9 @@ model Company {
   clientTags                  ClientTag[]
   leadTags                    LeadTag[]
 
+  // Documentos Compartilhados (Portal do Cliente)
+  sharedDocuments             SharedDocument[]
+
   @@map("companies")
 }
 
@@ -190,6 +193,9 @@ model User {
   // WhatsApp Business API
   whatsAppCampaigns       WhatsAppCampaign[]
 
+  // Documentos compartilhados
+  sharedDocumentsShared   SharedDocument[]  @relation("SharedDocumentSharedBy")
+
   @@unique([companyId, email])  // Email único por empresa (permite mesmo email em empresas diferentes)
   @@index([companyId])
   @@index([email])  // Índice para buscas por email
@@ -254,8 +260,10 @@ model Client {
   announcements         Announcement[]        // Avisos direcionados a este cliente
   pnjs                  PNJ[]                 // Processos Não Judiciais
   clientTags            ClientTag[]           // Tags do cliente (many-to-many)
+  sharedDocuments       SharedDocument[]      // Documentos compartilhados via portal
 
   @@unique([companyId, cpf]) // CPF único por empresa (NULL é permitido para múltiplos clientes)
+  @@unique([companyId, email]) // Email único por empresa (NULL é permitido para múltiplos clientes)
   @@index([companyId])
   @@index([email])
   @@index([cpf])
@@ -1701,4 +1709,74 @@ model LeadTag {
   @@index([leadId])
   @@index([tagId])
   @@map("lead_tags")
+}
+
+// ============================================================================
+// SHARED DOCUMENTS SYSTEM (Client Portal)
+// ============================================================================
+
+// Status do documento compartilhado
+enum SharedDocumentStatus {
+  PENDING           // Aguardando ação do cliente
+  VIEWED            // Visualizado pelo cliente
+  DOWNLOADED        // Baixado pelo cliente
+  SIGNED            // Assinado pelo cliente
+  UPLOADED          // Enviado pelo cliente para o escritório
+}
+
+// Documentos compartilhados entre escritório e cliente
+model SharedDocument {
+  id                String               @id @default(uuid())
+  companyId         String
+  clientId          String
+
+  // Dados do documento
+  name              String               // Nome do documento
+  description       String?              // Descrição opcional
+
+  // Arquivo
+  fileUrl           String               // URL no S3
+  fileKey           String               // Key no S3 para delete
+  fileSize          Int                  // Tamanho em bytes
+  fileType          String               // MIME type (application/pdf, image/png, etc)
+
+  // Controle de compartilhamento
+  sharedByUserId    String               // Usuário que compartilhou (advogado/admin)
+  sharedAt          DateTime             @default(now())
+
+  // Configurações
+  requiresSignature Boolean              @default(false)  // Requer assinatura do cliente?
+  allowDownload     Boolean              @default(true)   // Permite download?
+
+  // Assinatura do cliente
+  signedAt          DateTime?            // Data/hora da assinatura
+  signatureUrl      String?              // URL da imagem da assinatura no S3
+  signatureKey      String?              // Key da assinatura no S3
+  signatureIp       String?              // IP do cliente ao assinar
+  signatureUserAgent String?             // User agent do cliente
+
+  // Upload pelo cliente (documento enviado pelo cliente)
+  uploadedByClient  Boolean              @default(false)  // Foi upload do cliente?
+  uploadedAt        DateTime?            // Data do upload pelo cliente
+
+  // Status e controle
+  status            SharedDocumentStatus @default(PENDING)
+  viewedAt          DateTime?            // Primeira visualização
+  downloadedAt      DateTime?            // Primeiro download
+
+  // Metadados
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+
+  // Relations
+  company           Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  client            Client               @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  sharedBy          User                 @relation("SharedDocumentSharedBy", fields: [sharedByUserId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+  @@index([clientId])
+  @@index([companyId, clientId])
+  @@index([status])
+  @@index([sharedAt])
+  @@map("shared_documents")
 }

@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import Layout from '../components/Layout';
 import api from '../services/api';
 import toast from 'react-hot-toast';
-import { Plus, Search, Edit, Trash2, Eye, X, FileText, Loader2, UserPlus, UserX, Mail, Filter, Calendar } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Eye, X, FileText, Loader2, UserPlus, UserX, Mail, Filter, Calendar, Upload, Download, FileSignature, Check, Clock, ExternalLink } from 'lucide-react';
 import { ExportButton } from '../components/ui';
 import MobileCardList, { MobileCardItem } from '../components/MobileCardList';
 import { formatDate } from '../utils/dateFormatter';
@@ -85,6 +85,29 @@ interface Tag {
   color: string;
 }
 
+interface SharedDocument {
+  id: string;
+  name: string;
+  description?: string;
+  fileUrl: string;
+  fileKey: string;
+  fileSize: number;
+  fileType: string;
+  sharedAt: string;
+  requiresSignature: boolean;
+  allowDownload: boolean;
+  status: 'PENDING' | 'VIEWED' | 'DOWNLOADED' | 'SIGNED' | 'UPLOADED';
+  signedAt?: string;
+  signatureUrl?: string;
+  uploadedByClient: boolean;
+  uploadedAt?: string;
+  sharedBy: {
+    id: string;
+    name: string;
+    email: string;
+  };
+}
+
 const Clients: React.FC = () => {
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
@@ -107,6 +130,20 @@ const Clients: React.FC = () => {
   const [portalUser, setPortalUser] = useState<{ id: string; email: string; tempPassword?: string } | null>(null);
   const [portalPassword, setPortalPassword] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Documentos compartilhados
+  const [sharedDocuments, setSharedDocuments] = useState<SharedDocument[]>([]);
+  const [loadingDocuments, setLoadingDocuments] = useState(false);
+  const [uploadingDocument, setUploadingDocument] = useState(false);
+  const [showDocumentModal, setShowDocumentModal] = useState(false);
+  const [documentName, setDocumentName] = useState('');
+  const [documentDescription, setDocumentDescription] = useState('');
+  const [requiresSignature, setRequiresSignature] = useState(false);
+  const docFileInputRef = useRef<HTMLInputElement>(null);
+  const [documentSource, setDocumentSource] = useState<'upload' | 'existing'>('upload');
+  const [availableDocuments, setAvailableDocuments] = useState<{ id: string; name: string; fileType?: string }[]>([]);
+  const [selectedDocumentId, setSelectedDocumentId] = useState('');
+  const [loadingAvailableDocuments, setLoadingAvailableDocuments] = useState(false);
 
   const [formData, setFormData] = useState<ClientFormData>({
     personType: 'FISICA',
@@ -362,6 +399,7 @@ const Clients: React.FC = () => {
     setShowDetailsModal(true);
     setLoadingDetails(true);
     setPortalUser(null);
+    setSharedDocuments([]);
     try {
       // Buscar cliente por ID para obter os processos vinculados
       const response = await api.get(`/clients/${client.id}`);
@@ -376,6 +414,9 @@ const Clients: React.FC = () => {
       } catch {
         // Cliente não tem acesso ao portal
       }
+
+      // Buscar documentos compartilhados
+      loadSharedDocuments(client.id);
     } catch (error) {
       console.error('Erro ao buscar detalhes do cliente:', error);
       // Fallback: usar dados da lista (sem processos)
@@ -433,6 +474,144 @@ const Clients: React.FC = () => {
     } catch (error) {
       toast.error('Erro ao remover acesso ao portal');
     }
+  };
+
+  // === Funções de Documentos Compartilhados ===
+  const loadSharedDocuments = async (clientId: string) => {
+    setLoadingDocuments(true);
+    try {
+      const response = await api.get(`/clients/${clientId}/shared-documents`);
+      setSharedDocuments(response.data);
+    } catch {
+      setSharedDocuments([]);
+    } finally {
+      setLoadingDocuments(false);
+    }
+  };
+
+  const loadAvailableDocuments = async () => {
+    setLoadingAvailableDocuments(true);
+    try {
+      const response = await api.get('/legal-documents');
+      // A API retorna { data: [...] }, então acessamos response.data.data
+      const documents = response.data.data || response.data || [];
+      // Mapear para o formato esperado (title -> name)
+      const mappedDocs = documents.map((doc: { id: string; title: string }) => ({
+        id: doc.id,
+        name: doc.title,
+      }));
+      setAvailableDocuments(mappedDocs);
+    } catch {
+      setAvailableDocuments([]);
+    } finally {
+      setLoadingAvailableDocuments(false);
+    }
+  };
+
+  const handleShareDocument = async () => {
+    if (!selectedClient) return;
+
+    if (documentSource === 'upload') {
+      if (!documentName.trim()) {
+        toast.error('Nome do documento é obrigatório');
+        return;
+      }
+      if (!docFileInputRef.current?.files?.[0]) {
+        toast.error('Selecione um arquivo');
+        return;
+      }
+
+      setUploadingDocument(true);
+      try {
+        const formData = new FormData();
+        formData.append('file', docFileInputRef.current.files[0]);
+        formData.append('name', documentName);
+        formData.append('description', documentDescription);
+        formData.append('requiresSignature', String(requiresSignature));
+
+        await api.post(`/clients/${selectedClient.id}/shared-documents`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+
+        toast.success('Documento compartilhado com sucesso!');
+        resetDocumentModal();
+        loadSharedDocuments(selectedClient.id);
+      } catch {
+        toast.error('Erro ao compartilhar documento');
+      } finally {
+        setUploadingDocument(false);
+      }
+    } else {
+      // Compartilhar documento jurídico (gera PDF)
+      if (!selectedDocumentId) {
+        toast.error('Selecione um documento');
+        return;
+      }
+
+      setUploadingDocument(true);
+      try {
+        await api.post(`/clients/${selectedClient.id}/shared-documents/from-legal`, {
+          legalDocumentId: selectedDocumentId,
+          name: documentName || undefined,
+          description: documentDescription || undefined,
+          requiresSignature,
+        });
+
+        toast.success('Documento compartilhado com sucesso!');
+        resetDocumentModal();
+        loadSharedDocuments(selectedClient.id);
+      } catch {
+        toast.error('Erro ao compartilhar documento');
+      } finally {
+        setUploadingDocument(false);
+      }
+    }
+  };
+
+  const resetDocumentModal = () => {
+    setShowDocumentModal(false);
+    setDocumentName('');
+    setDocumentDescription('');
+    setRequiresSignature(false);
+    setDocumentSource('upload');
+    setSelectedDocumentId('');
+    if (docFileInputRef.current) docFileInputRef.current.value = '';
+  };
+
+  const handleDeleteDocument = async (docId: string) => {
+    if (!confirm('Tem certeza que deseja excluir este documento?')) return;
+
+    try {
+      await api.delete(`/shared-documents/${docId}`);
+      toast.success('Documento excluído');
+      if (selectedClient) {
+        loadSharedDocuments(selectedClient.id);
+      }
+    } catch {
+      toast.error('Erro ao excluir documento');
+    }
+  };
+
+  const getStatusBadge = (doc: SharedDocument) => {
+    if (doc.uploadedByClient) {
+      return <span className="px-2 py-1 text-xs rounded-full bg-info-100 text-info-700">Enviado pelo cliente</span>;
+    }
+    switch (doc.status) {
+      case 'SIGNED':
+        return <span className="px-2 py-1 text-xs rounded-full bg-success-100 text-success-700 flex items-center gap-1"><Check size={12} /> Assinado</span>;
+      case 'DOWNLOADED':
+        return <span className="px-2 py-1 text-xs rounded-full bg-primary-100 text-primary-700 flex items-center gap-1"><Download size={12} /> Baixado</span>;
+      case 'VIEWED':
+        return <span className="px-2 py-1 text-xs rounded-full bg-warning-100 text-warning-700 flex items-center gap-1"><Eye size={12} /> Visualizado</span>;
+      default:
+        return <span className="px-2 py-1 text-xs rounded-full bg-neutral-100 text-neutral-700 flex items-center gap-1"><Clock size={12} /> Pendente</span>;
+    }
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   };
 
   const handleNewClient = () => {
@@ -1426,6 +1605,105 @@ const Clients: React.FC = () => {
                   )}
                 </div>
               </div>
+
+              {/* Documentos Compartilhados */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-lg font-semibold text-neutral-900">Documentos Compartilhados</h3>
+                  <button
+                    onClick={() => {
+                      setShowDocumentModal(true);
+                      loadAvailableDocuments();
+                    }}
+                    className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+                  >
+                    <Upload size={16} />
+                    Compartilhar
+                  </button>
+                </div>
+                <div className="bg-neutral-50 rounded-lg p-4">
+                  {loadingDocuments ? (
+                    <div className="flex items-center justify-center py-4">
+                      <Loader2 size={24} className="animate-spin text-primary-500" />
+                    </div>
+                  ) : sharedDocuments.length > 0 ? (
+                    <div className="space-y-3">
+                      {sharedDocuments.map((doc) => (
+                        <div key={doc.id} className="bg-white rounded-lg border border-neutral-200 p-3">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <div className="flex items-start gap-3">
+                              <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                {doc.requiresSignature ? (
+                                  <FileSignature className="text-primary-600" size={20} />
+                                ) : (
+                                  <FileText className="text-primary-600" size={20} />
+                                )}
+                              </div>
+                              <div className="min-w-0">
+                                <p className="font-medium text-neutral-900 truncate">{doc.name}</p>
+                                <div className="flex flex-wrap items-center gap-2 mt-1">
+                                  <span className="text-xs text-neutral-500">
+                                    {formatFileSize(doc.fileSize)}
+                                  </span>
+                                  <span className="text-xs text-neutral-400">•</span>
+                                  <span className="text-xs text-neutral-500">
+                                    {formatDate(doc.sharedAt)}
+                                  </span>
+                                  {doc.requiresSignature && (
+                                    <>
+                                      <span className="text-xs text-neutral-400">•</span>
+                                      <span className="text-xs text-warning-600">Requer assinatura</span>
+                                    </>
+                                  )}
+                                </div>
+                                {doc.signedAt && (
+                                  <p className="text-xs text-success-600 mt-1">
+                                    Assinado em {formatDate(doc.signedAt)}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2 sm:flex-shrink-0">
+                              {getStatusBadge(doc)}
+                              <a
+                                href={doc.fileUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="p-2 text-neutral-500 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+                                title="Abrir documento"
+                              >
+                                <ExternalLink size={18} />
+                              </a>
+                              {doc.signatureUrl && (
+                                <a
+                                  href={doc.signatureUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="p-2 text-neutral-500 hover:text-success-600 hover:bg-success-50 rounded-lg transition-colors"
+                                  title="Ver assinatura"
+                                >
+                                  <FileSignature size={18} />
+                                </a>
+                              )}
+                              <button
+                                onClick={() => handleDeleteDocument(doc.id)}
+                                className="p-2 text-neutral-500 hover:text-error-600 hover:bg-error-50 rounded-lg transition-colors"
+                                title="Excluir"
+                              >
+                                <Trash2 size={18} />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-neutral-500 text-center py-4">
+                      Nenhum documento compartilhado com este cliente
+                    </p>
+                  )}
+                </div>
+              </div>
             </div>
 
             <div className="modal-footer">
@@ -1504,6 +1782,173 @@ const Clients: React.FC = () => {
                 className="w-full inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-white border border-neutral-300 hover:bg-neutral-50 text-neutral-700 rounded-lg font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200 min-h-[44px]"
               >
                 Fechar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Compartilhar Documento */}
+      {showDocumentModal && (
+        <div className="modal-overlay">
+          <div className="modal-container sm:max-w-lg">
+            <div className="modal-header">
+              <h2 className="text-xl font-bold text-neutral-900">Compartilhar Documento</h2>
+              <button
+                onClick={resetDocumentModal}
+                className="text-neutral-500 hover:text-neutral-700"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className="modal-body space-y-4">
+              {/* Seleção de origem do documento */}
+              <div className="flex gap-2 p-1 bg-neutral-100 rounded-lg">
+                <button
+                  onClick={() => setDocumentSource('upload')}
+                  className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${
+                    documentSource === 'upload'
+                      ? 'bg-white text-primary-700 shadow-sm'
+                      : 'text-neutral-600 hover:text-neutral-900'
+                  }`}
+                >
+                  <Upload size={16} className="inline mr-2" />
+                  Novo Upload
+                </button>
+                <button
+                  onClick={() => setDocumentSource('existing')}
+                  className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${
+                    documentSource === 'existing'
+                      ? 'bg-white text-primary-700 shadow-sm'
+                      : 'text-neutral-600 hover:text-neutral-900'
+                  }`}
+                >
+                  <FileText size={16} className="inline mr-2" />
+                  Docs Jurídicos
+                </button>
+              </div>
+
+              {documentSource === 'existing' ? (
+                /* Seleção de documento jurídico */
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    Selecione um documento jurídico *
+                  </label>
+                  {loadingAvailableDocuments ? (
+                    <div className="flex items-center justify-center py-4">
+                      <Loader2 size={20} className="animate-spin text-primary-600" />
+                      <span className="ml-2 text-sm text-neutral-500">Carregando...</span>
+                    </div>
+                  ) : availableDocuments.length === 0 ? (
+                    <div className="text-sm text-neutral-500 py-4 text-center bg-neutral-50 rounded-lg">
+                      Nenhum documento disponível na aba Documentos Jurídicos.
+                    </div>
+                  ) : (
+                    <select
+                      value={selectedDocumentId}
+                      onChange={(e) => {
+                        setSelectedDocumentId(e.target.value);
+                        const doc = availableDocuments.find(d => d.id === e.target.value);
+                        if (doc && !documentName) {
+                          setDocumentName(doc.name);
+                        }
+                      }}
+                      className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    >
+                      <option value="">Selecione...</option>
+                      {availableDocuments.map((doc) => (
+                        <option key={doc.id} value={doc.id}>
+                          {doc.name}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+              ) : (
+                /* Upload de novo arquivo */
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    Arquivo *
+                  </label>
+                  <input
+                    type="file"
+                    ref={docFileInputRef}
+                    accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:font-medium file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
+                  />
+                  <p className="text-xs text-neutral-500 mt-1">
+                    Formatos aceitos: PDF, DOC, DOCX, PNG, JPG (máx. 25MB)
+                  </p>
+                </div>
+              )}
+
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                  Nome do Documento {documentSource === 'upload' ? '*' : '(opcional)'}
+                </label>
+                <input
+                  type="text"
+                  value={documentName}
+                  onChange={(e) => setDocumentName(e.target.value)}
+                  placeholder="Ex: Contrato de Honorários"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                  Descrição (opcional)
+                </label>
+                <textarea
+                  value={documentDescription}
+                  onChange={(e) => setDocumentDescription(e.target.value)}
+                  placeholder="Descrição do documento..."
+                  rows={2}
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="requiresSignature"
+                  checked={requiresSignature}
+                  onChange={(e) => setRequiresSignature(e.target.checked)}
+                  className="w-4 h-4 text-primary-600 border-neutral-300 rounded focus:ring-primary-500"
+                />
+                <label htmlFor="requiresSignature" className="text-sm text-neutral-700">
+                  Requer assinatura do cliente
+                </label>
+              </div>
+
+              {requiresSignature && (
+                <div className="bg-info-50 border border-info-200 rounded-lg p-3">
+                  <p className="text-sm text-info-700">
+                    O cliente poderá assinar o documento pelo portal usando o dedo (celular) ou mouse (computador).
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="modal-footer">
+              <button
+                onClick={resetDocumentModal}
+                className="flex-1 sm:flex-none px-4 py-2 bg-white border border-neutral-300 text-neutral-700 rounded-lg font-medium text-sm hover:bg-neutral-50 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleShareDocument}
+                disabled={uploadingDocument}
+                className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg font-medium text-sm hover:bg-primary-700 transition-colors disabled:opacity-50"
+              >
+                {uploadingDocument ? (
+                  <Loader2 size={18} className="animate-spin" />
+                ) : (
+                  <Upload size={18} />
+                )}
+                Compartilhar
               </button>
             </div>
           </div>

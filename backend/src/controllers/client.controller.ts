@@ -68,6 +68,22 @@ export class ClientController {
         }
       }
 
+      // Verificar se email já existe na empresa (se foi informado)
+      if (email && email.trim()) {
+        const existingClientWithEmail = await prisma.client.findFirst({
+          where: {
+            companyId,
+            email: email.trim().toLowerCase(),
+          },
+        });
+
+        if (existingClientWithEmail) {
+          return res.status(400).json({
+            error: `Já existe um cliente com este email: ${existingClientWithEmail.name}`
+          });
+        }
+      }
+
       // Converter strings vazias para null para evitar conflito de unique constraint
       const cleanCpf = cpf?.trim() || null;
       const cleanRg = rg?.trim() || null;
@@ -285,6 +301,24 @@ export class ClientController {
         if (existingClient) {
           return res.status(400).json({
             error: `Já existe um cliente com este CPF/CNPJ: ${existingClient.name}`
+          });
+        }
+      }
+
+      // Verificar se email já existe em outro cliente da empresa
+      if (cleanEmail && cleanEmail !== oldClient.email?.toLowerCase()) {
+        const existingClientWithEmail = await prisma.client.findFirst({
+          where: {
+            companyId: companyId!,
+            email: cleanEmail,
+            id: { not: id }, // Excluir o próprio cliente
+            active: true,
+          },
+        });
+
+        if (existingClientWithEmail) {
+          return res.status(400).json({
+            error: `Já existe um cliente com este email: ${existingClientWithEmail.name}`
           });
         }
       }
@@ -625,6 +659,22 @@ export class ClientController {
               error: 'Nome é obrigatório',
             });
             continue;
+          }
+
+          // Verificar email duplicado na empresa
+          const importEmail = record.Email?.trim()?.toLowerCase();
+          if (importEmail) {
+            const existingWithEmail = await prisma.client.findFirst({
+              where: { companyId, email: importEmail },
+            });
+            if (existingWithEmail) {
+              results.errors.push({
+                line: lineNumber,
+                name: record.Nome,
+                error: `Email já existe: ${existingWithEmail.name}`,
+              });
+              continue;
+            }
           }
 
           // Converter data de nascimento se existir

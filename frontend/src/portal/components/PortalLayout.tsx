@@ -6,6 +6,7 @@ import {
   User,
   Building2,
   Megaphone,
+  FileText,
   LogOut,
   Menu,
   X,
@@ -19,6 +20,7 @@ interface PortalLayoutProps {
 const menuItems = [
   { path: '/portal', icon: LayoutDashboard, label: 'Painel' },
   { path: '/portal/cases', icon: Briefcase, label: 'Meus Processos' },
+  { path: '/portal/documents', icon: FileText, label: 'Documentos' },
   { path: '/portal/profile', icon: User, label: 'Meus Dados' },
   { path: '/portal/company', icon: Building2, label: 'Escritório' },
   { path: '/portal/announcements', icon: Megaphone, label: 'Avisos' },
