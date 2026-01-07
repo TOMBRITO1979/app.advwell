@@ -1,13 +1,14 @@
 import { Router } from 'express';
-import { authenticate } from '../middleware/auth';
+import { authenticate, requirePermission } from '../middleware/auth';
 import { validateTenant } from '../middleware/tenant';
 import { companyRateLimit } from '../middleware/company-rate-limit';
 import * as leadAnalyticsController from '../controllers/lead-analytics.controller';
 
 const router = Router();
 
-// Middleware de autenticação e rate limiting
-router.use(authenticate, companyRateLimit, validateTenant);
+// Middleware de autenticação, rate limiting, tenant e permissão
+// ADMIN/SUPER_ADMIN sempre tem acesso, USER precisa de permissão
+router.use(authenticate, companyRateLimit, validateTenant, requirePermission('lead-analytics'));
 
 // Endpoints de analytics
 router.get('/stats', leadAnalyticsController.getStats);

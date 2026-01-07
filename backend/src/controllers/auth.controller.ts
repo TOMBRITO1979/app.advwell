@@ -5,6 +5,7 @@ import { generateToken, generateResetToken, generateSimpleToken, generateTokenPa
 import { sendPasswordResetEmail, sendWelcomeEmail, sendEmailVerification } from '../utils/email';
 import { AuthRequest } from '../middleware/auth';
 import { securityLogger, appLogger } from '../utils/logger';
+import { TRIAL_DURATION_DAYS } from '../services/stripe.service';
 
 export class AuthController {
   async register(req: Request, res: Response) {
@@ -27,9 +28,9 @@ export class AuthController {
       const emailVerificationToken = generateSimpleToken();
       const emailVerificationExpiry = new Date(Date.now() + 86400000); // 24 horas
 
-      // Calculate trial end date (1 day from now)
+      // Calculate trial end date
       const trialEndsAt = new Date();
-      trialEndsAt.setDate(trialEndsAt.getDate() + 1);
+      trialEndsAt.setDate(trialEndsAt.getDate() + TRIAL_DURATION_DAYS);
 
       // Captura IP e User-Agent para registro de consentimento LGPD
       const clientIp = req.ip || req.headers['x-forwarded-for'] as string || 'unknown';
@@ -414,6 +415,14 @@ export class AuthController {
             select: {
               id: true,
               name: true,
+            },
+          },
+          permissions: {
+            select: {
+              resource: true,
+              canView: true,
+              canEdit: true,
+              canDelete: true,
             },
           },
         },

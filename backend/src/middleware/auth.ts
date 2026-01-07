@@ -1,5 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import { verifyToken, JwtPayload, isTokenBlacklisted, areUserTokensInvalidated } from '../utils/jwt';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 export interface AuthRequest extends Request {
   user?: JwtPayload;
@@ -69,3 +72,54 @@ export const requireRole = (...roles: string[]) => {
 
 export const requireSuperAdmin = requireRole('SUPER_ADMIN');
 export const requireAdmin = requireRole('SUPER_ADMIN', 'ADMIN');
+
+// Check if user has permission for a specific resource
+// ADMIN and SUPER_ADMIN always have access
+// USER role needs explicit permission in the database
+export const requirePermission = (resource: string, action: 'view' | 'edit' | 'delete' = 'view') => {
+  return async (req: AuthRequest, res: Response, next: NextFunction) => {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Usuário não autenticado' });
+    }
+
+    // SUPER_ADMIN and ADMIN always have access
+    if (req.user.role === 'SUPER_ADMIN' || req.user.role === 'ADMIN') {
+      return next();
+    }
+
+    // For USER role, check permission in database
+    if (req.user.role === 'USER') {
+      try {
+        const permission = await prisma.permission.findFirst({
+          where: {
+            userId: req.user.userId,
+            companyId: req.user.companyId,
+            resource: resource,
+          },
+        });
+
+        if (!permission) {
+          return res.status(403).json({ error: 'Acesso negado - sem permissão para este recurso' });
+        }
+
+        const actionMap = {
+          view: permission.canView,
+          edit: permission.canEdit,
+          delete: permission.canDelete,
+        };
+
+        if (!actionMap[action]) {
+          return res.status(403).json({ error: `Acesso negado - sem permissão para ${action}` });
+        }
+
+        return next();
+      } catch (error) {
+        console.error('Error checking permission:', error);
+        return res.status(500).json({ error: 'Erro ao verificar permissões' });
+      }
+    }
+
+    // CLIENT or other roles don't have access
+    return res.status(403).json({ error: 'Acesso negado' });
+  };
+};

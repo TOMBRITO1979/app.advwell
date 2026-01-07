@@ -28,7 +28,7 @@ export const SUBSCRIPTION_PLANS = {
 };
 
 // Trial duration in days
-export const TRIAL_DURATION_DAYS = 1;
+export const TRIAL_DURATION_DAYS = 7;
 
 /**
  * Create or get Stripe customer for a company

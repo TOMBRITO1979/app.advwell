@@ -1,6 +1,13 @@
 import { create } from 'zustand';
 import api from '../services/api';
 
+interface Permission {
+  resource: string;
+  canView: boolean;
+  canEdit: boolean;
+  canDelete: boolean;
+}
+
 interface User {
   id: string;
   name: string;
@@ -10,6 +17,7 @@ interface User {
   companyName?: string;
   clientId?: string;
   hideSidebar?: boolean;
+  permissions?: Permission[];
 }
 
 interface ConsentData {

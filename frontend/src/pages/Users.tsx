@@ -39,6 +39,7 @@ const AVAILABLE_RESOURCES = [
   { value: 'documents', label: 'Uploads' },
   { value: 'todos', label: 'Tarefas' },
   { value: 'leads', label: 'Leads' },
+  { value: 'lead-analytics', label: 'Analytics Leads' },
   { value: 'tags', label: 'Tags' },
   // Marketing
   { value: 'campaigns', label: 'Campanhas Email' },

@@ -185,6 +185,20 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     navigate('/login');
   };
 
+  // Helper function to check if user has permission for a resource
+  const hasPermission = (resource: string): boolean => {
+    // ADMIN and SUPER_ADMIN always have access
+    if (user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') {
+      return true;
+    }
+    // USER role needs explicit permission
+    if (user?.role === 'USER' && user?.permissions) {
+      const permission = user.permissions.find(p => p.resource === resource);
+      return permission?.canView === true;
+    }
+    return false;
+  };
+
   const menuItems = [
     { path: '/dashboard', label: 'Dashboard', icon: Home },
     { path: '/schedule', label: 'Agenda', icon: Calendar },
@@ -198,9 +212,17 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { path: '/documents', label: 'Uploads', icon: FolderOpen },
     { path: '/todos', label: 'Tarefas', icon: CheckSquare },
     { path: '/leads', label: 'Leads', icon: UserPlus },
-    { path: '/lead-analytics', label: 'Analytics Leads', icon: BarChart3 },
-    { path: '/tags', label: 'Tags', icon: Tag },
   ];
+
+  // Lead Analytics - requires permission for USER role
+  if (hasPermission('lead-analytics')) {
+    menuItems.push({ path: '/lead-analytics', label: 'Analytics Leads', icon: BarChart3 });
+  }
+
+  // Tags - requires permission for USER role
+  if (hasPermission('tags')) {
+    menuItems.push({ path: '/tags', label: 'Tags', icon: Tag });
+  }
 
   // Campanhas e Avisos vem após Leads (apenas para Admin)
   if (user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') {

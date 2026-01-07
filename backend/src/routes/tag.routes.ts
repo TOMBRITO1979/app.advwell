@@ -1,15 +1,16 @@
 import { Router } from 'express';
 import { body } from 'express-validator';
 import tagController from '../controllers/tag.controller';
-import { authenticate, requireAdmin } from '../middleware/auth';
+import { authenticate, requireAdmin, requirePermission } from '../middleware/auth';
 import { validateTenant } from '../middleware/tenant';
 import { validate } from '../middleware/validation';
 import { companyRateLimit } from '../middleware/company-rate-limit';
 
 const router = Router();
 
-// Apply authentication, rate limit and tenant validation to all routes
-router.use(authenticate, companyRateLimit, validateTenant);
+// Apply authentication, rate limit, tenant validation and permission check
+// ADMIN/SUPER_ADMIN always have access, USER needs permission
+router.use(authenticate, companyRateLimit, validateTenant, requirePermission('tags'));
 
 // Validations
 const tagValidation = [
