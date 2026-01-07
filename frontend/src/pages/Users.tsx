@@ -26,30 +26,44 @@ interface User {
 }
 
 const AVAILABLE_RESOURCES = [
+  // Principal
   { value: 'dashboard', label: 'Dashboard' },
-  { value: 'hearings', label: 'Audiências' },
   { value: 'schedule', label: 'Agenda' },
-  { value: 'todos', label: 'Tarefas' },
-  { value: 'leads', label: 'Leads' },
   { value: 'clients', label: 'Clientes' },
   { value: 'cases', label: 'Processos' },
+  { value: 'pnj', label: 'PNJ' },
   { value: 'deadlines', label: 'Prazos' },
-  { value: 'documents', label: 'Uploads' },
-  { value: 'legal-documents', label: 'Documentos' },
+  { value: 'hearings', label: 'Audiências' },
   { value: 'updates', label: 'Atualizações' },
+  { value: 'legal-documents', label: 'Documentos' },
+  { value: 'documents', label: 'Uploads' },
+  { value: 'todos', label: 'Tarefas' },
+  { value: 'leads', label: 'Leads' },
+  { value: 'tags', label: 'Tags' },
+  // Marketing
+  { value: 'campaigns', label: 'Campanhas Email' },
+  { value: 'whatsapp-campaigns', label: 'Campanhas WhatsApp' },
+  { value: 'announcements', label: 'Avisos' },
+  // Financeiro
   { value: 'financial', label: 'Financeiro' },
-  { value: 'client-subscriptions', label: 'Planos de Clientes' },
-  { value: 'stripe-config', label: 'Config. Stripe' },
   { value: 'accounts-payable', label: 'Contas a Pagar' },
-  { value: 'campaigns', label: 'Campanhas' },
+  { value: 'client-subscriptions', label: 'Planos de Clientes' },
+  // Integrações
+  { value: 'google-calendar', label: 'Google Calendar' },
+  // Administração
+  { value: 'users', label: 'Usuários' },
+  // Configurações
+  { value: 'stripe-config', label: 'Config. Stripe' },
   { value: 'smtp-settings', label: 'Config. SMTP' },
-  { value: 'ai-config', label: 'Config. IA' },
+  { value: 'whatsapp-settings', label: 'Config. WhatsApp' },
   { value: 'backup-settings', label: 'Config. Backup' },
+  { value: 'ai-config', label: 'Config. IA' },
+  { value: 'google-calendar-config', label: 'Config. Google Cal.' },
+  { value: 'settings', label: 'Configurações' },
+  // Segurança e Compliance
   { value: 'lgpd-requests', label: 'Solicitações LGPD' },
   { value: 'audit-logs', label: 'Logs de Auditoria' },
   { value: 'subscription', label: 'Assinatura' },
-  { value: 'users', label: 'Usuários' },
-  { value: 'settings', label: 'Configurações' },
 ];
 
 const Users: React.FC = () => {
