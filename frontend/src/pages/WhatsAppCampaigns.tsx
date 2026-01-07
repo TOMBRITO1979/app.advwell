@@ -172,7 +172,7 @@ const WhatsAppCampaigns: React.FC = () => {
   const loadTags = async () => {
     try {
       const response = await api.get('/tags');
-      setTags(response.data.data || []);
+      setTags(response.data || []);
     } catch {
       // Silently fail
     }
