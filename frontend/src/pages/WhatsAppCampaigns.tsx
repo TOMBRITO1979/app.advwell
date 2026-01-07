@@ -104,6 +104,7 @@ const WhatsAppCampaigns: React.FC = () => {
 
   const [recipients, setRecipients] = useState<ImportedRecipient[]>([]);
   const [importFilter, setImportFilter] = useState({ tagId: '', limit: 500 });
+  const [recipientFilter, setRecipientFilter] = useState<'all' | 'tag'>('all');
   const [importing, setImporting] = useState(false);
   const [tags, setTags] = useState<Tag[]>([]);
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -259,7 +260,7 @@ const WhatsAppCampaigns: React.FC = () => {
       let filtered = sourceList.filter((entity) => entity.phone && entity.phone.trim());
 
       // Apply tag filter if selected
-      if (importFilter.tagId) {
+      if (recipientFilter === 'tag' && importFilter.tagId) {
         filtered = filtered.filter((entity) => hasTag(entity, importFilter.tagId));
       }
 
@@ -385,6 +386,7 @@ const WhatsAppCampaigns: React.FC = () => {
     setFormData({ name: '', templateId: '' });
     setRecipients([]);
     setImportFilter({ tagId: '', limit: 500 });
+    setRecipientFilter('all');
     setTemplateVars({});
     setSelectedTemplateInfo(null);
     setRecipientType('clients');
@@ -393,10 +395,15 @@ const WhatsAppCampaigns: React.FC = () => {
   const getRecipientCount = (): number => {
     const sourceList = recipientType === 'clients' ? clients : leads;
     let filtered = sourceList.filter((entity) => entity.phone && entity.phone.trim());
-    if (importFilter.tagId) {
+    if (recipientFilter === 'tag' && importFilter.tagId) {
       filtered = filtered.filter((entity) => hasTag(entity, importFilter.tagId));
     }
     return Math.min(filtered.length, importFilter.limit);
+  };
+
+  const getTagCount = (tagId: string): number => {
+    const sourceList = recipientType === 'clients' ? clients : leads;
+    return sourceList.filter((entity) => entity.phone && entity.phone.trim() && hasTag(entity, tagId)).length;
   };
 
   const formatDate = formatDateTime;
@@ -869,21 +876,72 @@ const WhatsAppCampaigns: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Filtrar por Tag */}
-                  <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">
-                      Filtrar por Tag (opcional)
+                  {/* Filtrar */}
+                  <div className="space-y-3">
+                    <label className="block text-sm font-medium text-neutral-700">
+                      Filtrar Destinatários
                     </label>
-                    <select
-                      value={importFilter.tagId}
-                      onChange={(e) => setImportFilter({ ...importFilter, tagId: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md min-h-[44px]"
-                    >
-                      <option value="">Todos os {recipientType === 'clients' ? 'clientes' : 'leads'}</option>
-                      {tags.map((tag) => (
-                        <option key={tag.id} value={tag.id}>{tag.name}</option>
-                      ))}
-                    </select>
+
+                    {/* Opção: Todos */}
+                    <div className="flex items-start">
+                      <input
+                        type="radio"
+                        id="filter-all"
+                        name="recipientFilterWhatsApp"
+                        checked={recipientFilter === 'all'}
+                        onChange={() => { setRecipientFilter('all'); setImportFilter({ ...importFilter, tagId: '' }); }}
+                        className="mt-0.5 mr-2"
+                      />
+                      <label htmlFor="filter-all" className="flex-1 cursor-pointer">
+                        <span className="text-sm font-medium text-green-700">
+                          Todos os {recipientType === 'clients' ? 'clientes' : 'leads'} com telefone
+                        </span>
+                        <p className="text-xs text-green-600 mt-0.5">
+                          {recipientType === 'clients'
+                            ? clients.filter((c) => c.phone).length
+                            : leads.filter((l) => l.phone).length} destinatários disponíveis
+                        </p>
+                      </label>
+                    </div>
+
+                    {/* Opção: Filtrar por tag */}
+                    <div className="flex items-start">
+                      <input
+                        type="radio"
+                        id="filter-tag"
+                        name="recipientFilterWhatsApp"
+                        checked={recipientFilter === 'tag'}
+                        onChange={() => setRecipientFilter('tag')}
+                        className="mt-0.5 mr-2"
+                      />
+                      <label htmlFor="filter-tag" className="flex-1 cursor-pointer">
+                        <span className="text-sm font-medium text-green-700">
+                          Apenas {recipientType === 'clients' ? 'clientes' : 'leads'} com tag específica
+                        </span>
+                        {recipientFilter === 'tag' && (
+                          <select
+                            value={importFilter.tagId}
+                            onChange={(e) => setImportFilter({ ...importFilter, tagId: e.target.value })}
+                            className="w-full mt-2 px-3 py-2 border border-green-300 rounded-md text-sm min-h-[44px]"
+                          >
+                            <option value="">Selecione uma tag</option>
+                            {tags.map((tag) => {
+                              const count = getTagCount(tag.id);
+                              return (
+                                <option key={tag.id} value={tag.id}>
+                                  {tag.name} ({count} {recipientType === 'clients' ? 'clientes' : 'leads'})
+                                </option>
+                              );
+                            })}
+                          </select>
+                        )}
+                        {recipientFilter === 'tag' && importFilter.tagId && (
+                          <p className="text-xs text-green-600 mt-1">
+                            {getRecipientCount()} destinatários serão importados
+                          </p>
+                        )}
+                      </label>
+                    </div>
                   </div>
 
                   <div>
@@ -905,6 +963,11 @@ const WhatsAppCampaigns: React.FC = () => {
                   <div className="bg-green-50 border border-green-200 rounded-lg p-3">
                     <p className="text-sm text-green-700">
                       <strong>{getRecipientCount()}</strong> {recipientType === 'clients' ? 'clientes' : 'leads'} com telefone serão importados
+                      {recipientFilter === 'tag' && importFilter.tagId && (
+                        <span className="block text-xs mt-1">
+                          (filtrado pela tag selecionada)
+                        </span>
+                      )}
                     </p>
                   </div>
 

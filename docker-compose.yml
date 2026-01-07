@@ -433,7 +433,7 @@ services:
         - "traefik.enable=false"
 
   frontend:
-    image: tomautomations/advtom-frontend:1.8.40
+    image: tomautomations/advtom-frontend:1.8.41
     environment:
       - TZ=${TZ:-America/Sao_Paulo}
       - VITE_API_URL=${VITE_API_URL}
