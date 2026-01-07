@@ -17,12 +17,32 @@ import {
   AlertCircle,
   Loader2,
   ArrowRight,
+  Filter,
+  Calendar,
 } from 'lucide-react';
 import MobileCardList, { MobileCardItem } from '../components/MobileCardList';
+import { ExportButton } from '../components/ui';
 import { formatDate, formatDateTime } from '../utils/dateFormatter';
+import TagSelector from '../components/TagSelector';
+import TagBadge from '../components/TagBadge';
+
+interface Tag {
+  id: string;
+  name: string;
+  color: string;
+}
 
 type LeadStatus = 'NOVO' | 'CONTATADO' | 'QUALIFICADO' | 'CONVERTIDO' | 'PERDIDO';
 type LeadSource = 'WHATSAPP' | 'TELEFONE' | 'SITE' | 'INDICACAO' | 'REDES_SOCIAIS' | 'OUTROS';
+
+interface LeadTag {
+  id: string;
+  tag: {
+    id: string;
+    name: string;
+    color: string;
+  };
+}
 
 interface Lead {
   id: string;
@@ -41,6 +61,7 @@ interface Lead {
     email?: string;
     phone?: string;
   };
+  leadTags?: LeadTag[];
   createdAt: string;
   updatedAt: string;
 }
@@ -53,6 +74,7 @@ interface LeadFormData {
   status: LeadStatus;
   source: LeadSource;
   notes: string;
+  tagIds: string[];
 }
 
 interface ConvertFormData {
@@ -104,6 +126,13 @@ const Leads: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
+  const [tagFilter, setTagFilter] = useState<string>('');
+  const [dateFrom, setDateFrom] = useState<string>('');
+  const [dateTo, setDateTo] = useState<string>('');
+  const [showFilters, setShowFilters] = useState(false);
+  const [tags, setTags] = useState<Tag[]>([]);
+  const [exportingCSV, setExportingCSV] = useState(false);
+  const [exportingPDF, setExportingPDF] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showConvertModal, setShowConvertModal] = useState(false);
@@ -123,6 +152,7 @@ const Leads: React.FC = () => {
     status: 'NOVO',
     source: 'WHATSAPP',
     notes: '',
+    tagIds: [],
   });
 
   const [convertFormData, setConvertFormData] = useState<ConvertFormData>({
@@ -142,13 +172,29 @@ const Leads: React.FC = () => {
   useEffect(() => {
     loadLeads();
     loadStats();
-  }, [search, statusFilter]);
+  }, [search, statusFilter, tagFilter, dateFrom, dateTo]);
+
+  useEffect(() => {
+    loadTags();
+  }, []);
+
+  const loadTags = async () => {
+    try {
+      const response = await api.get('/tags');
+      setTags(response.data);
+    } catch (error) {
+      console.error('Erro ao carregar tags:', error);
+    }
+  };
 
   const loadLeads = async () => {
     try {
-      const response = await api.get('/leads', {
-        params: { search, status: statusFilter, limit: 100 },
-      });
+      const params: any = { search, status: statusFilter, limit: 100 };
+      if (tagFilter) params.tagId = tagFilter;
+      if (dateFrom) params.dateFrom = dateFrom;
+      if (dateTo) params.dateTo = dateTo;
+
+      const response = await api.get('/leads', { params });
       setLeads(response.data.data);
     } catch (error) {
       toast.error('Erro ao carregar leads');
@@ -166,6 +212,74 @@ const Leads: React.FC = () => {
     }
   };
 
+  const handleExportCSV = async () => {
+    setExportingCSV(true);
+    try {
+      const params: any = { search, status: statusFilter };
+      if (tagFilter) params.tagId = tagFilter;
+      if (dateFrom) params.dateFrom = dateFrom;
+      if (dateTo) params.dateTo = dateTo;
+
+      const response = await api.get('/leads/export/csv', {
+        params,
+        responseType: 'blob',
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `leads_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      toast.success('CSV exportado com sucesso!');
+    } catch (error) {
+      toast.error('Erro ao exportar CSV');
+    } finally {
+      setExportingCSV(false);
+    }
+  };
+
+  const handleExportPDF = async () => {
+    setExportingPDF(true);
+    try {
+      const params: any = { search, status: statusFilter };
+      if (tagFilter) params.tagId = tagFilter;
+      if (dateFrom) params.dateFrom = dateFrom;
+      if (dateTo) params.dateTo = dateTo;
+
+      const response = await api.get('/leads/export/pdf', {
+        params,
+        responseType: 'blob',
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `leads_${new Date().toISOString().split('T')[0]}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      toast.success('PDF exportado com sucesso!');
+    } catch (error) {
+      toast.error('Erro ao exportar PDF');
+    } finally {
+      setExportingPDF(false);
+    }
+  };
+
+  const clearFilters = () => {
+    setTagFilter('');
+    setDateFrom('');
+    setDateTo('');
+    setStatusFilter('ALL');
+    setSearch('');
+  };
+
+  const hasActiveFilters = tagFilter || dateFrom || dateTo || statusFilter !== 'ALL';
+
   const resetForm = () => {
     setFormData({
       name: '',
@@ -175,6 +289,7 @@ const Leads: React.FC = () => {
       status: 'NOVO',
       source: 'WHATSAPP',
       notes: '',
+      tagIds: [],
     });
   };
 
@@ -225,6 +340,7 @@ const Leads: React.FC = () => {
       status: lead.status,
       source: lead.source,
       notes: lead.notes || '',
+      tagIds: lead.leadTags?.map((lt) => lt.tag.id) || [],
     });
     setEditMode(true);
     setShowModal(true);
@@ -350,14 +466,35 @@ const Leads: React.FC = () => {
           )}
 
           {/* Action Buttons */}
-          <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 sm:gap-3">
+          <div className="grid grid-cols-3 sm:flex sm:flex-wrap gap-2 sm:gap-3">
+            <ExportButton
+              type="csv"
+              onClick={handleExportCSV}
+              loading={exportingCSV}
+            />
+            <ExportButton
+              type="pdf"
+              onClick={handleExportPDF}
+              loading={exportingPDF}
+            />
             <button
               onClick={() => setShowCheckPhoneModal(true)}
               className="inline-flex items-center justify-center gap-2 px-2 sm:px-4 py-2 rounded-lg bg-info-100 text-info-700 border border-info-200 hover:bg-info-200 font-medium text-sm transition-all duration-200 min-h-[44px]"
             >
               <Phone size={20} />
-              <span className="hidden sm:inline">Consultar Telefone</span>
-              <span className="sm:hidden">Consultar</span>
+              <span className="hidden sm:inline">Consultar</span>
+            </button>
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className={`inline-flex items-center justify-center gap-2 px-2 sm:px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 min-h-[44px] ${
+                hasActiveFilters
+                  ? 'bg-warning-100 text-warning-700 border border-warning-200 hover:bg-warning-200'
+                  : 'bg-neutral-100 text-neutral-700 border border-neutral-200 hover:bg-neutral-200'
+              }`}
+            >
+              <Filter size={20} />
+              <span className="hidden sm:inline">Filtros</span>
+              {hasActiveFilters && <span className="bg-warning-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">!</span>}
             </button>
             <button
               onClick={handleNewClient}
@@ -397,6 +534,74 @@ const Leads: React.FC = () => {
             </select>
           </div>
 
+          {/* Expanded Filters */}
+          {showFilters && (
+            <div className="bg-neutral-50 rounded-lg p-4 mb-4 border border-neutral-200">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    <Calendar size={14} className="inline mr-1" />
+                    Data Início
+                  </label>
+                  <input
+                    type="date"
+                    value={dateFrom}
+                    onChange={(e) => setDateFrom(e.target.value)}
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    <Calendar size={14} className="inline mr-1" />
+                    Data Fim
+                  </label>
+                  <input
+                    type="date"
+                    value={dateTo}
+                    onChange={(e) => setDateTo(e.target.value)}
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    Tag
+                  </label>
+                  <select
+                    value={tagFilter}
+                    onChange={(e) => setTagFilter(e.target.value)}
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                  >
+                    <option value="">Todas as Tags</option>
+                    {tags.map((tag) => (
+                      <option key={tag.id} value={tag.id}>
+                        {tag.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex items-end">
+                  <button
+                    onClick={clearFilters}
+                    className="w-full px-4 py-2 text-sm font-medium text-neutral-600 bg-white border border-neutral-300 rounded-md hover:bg-neutral-50 min-h-[44px]"
+                  >
+                    Limpar Filtros
+                  </button>
+                </div>
+              </div>
+              {hasActiveFilters && (
+                <div className="mt-3 pt-3 border-t border-neutral-200">
+                  <p className="text-sm text-neutral-600">
+                    <strong>Filtros ativos:</strong>{' '}
+                    {statusFilter !== 'ALL' && <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs mr-2">Status: {statusColors[statusFilter as LeadStatus]?.label || statusFilter}</span>}
+                    {tagFilter && <span className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded text-xs mr-2">Tag: {tags.find(t => t.id === tagFilter)?.name}</span>}
+                    {dateFrom && <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded text-xs mr-2">De: {dateFrom}</span>}
+                    {dateTo && <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded text-xs mr-2">Até: {dateTo}</span>}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
           {loading ? (
             <p className="text-center py-8 text-neutral-600">Carregando...</p>
           ) : leads.length === 0 ? (
@@ -421,6 +626,13 @@ const Leads: React.FC = () => {
                              lead.status === 'QUALIFICADO' ? 'purple' :
                              lead.status === 'CONVERTIDO' ? 'green' : 'gray',
                     },
+                    extraContent: lead.leadTags && lead.leadTags.length > 0 ? (
+                      <div className="flex flex-wrap gap-1">
+                        {lead.leadTags.map((lt) => (
+                          <TagBadge key={lt.id} name={lt.tag.name} color={lt.tag.color} size="sm" />
+                        ))}
+                      </div>
+                    ) : undefined,
                     fields: [
                       { label: 'Origem', value: sourceLabels[lead.source] },
                       { label: 'Criado em', value: formatDateDisplay(lead.createdAt) },
@@ -454,6 +666,9 @@ const Leads: React.FC = () => {
                         Origem
                       </th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
+                        Tags
+                      </th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
                         Data
                       </th>
                       <th className="px-4 py-3 text-center text-sm font-semibold text-neutral-900 uppercase tracking-wider">
@@ -476,6 +691,17 @@ const Leads: React.FC = () => {
                         </td>
                         <td className="px-4 py-3 text-sm text-neutral-600">
                           {sourceLabels[lead.source]}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-neutral-600">
+                          {lead.leadTags && lead.leadTags.length > 0 ? (
+                            <div className="flex flex-wrap gap-1">
+                              {lead.leadTags.map((lt) => (
+                                <TagBadge key={lt.id} name={lt.tag.name} color={lt.tag.color} size="sm" />
+                              ))}
+                            </div>
+                          ) : (
+                            '-'
+                          )}
                         </td>
                         <td className="px-4 py-3 text-sm text-neutral-600">
                           {formatDateDisplay(lead.createdAt)}
@@ -651,6 +877,17 @@ const Leads: React.FC = () => {
                     rows={3}
                     placeholder="Observações adicionais..."
                     className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    Tags
+                  </label>
+                  <TagSelector
+                    selectedTagIds={formData.tagIds}
+                    onChange={(tagIds) => setFormData({ ...formData, tagIds })}
+                    placeholder="Selecionar tags..."
                   />
                 </div>
               </div>

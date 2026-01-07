@@ -52,7 +52,20 @@ interface Client {
   id: string;
   name: string;
   phone?: string;
-  tag?: string;
+  clientTags?: { tag: { id: string; name: string } }[];
+}
+
+interface Lead {
+  id: string;
+  name: string;
+  phone?: string;
+  leadTags?: { tag: { id: string; name: string } }[];
+}
+
+interface Tag {
+  id: string;
+  name: string;
+  color: string;
 }
 
 interface ImportedRecipient {
@@ -90,9 +103,12 @@ const WhatsAppCampaigns: React.FC = () => {
   } | null>(null);
 
   const [recipients, setRecipients] = useState<ImportedRecipient[]>([]);
-  const [importFilter, setImportFilter] = useState({ tag: '', limit: 500 });
+  const [importFilter, setImportFilter] = useState({ tagId: '', limit: 500 });
   const [importing, setImporting] = useState(false);
-  const [availableTags, setAvailableTags] = useState<string[]>([]);
+  const [tags, setTags] = useState<Tag[]>([]);
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [recipientType, setRecipientType] = useState<'clients' | 'leads'>('clients');
 
   const statusLabels: Record<string, string> = {
     draft: 'Rascunho',
@@ -115,6 +131,8 @@ const WhatsAppCampaigns: React.FC = () => {
     loadCampaigns();
     loadTemplates();
     loadTags();
+    loadClients();
+    loadLeads();
   }, []);
 
   const checkConfig = async () => {
@@ -152,16 +170,39 @@ const WhatsAppCampaigns: React.FC = () => {
 
   const loadTags = async () => {
     try {
-      const response = await api.get('/clients', { params: { limit: 1000 } });
-      const tags = response.data.data
-        .map((c: Client) => c.tag)
-        .filter((tag: string | undefined) => tag && tag.trim())
-        .filter((tag: string, index: number, self: string[]) => self.indexOf(tag) === index)
-        .sort();
-      setAvailableTags(tags);
+      const response = await api.get('/tags');
+      setTags(response.data.data || []);
     } catch {
       // Silently fail
     }
+  };
+
+  const loadClients = async () => {
+    try {
+      const response = await api.get('/clients', { params: { limit: 1000 } });
+      setClients(response.data.data || []);
+    } catch {
+      // Silently fail
+    }
+  };
+
+  const loadLeads = async () => {
+    try {
+      const response = await api.get('/leads', { params: { limit: 1000 } });
+      setLeads(response.data.data || []);
+    } catch {
+      // Silently fail
+    }
+  };
+
+  const hasTag = (entity: Client | Lead, tagId: string): boolean => {
+    if ('clientTags' in entity && entity.clientTags) {
+      return entity.clientTags.some(ct => ct.tag.id === tagId);
+    }
+    if ('leadTags' in entity && entity.leadTags) {
+      return entity.leadTags.some(lt => lt.tag.id === tagId);
+    }
+    return false;
   };
 
   // Parse template to find variables like {{1}}, {{2}}, etc.
@@ -210,33 +251,43 @@ const WhatsAppCampaigns: React.FC = () => {
     setTemplateVars(initialVars);
   };
 
-  const handleImportClients = async () => {
+  const handleImportRecipients = async () => {
     setImporting(true);
     try {
-      const response = await api.post('/whatsapp-campaigns/import-clients', {
-        filter: importFilter.tag ? { tag: importFilter.tag } : undefined,
-        limit: importFilter.limit,
-      });
+      // Filter recipients based on recipientType and tag
+      const sourceList = recipientType === 'clients' ? clients : leads;
+      let filtered = sourceList.filter((entity) => entity.phone && entity.phone.trim());
+
+      // Apply tag filter if selected
+      if (importFilter.tagId) {
+        filtered = filtered.filter((entity) => hasTag(entity, importFilter.tagId));
+      }
+
+      // Apply limit
+      filtered = filtered.slice(0, importFilter.limit);
 
       // Build variables for each recipient
-      const importedRecipients = response.data.recipients.map((r: any) => {
-        const vars: Record<string, string> = { '1': r.name }; // Variable 1 is always the name
+      const importedRecipients: ImportedRecipient[] = filtered.map((entity) => {
+        const vars: Record<string, string> = { '1': entity.name }; // Variable 1 is always the name
         // Add other template variables
         Object.keys(templateVars).forEach(key => {
           const varIndex = key.replace('var', '');
           vars[varIndex] = templateVars[key];
         });
         return {
-          ...r,
+          clientId: entity.id,
+          name: entity.name,
+          phone: entity.phone!,
           variables: vars,
         };
       });
 
       setRecipients(importedRecipients);
       setShowImportModal(false);
-      toast.success(`${response.data.total} clientes importados!`);
+      const entityLabel = recipientType === 'clients' ? 'clientes' : 'leads';
+      toast.success(`${importedRecipients.length} ${entityLabel} importados!`);
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Erro ao importar clientes');
+      toast.error(error.response?.data?.error || 'Erro ao importar destinatários');
     } finally {
       setImporting(false);
     }
@@ -333,9 +384,19 @@ const WhatsAppCampaigns: React.FC = () => {
   const resetForm = () => {
     setFormData({ name: '', templateId: '' });
     setRecipients([]);
-    setImportFilter({ tag: '', limit: 500 });
+    setImportFilter({ tagId: '', limit: 500 });
     setTemplateVars({});
     setSelectedTemplateInfo(null);
+    setRecipientType('clients');
+  };
+
+  const getRecipientCount = (): number => {
+    const sourceList = recipientType === 'clients' ? clients : leads;
+    let filtered = sourceList.filter((entity) => entity.phone && entity.phone.trim());
+    if (importFilter.tagId) {
+      filtered = filtered.filter((entity) => hasTag(entity, importFilter.tagId));
+    }
+    return Math.min(filtered.length, importFilter.limit);
   };
 
   const formatDate = formatDateTime;
@@ -761,28 +822,66 @@ const WhatsAppCampaigns: React.FC = () => {
           </div>
         )}
 
-        {/* Modal Importar Clientes */}
+        {/* Modal Importar Destinatários */}
         {showImportModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
               <div className="p-6">
                 <h3 className="text-xl font-bold text-neutral-900 mb-4">
-                  Importar Clientes
+                  Importar Destinatários
                 </h3>
 
                 <div className="space-y-4">
+                  {/* Tipo de destinatário */}
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-2">
+                      Tipo de Destinatário
+                    </label>
+                    <div className="flex gap-4">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="recipientType"
+                          value="clients"
+                          checked={recipientType === 'clients'}
+                          onChange={() => {
+                            setRecipientType('clients');
+                            setImportFilter({ ...importFilter, tagId: '' });
+                          }}
+                          className="text-green-600"
+                        />
+                        <span className="text-sm text-neutral-700">Clientes ({clients.filter(c => c.phone).length})</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="recipientType"
+                          value="leads"
+                          checked={recipientType === 'leads'}
+                          onChange={() => {
+                            setRecipientType('leads');
+                            setImportFilter({ ...importFilter, tagId: '' });
+                          }}
+                          className="text-green-600"
+                        />
+                        <span className="text-sm text-neutral-700">Leads ({leads.filter(l => l.phone).length})</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Filtrar por Tag */}
                   <div>
                     <label className="block text-sm font-medium text-neutral-700 mb-1">
                       Filtrar por Tag (opcional)
                     </label>
                     <select
-                      value={importFilter.tag}
-                      onChange={(e) => setImportFilter({ ...importFilter, tag: e.target.value })}
+                      value={importFilter.tagId}
+                      onChange={(e) => setImportFilter({ ...importFilter, tagId: e.target.value })}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md min-h-[44px]"
                     >
-                      <option value="">Todos os clientes</option>
-                      {availableTags.map((tag) => (
-                        <option key={tag} value={tag}>{tag}</option>
+                      <option value="">Todos os {recipientType === 'clients' ? 'clientes' : 'leads'}</option>
+                      {tags.map((tag) => (
+                        <option key={tag.id} value={tag.id}>{tag.name}</option>
                       ))}
                     </select>
                   </div>
@@ -802,6 +901,13 @@ const WhatsAppCampaigns: React.FC = () => {
                     <p className="text-xs text-neutral-500 mt-1">Máximo 500</p>
                   </div>
 
+                  {/* Preview count */}
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                    <p className="text-sm text-green-700">
+                      <strong>{getRecipientCount()}</strong> {recipientType === 'clients' ? 'clientes' : 'leads'} com telefone serão importados
+                    </p>
+                  </div>
+
                   <div className="flex justify-end gap-2 pt-4 border-t border-gray-200">
                     <button
                       type="button"
@@ -811,8 +917,8 @@ const WhatsAppCampaigns: React.FC = () => {
                       Cancelar
                     </button>
                     <button
-                      onClick={handleImportClients}
-                      disabled={importing}
+                      onClick={handleImportRecipients}
+                      disabled={importing || getRecipientCount() === 0}
                       className="inline-flex items-center gap-2 px-4 py-2 bg-green-100 text-green-700 hover:bg-green-200 font-medium rounded-lg disabled:opacity-50"
                     >
                       {importing && <RefreshCw size={16} className="animate-spin" />}

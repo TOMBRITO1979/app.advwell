@@ -35,6 +35,7 @@ import {
   Database,
   Key,
   MessageCircle,
+  Tag,
 } from 'lucide-react';
 
 interface SubscriptionStatus {
@@ -196,6 +197,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { path: '/documents', label: 'Uploads', icon: FolderOpen },
     { path: '/todos', label: 'Tarefas', icon: CheckSquare },
     { path: '/leads', label: 'Leads', icon: UserPlus },
+    { path: '/tags', label: 'Tags', icon: Tag },
   ];
 
   // Campanhas e Avisos vem após Leads (apenas para Admin)

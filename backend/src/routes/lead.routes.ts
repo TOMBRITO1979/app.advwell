@@ -127,6 +127,10 @@ router.get('/check-phone', leadController.checkPhone);
 // Estatísticas de leads
 router.get('/stats', leadController.stats);
 
+// Exportação
+router.get('/export/csv', leadController.exportCSV);
+router.get('/export/pdf', leadController.exportPDF);
+
 // CRUD padrão
 router.post('/', createLeadValidation, validate, leadController.create);
 router.get('/', leadController.list);

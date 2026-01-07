@@ -4,13 +4,46 @@ import prisma from '../utils/prisma';
 import { sanitizeString } from '../utils/sanitize';
 import { appLogger } from '../utils/logger';
 
+// Helper para construir filtros de busca (fora da classe para evitar problemas com this)
+function buildLeadWhereClause(companyId: string, query: any) {
+  const { search = '', status = '', tagId = '', dateFrom = '', dateTo = '' } = query;
+
+  const where: any = {
+    companyId,
+    ...(search && {
+      OR: [
+        { name: { contains: String(search), mode: 'insensitive' as const } },
+        { phone: { contains: String(search) } },
+        { email: { contains: String(search), mode: 'insensitive' as const } },
+      ],
+    }),
+    ...(status && status !== 'ALL' && { status: String(status) }),
+    ...(tagId && {
+      leadTags: {
+        some: {
+          tagId: String(tagId),
+        },
+      },
+    }),
+  };
+
+  if (dateFrom || dateTo) {
+    where.createdAt = {
+      ...(dateFrom && { gte: new Date(String(dateFrom)) }),
+      ...(dateTo && { lte: new Date(String(dateTo) + 'T23:59:59.999Z') }),
+    };
+  }
+
+  return where;
+}
+
 export class LeadController {
   /**
    * Criar novo lead
    */
   async create(req: AuthRequest, res: Response) {
     try {
-      const { name, phone, email, contactReason, status, source, notes } = req.body;
+      const { name, phone, email, contactReason, status, source, notes, tagIds } = req.body;
       const companyId = req.user!.companyId;
 
       if (!companyId) {
@@ -26,17 +59,45 @@ export class LeadController {
         return res.status(400).json({ error: 'Telefone é obrigatório' });
       }
 
-      const lead = await prisma.lead.create({
-        data: {
-          companyId,
-          name: sanitizeString(name) || name,
-          phone: phone.trim(),
-          email: email?.trim()?.toLowerCase() || null,
-          contactReason: sanitizeString(contactReason) || null,
-          status: status || 'NOVO',
-          source: source || 'WHATSAPP',
-          notes: sanitizeString(notes) || null,
-        },
+      // Usar transação para criar lead e tags
+      const lead = await prisma.$transaction(async (tx) => {
+        const newLead = await tx.lead.create({
+          data: {
+            companyId,
+            name: sanitizeString(name) || name,
+            phone: phone.trim(),
+            email: email?.trim()?.toLowerCase() || null,
+            contactReason: sanitizeString(contactReason) || null,
+            status: status || 'NOVO',
+            source: source || 'WHATSAPP',
+            notes: sanitizeString(notes) || null,
+          },
+        });
+
+        // Criar relações com tags se fornecidas
+        if (tagIds && Array.isArray(tagIds) && tagIds.length > 0) {
+          await tx.leadTag.createMany({
+            data: tagIds.map((tagId: string) => ({
+              leadId: newLead.id,
+              tagId,
+              companyId,
+            })),
+          });
+        }
+
+        // Retornar lead com tags incluídas
+        return tx.lead.findUnique({
+          where: { id: newLead.id },
+          include: {
+            leadTags: {
+              include: {
+                tag: {
+                  select: { id: true, name: true, color: true },
+                },
+              },
+            },
+          },
+        });
       });
 
       res.status(201).json(lead);
@@ -52,7 +113,7 @@ export class LeadController {
   async list(req: AuthRequest, res: Response) {
     try {
       const companyId = req.user!.companyId;
-      const { page = 1, limit = 10, search = '', status = '' } = req.query;
+      const { page = 1, limit = 10, search = '', status = '', tagId = '', dateFrom = '', dateTo = '' } = req.query;
 
       if (!companyId) {
         return res.status(403).json({ error: 'Usuário não possui empresa associada' });
@@ -67,9 +128,34 @@ export class LeadController {
             { name: { contains: String(search), mode: 'insensitive' as const } },
             { phone: { contains: String(search) } },
             { email: { contains: String(search), mode: 'insensitive' as const } },
+            // Buscar por nome de tag
+            {
+              leadTags: {
+                some: {
+                  tag: {
+                    name: { contains: String(search), mode: 'insensitive' as const },
+                  },
+                },
+              },
+            },
           ],
         }),
         ...(status && status !== 'ALL' && { status: String(status) }),
+        // Filtro por tag
+        ...(tagId && {
+          leadTags: {
+            some: {
+              tagId: String(tagId),
+            },
+          },
+        }),
+        // Filtro por data
+        ...(dateFrom || dateTo) && {
+          createdAt: {
+            ...(dateFrom && { gte: new Date(String(dateFrom)) }),
+            ...(dateTo && { lte: new Date(String(dateTo) + 'T23:59:59.999Z') }),
+          },
+        },
       };
 
       const [leads, total] = await Promise.all([
@@ -83,6 +169,13 @@ export class LeadController {
               select: {
                 id: true,
                 name: true,
+              },
+            },
+            leadTags: {
+              include: {
+                tag: {
+                  select: { id: true, name: true, color: true },
+                },
               },
             },
           },
@@ -125,6 +218,13 @@ export class LeadController {
               phone: true,
             },
           },
+          leadTags: {
+            include: {
+              tag: {
+                select: { id: true, name: true, color: true },
+              },
+            },
+          },
         },
       });
 
@@ -146,7 +246,7 @@ export class LeadController {
     try {
       const { id } = req.params;
       const companyId = req.user!.companyId;
-      const { name, phone, email, contactReason, status, source, notes } = req.body;
+      const { name, phone, email, contactReason, status, source, notes, tagIds } = req.body;
 
       const lead = await prisma.lead.findFirst({
         where: {
@@ -173,17 +273,53 @@ export class LeadController {
         return res.status(400).json({ error: 'Telefone é obrigatório' });
       }
 
-      const updatedLead = await prisma.lead.update({
-        where: { id },
-        data: {
-          name: sanitizeString(name) || name,
-          phone: phone.trim(),
-          email: email?.trim()?.toLowerCase() || null,
-          contactReason: sanitizeString(contactReason) || null,
-          status: status || lead.status,
-          source: source || lead.source,
-          notes: sanitizeString(notes) || null,
-        },
+      // Usar transação para atualizar lead e tags
+      const updatedLead = await prisma.$transaction(async (tx) => {
+        const updated = await tx.lead.update({
+          where: { id },
+          data: {
+            name: sanitizeString(name) || name,
+            phone: phone.trim(),
+            email: email?.trim()?.toLowerCase() || null,
+            contactReason: sanitizeString(contactReason) || null,
+            status: status || lead.status,
+            source: source || lead.source,
+            notes: sanitizeString(notes) || null,
+          },
+        });
+
+        // Atualizar tags se fornecidas (substituir todas as tags existentes)
+        if (tagIds !== undefined && Array.isArray(tagIds)) {
+          // Remover todas as tags existentes do lead
+          await tx.leadTag.deleteMany({
+            where: { leadId: id, companyId },
+          });
+
+          // Criar novas relações com tags
+          if (tagIds.length > 0 && companyId) {
+            await tx.leadTag.createMany({
+              data: tagIds.map((tagId: string) => ({
+                leadId: id,
+                tagId,
+                companyId: companyId as string,
+              })),
+            });
+          }
+        }
+
+        // Retornar lead com tags incluídas
+        return tx.lead.findUnique({
+          where: { id },
+          include: {
+            leadTags: {
+              include: {
+                tag: {
+                  select: { id: true, name: true, color: true },
+                },
+              },
+            },
+          },
+        });
       });
 
       res.json(updatedLead);
@@ -468,6 +604,240 @@ export class LeadController {
     } catch (error) {
       appLogger.error('Erro ao buscar estatísticas de leads:', error as Error);
       res.status(500).json({ error: 'Erro ao buscar estatísticas' });
+    }
+  }
+
+  /**
+   * Exportar leads para CSV
+   */
+  async exportCSV(req: AuthRequest, res: Response) {
+    try {
+      const companyId = req.user!.companyId;
+
+      if (!companyId) {
+        return res.status(403).json({ error: 'Usuário não possui empresa associada' });
+      }
+
+      const where = buildLeadWhereClause(companyId, req.query);
+
+      const leads = await prisma.lead.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          leadTags: {
+            include: {
+              tag: {
+                select: { name: true },
+              },
+            },
+          },
+        },
+      });
+
+      const statusLabels: Record<string, string> = {
+        NOVO: 'Novo',
+        CONTATADO: 'Contatado',
+        QUALIFICADO: 'Qualificado',
+        CONVERTIDO: 'Convertido',
+        PERDIDO: 'Perdido',
+      };
+
+      const sourceLabels: Record<string, string> = {
+        WHATSAPP: 'WhatsApp',
+        TELEFONE: 'Telefone',
+        SITE: 'Site',
+        INDICACAO: 'Indicação',
+        REDES_SOCIAIS: 'Redes Sociais',
+        OUTROS: 'Outros',
+      };
+
+      // Gerar CSV
+      const headers = ['Nome', 'Telefone', 'Email', 'Status', 'Origem', 'Tags', 'Motivo do Contato', 'Observações', 'Data de Criação'];
+      const rows = leads.map((lead) => [
+        lead.name,
+        lead.phone || '',
+        lead.email || '',
+        statusLabels[lead.status] || lead.status,
+        sourceLabels[lead.source] || lead.source,
+        lead.leadTags?.map((lt) => lt.tag.name).join(', ') || '',
+        (lead.contactReason || '').replace(/[\n\r]/g, ' '),
+        (lead.notes || '').replace(/[\n\r]/g, ' '),
+        lead.createdAt.toLocaleDateString('pt-BR'),
+      ]);
+
+      // Escape CSV values
+      const escapeCSV = (val: string) => {
+        if (val.includes(',') || val.includes('"') || val.includes('\n')) {
+          return `"${val.replace(/"/g, '""')}"`;
+        }
+        return val;
+      };
+
+      const csv = [
+        headers.join(','),
+        ...rows.map((row) => row.map(escapeCSV).join(',')),
+      ].join('\n');
+
+      // Add BOM for Excel UTF-8 compatibility
+      const csvWithBOM = '\uFEFF' + csv;
+
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader('Content-Disposition', `attachment; filename=leads_${new Date().toISOString().split('T')[0]}.csv`);
+      res.send(csvWithBOM);
+    } catch (error) {
+      appLogger.error('Erro ao exportar leads para CSV:', error as Error);
+      res.status(500).json({ error: 'Erro ao exportar leads' });
+    }
+  }
+
+  /**
+   * Exportar leads para PDF
+   */
+  async exportPDF(req: AuthRequest, res: Response) {
+    try {
+      const companyId = req.user!.companyId;
+
+      if (!companyId) {
+        return res.status(403).json({ error: 'Usuário não possui empresa associada' });
+      }
+
+      const where = buildLeadWhereClause(companyId, req.query);
+
+      const [leads, company] = await Promise.all([
+        prisma.lead.findMany({
+          where,
+          orderBy: { createdAt: 'desc' },
+          include: {
+            leadTags: {
+              include: {
+                tag: {
+                  select: { name: true },
+                },
+              },
+            },
+          },
+        }),
+        prisma.company.findUnique({
+          where: { id: companyId },
+          select: { name: true },
+        }),
+      ]);
+
+      const statusLabels: Record<string, string> = {
+        NOVO: 'Novo',
+        CONTATADO: 'Contatado',
+        QUALIFICADO: 'Qualificado',
+        CONVERTIDO: 'Convertido',
+        PERDIDO: 'Perdido',
+      };
+
+      const sourceLabels: Record<string, string> = {
+        WHATSAPP: 'WhatsApp',
+        TELEFONE: 'Telefone',
+        SITE: 'Site',
+        INDICACAO: 'Indicação',
+        REDES_SOCIAIS: 'Redes Sociais',
+        OUTROS: 'Outros',
+      };
+
+      // Gerar PDF usando PDFKit
+      const PDFDocument = require('pdfkit');
+      const doc = new PDFDocument({ margin: 40, size: 'A4', layout: 'landscape' });
+
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename=leads_${new Date().toISOString().split('T')[0]}.pdf`);
+
+      doc.pipe(res);
+
+      // Header
+      doc.fontSize(18).fillColor('#333333').text('Relatório de Leads', { align: 'center' });
+      doc.moveDown(0.5);
+      doc.fontSize(10).fillColor('#666666').text(
+        `${company?.name || 'Empresa'} - Gerado em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}`,
+        { align: 'center' }
+      );
+      doc.moveDown(0.5);
+      doc.fontSize(10).fillColor('#333333').text(`Total de leads: ${leads.length}`, { align: 'center' });
+      doc.moveDown(1);
+
+      // Table header
+      const tableTop = doc.y;
+      const colWidths = [120, 90, 140, 70, 80, 100, 70];
+      const headers = ['Nome', 'Telefone', 'Email', 'Status', 'Origem', 'Tags', 'Data'];
+
+      // Draw header background
+      doc.fillColor('#f5f5f5').rect(40, tableTop, 760, 20).fill();
+
+      // Draw header text
+      doc.fillColor('#333333').fontSize(9).font('Helvetica-Bold');
+      let xPos = 45;
+      headers.forEach((header, i) => {
+        doc.text(header, xPos, tableTop + 5, { width: colWidths[i], align: 'left' });
+        xPos += colWidths[i];
+      });
+
+      // Draw table rows
+      doc.font('Helvetica').fontSize(8);
+      let yPos = tableTop + 25;
+
+      leads.forEach((lead, index) => {
+        // Check if we need a new page
+        if (yPos > 520) {
+          doc.addPage({ layout: 'landscape' });
+          yPos = 50;
+        }
+
+        // Alternate row colors
+        if (index % 2 === 0) {
+          doc.fillColor('#fafafa').rect(40, yPos - 3, 760, 18).fill();
+        }
+
+        doc.fillColor('#333333');
+        xPos = 45;
+
+        // Nome
+        doc.text(lead.name.substring(0, 20), xPos, yPos, { width: colWidths[0] });
+        xPos += colWidths[0];
+
+        // Telefone
+        doc.text(lead.phone || '-', xPos, yPos, { width: colWidths[1] });
+        xPos += colWidths[1];
+
+        // Email
+        doc.text((lead.email || '-').substring(0, 25), xPos, yPos, { width: colWidths[2] });
+        xPos += colWidths[2];
+
+        // Status
+        doc.text(statusLabels[lead.status] || lead.status, xPos, yPos, { width: colWidths[3] });
+        xPos += colWidths[3];
+
+        // Origem
+        doc.text(sourceLabels[lead.source] || lead.source, xPos, yPos, { width: colWidths[4] });
+        xPos += colWidths[4];
+
+        // Tags
+        const tagsText = lead.leadTags?.map((lt) => lt.tag.name).join(', ') || '-';
+        doc.text(tagsText.substring(0, 18), xPos, yPos, { width: colWidths[5] });
+        xPos += colWidths[5];
+
+        // Data
+        doc.text(lead.createdAt.toLocaleDateString('pt-BR'), xPos, yPos, { width: colWidths[6] });
+
+        yPos += 18;
+      });
+
+      // Footer
+      doc.fontSize(8).fillColor('#999999').text(
+        'Relatório gerado pelo sistema AdvWell',
+        40,
+        doc.page.height - 30,
+        { align: 'center' }
+      );
+
+      doc.end();
+    } catch (error) {
+      appLogger.error('Erro ao exportar leads para PDF:', error as Error);
+      res.status(500).json({ error: 'Erro ao exportar leads para PDF' });
     }
   }
 }

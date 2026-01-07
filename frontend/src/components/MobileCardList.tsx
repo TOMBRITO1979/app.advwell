@@ -15,6 +15,7 @@ export interface MobileCardItem {
     text: string;
     color: 'green' | 'red' | 'yellow' | 'blue' | 'purple' | 'gray';
   };
+  extraContent?: React.ReactNode;
   fields: MobileCardField[];
   onView?: () => void;
   onEdit?: () => void;
@@ -62,6 +63,13 @@ const MobileCardList: React.FC<MobileCardListProps> = ({ items, emptyMessage = '
               </span>
             )}
           </div>
+
+          {/* Extra Content */}
+          {item.extraContent && (
+            <div className="px-4 pb-2">
+              {item.extraContent}
+            </div>
+          )}
 
           {/* Fields */}
           <div className="space-y-0">

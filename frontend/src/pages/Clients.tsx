@@ -2,10 +2,12 @@ import React, { useEffect, useState, useRef } from 'react';
 import Layout from '../components/Layout';
 import api from '../services/api';
 import toast from 'react-hot-toast';
-import { Plus, Search, Edit, Trash2, Eye, X, FileText, Loader2, UserPlus, UserX, Mail } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Eye, X, FileText, Loader2, UserPlus, UserX, Mail, Filter, Calendar } from 'lucide-react';
 import { ExportButton } from '../components/ui';
 import MobileCardList, { MobileCardItem } from '../components/MobileCardList';
 import { formatDate } from '../utils/dateFormatter';
+import TagSelector from '../components/TagSelector';
+import TagBadge from '../components/TagBadge';
 
 interface Case {
   id: string;
@@ -16,6 +18,15 @@ interface Case {
   value?: number;
   deadline?: string;
   createdAt: string;
+}
+
+interface ClientTag {
+  id: string;
+  tag: {
+    id: string;
+    name: string;
+    color: string;
+  };
 }
 
 interface Client {
@@ -39,6 +50,7 @@ interface Client {
   representativeCpf?: string;
   notes?: string;
   tag?: string;
+  clientTags?: ClientTag[];
   createdAt: string;
   updatedAt: string;
   cases?: Case[];
@@ -64,12 +76,26 @@ interface ClientFormData {
   representativeCpf: string;
   notes: string;
   tag: string;
+  tagIds: string[];
+}
+
+interface Tag {
+  id: string;
+  name: string;
+  color: string;
 }
 
 const Clients: React.FC = () => {
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [tagFilter, setTagFilter] = useState<string>('');
+  const [dateFrom, setDateFrom] = useState<string>('');
+  const [dateTo, setDateTo] = useState<string>('');
+  const [showFilters, setShowFilters] = useState(false);
+  const [tags, setTags] = useState<Tag[]>([]);
+  const [exportingCSV, setExportingCSV] = useState(false);
+  const [exportingPDF, setExportingPDF] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
@@ -102,17 +128,34 @@ const Clients: React.FC = () => {
     representativeCpf: '',
     notes: '',
     tag: '',
+    tagIds: [],
   });
 
   useEffect(() => {
     loadClients();
-  }, [search]);
+  }, [search, tagFilter, dateFrom, dateTo]);
+
+  useEffect(() => {
+    loadTags();
+  }, []);
+
+  const loadTags = async () => {
+    try {
+      const response = await api.get('/tags');
+      setTags(response.data);
+    } catch (error) {
+      console.error('Erro ao carregar tags:', error);
+    }
+  };
 
   const loadClients = async () => {
     try {
-      const response = await api.get('/clients', {
-        params: { search, limit: 100 },
-      });
+      const params: any = { search, limit: 100 };
+      if (tagFilter) params.tagId = tagFilter;
+      if (dateFrom) params.dateFrom = dateFrom;
+      if (dateTo) params.dateTo = dateTo;
+
+      const response = await api.get('/clients', { params });
       setClients(response.data.data);
     } catch (error) {
       toast.error('Erro ao carregar clientes');
@@ -122,8 +165,15 @@ const Clients: React.FC = () => {
   };
 
   const handleExportCSV = async () => {
+    setExportingCSV(true);
     try {
+      const params: any = { search };
+      if (tagFilter) params.tagId = tagFilter;
+      if (dateFrom) params.dateFrom = dateFrom;
+      if (dateTo) params.dateTo = dateTo;
+
       const response = await api.get('/clients/export/csv', {
+        params,
         responseType: 'blob',
       });
 
@@ -138,8 +188,48 @@ const Clients: React.FC = () => {
       toast.success('CSV exportado com sucesso!');
     } catch (error) {
       toast.error('Erro ao exportar CSV');
+    } finally {
+      setExportingCSV(false);
     }
   };
+
+  const handleExportPDF = async () => {
+    setExportingPDF(true);
+    try {
+      const params: any = { search };
+      if (tagFilter) params.tagId = tagFilter;
+      if (dateFrom) params.dateFrom = dateFrom;
+      if (dateTo) params.dateTo = dateTo;
+
+      const response = await api.get('/clients/export/pdf', {
+        params,
+        responseType: 'blob',
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `clientes_${new Date().toISOString().split('T')[0]}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      toast.success('PDF exportado com sucesso!');
+    } catch (error) {
+      toast.error('Erro ao exportar PDF');
+    } finally {
+      setExportingPDF(false);
+    }
+  };
+
+  const clearFilters = () => {
+    setTagFilter('');
+    setDateFrom('');
+    setDateTo('');
+    setSearch('');
+  };
+
+  const hasActiveFilters = tagFilter || dateFrom || dateTo;
 
   const handleImportClick = () => {
     fileInputRef.current?.click();
@@ -202,6 +292,7 @@ const Clients: React.FC = () => {
       representativeCpf: '',
       notes: '',
       tag: '',
+      tagIds: [],
     });
   };
 
@@ -247,6 +338,7 @@ const Clients: React.FC = () => {
       representativeCpf: client.representativeCpf || '',
       notes: client.notes || '',
       tag: client.tag || '',
+      tagIds: client.clientTags?.map((ct) => ct.tag.id) || [],
     });
     setEditMode(true);
     setShowModal(true);
@@ -373,7 +465,7 @@ const Clients: React.FC = () => {
             accept=".csv"
             className="hidden"
           />
-          <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:gap-3">
+          <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 sm:flex sm:flex-wrap sm:gap-3">
             <ExportButton
               type="import"
               onClick={handleImportClick}
@@ -381,7 +473,25 @@ const Clients: React.FC = () => {
             <ExportButton
               type="csv"
               onClick={handleExportCSV}
+              loading={exportingCSV}
             />
+            <ExportButton
+              type="pdf"
+              onClick={handleExportPDF}
+              loading={exportingPDF}
+            />
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className={`inline-flex items-center justify-center gap-2 px-2 sm:px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 min-h-[44px] ${
+                hasActiveFilters
+                  ? 'bg-warning-100 text-warning-700 border border-warning-200 hover:bg-warning-200'
+                  : 'bg-neutral-100 text-neutral-700 border border-neutral-200 hover:bg-neutral-200'
+              }`}
+            >
+              <Filter size={20} />
+              <span className="hidden sm:inline">Filtros</span>
+              {hasActiveFilters && <span className="bg-warning-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">!</span>}
+            </button>
             <button
               onClick={handleNewClient}
               className="inline-flex items-center justify-center gap-2 px-2 sm:px-4 py-2 rounded-lg bg-primary-100 text-primary-700 border border-primary-200 hover:bg-primary-200 font-medium text-sm transition-all duration-200 min-h-[44px]"
@@ -405,6 +515,73 @@ const Clients: React.FC = () => {
             />
           </div>
 
+          {/* Expanded Filters */}
+          {showFilters && (
+            <div className="bg-neutral-50 rounded-lg p-4 mb-4 border border-neutral-200">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    <Calendar size={14} className="inline mr-1" />
+                    Data Início
+                  </label>
+                  <input
+                    type="date"
+                    value={dateFrom}
+                    onChange={(e) => setDateFrom(e.target.value)}
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    <Calendar size={14} className="inline mr-1" />
+                    Data Fim
+                  </label>
+                  <input
+                    type="date"
+                    value={dateTo}
+                    onChange={(e) => setDateTo(e.target.value)}
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    Tag
+                  </label>
+                  <select
+                    value={tagFilter}
+                    onChange={(e) => setTagFilter(e.target.value)}
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                  >
+                    <option value="">Todas as Tags</option>
+                    {tags.map((tag) => (
+                      <option key={tag.id} value={tag.id}>
+                        {tag.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex items-end">
+                  <button
+                    onClick={clearFilters}
+                    className="w-full px-4 py-2 text-sm font-medium text-neutral-600 bg-white border border-neutral-300 rounded-md hover:bg-neutral-50 min-h-[44px]"
+                  >
+                    Limpar Filtros
+                  </button>
+                </div>
+              </div>
+              {hasActiveFilters && (
+                <div className="mt-3 pt-3 border-t border-neutral-200">
+                  <p className="text-sm text-neutral-600">
+                    <strong>Filtros ativos:</strong>{' '}
+                    {tagFilter && <span className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded text-xs mr-2">Tag: {tags.find(t => t.id === tagFilter)?.name}</span>}
+                    {dateFrom && <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded text-xs mr-2">De: {dateFrom}</span>}
+                    {dateTo && <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded text-xs mr-2">Até: {dateTo}</span>}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
           {loading ? (
             <p className="text-center py-8 text-neutral-600">Carregando...</p>
           ) : clients.length === 0 ? (
@@ -420,7 +597,13 @@ const Clients: React.FC = () => {
                     id: client.id,
                     title: client.name,
                     subtitle: formatCPF(client.cpf),
-                    badge: client.tag ? { text: client.tag, color: 'blue' } : undefined,
+                    extraContent: client.clientTags && client.clientTags.length > 0 ? (
+                      <div className="flex flex-wrap gap-1">
+                        {client.clientTags.map((ct) => (
+                          <TagBadge key={ct.id} name={ct.tag.name} color={ct.tag.color} size="sm" />
+                        ))}
+                      </div>
+                    ) : undefined,
                     fields: [
                       { label: 'Telefone', value: client.phone || '-' },
                       { label: 'Email', value: client.email || '-' },
@@ -465,7 +648,17 @@ const Clients: React.FC = () => {
                         <td className="px-4 py-3 text-sm text-neutral-600">{formatCPF(client.cpf)}</td>
                         <td className="px-4 py-3 text-sm text-neutral-600">{client.phone || '-'}</td>
                         <td className="px-4 py-3 text-sm text-neutral-600">{client.email || '-'}</td>
-                        <td className="px-4 py-3 text-sm text-neutral-600">{client.tag || '-'}</td>
+                        <td className="px-4 py-3 text-sm text-neutral-600">
+                          {client.clientTags && client.clientTags.length > 0 ? (
+                            <div className="flex flex-wrap gap-1">
+                              {client.clientTags.map((ct) => (
+                                <TagBadge key={ct.id} name={ct.tag.name} color={ct.tag.color} size="sm" />
+                              ))}
+                            </div>
+                          ) : (
+                            '-'
+                          )}
+                        </td>
                         <td className="px-4 py-3 text-sm text-center">
                           <div className="flex items-center justify-center gap-2">
                             <button
@@ -880,17 +1073,15 @@ const Clients: React.FC = () => {
                   />
                 </div>
 
-                {/* Tag */}
+                {/* Tags */}
                 <div>
                   <label className="block text-sm font-medium text-neutral-700 mb-1">
-                    Tag/Categoria
+                    Tags
                   </label>
-                  <input
-                    type="text"
-                    value={formData.tag}
-                    onChange={(e) => setFormData({ ...formData, tag: e.target.value })}
-                    placeholder="Ex: VIP, Bronze, Prata, Ouro..."
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                  <TagSelector
+                    selectedTagIds={formData.tagIds}
+                    onChange={(tagIds) => setFormData({ ...formData, tagIds })}
+                    placeholder="Selecionar tags..."
                   />
                 </div>
               </div>

@@ -26,6 +26,20 @@ interface Client {
   name: string;
   email?: string;
   tag?: string;
+  clientTags?: { tag: { id: string; name: string } }[];
+}
+
+interface Lead {
+  id: string;
+  name: string;
+  email?: string;
+  leadTags?: { tag: { id: string; name: string } }[];
+}
+
+interface Tag {
+  id: string;
+  name: string;
+  color: string;
 }
 
 interface EmailTemplate {
@@ -39,7 +53,9 @@ interface EmailTemplate {
 const Campaigns: React.FC = () => {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
+  const [leads, setLeads] = useState<Lead[]>([]);
   const [templates, setTemplates] = useState<EmailTemplate[]>([]);
+  const [tags, setTags] = useState<Tag[]>([]);
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
@@ -53,9 +69,9 @@ const Campaigns: React.FC = () => {
     useClients: true,
   });
 
+  const [recipientType, setRecipientType] = useState<'clients' | 'leads'>('clients');
   const [recipientFilter, setRecipientFilter] = useState<'all' | 'tag'>('all');
   const [selectedTag, setSelectedTag] = useState<string>('');
-  const [availableTags, setAvailableTags] = useState<string[]>([]);
 
   const statusLabels = {
     draft: 'Rascunho',
@@ -76,7 +92,9 @@ const Campaigns: React.FC = () => {
   useEffect(() => {
     loadCampaigns();
     loadClients();
+    loadLeads();
     loadTemplates();
+    loadTags();
   }, []);
 
   const loadCampaigns = async () => {
@@ -94,18 +112,27 @@ const Campaigns: React.FC = () => {
   const loadClients = async () => {
     try {
       const response = await api.get('/clients', { params: { limit: 1000 } });
-      const clientsData = response.data.data;
-      setClients(clientsData);
-
-      // Extrair tags únicas dos clientes
-      const tags = clientsData
-        .map((c: Client) => c.tag)
-        .filter((tag: string | undefined) => tag && tag.trim())
-        .filter((tag: string, index: number, self: string[]) => self.indexOf(tag) === index)
-        .sort();
-      setAvailableTags(tags);
+      setClients(response.data.data);
     } catch (error) {
       console.error('Erro ao carregar clientes:', error);
+    }
+  };
+
+  const loadLeads = async () => {
+    try {
+      const response = await api.get('/leads', { params: { limit: 1000 } });
+      setLeads(response.data.data);
+    } catch (error) {
+      console.error('Erro ao carregar leads:', error);
+    }
+  };
+
+  const loadTags = async () => {
+    try {
+      const response = await api.get('/tags');
+      setTags(response.data);
+    } catch (error) {
+      console.error('Erro ao carregar tags:', error);
     }
   };
 
@@ -116,6 +143,17 @@ const Campaigns: React.FC = () => {
     } catch (error) {
       console.error('Erro ao carregar templates:', error);
     }
+  };
+
+  // Helper to check if entity has a specific tag
+  const hasTag = (entity: Client | Lead, tagId: string): boolean => {
+    if ('clientTags' in entity && entity.clientTags) {
+      return entity.clientTags.some(ct => ct.tag.id === tagId);
+    }
+    if ('leadTags' in entity && entity.leadTags) {
+      return entity.leadTags.some(lt => lt.tag.id === tagId);
+    }
+    return false;
   };
 
   const handleTemplateSelect = async (templateId: string) => {
@@ -155,20 +193,29 @@ const Campaigns: React.FC = () => {
       return;
     }
 
-    // Preparar destinatários com filtro
-    let filteredClients = clients.filter((c) => c.email);
+    // Preparar destinatários com filtro baseado no tipo selecionado
+    let recipients: { email: string; name: string }[] = [];
 
-    // Aplicar filtro de tag se selecionado
-    if (recipientFilter === 'tag') {
-      filteredClients = filteredClients.filter((c) => c.tag === selectedTag);
+    if (recipientType === 'clients') {
+      let filteredClients = clients.filter((c) => c.email);
+      if (recipientFilter === 'tag') {
+        filteredClients = filteredClients.filter((c) => hasTag(c, selectedTag));
+      }
+      recipients = filteredClients.map((c) => ({ email: c.email!, name: c.name }));
+    } else {
+      let filteredLeads = leads.filter((l) => l.email);
+      if (recipientFilter === 'tag') {
+        filteredLeads = filteredLeads.filter((l) => hasTag(l, selectedTag));
+      }
+      recipients = filteredLeads.map((l) => ({ email: l.email!, name: l.name }));
     }
 
-    const recipients = filteredClients.map((c) => ({ email: c.email!, name: c.name }));
-
     if (recipients.length === 0) {
+      const entityName = recipientType === 'clients' ? 'clientes' : 'leads';
+      const tagName = tags.find(t => t.id === selectedTag)?.name;
       const message = recipientFilter === 'tag'
-        ? `Nenhum cliente encontrado com a tag "${selectedTag}" e email cadastrado.`
-        : 'Nenhum destinatário encontrado. Adicione clientes com email.';
+        ? `Nenhum ${entityName.slice(0, -1)} encontrado com a tag "${tagName}" e email cadastrado.`
+        : `Nenhum destinatário encontrado. Adicione ${entityName} com email.`;
       toast.error(message);
       return;
     }
@@ -238,8 +285,19 @@ const Campaigns: React.FC = () => {
       useClients: true,
     });
     setSelectedTemplate('');
+    setRecipientType('clients');
     setRecipientFilter('all');
     setSelectedTag('');
+  };
+
+  // Calculate recipient counts based on current selection
+  const getRecipientCount = (): number => {
+    const source = recipientType === 'clients' ? clients : leads;
+    let filtered = source.filter((e: any) => e.email);
+    if (recipientFilter === 'tag' && selectedTag) {
+      filtered = filtered.filter((e: any) => hasTag(e, selectedTag));
+    }
+    return filtered.length;
   };
 
   // Alias para compatibilidade
@@ -538,23 +596,53 @@ const Campaigns: React.FC = () => {
                       📧 Selecionar Destinatários
                     </label>
 
+                    {/* Tipo de destinatário: Clientes ou Leads */}
+                    <div className="flex gap-4 mb-4 p-3 bg-white rounded-md border border-info-200">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="recipientType"
+                          checked={recipientType === 'clients'}
+                          onChange={() => { setRecipientType('clients'); setSelectedTag(''); }}
+                          className="text-info-600"
+                        />
+                        <span className="text-sm font-medium text-info-700">
+                          Clientes ({clients.filter(c => c.email).length})
+                        </span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="recipientType"
+                          checked={recipientType === 'leads'}
+                          onChange={() => { setRecipientType('leads'); setSelectedTag(''); }}
+                          className="text-info-600"
+                        />
+                        <span className="text-sm font-medium text-info-700">
+                          Leads ({leads.filter(l => l.email).length})
+                        </span>
+                      </label>
+                    </div>
+
                     <div className="space-y-3">
-                      {/* Opção: Todos os clientes */}
+                      {/* Opção: Todos */}
                       <div className="flex items-start">
                         <input
                           type="radio"
                           id="filter-all"
                           name="recipientFilter"
                           checked={recipientFilter === 'all'}
-                          onChange={() => setRecipientFilter('all')}
+                          onChange={() => { setRecipientFilter('all'); setSelectedTag(''); }}
                           className="mt-0.5 mr-2"
                         />
                         <label htmlFor="filter-all" className="flex-1 cursor-pointer">
                           <span className="text-sm font-medium text-info-700">
-                            Todos os clientes com email
+                            Todos os {recipientType === 'clients' ? 'clientes' : 'leads'} com email
                           </span>
                           <p className="text-xs text-info-700 mt-0.5">
-                            {clients.filter((c) => c.email).length} destinatários
+                            {recipientType === 'clients'
+                              ? clients.filter((c) => c.email).length
+                              : leads.filter((l) => l.email).length} destinatários
                           </p>
                         </label>
                       </div>
@@ -571,7 +659,7 @@ const Campaigns: React.FC = () => {
                         />
                         <label htmlFor="filter-tag" className="flex-1 cursor-pointer">
                           <span className="text-sm font-medium text-info-700">
-                            Apenas clientes com tag específica
+                            Apenas {recipientType === 'clients' ? 'clientes' : 'leads'} com tag específica
                           </span>
                           {recipientFilter === 'tag' && (
                             <select
@@ -580,11 +668,12 @@ const Campaigns: React.FC = () => {
                               className="w-full mt-2 px-3 py-2 border border-info-300 rounded-md text-sm min-h-[44px]"
                             >
                               <option value="">Selecione uma tag</option>
-                              {availableTags.map((tag) => {
-                                const count = clients.filter((c) => c.tag === tag && c.email).length;
+                              {tags.map((tag) => {
+                                const source = recipientType === 'clients' ? clients : leads;
+                                const count = source.filter((e: any) => e.email && hasTag(e, tag.id)).length;
                                 return (
-                                  <option key={tag} value={tag}>
-                                    {tag} ({count} {count === 1 ? 'cliente' : 'clientes'})
+                                  <option key={tag.id} value={tag.id}>
+                                    {tag.name} ({count} {count === 1 ? (recipientType === 'clients' ? 'cliente' : 'lead') : (recipientType === 'clients' ? 'clientes' : 'leads')})
                                   </option>
                                 );
                               })}
@@ -592,7 +681,7 @@ const Campaigns: React.FC = () => {
                           )}
                           {recipientFilter === 'tag' && selectedTag && (
                             <p className="text-xs text-info-700 mt-1">
-                              {clients.filter((c) => c.tag === selectedTag && c.email).length} destinatários
+                              {getRecipientCount()} destinatários
                             </p>
                           )}
                         </label>

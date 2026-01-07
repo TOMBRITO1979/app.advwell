@@ -6,12 +6,45 @@ import { sanitizeString } from '../utils/sanitize';
 import { auditLogService } from '../services/audit-log.service';
 import { appLogger } from '../utils/logger';
 
+// Helper para construir filtros de busca (fora da classe para evitar problemas com this)
+function buildClientWhereClause(companyId: string, query: any) {
+  const { search = '', tagId = '', dateFrom = '', dateTo = '' } = query;
+
+  const where: any = {
+    companyId,
+    active: true,
+    ...(search && {
+      OR: [
+        { name: { contains: String(search), mode: 'insensitive' as const } },
+        { cpf: { contains: String(search) } },
+        { email: { contains: String(search), mode: 'insensitive' as const } },
+      ],
+    }),
+    ...(tagId && {
+      clientTags: {
+        some: {
+          tagId: String(tagId),
+        },
+      },
+    }),
+  };
+
+  if (dateFrom || dateTo) {
+    where.createdAt = {
+      ...(dateFrom && { gte: new Date(String(dateFrom)) }),
+      ...(dateTo && { lte: new Date(String(dateTo) + 'T23:59:59.999Z') }),
+    };
+  }
+
+  return where;
+}
+
 export class ClientController {
   async create(req: AuthRequest, res: Response) {
     try {
       const {
         personType, name, cpf, rg, email, phone, address, city, state, zipCode,
-        profession, maritalStatus, birthDate, representativeName, representativeCpf, notes, tag
+        profession, maritalStatus, birthDate, representativeName, representativeCpf, notes, tag, tagIds
       } = req.body;
       const companyId = req.user!.companyId;
 
@@ -42,31 +75,59 @@ export class ClientController {
       const cleanPhone = phone?.trim() || null;
       const cleanRepresentativeCpf = representativeCpf?.trim() || null;
 
-      const client = await prisma.client.create({
-        data: {
-          companyId,
-          personType: personType || 'FISICA',
-          name,
-          cpf: cleanCpf,
-          rg: cleanRg,
-          email: cleanEmail,
-          phone: cleanPhone,
-          address: sanitizeString(address) || null,
-          city: city?.trim() || null,
-          state: state?.trim() || null,
-          zipCode: zipCode?.trim() || null,
-          profession: sanitizeString(profession) || null,
-          maritalStatus: sanitizeString(maritalStatus) || null,
-          birthDate: birthDate ? new Date(birthDate) : null,
-          representativeName: sanitizeString(representativeName) || null,
-          representativeCpf: cleanRepresentativeCpf,
-          notes: sanitizeString(notes) || null,
-          tag: sanitizeString(tag) || null,
-        },
+      // Usar transação para criar cliente e tags
+      const client = await prisma.$transaction(async (tx) => {
+        const newClient = await tx.client.create({
+          data: {
+            companyId,
+            personType: personType || 'FISICA',
+            name,
+            cpf: cleanCpf,
+            rg: cleanRg,
+            email: cleanEmail,
+            phone: cleanPhone,
+            address: sanitizeString(address) || null,
+            city: city?.trim() || null,
+            state: state?.trim() || null,
+            zipCode: zipCode?.trim() || null,
+            profession: sanitizeString(profession) || null,
+            maritalStatus: sanitizeString(maritalStatus) || null,
+            birthDate: birthDate ? new Date(birthDate) : null,
+            representativeName: sanitizeString(representativeName) || null,
+            representativeCpf: cleanRepresentativeCpf,
+            notes: sanitizeString(notes) || null,
+            tag: sanitizeString(tag) || null,
+          },
+        });
+
+        // Criar relações com tags se fornecidas
+        if (tagIds && Array.isArray(tagIds) && tagIds.length > 0) {
+          await tx.clientTag.createMany({
+            data: tagIds.map((tagId: string) => ({
+              clientId: newClient.id,
+              tagId,
+              companyId,
+            })),
+          });
+        }
+
+        // Retornar cliente com tags incluídas
+        return tx.client.findUnique({
+          where: { id: newClient.id },
+          include: {
+            clientTags: {
+              include: {
+                tag: {
+                  select: { id: true, name: true, color: true },
+                },
+              },
+            },
+          },
+        });
       });
 
       // Registra log de auditoria
-      await auditLogService.logClientCreate(client, req);
+      await auditLogService.logClientCreate(client!, req);
 
       res.status(201).json(client);
     } catch (error) {
@@ -78,7 +139,7 @@ export class ClientController {
   async list(req: AuthRequest, res: Response) {
     try {
       const companyId = req.user!.companyId;
-      const { page = 1, limit = 10, search = '' } = req.query;
+      const { page = 1, limit = 10, search = '', tagId = '', dateFrom = '', dateTo = '' } = req.query;
 
       if (!companyId) {
         return res.status(403).json({ error: 'Usuário não possui empresa associada' });
@@ -86,7 +147,7 @@ export class ClientController {
 
       const skip = (Number(page) - 1) * Number(limit);
 
-      const where = {
+      const where: any = {
         companyId,
         active: true,
         ...(search && {
@@ -95,15 +156,50 @@ export class ClientController {
             { cpf: { contains: String(search) } },
             { email: { contains: String(search), mode: 'insensitive' as const } },
             { tag: { contains: String(search), mode: 'insensitive' as const } },
+            // Buscar por nome de tag
+            {
+              clientTags: {
+                some: {
+                  tag: {
+                    name: { contains: String(search), mode: 'insensitive' as const },
+                  },
+                },
+              },
+            },
           ],
         }),
+        // Filtro por tag
+        ...(tagId && {
+          clientTags: {
+            some: {
+              tagId: String(tagId),
+            },
+          },
+        }),
       };
+
+      // Filtro por data
+      if (dateFrom || dateTo) {
+        where.createdAt = {
+          ...(dateFrom && { gte: new Date(String(dateFrom)) }),
+          ...(dateTo && { lte: new Date(String(dateTo) + 'T23:59:59.999Z') }),
+        };
+      }
 
       const clients = await prisma.client.findMany({
         where,
         skip,
         take: Number(limit),
         orderBy: { createdAt: 'desc' },
+        include: {
+          clientTags: {
+            include: {
+              tag: {
+                select: { id: true, name: true, color: true },
+              },
+            },
+          },
+        },
       });
 
       res.json({ data: clients });
@@ -127,6 +223,13 @@ export class ClientController {
           cases: {
             orderBy: { createdAt: 'desc' },
           },
+          clientTags: {
+            include: {
+              tag: {
+                select: { id: true, name: true, color: true },
+              },
+            },
+          },
         },
       });
 
@@ -147,7 +250,7 @@ export class ClientController {
       const companyId = req.user!.companyId;
       const {
         personType, name, cpf, rg, email, phone, address, city, state, zipCode,
-        profession, maritalStatus, birthDate, representativeName, representativeCpf, notes, tag
+        profession, maritalStatus, birthDate, representativeName, representativeCpf, notes, tag, tagIds
       } = req.body;
 
       const oldClient = await prisma.client.findFirst({
@@ -186,31 +289,67 @@ export class ClientController {
         }
       }
 
-      const updatedClient = await prisma.client.update({
-        where: { id },
-        data: {
-          personType: personType || 'FISICA',
-          name,
-          cpf: cleanCpf,
-          rg: cleanRg,
-          email: cleanEmail,
-          phone: cleanPhone,
-          address: sanitizeString(address) || null,
-          city: city?.trim() || null,
-          state: state?.trim() || null,
-          zipCode: zipCode?.trim() || null,
-          profession: sanitizeString(profession) || null,
-          maritalStatus: sanitizeString(maritalStatus) || null,
-          birthDate: birthDate ? new Date(birthDate) : null,
-          representativeName: sanitizeString(representativeName) || null,
-          representativeCpf: cleanRepresentativeCpf,
-          notes: sanitizeString(notes) || null,
-          tag: sanitizeString(tag) || null,
-        },
+      // Usar transação para atualizar cliente e tags
+      const updatedClient = await prisma.$transaction(async (tx) => {
+        const updated = await tx.client.update({
+          where: { id },
+          data: {
+            personType: personType || 'FISICA',
+            name,
+            cpf: cleanCpf,
+            rg: cleanRg,
+            email: cleanEmail,
+            phone: cleanPhone,
+            address: sanitizeString(address) || null,
+            city: city?.trim() || null,
+            state: state?.trim() || null,
+            zipCode: zipCode?.trim() || null,
+            profession: sanitizeString(profession) || null,
+            maritalStatus: sanitizeString(maritalStatus) || null,
+            birthDate: birthDate ? new Date(birthDate) : null,
+            representativeName: sanitizeString(representativeName) || null,
+            representativeCpf: cleanRepresentativeCpf,
+            notes: sanitizeString(notes) || null,
+            tag: sanitizeString(tag) || null,
+          },
+        });
+
+        // Atualizar tags se fornecidas (substituir todas as tags existentes)
+        if (tagIds !== undefined && Array.isArray(tagIds)) {
+          // Remover todas as tags existentes do cliente
+          await tx.clientTag.deleteMany({
+            where: { clientId: id, companyId },
+          });
+
+          // Criar novas relações com tags
+          if (tagIds.length > 0 && companyId) {
+            await tx.clientTag.createMany({
+              data: tagIds.map((tagId: string) => ({
+                clientId: id,
+                tagId,
+                companyId: companyId as string,
+              })),
+            });
+          }
+        }
+
+        // Retornar cliente com tags incluídas
+        return tx.client.findUnique({
+          where: { id },
+          include: {
+            clientTags: {
+              include: {
+                tag: {
+                  select: { id: true, name: true, color: true },
+                },
+              },
+            },
+          },
+        });
       });
 
       // Registra log de auditoria
-      await auditLogService.logClientUpdate(oldClient, updatedClient, req);
+      await auditLogService.logClientUpdate(oldClient, updatedClient!, req);
 
       res.json(updatedClient);
     } catch (error) {
@@ -258,17 +397,25 @@ export class ClientController {
         return res.status(403).json({ error: 'Usuário não possui empresa associada' });
       }
 
-      // Buscar todos os clientes ativos
+      const where = buildClientWhereClause(companyId, req.query);
+
+      // Buscar clientes com filtros
       const clients = await prisma.client.findMany({
-        where: {
-          companyId,
-          active: true,
-        },
+        where,
         orderBy: { createdAt: 'desc' },
+        include: {
+          clientTags: {
+            include: {
+              tag: {
+                select: { name: true },
+              },
+            },
+          },
+        },
       });
 
       // Cabeçalho do CSV
-      const csvHeader = 'Tipo,Nome,CPF/CNPJ,RG,Email,Telefone,Endereço,Cidade,Estado,CEP,Profissão,Estado Civil,Data de Nascimento,Representante Legal,CPF Representante,Observações,Data de Cadastro\n';
+      const csvHeader = 'Tipo,Nome,CPF/CNPJ,RG,Email,Telefone,Endereço,Cidade,Estado,CEP,Profissão,Estado Civil,Data de Nascimento,Tags,Representante Legal,CPF Representante,Observações,Data de Cadastro\n';
 
       // Linhas do CSV
       const csvRows = clients.map(client => {
@@ -285,12 +432,13 @@ export class ClientController {
         const profession = `"${client.profession || ''}"`;
         const maritalStatus = `"${client.maritalStatus || ''}"`;
         const birthDate = client.birthDate ? `"${new Date(client.birthDate).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}"` : '""';
+        const tags = `"${client.clientTags?.map((ct) => ct.tag.name).join(', ') || ''}"`;
         const representativeName = `"${client.representativeName || ''}"`;
         const representativeCpf = `"${client.representativeCpf || ''}"`;
         const notes = `"${(client.notes || '').replace(/"/g, '""')}"`;
         const createdAt = `"${new Date(client.createdAt).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}"`;
 
-        return `${personType},${name},${cpf},${rg},${email},${phone},${address},${city},${state},${zipCode},${profession},${maritalStatus},${birthDate},${representativeName},${representativeCpf},${notes},${createdAt}`;
+        return `${personType},${name},${cpf},${rg},${email},${phone},${address},${city},${state},${zipCode},${profession},${maritalStatus},${birthDate},${tags},${representativeName},${representativeCpf},${notes},${createdAt}`;
       }).join('\n');
 
       const csv = csvHeader + csvRows;
@@ -304,6 +452,133 @@ export class ClientController {
     } catch (error) {
       appLogger.error('Erro ao exportar clientes', error as Error);
       res.status(500).json({ error: 'Erro ao exportar clientes' });
+    }
+  }
+
+  async exportPDF(req: AuthRequest, res: Response) {
+    try {
+      const companyId = req.user!.companyId;
+
+      if (!companyId) {
+        return res.status(403).json({ error: 'Usuário não possui empresa associada' });
+      }
+
+      const where = buildClientWhereClause(companyId, req.query);
+
+      const [clients, company] = await Promise.all([
+        prisma.client.findMany({
+          where,
+          orderBy: { createdAt: 'desc' },
+          include: {
+            clientTags: {
+              include: {
+                tag: {
+                  select: { name: true },
+                },
+              },
+            },
+          },
+        }),
+        prisma.company.findUnique({
+          where: { id: companyId },
+          select: { name: true },
+        }),
+      ]);
+
+      // Gerar PDF usando PDFKit
+      const PDFDocument = require('pdfkit');
+      const doc = new PDFDocument({ margin: 40, size: 'A4', layout: 'landscape' });
+
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename=clientes_${new Date().toISOString().split('T')[0]}.pdf`);
+
+      doc.pipe(res);
+
+      // Header
+      doc.fontSize(18).fillColor('#333333').text('Relatório de Clientes', { align: 'center' });
+      doc.moveDown(0.5);
+      doc.fontSize(10).fillColor('#666666').text(
+        `${company?.name || 'Empresa'} - Gerado em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}`,
+        { align: 'center' }
+      );
+      doc.moveDown(0.5);
+      doc.fontSize(10).fillColor('#333333').text(`Total de clientes: ${clients.length}`, { align: 'center' });
+      doc.moveDown(1);
+
+      // Table header
+      const tableTop = doc.y;
+      const colWidths = [140, 100, 120, 100, 100, 100];
+      const headers = ['Nome', 'CPF/CNPJ', 'Email', 'Telefone', 'Tags', 'Data'];
+
+      // Draw header background
+      doc.fillColor('#f5f5f5').rect(40, tableTop, 760, 20).fill();
+
+      // Draw header text
+      doc.fillColor('#333333').fontSize(9).font('Helvetica-Bold');
+      let xPos = 45;
+      headers.forEach((header, i) => {
+        doc.text(header, xPos, tableTop + 5, { width: colWidths[i], align: 'left' });
+        xPos += colWidths[i];
+      });
+
+      // Draw table rows
+      doc.font('Helvetica').fontSize(8);
+      let yPos = tableTop + 25;
+
+      clients.forEach((client, index) => {
+        // Check if we need a new page
+        if (yPos > 520) {
+          doc.addPage({ layout: 'landscape' });
+          yPos = 50;
+        }
+
+        // Alternate row colors
+        if (index % 2 === 0) {
+          doc.fillColor('#fafafa').rect(40, yPos - 3, 760, 18).fill();
+        }
+
+        doc.fillColor('#333333');
+        xPos = 45;
+
+        // Nome
+        doc.text(client.name.substring(0, 25), xPos, yPos, { width: colWidths[0] });
+        xPos += colWidths[0];
+
+        // CPF/CNPJ
+        doc.text(client.cpf || '-', xPos, yPos, { width: colWidths[1] });
+        xPos += colWidths[1];
+
+        // Email
+        doc.text((client.email || '-').substring(0, 22), xPos, yPos, { width: colWidths[2] });
+        xPos += colWidths[2];
+
+        // Telefone
+        doc.text(client.phone || '-', xPos, yPos, { width: colWidths[3] });
+        xPos += colWidths[3];
+
+        // Tags
+        const tagsText = client.clientTags?.map((ct) => ct.tag.name).join(', ') || '-';
+        doc.text(tagsText.substring(0, 18), xPos, yPos, { width: colWidths[4] });
+        xPos += colWidths[4];
+
+        // Data
+        doc.text(client.createdAt.toLocaleDateString('pt-BR'), xPos, yPos, { width: colWidths[5] });
+
+        yPos += 18;
+      });
+
+      // Footer
+      doc.fontSize(8).fillColor('#999999').text(
+        'Relatório gerado pelo sistema AdvWell',
+        40,
+        doc.page.height - 30,
+        { align: 'center' }
+      );
+
+      doc.end();
+    } catch (error) {
+      appLogger.error('Erro ao exportar clientes para PDF:', error as Error);
+      res.status(500).json({ error: 'Erro ao exportar clientes para PDF' });
     }
   }
 

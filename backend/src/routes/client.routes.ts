@@ -123,6 +123,7 @@ router.post('/', createClientValidation, validate, clientController.create);
 router.get('/', validatePagination, clientController.list);
 router.get('/search', validatePagination, clientController.search); // Busca rápida para autocomplete
 router.get('/export/csv', validatePagination, clientController.exportCSV);
+router.get('/export/pdf', validatePagination, clientController.exportPDF);
 router.post('/import/csv', upload.single('file'), validateUploadContent, clientController.importCSV);
 router.get('/:id', clientController.get);
 router.put('/:id', updateClientValidation, validate, clientController.update);

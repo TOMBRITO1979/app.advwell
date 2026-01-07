@@ -105,6 +105,11 @@ model Company {
   whatsAppCampaignRecipients  WhatsAppCampaignRecipient[]
   whatsAppMessages            WhatsAppMessage[]
 
+  // Sistema de Tags Centralizado
+  tags                        Tag[]
+  clientTags                  ClientTag[]
+  leadTags                    LeadTag[]
+
   @@map("companies")
 }
 
@@ -248,6 +253,7 @@ model Client {
   portalUser            User?                 @relation("UserClientLink")  // Usuário do portal vinculado
   announcements         Announcement[]        // Avisos direcionados a este cliente
   pnjs                  PNJ[]                 // Processos Não Judiciais
+  clientTags            ClientTag[]           // Tags do cliente (many-to-many)
 
   @@unique([companyId, cpf]) // CPF único por empresa (NULL é permitido para múltiplos clientes)
   @@index([companyId])
@@ -1009,6 +1015,7 @@ model Lead {
   // Relations
   company             Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
   convertedToClient   Client?     @relation("LeadToClient", fields: [convertedToClientId], references: [id], onDelete: SetNull)
+  leadTags            LeadTag[]   // Tags do lead (many-to-many)
 
   @@index([companyId])
   @@index([phone])
@@ -1634,4 +1641,64 @@ model WhatsAppMessage {
   @@index([messageId])
   @@index([createdAt])
   @@map("whatsapp_messages")
+}
+
+// ============================================================================
+// TAG MANAGEMENT SYSTEM (Sistema de Tags Centralizado)
+// ============================================================================
+
+// Tag entity with color support
+model Tag {
+  id        String   @id @default(uuid())
+  companyId String
+  name      String
+  color     String   @default("#3B82F6") // Default blue color (hex)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company   Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  clients   ClientTag[]
+  leads     LeadTag[]
+
+  @@unique([companyId, name]) // Tag names unique per company
+  @@index([companyId])
+  @@map("tags")
+}
+
+// Many-to-many: Client <-> Tag (with direct companyId for tenant isolation)
+model ClientTag {
+  id        String   @id @default(uuid())
+  clientId  String
+  tagId     String
+  companyId String   // Direct tenant isolation (following EventAssignment pattern)
+  createdAt DateTime @default(now())
+
+  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  tag       Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([clientId, tagId])
+  @@index([companyId])
+  @@index([clientId])
+  @@index([tagId])
+  @@map("client_tags")
+}
+
+// Many-to-many: Lead <-> Tag (with direct companyId for tenant isolation)
+model LeadTag {
+  id        String   @id @default(uuid())
+  leadId    String
+  tagId     String
+  companyId String   // Direct tenant isolation (following EventAssignment pattern)
+  createdAt DateTime @default(now())
+
+  lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  tag       Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([leadId, tagId])
+  @@index([companyId])
+  @@index([leadId])
+  @@index([tagId])
+  @@map("lead_tags")
 }

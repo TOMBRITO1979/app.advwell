@@ -34,6 +34,7 @@ const Companies = lazy(() => import('./pages/Companies'));
 const LegalDocuments = lazy(() => import('./pages/LegalDocuments'));
 const Hearings = lazy(() => import('./pages/Hearings'));
 const Leads = lazy(() => import('./pages/Leads'));
+const Tags = lazy(() => import('./pages/Tags'));
 const PNJ = lazy(() => import('./pages/PNJ'));
 const Subscription = lazy(() => import('./pages/Subscription'));
 const SubscriptionAlerts = lazy(() => import('./pages/SubscriptionAlerts'));
@@ -188,6 +189,14 @@ function App() {
             element={
               <PrivateRoute>
                 <Leads />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/tags"
+            element={
+              <PrivateRoute>
+                <Tags />
               </PrivateRoute>
             }
           />
