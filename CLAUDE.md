@@ -11,7 +11,7 @@ AdvWell is a multitenant SaaS for Brazilian law firms with DataJud CNJ integrati
 - Backend API: https://api.advwell.pro
 - Grafana: https://grafana.advwell.pro
 
-**Current Version:** v1.8.57 (Backend) | 1.8.53 (Frontend)
+**Current Version:** v1.8.67 (Backend) | v1.8.61 (Frontend)
 
 ## Technology Stack
 
@@ -41,7 +41,7 @@ VPS Principal (5.161.98.0)       VPS PostgreSQL (5.78.137.1)
 ## Commands
 
 ```bash
-# Deploy
+# Deploy (loads .env automatically)
 ./deploy.sh
 
 # Logs
@@ -64,12 +64,13 @@ Row-level multitenancy with `companyId` on all models. Middleware `validateTenan
 - **SUPER_ADMIN**: Platform admin, bypasses tenant restrictions
 - **ADMIN**: Company admin
 - **USER**: Limited access per permissions
+- **CLIENT**: Portal access (restricted to own data)
 
 ### Queue Processing
 Jobs processed by dedicated worker (not API replicas):
 - `ENABLE_QUEUE_PROCESSORS=false` on API replicas
 - `ENABLE_QUEUE_PROCESSORS=true` on worker
-- Queues: `datajud-sync`, `email-campaign`, `whatsapp-messages`
+- Queues: `datajud-sync`, `email-campaign`, `whatsapp-messages`, `csv-import`
 
 ## Key Files
 
@@ -81,8 +82,7 @@ Jobs processed by dedicated worker (not API replicas):
 | Auth middleware | `backend/src/middleware/auth.ts` |
 | Tenant middleware | `backend/src/middleware/tenant.ts` |
 | AI service | `backend/src/services/ai/ai.service.ts` |
-| DataJud service | `backend/src/services/datajud.service.ts` |
-| Lead analytics | `backend/src/controllers/lead-analytics.controller.ts` |
+| AI token sharing | `backend/src/controllers/ai-token-share.controller.ts` |
 | Docker config | `docker-compose.yml` |
 
 ## Environment Variables
@@ -107,9 +107,10 @@ Jobs processed by dedicated worker (not API replicas):
 3. Register in `backend/src/routes/index.ts`
 
 ### New Database Table
-1. Update `backend/prisma/schema.prisma`
+1. Update `backend/prisma/schema.prisma` (use `@map` for snake_case columns)
 2. Create migration SQL: `backend/migrations_manual/`
 3. Apply: `cat migration.sql | ssh root@5.78.137.1 "docker exec -i advwell-postgres psql -U postgres -d advtom"`
+4. Run `npx prisma generate` to update client
 
 ## Monitoring
 
