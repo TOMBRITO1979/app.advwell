@@ -256,4 +256,58 @@ export const backupRateLimit = async (
   }
 };
 
+/**
+ * Rate limit muito restritivo para imports de CSV
+ * 3 operações por 5 minutos por empresa
+ * Protege contra abuse e ataques de sobrecarga
+ */
+export const csvImportRateLimit = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    if (!req.user) {
+      return next();
+    }
+
+    const CSV_LIMIT = 3; // 3 imports por janela
+    const CSV_WINDOW = 300; // 5 minutos em segundos
+    const identifier = req.user.companyId || `superadmin:${req.user.userId}`;
+    const key = `${RATE_LIMIT_PREFIX}csv-import:${identifier}`;
+
+    const currentCount = await redis.get(key);
+    const count = currentCount ? parseInt(currentCount, 10) : 0;
+
+    const ttl = await redis.ttl(key);
+    const reset = ttl > 0 ? Math.ceil(Date.now() / 1000) + ttl : Math.ceil(Date.now() / 1000) + CSV_WINDOW;
+
+    if (count >= CSV_LIMIT) {
+      setRateLimitHeaders(res, { remaining: 0, limit: CSV_LIMIT, reset });
+
+      const minutesRemaining = Math.ceil((ttl > 0 ? ttl : CSV_WINDOW) / 60);
+
+      return res.status(429).json({
+        error: 'Limite de importações atingido',
+        message: `Você pode fazer no máximo ${CSV_LIMIT} importações de CSV a cada 5 minutos. Tente novamente em ${minutesRemaining} minuto(s).`,
+        retryAfter: ttl > 0 ? ttl : CSV_WINDOW,
+      });
+    }
+
+    if (count === 0) {
+      await redis.setex(key, CSV_WINDOW, '1');
+    } else {
+      await redis.incr(key);
+    }
+
+    setRateLimitHeaders(res, { remaining: CSV_LIMIT - (count + 1), limit: CSV_LIMIT, reset });
+
+    next();
+  } catch (error) {
+    appLogger.error('Erro no csvImportRateLimit', error as Error);
+    // Em caso de erro do Redis, permite (fail-open) mas loga
+    next();
+  }
+};
+
 export default companyRateLimit;

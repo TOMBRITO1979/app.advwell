@@ -4,9 +4,9 @@ import { Request, Response, NextFunction } from 'express';
 import clientController from '../controllers/client.controller';
 import { authenticate } from '../middleware/auth';
 import { validateTenant } from '../middleware/tenant';
-import { upload, validateUploadContent } from '../middleware/upload';
+import { upload, csvUpload, validateUploadContent } from '../middleware/upload';
 import { validatePagination } from '../middleware/validation';
-import { companyRateLimit } from '../middleware/company-rate-limit';
+import { companyRateLimit, csvImportRateLimit } from '../middleware/company-rate-limit';
 
 const router = Router();
 
@@ -124,7 +124,8 @@ router.get('/', validatePagination, clientController.list);
 router.get('/search', validatePagination, clientController.search); // Busca rápida para autocomplete
 router.get('/export/csv', validatePagination, clientController.exportCSV);
 router.get('/export/pdf', validatePagination, clientController.exportPDF);
-router.post('/import/csv', upload.single('file'), validateUploadContent, clientController.importCSV);
+router.post('/import/csv', csvImportRateLimit, csvUpload.single('file'), validateUploadContent, clientController.importCSV);
+router.get('/import/status/:jobId', clientController.getImportStatus);
 router.get('/:id', clientController.get);
 router.put('/:id', updateClientValidation, validate, clientController.update);
 router.delete('/:id', clientController.delete);

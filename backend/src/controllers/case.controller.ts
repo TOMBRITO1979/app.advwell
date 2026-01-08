@@ -8,6 +8,7 @@ import { AIService } from '../services/ai/ai.service';
 import { sendCaseUpdateNotification } from '../utils/email';
 import AuditService from '../services/audit.service';
 import { auditLogService } from '../services/audit-log.service';
+import { enqueueCsvImport, getImportStatus } from '../queues/csv-import.queue';
 import { Decimal } from '@prisma/client/runtime/library';
 import { appLogger } from '../utils/logger';
 
@@ -764,6 +765,7 @@ export class CaseController {
   async importCSV(req: AuthRequest, res: Response) {
     try {
       const companyId = req.user!.companyId;
+      const userId = req.user!.userId;
 
       if (!companyId) {
         return res.status(403).json({ error: 'Usuário não possui empresa associada' });
@@ -773,10 +775,8 @@ export class CaseController {
         return res.status(400).json({ error: 'Nenhum arquivo enviado' });
       }
 
-      // Remover BOM se existir
       const csvContent = req.file.buffer.toString('utf-8').replace(/^\ufeff/, '');
 
-      // Parse do CSV
       const records = parse(csvContent, {
         columns: true,
         skip_empty_lines: true,
@@ -784,115 +784,47 @@ export class CaseController {
         bom: true,
       });
 
-      const results = {
-        total: records.length,
-        success: 0,
-        errors: [] as { line: number; processNumber: string; error: string }[],
-      };
-
-      // Processar cada linha
-      for (let i = 0; i < records.length; i++) {
-        const record = records[i] as any;
-        const lineNumber = i + 2;
-
-        try {
-          // Validar campos obrigatórios
-          if (!record['Número do Processo'] || record['Número do Processo'].trim() === '') {
-            results.errors.push({
-              line: lineNumber,
-              processNumber: record['Número do Processo'] || '(vazio)',
-              error: 'Número do processo é obrigatório',
-            });
-            continue;
-          }
-
-          if (!record['CPF Cliente'] && !record['Cliente']) {
-            results.errors.push({
-              line: lineNumber,
-              processNumber: record['Número do Processo'],
-              error: 'CPF ou Nome do cliente é obrigatório',
-            });
-            continue;
-          }
-
-          // Buscar cliente pelo CPF ou nome
-          const client = await prisma.client.findFirst({
-            where: {
-              companyId,
-              OR: [
-                { cpf: record['CPF Cliente']?.trim() },
-                { name: record['Cliente']?.trim() },
-              ],
-            },
-          });
-
-          if (!client) {
-            results.errors.push({
-              line: lineNumber,
-              processNumber: record['Número do Processo'],
-              error: `Cliente não encontrado (CPF: ${record['CPF Cliente'] || 'N/A'}, Nome: ${record['Cliente'] || 'N/A'})`,
-            });
-            continue;
-          }
-
-          // Verificar se processo já existe na empresa
-          const existingCase = await prisma.case.findFirst({
-            where: {
-              companyId,
-              processNumber: record['Número do Processo'].trim()
-            },
-          });
-
-          if (existingCase) {
-            results.errors.push({
-              line: lineNumber,
-              processNumber: record['Número do Processo'],
-              error: 'Número de processo já cadastrado nesta empresa',
-            });
-            continue;
-          }
-
-          // Converter valor se existir
-          let value = null;
-          if (record.Valor) {
-            const valueStr = record.Valor.replace(/[R$\s.]/g, '').replace(',', '.');
-            value = parseFloat(valueStr);
-            if (isNaN(value)) {
-              value = null;
-            }
-          }
-
-          // Criar processo
-          await prisma.case.create({
-            data: {
-              companyId,
-              clientId: client.id,
-              processNumber: record['Número do Processo'].trim(),
-              court: record.Tribunal?.trim() || '',
-              subject: record.Assunto?.trim() || '',
-              value,
-              status: record.Status?.trim() || 'ACTIVE',
-              notes: record['Observações']?.trim() || null,
-            },
-          });
-
-          results.success++;
-        } catch (error: any) {
-          results.errors.push({
-            line: lineNumber,
-            processNumber: record['Número do Processo'] || '(vazio)',
-            error: 'Erro ao processar linha', // Safe: no error.message exposure
-          });
-        }
+      const MAX_CSV_ROWS = 500;
+      if (records.length > MAX_CSV_ROWS) {
+        return res.status(400).json({
+          error: 'Arquivo muito grande',
+          message: `O arquivo contém ${records.length} registros. O máximo permitido é ${MAX_CSV_ROWS} registros por importação.`,
+          maxRows: MAX_CSV_ROWS,
+          currentRows: records.length,
+        });
       }
 
-      res.json({
-        message: 'Importação concluída',
-        results,
+      if (records.length === 0) {
+        return res.status(400).json({ error: 'Arquivo CSV vazio' });
+      }
+
+      const jobId = await enqueueCsvImport('import-cases', companyId, userId, csvContent, records.length);
+
+      res.status(202).json({
+        message: 'Importação iniciada. O processamento ocorre em segundo plano.',
+        jobId,
+        totalRows: records.length,
+        statusUrl: `/api/cases/import/status/${jobId}`,
       });
     } catch (error) {
-      appLogger.error('Erro ao importar processos', error as Error);
-      res.status(500).json({ error: 'Erro ao importar processos' });
+      appLogger.error('Erro ao iniciar importação de processos', error as Error);
+      res.status(500).json({ error: 'Erro ao iniciar importação de processos' });
+    }
+  }
+
+  async getImportStatus(req: AuthRequest, res: Response) {
+    try {
+      const { jobId } = req.params;
+      const status = await getImportStatus(jobId);
+
+      if (!status) {
+        return res.status(404).json({ error: 'Job não encontrado ou expirado' });
+      }
+
+      res.json(status);
+    } catch (error) {
+      appLogger.error('Erro ao buscar status de importação', error as Error);
+      res.status(500).json({ error: 'Erro ao buscar status de importação' });
     }
   }
 

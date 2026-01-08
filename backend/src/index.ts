@@ -13,6 +13,7 @@ import { redis, cache } from './utils/redis';
 import { enqueueDailySync, getQueueStats } from './queues/sync.queue';
 import { getEmailQueueStats } from './queues/email.queue';
 import { getWhatsAppQueueStats } from './queues/whatsapp.queue';
+import { getCsvImportQueueStats } from './queues/csv-import.queue';
 import crypto from 'crypto';
 import backupEmailService from './services/backup-email.service';
 import databaseBackupService from './services/database-backup.service';
@@ -446,6 +447,20 @@ app.get('/health/detailed', async (req, res) => {
     };
   } catch (error) {
     health.checks.whatsappQueue = {
+      status: 'unavailable',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    };
+  }
+
+  // 3.3 CSV Import queue stats
+  try {
+    const csvImportQueueStats = await getCsvImportQueueStats();
+    health.checks.csvImportQueue = {
+      status: 'operational',
+      ...csvImportQueueStats
+    };
+  } catch (error) {
+    health.checks.csvImportQueue = {
       status: 'unavailable',
       error: error instanceof Error ? error.message : 'Unknown error'
     };

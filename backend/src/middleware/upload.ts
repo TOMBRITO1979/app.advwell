@@ -142,6 +142,21 @@ export const upload = multer({
   },
 });
 
+// Upload específico para CSV (limite muito menor para proteção do sistema)
+export const csvUpload = multer({
+  storage,
+  fileFilter: (req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+    if (file.mimetype === 'text/csv') {
+      cb(null, true);
+    } else {
+      cb(new Error('Apenas arquivos CSV são permitidos'));
+    }
+  },
+  limits: {
+    fileSize: 1 * 1024 * 1024, // 1MB máximo para CSV (proteção contra abuse)
+  },
+});
+
 // Upload para fotos de perfil (limite menor)
 export const profilePhotoUpload = multer({
   storage,

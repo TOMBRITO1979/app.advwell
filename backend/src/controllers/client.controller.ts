@@ -5,6 +5,7 @@ import { parse } from 'csv-parse/sync';
 import { sanitizeString } from '../utils/sanitize';
 import { auditLogService } from '../services/audit-log.service';
 import { appLogger } from '../utils/logger';
+import { enqueueCsvImport, getImportStatus } from '../queues/csv-import.queue';
 
 // Helper para construir filtros de busca (fora da classe para evitar problemas com this)
 function buildClientWhereClause(companyId: string, query: any) {
@@ -80,6 +81,22 @@ export class ClientController {
         if (existingClientWithEmail) {
           return res.status(400).json({
             error: `Já existe um cliente com este email: ${existingClientWithEmail.name}`
+          });
+        }
+      }
+
+      // Verificar se telefone já existe na empresa (se foi informado)
+      if (phone && phone.trim()) {
+        const existingClientWithPhone = await prisma.client.findFirst({
+          where: {
+            companyId,
+            phone: phone.trim(),
+          },
+        });
+
+        if (existingClientWithPhone) {
+          return res.status(400).json({
+            error: `Já existe um cliente com este telefone: ${existingClientWithPhone.name}`
           });
         }
       }
@@ -319,6 +336,24 @@ export class ClientController {
         if (existingClientWithEmail) {
           return res.status(400).json({
             error: `Já existe um cliente com este email: ${existingClientWithEmail.name}`
+          });
+        }
+      }
+
+      // Verificar se telefone já existe em outro cliente da empresa
+      if (cleanPhone && cleanPhone !== oldClient.phone) {
+        const existingClientWithPhone = await prisma.client.findFirst({
+          where: {
+            companyId: companyId!,
+            phone: cleanPhone,
+            id: { not: id }, // Excluir o próprio cliente
+            active: true,
+          },
+        });
+
+        if (existingClientWithPhone) {
+          return res.status(400).json({
+            error: `Já existe um cliente com este telefone: ${existingClientWithPhone.name}`
           });
         }
       }
@@ -619,6 +654,7 @@ export class ClientController {
   async importCSV(req: AuthRequest, res: Response) {
     try {
       const companyId = req.user!.companyId;
+      const userId = req.user!.userId;
 
       if (!companyId) {
         return res.status(403).json({ error: 'Usuário não possui empresa associada' });
@@ -631,7 +667,7 @@ export class ClientController {
       // Remover BOM se existir
       const csvContent = req.file.buffer.toString('utf-8').replace(/^\ufeff/, '');
 
-      // Parse do CSV
+      // Parse do CSV para validar e contar linhas
       const records = parse(csvContent, {
         columns: true,
         skip_empty_lines: true,
@@ -639,103 +675,50 @@ export class ClientController {
         bom: true,
       });
 
-      const results = {
-        total: records.length,
-        success: 0,
-        errors: [] as { line: number; name: string; error: string }[],
-      };
-
-      // Processar cada linha
-      for (let i = 0; i < records.length; i++) {
-        const record = records[i] as any;
-        const lineNumber = i + 2; // +2 porque linha 1 é header e array começa em 0
-
-        try {
-          // Validar campo obrigatório
-          if (!record.Nome || record.Nome.trim() === '') {
-            results.errors.push({
-              line: lineNumber,
-              name: record.Nome || '(vazio)',
-              error: 'Nome é obrigatório',
-            });
-            continue;
-          }
-
-          // Verificar email duplicado na empresa
-          const importEmail = record.Email?.trim()?.toLowerCase();
-          if (importEmail) {
-            const existingWithEmail = await prisma.client.findFirst({
-              where: { companyId, email: importEmail },
-            });
-            if (existingWithEmail) {
-              results.errors.push({
-                line: lineNumber,
-                name: record.Nome,
-                error: `Email já existe: ${existingWithEmail.name}`,
-              });
-              continue;
-            }
-          }
-
-          // Converter data de nascimento se existir
-          let birthDate = null;
-          if (record['Data de Nascimento']) {
-            // Aceita formatos: DD/MM/YYYY ou YYYY-MM-DD
-            const dateStr = record['Data de Nascimento'].trim();
-            if (dateStr) {
-              if (dateStr.includes('/')) {
-                const [day, month, year] = dateStr.split('/');
-                birthDate = new Date(`${year}-${month}-${day}`);
-              } else {
-                birthDate = new Date(dateStr);
-              }
-
-              if (isNaN(birthDate.getTime())) {
-                birthDate = null;
-              }
-            }
-          }
-
-          // Criar cliente
-          await prisma.client.create({
-            data: {
-              companyId,
-              personType: record['Tipo']?.trim() === 'JURIDICA' ? 'JURIDICA' : 'FISICA',
-              name: record.Nome.trim(),
-              cpf: record['CPF/CNPJ']?.trim() || record.CPF?.trim() || null,
-              rg: record.RG?.trim() || null,
-              email: record.Email?.trim() || null,
-              phone: record.Telefone?.trim() || null,
-              address: record['Endereço']?.trim() || null,
-              city: record.Cidade?.trim() || null,
-              state: record.Estado?.trim() || null,
-              zipCode: record.CEP?.trim() || null,
-              profession: record['Profissão']?.trim() || null,
-              maritalStatus: record['Estado Civil']?.trim() || null,
-              birthDate,
-              representativeName: record['Representante Legal']?.trim() || null,
-              representativeCpf: record['CPF Representante']?.trim() || null,
-              notes: record['Observações']?.trim() || null,
-            },
-          });
-
-          results.success++;
-        } catch (error: any) {
-          results.errors.push({
-            line: lineNumber,
-            name: record.Nome || '(vazio)',
-            error: 'Erro ao processar linha', // Safe: no error.message exposure
-          });
-        }
+      // PROTEÇÃO: Limitar quantidade de linhas para evitar sobrecarga
+      const MAX_CSV_ROWS = 500;
+      if (records.length > MAX_CSV_ROWS) {
+        return res.status(400).json({
+          error: 'Arquivo muito grande',
+          message: `O arquivo contém ${records.length} registros. O máximo permitido é ${MAX_CSV_ROWS} registros por importação. Divida seu arquivo em partes menores.`,
+          maxRows: MAX_CSV_ROWS,
+          currentRows: records.length,
+        });
       }
 
-      res.json({
-        message: 'Importação concluída',
-        results,
+      if (records.length === 0) {
+        return res.status(400).json({ error: 'Arquivo CSV vazio' });
+      }
+
+      // Enfileirar job para processamento em background
+      const jobId = await enqueueCsvImport('import-clients', companyId, userId, csvContent, records.length);
+
+      res.status(202).json({
+        message: 'Importação iniciada. O processamento ocorre em segundo plano.',
+        jobId,
+        totalRows: records.length,
+        statusUrl: `/api/clients/import/status/${jobId}`,
       });
     } catch (error) {
-      appLogger.error('Erro ao importar clientes', error as Error);
-      res.status(500).json({ error: 'Erro ao importar clientes' });
+      appLogger.error('Erro ao iniciar importação de clientes', error as Error);
+      res.status(500).json({ error: 'Erro ao iniciar importação de clientes' });
+    }
+  }
+
+  async getImportStatus(req: AuthRequest, res: Response) {
+    try {
+      const { jobId } = req.params;
+
+      const status = await getImportStatus(jobId);
+
+      if (!status) {
+        return res.status(404).json({ error: 'Job não encontrado ou expirado' });
+      }
+
+      res.json(status);
+    } catch (error) {
+      appLogger.error('Erro ao buscar status de importação', error as Error);
+      res.status(500).json({ error: 'Erro ao buscar status de importação' });
     }
   }
 

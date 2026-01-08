@@ -6,9 +6,9 @@ import RedisStore from 'rate-limit-redis';
 import caseController from '../controllers/case.controller';
 import { authenticate, AuthRequest } from '../middleware/auth';
 import { validateTenant } from '../middleware/tenant';
-import { upload, validateUploadContent } from '../middleware/upload';
+import { upload, csvUpload, validateUploadContent } from '../middleware/upload';
 import { validatePagination } from '../middleware/validation';
-import { companyRateLimit } from '../middleware/company-rate-limit';
+import { companyRateLimit, csvImportRateLimit } from '../middleware/company-rate-limit';
 import { redis } from '../utils/redis';
 
 const router = Router();
@@ -190,7 +190,8 @@ router.get('/deadlines-today', caseController.getDeadlinesToday); // Prazos venc
 router.put('/:id/deadline', updateDeadlineValidation, validate, caseController.updateDeadline); // Atualiza prazo do processo
 router.post('/:id/deadline/toggle', idParamValidation, validate, caseController.toggleDeadlineCompleted); // Marca prazo como cumprido/não cumprido
 router.get('/export/csv', validatePagination, caseController.exportCSV);
-router.post('/import/csv', upload.single('file'), validateUploadContent, caseController.importCSV);
+router.post('/import/csv', csvImportRateLimit, csvUpload.single('file'), validateUploadContent, caseController.importCSV);
+router.get('/import/status/:jobId', caseController.getImportStatus);
 router.get('/updates', validatePagination, caseController.getPendingUpdates); // Lista atualizações pendentes
 router.get('/:id/audit-logs', idParamValidation, validate, caseController.getAuditLogs); // Busca logs de auditoria
 router.get('/:id', idParamValidation, validate, caseController.get);

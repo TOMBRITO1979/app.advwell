@@ -6,6 +6,7 @@ import { parse } from 'csv-parse/sync';
 import { Decimal } from '@prisma/client/runtime/library';
 import { appLogger } from '../utils/logger';
 import * as pdfStyles from '../utils/pdfStyles';
+import { enqueueCsvImport, getImportStatus } from '../queues/csv-import.queue';
 
 // Helper para converter Prisma Decimal para number (necessário após migração Float → Decimal)
 const toNumber = (value: Decimal | number | null | undefined): number => {
@@ -660,6 +661,7 @@ export const exportCSV = async (req: AuthRequest, res: Response) => {
 export const importCSV = async (req: AuthRequest, res: Response) => {
   try {
     const companyId = req.user!.companyId;
+    const userId = req.user!.userId;
 
     if (!companyId) {
       return res.status(403).json({ error: 'Usuário não possui empresa associada' });
@@ -669,10 +671,8 @@ export const importCSV = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ error: 'Nenhum arquivo enviado' });
     }
 
-    // Remover BOM se existir
     const csvContent = req.file.buffer.toString('utf-8').replace(/^\ufeff/, '');
 
-    // Parse do CSV
     const records = parse(csvContent, {
       columns: true,
       skip_empty_lines: true,
@@ -680,159 +680,47 @@ export const importCSV = async (req: AuthRequest, res: Response) => {
       bom: true,
     });
 
-    const results = {
-      total: records.length,
-      success: 0,
-      errors: [] as { line: number; description: string; error: string }[],
-    };
-
-    // Processar cada linha
-    for (let i = 0; i < records.length; i++) {
-      const record = records[i] as any;
-      const lineNumber = i + 2; // +2 porque linha 1 é header e array começa em 0
-
-      try {
-        // Validar campos obrigatórios
-        if (!record.Tipo || (record.Tipo.trim() !== 'Receita' && record.Tipo.trim() !== 'Despesa' && record.Tipo.trim() !== 'INCOME' && record.Tipo.trim() !== 'EXPENSE')) {
-          results.errors.push({
-            line: lineNumber,
-            description: record['Descrição'] || '(vazio)',
-            error: 'Tipo deve ser "Receita", "Despesa", "INCOME" ou "EXPENSE"',
-          });
-          continue;
-        }
-
-        if (!record.Cliente || record.Cliente.trim() === '') {
-          results.errors.push({
-            line: lineNumber,
-            description: record['Descrição'] || '(vazio)',
-            error: 'Cliente é obrigatório',
-          });
-          continue;
-        }
-
-        if (!record['Descrição'] || record['Descrição'].trim() === '') {
-          results.errors.push({
-            line: lineNumber,
-            description: record.Cliente || '(vazio)',
-            error: 'Descrição é obrigatória',
-          });
-          continue;
-        }
-
-        if (!record.Valor || isNaN(parseFloat(record.Valor.replace(',', '.')))) {
-          results.errors.push({
-            line: lineNumber,
-            description: record['Descrição'] || '(vazio)',
-            error: 'Valor deve ser um número válido',
-          });
-          continue;
-        }
-
-        if (!record.Data) {
-          results.errors.push({
-            line: lineNumber,
-            description: record['Descrição'] || '(vazio)',
-            error: 'Data é obrigatória',
-          });
-          continue;
-        }
-
-        // Converter tipo
-        const type = (record.Tipo.trim() === 'Receita' || record.Tipo.trim() === 'INCOME') ? 'INCOME' : 'EXPENSE';
-
-        // Buscar cliente por nome ou CPF
-        const clientSearch = record.Cliente.trim();
-        const client = await prisma.client.findFirst({
-          where: {
-            companyId,
-            OR: [
-              { name: { contains: clientSearch, mode: 'insensitive' } },
-              { cpf: clientSearch },
-            ],
-          },
-        });
-
-        if (!client) {
-          results.errors.push({
-            line: lineNumber,
-            description: record['Descrição'] || '(vazio)',
-            error: `Cliente "${clientSearch}" não encontrado`,
-          });
-          continue;
-        }
-
-        // Buscar processo se fornecido
-        let caseId = null;
-        if (record.Processo && record.Processo.trim() !== '') {
-          const processNumber = record.Processo.trim();
-          const caseFound = await prisma.case.findFirst({
-            where: {
-              companyId,
-              processNumber: { contains: processNumber, mode: 'insensitive' },
-            },
-          });
-
-          if (caseFound) {
-            caseId = caseFound.id;
-          } else {
-            results.errors.push({
-              line: lineNumber,
-              description: record['Descrição'] || '(vazio)',
-              error: `Processo "${processNumber}" não encontrado (transação será criada sem processo)`,
-            });
-          }
-        }
-
-        // Converter valor
-        const amount = parseFloat(record.Valor.replace(',', '.'));
-
-        // Converter data (aceita DD/MM/YYYY ou YYYY-MM-DD)
-        let date: Date;
-        const dateStr = record.Data.trim();
-        if (dateStr.includes('/')) {
-          const [day, month, year] = dateStr.split('/');
-          date = new Date(`${year}-${month}-${day}`);
-        } else {
-          date = new Date(dateStr);
-        }
-
-        if (isNaN(date.getTime())) {
-          results.errors.push({
-            line: lineNumber,
-            description: record['Descrição'] || '(vazio)',
-            error: 'Data inválida (use DD/MM/YYYY ou YYYY-MM-DD)',
-          });
-          continue;
-        }
-
-        // Criar transação
-        await prisma.financialTransaction.create({
-          data: {
-            companyId,
-            clientId: client.id,
-            caseId,
-            type,
-            description: sanitizeString(record['Descrição'].trim()) || record['Descrição'].trim(),
-            amount,
-            date,
-          },
-        });
-
-        results.success++;
-      } catch (error: any) {
-        results.errors.push({
-          line: lineNumber,
-          description: record['Descrição'] || '(vazio)',
-          error: 'Erro ao processar linha', // Safe: no error.message exposure
-        });
-      }
+    const MAX_CSV_ROWS = 500;
+    if (records.length > MAX_CSV_ROWS) {
+      return res.status(400).json({
+        error: 'Arquivo muito grande',
+        message: `O arquivo contém ${records.length} registros. O máximo permitido é ${MAX_CSV_ROWS} registros por importação.`,
+        maxRows: MAX_CSV_ROWS,
+        currentRows: records.length,
+      });
     }
 
-    res.json(results);
+    if (records.length === 0) {
+      return res.status(400).json({ error: 'Arquivo CSV vazio' });
+    }
+
+    const jobId = await enqueueCsvImport('import-financial', companyId, userId, csvContent, records.length);
+
+    res.status(202).json({
+      message: 'Importação iniciada. O processamento ocorre em segundo plano.',
+      jobId,
+      totalRows: records.length,
+      statusUrl: `/api/financial/import/status/${jobId}`,
+    });
   } catch (error: any) {
-    appLogger.error('Erro ao importar CSV', error as Error);
-    res.status(500).json({ error: 'Erro ao importar arquivo CSV' });
+    appLogger.error('Erro ao iniciar importação financeira', error as Error);
+    res.status(500).json({ error: 'Erro ao iniciar importação financeira' });
+  }
+};
+
+export const getFinancialImportStatus = async (req: AuthRequest, res: Response) => {
+  try {
+    const { jobId } = req.params;
+    const status = await getImportStatus(jobId);
+
+    if (!status) {
+      return res.status(404).json({ error: 'Job não encontrado ou expirado' });
+    }
+
+    res.json(status);
+  } catch (error) {
+    appLogger.error('Erro ao buscar status de importação', error as Error);
+    res.status(500).json({ error: 'Erro ao buscar status de importação' });
   }
 };
 

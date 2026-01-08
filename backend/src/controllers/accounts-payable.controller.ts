@@ -6,6 +6,7 @@ import { parse } from 'csv-parse/sync';
 import { sanitizeString } from '../utils/sanitize';
 import { appLogger } from '../utils/logger';
 import * as pdfStyles from '../utils/pdfStyles';
+import { enqueueCsvImport, getImportStatus } from '../queues/csv-import.queue';
 
 export class AccountsPayableController {
   // Criar nova conta a pagar
@@ -434,7 +435,7 @@ export class AccountsPayableController {
   async importCSV(req: AuthRequest, res: Response) {
     try {
       const companyId = req.user!.companyId;
-      const createdBy = req.user!.userId;
+      const userId = req.user!.userId;
 
       if (!companyId) {
         return res.status(403).json({ error: 'Usuário não possui empresa associada' });
@@ -453,105 +454,47 @@ export class AccountsPayableController {
         bom: true,
       });
 
-      const results = {
-        total: records.length,
-        success: 0,
-        errors: [] as { line: number; supplier: string; error: string }[],
-      };
-
-      for (let i = 0; i < records.length; i++) {
-        const record = records[i] as any;
-        const lineNumber = i + 2;
-
-        try {
-          // Validar campos obrigatórios
-          if (!record.Fornecedor || record.Fornecedor.trim() === '') {
-            results.errors.push({
-              line: lineNumber,
-              supplier: record.Fornecedor || '(vazio)',
-              error: 'Fornecedor é obrigatório',
-            });
-            continue;
-          }
-
-          if (!record['Descrição'] || record['Descrição'].trim() === '') {
-            results.errors.push({
-              line: lineNumber,
-              supplier: record.Fornecedor || '(vazio)',
-              error: 'Descrição é obrigatória',
-            });
-            continue;
-          }
-
-          if (!record.Valor || isNaN(parseFloat(record.Valor.replace(',', '.')))) {
-            results.errors.push({
-              line: lineNumber,
-              supplier: record.Fornecedor || '(vazio)',
-              error: 'Valor deve ser um número válido',
-            });
-            continue;
-          }
-
-          if (!record.Vencimento) {
-            results.errors.push({
-              line: lineNumber,
-              supplier: record.Fornecedor || '(vazio)',
-              error: 'Vencimento é obrigatório',
-            });
-            continue;
-          }
-
-          // Converter valor
-          const amount = parseFloat(record.Valor.replace(',', '.'));
-
-          // Converter data
-          let dueDate: Date;
-          const dateStr = record.Vencimento.trim();
-          if (dateStr.includes('/')) {
-            const [day, month, year] = dateStr.split('/');
-            dueDate = new Date(`${year}-${month}-${day}`);
-          } else {
-            dueDate = new Date(dateStr);
-          }
-
-          if (isNaN(dueDate.getTime())) {
-            results.errors.push({
-              line: lineNumber,
-              supplier: record.Fornecedor || '(vazio)',
-              error: 'Data de vencimento inválida (use DD/MM/YYYY ou YYYY-MM-DD)',
-            });
-            continue;
-          }
-
-          // Criar conta a pagar
-          await prisma.accountPayable.create({
-            data: {
-              companyId,
-              supplier: sanitizeString(record.Fornecedor.trim()) || record.Fornecedor.trim(),
-              description: sanitizeString(record['Descrição'].trim()) || record['Descrição'].trim(),
-              amount,
-              dueDate,
-              category: record.Categoria?.trim() || null,
-              notes: record['Observações'] ? (sanitizeString(record['Observações'].trim()) || record['Observações'].trim()) : null,
-              createdBy,
-              status: 'PENDING',
-            },
-          });
-
-          results.success++;
-        } catch (error: any) {
-          results.errors.push({
-            line: lineNumber,
-            supplier: record.Fornecedor || '(vazio)',
-            error: 'Erro ao processar linha', // Safe: no error.message exposure
-          });
-        }
+      const MAX_CSV_ROWS = 500;
+      if (records.length > MAX_CSV_ROWS) {
+        return res.status(400).json({
+          error: 'Arquivo muito grande',
+          message: `O arquivo contém ${records.length} registros. O máximo permitido é ${MAX_CSV_ROWS} registros por importação.`,
+          maxRows: MAX_CSV_ROWS,
+          currentRows: records.length,
+        });
       }
 
-      res.json(results);
+      if (records.length === 0) {
+        return res.status(400).json({ error: 'Arquivo CSV vazio' });
+      }
+
+      const jobId = await enqueueCsvImport('import-accounts-payable', companyId, userId, csvContent, records.length);
+
+      res.status(202).json({
+        message: 'Importação iniciada. O processamento ocorre em segundo plano.',
+        jobId,
+        totalRows: records.length,
+        statusUrl: `/api/accounts-payable/import/status/${jobId}`,
+      });
     } catch (error: any) {
-      appLogger.error('Erro ao importar CSV:', error as Error);
-      res.status(500).json({ error: 'Erro ao importar arquivo CSV' });
+      appLogger.error('Erro ao iniciar importação de contas a pagar', error as Error);
+      res.status(500).json({ error: 'Erro ao iniciar importação de contas a pagar' });
+    }
+  }
+
+  async getImportStatus(req: AuthRequest, res: Response) {
+    try {
+      const { jobId } = req.params;
+      const status = await getImportStatus(jobId);
+
+      if (!status) {
+        return res.status(404).json({ error: 'Job não encontrado ou expirado' });
+      }
+
+      res.json(status);
+    } catch (error) {
+      appLogger.error('Erro ao buscar status de importação', error as Error);
+      res.status(500).json({ error: 'Erro ao buscar status de importação' });
     }
   }
 

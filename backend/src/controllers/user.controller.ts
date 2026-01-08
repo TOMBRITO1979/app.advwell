@@ -101,6 +101,7 @@ export class UserController {
           role: 'USER',
           companyId,
           hideSidebar: hideSidebar || false,
+          emailVerified: true, // Usuários criados por admin não precisam verificar email
         },
         select: {
           id: true,

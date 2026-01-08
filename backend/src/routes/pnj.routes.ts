@@ -4,8 +4,8 @@ import { Request, Response, NextFunction } from 'express';
 import pnjController from '../controllers/pnj.controller';
 import { authenticate } from '../middleware/auth';
 import { validateTenant } from '../middleware/tenant';
-import { companyRateLimit } from '../middleware/company-rate-limit';
-import { upload, validateUploadContent } from '../middleware/upload';
+import { companyRateLimit, csvImportRateLimit } from '../middleware/company-rate-limit';
+import { upload, csvUpload, validateUploadContent } from '../middleware/upload';
 
 const router = Router();
 
@@ -106,7 +106,8 @@ const movementValidation = [
 // ============================================================================
 router.get('/', pnjController.list);
 router.get('/export/csv', pnjController.exportCSV);
-router.post('/import/csv', upload.single('file'), pnjController.importCSV);
+router.post('/import/csv', csvImportRateLimit, csvUpload.single('file'), validateUploadContent, pnjController.importCSV);
+router.get('/import/status/:jobId', pnjController.getImportStatus);
 router.get('/:id', pnjController.getById);
 router.post('/', pnjValidation, validate, pnjController.create);
 router.put('/:id', pnjValidation, validate, pnjController.update);

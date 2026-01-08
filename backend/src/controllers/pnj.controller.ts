@@ -5,6 +5,7 @@ import { sanitizeString } from '../utils/sanitize';
 import { appLogger } from '../utils/logger';
 import { uploadToS3, deleteFromS3, getSignedS3Url } from '../utils/s3';
 import { parse } from 'csv-parse/sync';
+import { enqueueCsvImport, getImportStatus } from '../queues/csv-import.queue';
 
 export class PNJController {
   /**
@@ -991,7 +992,7 @@ export class PNJController {
   async importCSV(req: AuthRequest, res: Response) {
     try {
       const companyId = req.user!.companyId;
-      const createdBy = req.user!.userId;
+      const userId = req.user!.userId;
 
       if (!companyId) {
         return res.status(403).json({ error: 'Usuário não possui empresa associada' });
@@ -1001,10 +1002,8 @@ export class PNJController {
         return res.status(400).json({ error: 'Nenhum arquivo enviado' });
       }
 
-      // Remove BOM if present
       const csvContent = req.file.buffer.toString('utf-8').replace(/^\ufeff/, '');
 
-      // Parse CSV
       const records = parse(csvContent, {
         columns: true,
         skip_empty_lines: true,
@@ -1016,129 +1015,43 @@ export class PNJController {
         return res.status(400).json({ error: 'Arquivo CSV vazio ou inválido' });
       }
 
-      // Status mapping
-      const statusMap: Record<string, string> = {
-        'ativo': 'ACTIVE',
-        'active': 'ACTIVE',
-        'arquivado': 'ARCHIVED',
-        'archived': 'ARCHIVED',
-        'encerrado': 'CLOSED',
-        'closed': 'CLOSED',
-      };
-
-      // Parse date helper
-      const parseDate = (dateStr: string): Date | null => {
-        if (!dateStr) return null;
-        // Try DD/MM/YYYY format
-        const parts = dateStr.split('/');
-        if (parts.length === 3) {
-          const [day, month, year] = parts;
-          return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-        }
-        // Try ISO format
-        const d = new Date(dateStr);
-        return isNaN(d.getTime()) ? null : d;
-      };
-
-      let imported = 0;
-      let skipped = 0;
-      const errors: string[] = [];
-
-      for (let i = 0; i < records.length; i++) {
-        const record = records[i];
-        const rowNum = i + 2; // +2 because row 1 is header
-
-        try {
-          // Get required fields
-          const number = record['Numero'] || record['numero'] || record['Number'];
-          const title = record['Titulo'] || record['titulo'] || record['Title'];
-
-          if (!number || !title) {
-            errors.push(`Linha ${rowNum}: Numero e Titulo sao obrigatorios`);
-            skipped++;
-            continue;
-          }
-
-          // Check if already exists
-          const existing = await prisma.pNJ.findFirst({
-            where: {
-              companyId,
-              number: number.trim(),
-            },
-          });
-
-          if (existing) {
-            errors.push(`Linha ${rowNum}: PNJ ${number} ja existe`);
-            skipped++;
-            continue;
-          }
-
-          // Get optional fields
-          const protocol = record['Protocolo'] || record['protocolo'] || record['Protocol'] || null;
-          const description = record['Descricao'] || record['descricao'] || record['Description'] || null;
-          const statusRaw = (record['Status'] || record['status'] || 'ativo').toLowerCase();
-          const status = statusMap[statusRaw] || 'ACTIVE';
-          const openDateStr = record['Data Abertura'] || record['data_abertura'] || record['OpenDate'];
-          const closeDateStr = record['Data Encerramento'] || record['data_encerramento'] || record['CloseDate'];
-
-          const openDate = parseDate(openDateStr) || new Date();
-          const closeDate = parseDate(closeDateStr);
-
-          // Find client by name if provided
-          let clientId: string | null = null;
-          const clientName = record['Cliente'] || record['cliente'] || record['Client'];
-          if (clientName) {
-            const client = await prisma.client.findFirst({
-              where: {
-                companyId,
-                name: { contains: clientName.trim(), mode: 'insensitive' },
-              },
-            });
-            if (client) {
-              clientId = client.id;
-            }
-          }
-
-          // Create PNJ
-          await prisma.pNJ.create({
-            data: {
-              companyId,
-              number: sanitizeString(number.trim()) || number.trim(),
-              protocol: protocol ? sanitizeString(protocol.trim()) : null,
-              title: sanitizeString(title.trim()) || title.trim(),
-              description: description ? sanitizeString(description) : null,
-              status: status as any,
-              openDate,
-              closeDate,
-              clientId,
-              createdBy,
-            },
-          });
-
-          imported++;
-        } catch (err: any) {
-          errors.push(`Linha ${rowNum}: ${err.message || 'Erro desconhecido'}`);
-          skipped++;
-        }
+      const MAX_CSV_ROWS = 500;
+      if (records.length > MAX_CSV_ROWS) {
+        return res.status(400).json({
+          error: 'Arquivo muito grande',
+          message: `O arquivo contém ${records.length} registros. O máximo permitido é ${MAX_CSV_ROWS} registros por importação.`,
+          maxRows: MAX_CSV_ROWS,
+          currentRows: records.length,
+        });
       }
 
-      appLogger.info('Importacao CSV de PNJs concluida', {
-        companyId,
-        imported,
-        skipped,
-        total: records.length,
-      });
+      const jobId = await enqueueCsvImport('import-pnj', companyId, userId, csvContent, records.length);
 
-      res.json({
-        message: `Importacao concluida: ${imported} importados, ${skipped} ignorados`,
-        imported,
-        skipped,
-        total: records.length,
-        errors: errors.length > 0 ? errors.slice(0, 10) : undefined, // Show first 10 errors
+      res.status(202).json({
+        message: 'Importação iniciada. O processamento ocorre em segundo plano.',
+        jobId,
+        totalRows: records.length,
+        statusUrl: `/api/pnj/import/status/${jobId}`,
       });
     } catch (error: any) {
-      appLogger.error('Erro ao importar PNJs via CSV:', error as Error);
-      res.status(500).json({ error: error.message || 'Erro ao importar CSV' });
+      appLogger.error('Erro ao iniciar importação de PNJs', error as Error);
+      res.status(500).json({ error: 'Erro ao iniciar importação de PNJs' });
+    }
+  }
+
+  async getImportStatus(req: AuthRequest, res: Response) {
+    try {
+      const { jobId } = req.params;
+      const status = await getImportStatus(jobId);
+
+      if (!status) {
+        return res.status(404).json({ error: 'Job não encontrado ou expirado' });
+      }
+
+      res.json(status);
+    } catch (error) {
+      appLogger.error('Erro ao buscar status de importação', error as Error);
+      res.status(500).json({ error: 'Erro ao buscar status de importação' });
     }
   }
 }

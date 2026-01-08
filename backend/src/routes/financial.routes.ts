@@ -3,9 +3,9 @@ import { body, validationResult } from 'express-validator';
 import { Request, Response, NextFunction } from 'express';
 import { authenticate } from '../middleware/auth';
 import { validateTenant } from '../middleware/tenant';
-import { upload, validateUploadContent } from '../middleware/upload';
+import { upload, csvUpload, validateUploadContent } from '../middleware/upload';
 import { validatePagination } from '../middleware/validation';
-import { companyRateLimit } from '../middleware/company-rate-limit';
+import { companyRateLimit, csvImportRateLimit } from '../middleware/company-rate-limit';
 import {
   listTransactions,
   getTransaction,
@@ -16,6 +16,7 @@ import {
   exportPDF,
   exportCSV,
   importCSV,
+  getFinancialImportStatus,
   listInstallments,
   updateInstallment,
   generateInstallmentReceipt,
@@ -100,7 +101,8 @@ router.get('/', validatePagination, listTransactions);                    // Lis
 router.get('/summary', getFinancialSummary);          // Resumo financeiro
 router.get('/export/pdf', exportPDF);                 // Exportar para PDF
 router.get('/export/csv', exportCSV);                 // Exportar para CSV
-router.post('/import/csv', upload.single('file'), validateUploadContent, importCSV); // Importar transações via CSV
+router.post('/import/csv', csvImportRateLimit, csvUpload.single('file'), validateUploadContent, importCSV); // Importar transações via CSV
+router.get('/import/status/:jobId', getFinancialImportStatus); // Status da importação
 router.get('/:id/receipt', generateTransactionReceipt);  // Gerar recibo/comprovante da transação
 router.get('/:id', getTransaction);                   // Buscar transação por ID
 router.post('/', createTransactionValidation, validate, createTransaction);  // Criar nova transação

@@ -5,8 +5,8 @@ import accountsPayableController from '../controllers/accounts-payable.controlle
 import { authenticate } from '../middleware/auth';
 import { validateTenant } from '../middleware/tenant';
 import { validatePagination } from '../middleware/validation';
-import { upload, validateUploadContent } from '../middleware/upload';
-import { companyRateLimit } from '../middleware/company-rate-limit';
+import { upload, csvUpload, validateUploadContent } from '../middleware/upload';
+import { companyRateLimit, csvImportRateLimit } from '../middleware/company-rate-limit';
 
 const router = Router();
 
@@ -100,7 +100,8 @@ router.get('/due-today', accountsPayableController.getDueToday);
 // Rotas de exportação e importação
 router.get('/export/pdf', accountsPayableController.exportPDF);
 router.get('/export/csv', accountsPayableController.exportCSV);
-router.post('/import/csv', upload.single('file'), validateUploadContent, accountsPayableController.importCSV);
+router.post('/import/csv', csvImportRateLimit, csvUpload.single('file'), validateUploadContent, accountsPayableController.importCSV);
+router.get('/import/status/:jobId', accountsPayableController.getImportStatus);
 
 // Rotas de extrato (statement)
 router.get('/categories', accountsPayableController.getCategories);
