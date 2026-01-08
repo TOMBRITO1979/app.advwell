@@ -611,28 +611,30 @@ export const reviewWithAI = async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ error: 'Documento não encontrado' });
     }
 
-    // Buscar configuração de IA da empresa
-    const aiConfig = await prisma.aIConfig.findUnique({
-      where: { companyId },
-    });
-
-    if (!aiConfig || !aiConfig.enabled) {
-      return res.status(400).json({
-        error: 'Configuração de IA não encontrada ou desabilitada. Configure a IA em Configurações > IA.'
-      });
-    }
-
     // Importar serviço de IA
     const { AIService } = require('../services/ai/ai.service');
 
-    // Obter provider de IA
-    const provider = await AIService.getProvider(companyId);
+    // Obter contexto do provider de IA (suporta config própria ou compartilhada)
+    let aiContext: any;
+    try {
+      aiContext = await AIService.getProviderContext(companyId);
+    } catch (error: any) {
+      if (error.message?.startsWith('LIMIT_EXCEEDED:')) {
+        return res.status(400).json({
+          error: error.message.replace('LIMIT_EXCEEDED:', ''),
+          needsRecharge: true,
+        });
+      }
+      throw error;
+    }
 
-    if (!provider) {
+    if (!aiContext) {
       return res.status(400).json({
-        error: 'IA não configurada para esta empresa. Configure em Config. IA.'
+        error: 'IA não configurada para esta empresa. Configure sua própria chave API ou solicite acesso compartilhado.'
       });
     }
+
+    const provider = aiContext.provider;
 
     // Prompt para revisão e criação de documentos jurídicos
     const contentIsEmpty = !document.content || document.content.trim().length < 100;
@@ -720,17 +722,22 @@ Se não houver erros, retorne erros como array vazio e textoCorrigido igual ao o
       try {
         await prisma.aITokenUsage.create({
           data: {
-            aiConfigId: aiConfig.id,
+            aiConfigId: aiContext.aiConfigId,
             companyId: companyId,
             operation: contentIsEmpty ? 'generate_document' : 'review_document',
             promptTokens: aiResponse.usage.promptTokens,
             completionTokens: aiResponse.usage.completionTokens,
             totalTokens: aiResponse.usage.totalTokens,
-            model: aiConfig.model,
-            provider: aiConfig.provider,
-            metadata: { documentId: document.id, title: document.title },
+            model: aiContext.model,
+            provider: aiContext.providerType,
+            metadata: { documentId: document.id, title: document.title, isShared: aiContext.isShared },
           },
         });
+
+        // Atualizar uso compartilhado se aplicável
+        if (aiContext.isShared && aiContext.shareId) {
+          await AIService.updateSharedUsage(aiContext.shareId, aiResponse.usage.totalTokens);
+        }
       } catch (saveError) {
         appLogger.error('Erro ao salvar uso de tokens:', saveError as Error);
         // Não falha a operação por erro ao salvar métricas
@@ -780,28 +787,30 @@ export const generateOrReviewWithAI = async (req: AuthRequest, res: Response) =>
       return res.status(400).json({ error: 'Título é obrigatório' });
     }
 
-    // Buscar configuração de IA da empresa
-    const aiConfig = await prisma.aIConfig.findUnique({
-      where: { companyId },
-    });
-
-    if (!aiConfig || !aiConfig.enabled) {
-      return res.status(400).json({
-        error: 'Configuração de IA não encontrada ou desabilitada. Configure a IA em Configurações > IA.'
-      });
-    }
-
     // Importar serviço de IA
     const { AIService } = require('../services/ai/ai.service');
 
-    // Obter provider de IA
-    const provider = await AIService.getProvider(companyId);
+    // Obter contexto do provider de IA (suporta config própria ou compartilhada)
+    let aiContext: any;
+    try {
+      aiContext = await AIService.getProviderContext(companyId);
+    } catch (error: any) {
+      if (error.message?.startsWith('LIMIT_EXCEEDED:')) {
+        return res.status(400).json({
+          error: error.message.replace('LIMIT_EXCEEDED:', ''),
+          needsRecharge: true,
+        });
+      }
+      throw error;
+    }
 
-    if (!provider) {
+    if (!aiContext) {
       return res.status(400).json({
-        error: 'IA não configurada para esta empresa. Configure em Config. IA.'
+        error: 'IA não configurada para esta empresa. Configure sua própria chave API ou solicite acesso compartilhado.'
       });
     }
+
+    const provider = aiContext.provider;
 
     let prompt: string;
 
@@ -892,17 +901,22 @@ Se não houver erros, retorne erros como array vazio e textoCorrigido igual ao o
       try {
         await prisma.aITokenUsage.create({
           data: {
-            aiConfigId: aiConfig.id,
+            aiConfigId: aiContext.aiConfigId,
             companyId: companyId,
             operation: mode === 'generate' ? 'generate_document' : 'review_document',
             promptTokens: aiResponse.usage.promptTokens,
             completionTokens: aiResponse.usage.completionTokens,
             totalTokens: aiResponse.usage.totalTokens,
-            model: aiConfig.model,
-            provider: aiConfig.provider,
-            metadata: { title, mode },
+            model: aiContext.model,
+            provider: aiContext.providerType,
+            metadata: { title, mode, isShared: aiContext.isShared },
           },
         });
+
+        // Atualizar uso compartilhado se aplicável
+        if (aiContext.isShared && aiContext.shareId) {
+          await AIService.updateSharedUsage(aiContext.shareId, aiResponse.usage.totalTokens);
+        }
       } catch (saveError) {
         appLogger.error('Erro ao salvar uso de tokens:', saveError as Error);
         // Não falha a operação por erro ao salvar métricas

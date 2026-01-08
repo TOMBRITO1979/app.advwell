@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Layout from '../components/Layout';
 import api from '../services/api';
 import toast from 'react-hot-toast';
@@ -19,6 +19,8 @@ import {
   ArrowRight,
   Filter,
   Calendar,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import MobileCardList, { MobileCardItem } from '../components/MobileCardList';
 import { ExportButton } from '../components/ui';
@@ -133,6 +135,13 @@ const Leads: React.FC = () => {
   const [tags, setTags] = useState<Tag[]>([]);
   const [exportingCSV, setExportingCSV] = useState(false);
   const [exportingPDF, setExportingPDF] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showImportResults, setShowImportResults] = useState(false);
+  const [importResults, setImportResults] = useState<{
+    successCount: number;
+    errorCount: number;
+    errors: Array<{ line: number; identifier: string; error: string }>;
+  } | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showConvertModal, setShowConvertModal] = useState(false);
@@ -143,6 +152,12 @@ const Leads: React.FC = () => {
   const [checkingPhone, setCheckingPhone] = useState(false);
   const [phoneToCheck, setPhoneToCheck] = useState('');
   const [phoneCheckResult, setPhoneCheckResult] = useState<any>(null);
+
+  // Pagination
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [limit, setLimit] = useState(50);
+  const totalPages = Math.ceil(total / limit);
 
   const [formData, setFormData] = useState<LeadFormData>({
     name: '',
@@ -172,6 +187,10 @@ const Leads: React.FC = () => {
   useEffect(() => {
     loadLeads();
     loadStats();
+  }, [search, statusFilter, tagFilter, dateFrom, dateTo, page, limit]);
+
+  useEffect(() => {
+    setPage(1);
   }, [search, statusFilter, tagFilter, dateFrom, dateTo]);
 
   useEffect(() => {
@@ -189,13 +208,14 @@ const Leads: React.FC = () => {
 
   const loadLeads = async () => {
     try {
-      const params: any = { search, status: statusFilter, limit: 100 };
+      const params: any = { search, status: statusFilter, page, limit };
       if (tagFilter) params.tagId = tagFilter;
       if (dateFrom) params.dateFrom = dateFrom;
       if (dateTo) params.dateTo = dateTo;
 
       const response = await api.get('/leads', { params });
       setLeads(response.data.data);
+      setTotal(response.data.total);
     } catch (error) {
       toast.error('Erro ao carregar leads');
     } finally {
@@ -267,6 +287,84 @@ const Leads: React.FC = () => {
       toast.error('Erro ao exportar PDF');
     } finally {
       setExportingPDF(false);
+    }
+  };
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.name.endsWith('.csv')) {
+      toast.error('Por favor, selecione um arquivo CSV');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await api.post('/leads/import/csv', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      // Nova resposta assíncrona com jobId
+      if (response.data.jobId) {
+        toast.success(`Importação iniciada: ${response.data.totalRows} registros. Aguarde...`);
+
+        // Poll para verificar status
+        const pollStatus = async () => {
+          try {
+            const statusResponse = await api.get(`/leads/import/status/${response.data.jobId}`);
+            const status = statusResponse.data;
+
+            if (status.status === 'completed') {
+              setImportResults({
+                successCount: status.successCount,
+                errorCount: status.errorCount,
+                errors: status.errors || [],
+              });
+              setShowImportResults(true);
+              loadLeads();
+              loadStats();
+              toast.success(`Importação concluída: ${status.successCount} leads importados`);
+            } else if (status.status === 'failed') {
+              toast.error('Falha na importação');
+              setImportResults({
+                successCount: 0,
+                errorCount: status.totalRows,
+                errors: status.errors || [],
+              });
+              setShowImportResults(true);
+            } else if (status.status === 'processing' || status.status === 'pending') {
+              // Continuar polling
+              setTimeout(pollStatus, 2000);
+            }
+          } catch (err) {
+            console.error('Erro ao verificar status:', err);
+          }
+        };
+
+        // Iniciar polling
+        setTimeout(pollStatus, 2000);
+      }
+    } catch (error: any) {
+      console.error('Erro ao importar CSV:', error);
+      if (error.response?.data?.error) {
+        toast.error(error.response.data.message || error.response.data.error);
+      } else {
+        toast.error('Erro ao importar CSV');
+      }
+    }
+
+    // Limpar o input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
@@ -465,8 +563,20 @@ const Leads: React.FC = () => {
             </div>
           )}
 
+          {/* Hidden file input for CSV import */}
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            accept=".csv"
+            className="hidden"
+          />
           {/* Action Buttons */}
           <div className="grid grid-cols-3 sm:flex sm:flex-wrap gap-2 sm:gap-3">
+            <ExportButton
+              type="import"
+              onClick={handleImportClick}
+            />
             <ExportButton
               type="csv"
               onClick={handleExportCSV}
@@ -748,6 +858,39 @@ const Leads: React.FC = () => {
                 </table>
               </div>
             </>
+          )}
+
+          {/* Pagination */}
+          {total > 0 && (
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 px-4">
+              <div className="text-sm text-neutral-600">
+                Mostrando {(page - 1) * limit + 1} - {Math.min(page * limit, total)} de {total} leads
+              </div>
+              <div className="flex items-center gap-2">
+                <select value={limit} onChange={(e) => { setLimit(Number(e.target.value)); setPage(1); }} className="px-2 py-1 text-sm border border-neutral-300 rounded-lg">
+                  <option value={25}>25 por página</option>
+                  <option value={50}>50 por página</option>
+                  <option value={100}>100 por página</option>
+                  <option value={200}>200 por página</option>
+                </select>
+                <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="inline-flex items-center gap-1 px-3 py-2 text-sm text-neutral-600 hover:bg-neutral-100 rounded-lg disabled:opacity-50">
+                  <ChevronLeft className="w-4 h-4" /> Anterior
+                </button>
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let pageNum = totalPages <= 5 ? i + 1 : page <= 3 ? i + 1 : page >= totalPages - 2 ? totalPages - 4 + i : page - 2 + i;
+                    return (
+                      <button key={pageNum} onClick={() => setPage(pageNum)} className={`px-3 py-1 text-sm rounded-lg ${page === pageNum ? 'bg-primary-600 text-white' : 'text-neutral-600 hover:bg-neutral-100'}`}>
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+                </div>
+                <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="inline-flex items-center gap-1 px-3 py-2 text-sm text-neutral-600 hover:bg-neutral-100 rounded-lg disabled:opacity-50">
+                  Próximo <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
           )}
         </div>
       </div>
@@ -1491,6 +1634,70 @@ const Leads: React.FC = () => {
                   )}
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Resultados da Importação */}
+      {showImportResults && importResults && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-lg max-h-[80vh] overflow-hidden">
+            <div className="p-4 border-b flex items-center justify-between bg-neutral-50">
+              <h3 className="text-lg font-semibold text-neutral-900">Resultado da Importação</h3>
+              <button
+                onClick={() => setShowImportResults(false)}
+                className="p-2 hover:bg-neutral-200 rounded-lg transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="p-4 space-y-4 overflow-y-auto max-h-[60vh]">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+                  <p className="text-2xl font-bold text-green-600">{importResults.successCount}</p>
+                  <p className="text-sm text-green-700">Importados com sucesso</p>
+                </div>
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
+                  <p className="text-2xl font-bold text-red-600">{importResults.errorCount}</p>
+                  <p className="text-sm text-red-700">Erros</p>
+                </div>
+              </div>
+
+              {importResults.errors.length > 0 && (
+                <div>
+                  <h4 className="font-medium text-neutral-900 mb-2">Detalhes dos erros:</h4>
+                  <div className="bg-neutral-50 rounded-lg p-3 space-y-2 max-h-48 overflow-y-auto">
+                    {importResults.errors.map((err, idx) => (
+                      <div key={idx} className="text-sm bg-white p-2 rounded border border-neutral-200">
+                        <span className="font-medium">Linha {err.line}</span>
+                        {err.identifier && <span className="text-neutral-500"> ({err.identifier})</span>}
+                        <span className="text-red-600">: {err.error}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <p className="text-sm text-blue-800">
+                  <strong>Formato esperado do CSV:</strong> Nome, Telefone, Email, Status, Origem, Motivo do Contato, Observações
+                </p>
+                <p className="text-xs text-blue-600 mt-1">
+                  Status: Novo, Contatado, Qualificado, Convertido, Perdido<br/>
+                  Origem: WhatsApp, Telefone, Site, Indicação, Redes Sociais, Outros
+                </p>
+              </div>
+            </div>
+
+            <div className="p-4 border-t bg-neutral-50">
+              <button
+                onClick={() => setShowImportResults(false)}
+                className="w-full px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium"
+              >
+                Fechar
+              </button>
             </div>
           </div>
         </div>

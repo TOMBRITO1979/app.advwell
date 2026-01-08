@@ -42,7 +42,8 @@ export class UserController {
         ];
       }
 
-      const users = await prisma.user.findMany({
+      const [users, total] = await Promise.all([
+        prisma.user.findMany({
           where,
           skip,
           take: Number(limit),
@@ -63,9 +64,17 @@ export class UserController {
               },
             },
           },
-        });
+        }),
+        prisma.user.count({ where }),
+      ]);
 
-      res.json({ data: users });
+      res.json({
+        data: users,
+        total,
+        page: Number(page),
+        limit: Number(limit),
+        totalPages: Math.ceil(total / Number(limit)),
+      });
     } catch (error) {
       appLogger.error('Erro ao listar usuários', error as Error);
       res.status(500).json({ error: 'Erro ao listar usuários' });

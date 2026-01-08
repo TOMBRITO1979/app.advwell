@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import Layout from '../components/Layout';
 import api from '../services/api';
 import toast from 'react-hot-toast';
-import { Plus, Search, Edit, Trash2, DollarSign, TrendingUp, TrendingDown, X, Filter, List, FileText } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, DollarSign, TrendingUp, TrendingDown, X, Filter, List, FileText, ChevronLeft, ChevronRight } from 'lucide-react';
 import { ExportButton } from '../components/ui';
 import InstallmentsModal from '../components/InstallmentsModal';
 import { formatDate } from '../utils/dateFormatter';
@@ -100,10 +100,21 @@ const Financial: React.FC = () => {
   const [showInstallmentsModal, setShowInstallmentsModal] = useState(false);
   const [selectedTransactionForInstallments, setSelectedTransactionForInstallments] = useState<Transaction | null>(null);
 
+  // Pagination
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [limit, setLimit] = useState(50);
+  const totalPages = Math.ceil(total / limit);
+
   useEffect(() => {
     loadTransactions();
     loadClients();
     loadCases();
+  }, [search, filterType, filterClientId, filterStartDate, filterEndDate, page, limit]);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setPage(1);
   }, [search, filterType, filterClientId, filterStartDate, filterEndDate]);
 
   // Filter clients based on search text
@@ -134,7 +145,7 @@ const Financial: React.FC = () => {
 
   const loadTransactions = async () => {
     try {
-      const params: any = { limit: 1000 };
+      const params: any = { page, limit };
       if (search) params.search = search;
       if (filterType) params.type = filterType;
       if (filterClientId) params.clientId = filterClientId;
@@ -143,6 +154,7 @@ const Financial: React.FC = () => {
 
       const response = await api.get('/financial', { params });
       setTransactions(response.data.data);
+      setTotal(response.data.total);
       setSummary(response.data.summary);
     } catch (error) {
       toast.error('Erro ao carregar transações');
@@ -795,6 +807,74 @@ const Financial: React.FC = () => {
             </>
           )}
         </div>
+
+        {/* Pagination */}
+        {!loading && transactions.length > 0 && (
+          <div className="bg-white rounded-lg shadow px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-2 text-sm text-neutral-600">
+              <span>Mostrando {((page - 1) * limit) + 1} a {Math.min(page * limit, total)} de {total} transações</span>
+              <select
+                value={limit}
+                onChange={(e) => {
+                  setLimit(Number(e.target.value));
+                  setPage(1);
+                }}
+                className="ml-2 px-2 py-1 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+              >
+                <option value={25}>25</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+                <option value={200}>200</option>
+              </select>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setPage(page - 1)}
+                disabled={page === 1}
+                className="p-2 border border-neutral-300 rounded-md hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <ChevronLeft size={20} />
+              </button>
+
+              <div className="flex items-center gap-1">
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNum;
+                  if (totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (page <= 3) {
+                    pageNum = i + 1;
+                  } else if (page >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i;
+                  } else {
+                    pageNum = page - 2 + i;
+                  }
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => setPage(pageNum)}
+                      className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+                        page === pageNum
+                          ? 'bg-primary-100 text-primary-700 border border-primary-200'
+                          : 'border border-neutral-300 hover:bg-neutral-50'
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <button
+                onClick={() => setPage(page + 1)}
+                disabled={page === totalPages}
+                className="p-2 border border-neutral-300 rounded-md hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <ChevronRight size={20} />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Modal Criar/Editar */}

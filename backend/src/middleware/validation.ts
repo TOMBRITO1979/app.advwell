@@ -3,7 +3,7 @@ import { validationResult, ValidationChain } from 'express-validator';
 
 // SEGURANCA: Limites para paginacao (previne DoS via queries muito grandes)
 const MAX_PAGE = 10000;
-const MAX_LIMIT = 100;
+const MAX_LIMIT = 200;
 const DEFAULT_LIMIT = 10;
 const MAX_SEARCH_LENGTH = 200;
 

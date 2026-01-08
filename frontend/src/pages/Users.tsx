@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
 import api from '../services/api';
 import toast from 'react-hot-toast';
-import { Plus, Search, Edit, Trash2, X, Shield, Eye, Edit as EditIcon, Trash, EyeOff } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, X, Shield, Eye, Edit as EditIcon, Trash, EyeOff, ChevronLeft, ChevronRight } from 'lucide-react';
 import MobileCardList, { MobileCardItem } from '../components/MobileCardList';
 import { formatDate } from '../utils/dateFormatter';
 
@@ -84,16 +84,27 @@ const Users: React.FC = () => {
 
   const [permissions, setPermissions] = useState<Permission[]>([]);
 
+  // Pagination
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [limit, setLimit] = useState(50);
+  const totalPages = Math.ceil(total / limit);
+
   useEffect(() => {
     loadUsers();
+  }, [search, page, limit]);
+
+  useEffect(() => {
+    setPage(1);
   }, [search]);
 
   const loadUsers = async () => {
     try {
       const response = await api.get('/users', {
-        params: { search, limit: 100 },
+        params: { search, page, limit },
       });
       setUsers(response.data.data);
+      setTotal(response.data.total);
     } catch (error) {
       toast.error('Erro ao carregar usuários');
     } finally {
@@ -353,6 +364,76 @@ const Users: React.FC = () => {
                 </table>
               </div>
             </>
+          )}
+
+          {/* Pagination */}
+          {!loading && users.length > 0 && (
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4 pt-4 border-t border-neutral-200">
+              <div className="flex items-center gap-2 text-sm text-neutral-600">
+                <span>Exibindo {users.length} de {total} usuários</span>
+                <span className="text-neutral-400">|</span>
+                <span>Por página:</span>
+                <select
+                  value={limit}
+                  onChange={(e) => {
+                    setLimit(Number(e.target.value));
+                    setPage(1);
+                  }}
+                  className="px-2 py-1 border border-neutral-300 rounded-md text-sm min-h-[36px]"
+                >
+                  <option value={25}>25</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                  <option value={200}>200</option>
+                </select>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setPage(page - 1)}
+                  disabled={page <= 1}
+                  className="inline-flex items-center justify-center p-2 min-h-[36px] min-w-[36px] border border-neutral-300 rounded-md text-neutral-600 hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronLeft size={18} />
+                </button>
+
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let pageNum;
+                    if (totalPages <= 5) {
+                      pageNum = i + 1;
+                    } else if (page <= 3) {
+                      pageNum = i + 1;
+                    } else if (page >= totalPages - 2) {
+                      pageNum = totalPages - 4 + i;
+                    } else {
+                      pageNum = page - 2 + i;
+                    }
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => setPage(pageNum)}
+                        className={`inline-flex items-center justify-center min-h-[36px] min-w-[36px] px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+                          page === pageNum
+                            ? 'bg-primary-100 text-primary-700 border border-primary-200'
+                            : 'border border-neutral-300 text-neutral-600 hover:bg-neutral-50'
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <button
+                  onClick={() => setPage(page + 1)}
+                  disabled={page >= totalPages}
+                  className="inline-flex items-center justify-center p-2 min-h-[36px] min-w-[36px] border border-neutral-300 rounded-md text-neutral-600 hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronRight size={18} />
+                </button>
+              </div>
+            </div>
           )}
         </div>
       </div>

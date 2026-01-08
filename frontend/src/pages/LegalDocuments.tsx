@@ -16,6 +16,8 @@ import {
   PenTool,
   Users,
   Scale,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import MobileCardList, { MobileCardItem } from '../components/MobileCardList';
 
@@ -116,6 +118,11 @@ const LegalDocuments: React.FC = () => {
   // Toggle para incluir assinatura do sistema no PDF
   const [includeSignature, setIncludeSignature] = useState(true);
 
+  // Pagination state
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(50);
+  const [total, setTotal] = useState(0);
+
   // Tokens usados pela última operação de IA
   const [lastTokenUsage, setLastTokenUsage] = useState<{
     promptTokens: number;
@@ -127,15 +134,21 @@ const LegalDocuments: React.FC = () => {
     loadDocuments();
     loadUsers();
     loadCases();
+  }, [search, page, limit]);
+
+  // Reset page when search changes
+  useEffect(() => {
+    setPage(1);
   }, [search]);
 
   const loadDocuments = async () => {
     try {
-      const params: any = { limit: 1000 };
+      const params: any = { page, limit };
       if (search) params.search = search;
 
       const response = await api.get('/legal-documents', { params });
       setDocuments(response.data.data);
+      setTotal(response.data.pagination?.total || 0);
     } catch (error) {
       toast.error('Erro ao carregar documentos');
     } finally {
@@ -667,6 +680,50 @@ const LegalDocuments: React.FC = () => {
             </>
           )}
         </div>
+
+        {/* Pagination */}
+        {total > 0 && (
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white rounded-lg shadow px-4 py-3">
+            <span className="text-sm text-neutral-600">
+              Mostrando {((page - 1) * limit) + 1} a {Math.min(page * limit, total)} de {total} documentos
+            </span>
+            <div className="flex items-center gap-2">
+              <select
+                value={limit}
+                onChange={(e) => {
+                  setLimit(Number(e.target.value));
+                  setPage(1);
+                }}
+                className="px-2 py-1 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+              >
+                <option value={25}>25</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+                <option value={200}>200</option>
+              </select>
+              <span className="text-sm text-neutral-600">por página</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="inline-flex items-center justify-center p-2 min-h-[40px] min-w-[40px] border border-neutral-300 rounded-md hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <ChevronLeft size={18} />
+              </button>
+              <span className="text-sm text-neutral-700 px-3">
+                Página {page} de {Math.ceil(total / limit)}
+              </span>
+              <button
+                onClick={() => setPage(p => Math.min(Math.ceil(total / limit), p + 1))}
+                disabled={page >= Math.ceil(total / limit)}
+                className="inline-flex items-center justify-center p-2 min-h-[40px] min-w-[40px] border border-neutral-300 rounded-md hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <ChevronRight size={18} />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Modal Criar/Editar */}

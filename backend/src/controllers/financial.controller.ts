@@ -63,7 +63,8 @@ export const listTransactions = async (req: AuthRequest, res: Response) => {
       where.type = type;
     }
 
-    const transactions = await prisma.financialTransaction.findMany({
+    const [transactions, total] = await Promise.all([
+      prisma.financialTransaction.findMany({
         where,
         include: {
           client: {
@@ -84,7 +85,9 @@ export const listTransactions = async (req: AuthRequest, res: Response) => {
         orderBy: { date: 'desc' },
         skip,
         take: Number(limit),
-      });
+      }),
+      prisma.financialTransaction.count({ where }),
+    ]);
 
     // Calcular resumo financeiro
     const [incomeTotal, expenseTotal] = await Promise.all([
@@ -104,6 +107,10 @@ export const listTransactions = async (req: AuthRequest, res: Response) => {
 
     res.json({
       data: transactions,
+      total,
+      page: Number(page),
+      limit: Number(limit),
+      totalPages: Math.ceil(total / Number(limit)),
       summary: {
         totalIncome,
         totalExpense,
@@ -673,11 +680,16 @@ export const importCSV = async (req: AuthRequest, res: Response) => {
 
     const csvContent = req.file.buffer.toString('utf-8').replace(/^\ufeff/, '');
 
+    // Detectar delimitador (vírgula ou ponto e vírgula)
+    const firstLine = csvContent.split('\n')[0] || '';
+    const delimiter = firstLine.includes(';') ? ';' : ',';
+
     const records = parse(csvContent, {
       columns: true,
       skip_empty_lines: true,
       trim: true,
       bom: true,
+      delimiter,
     });
 
     const MAX_CSV_ROWS = 500;

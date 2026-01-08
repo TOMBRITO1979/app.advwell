@@ -14,6 +14,8 @@ import {
   Calendar,
   Users,
   User,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import Layout from '../components/Layout';
 import api from '../services/api';
@@ -63,6 +65,9 @@ export default function Announcements() {
   const [showModal, setShowModal] = useState(false);
   const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null);
   const [filter, setFilter] = useState<'all' | 'active' | 'inactive'>('all');
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(50);
+  const [total, setTotal] = useState(0);
   const [formData, setFormData] = useState({
     title: '',
     content: '',
@@ -75,7 +80,11 @@ export default function Announcements() {
   useEffect(() => {
     loadAnnouncements();
     loadClients();
-  }, []);
+  }, [page, limit]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [filter]);
 
   const loadClients = async () => {
     try {
@@ -88,8 +97,11 @@ export default function Announcements() {
 
   const loadAnnouncements = async () => {
     try {
-      const response = await api.get('/announcements');
-      setAnnouncements(response.data);
+      const response = await api.get('/announcements', {
+        params: { page, limit }
+      });
+      setAnnouncements(response.data.data);
+      setTotal(response.data.total);
     } catch (error) {
       toast.error('Erro ao carregar avisos');
     } finally {
@@ -331,6 +343,50 @@ export default function Announcements() {
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {/* Pagination */}
+        {total > 0 && (
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white rounded-xl shadow-sm border border-gray-100 px-6 py-4">
+            <p className="text-sm text-gray-600">
+              Mostrando {((page - 1) * limit) + 1} a {Math.min(page * limit, total)} de {total} avisos
+            </p>
+            <div className="flex items-center gap-2">
+              <select
+                value={limit}
+                onChange={(e) => {
+                  setLimit(Number(e.target.value));
+                  setPage(1);
+                }}
+                className="px-2 py-1 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+              >
+                <option value={25}>25</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+                <option value={200}>200</option>
+              </select>
+              <span className="text-sm text-gray-600">por página</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <ChevronLeft size={20} />
+              </button>
+              <span className="px-4 py-2 text-sm font-medium">
+                Página {page} de {Math.ceil(total / limit)}
+              </span>
+              <button
+                onClick={() => setPage(p => Math.min(Math.ceil(total / limit), p + 1))}
+                disabled={page >= Math.ceil(total / limit)}
+                className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <ChevronRight size={20} />
+              </button>
+            </div>
           </div>
         )}
 

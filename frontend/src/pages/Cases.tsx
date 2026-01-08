@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import Layout from '../components/Layout';
 import api from '../services/api';
 import toast from 'react-hot-toast';
-import { Plus, Search, RefreshCw, X, Calendar, User, FileText, Clock, Edit, Edit2, Trash2, Eye, Sparkles } from 'lucide-react';
+import { Plus, Search, RefreshCw, X, Calendar, User, FileText, Clock, Edit, Edit2, Trash2, Eye, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
 import { ExportButton } from '../components/ui';
 import CaseTimeline from '../components/CaseTimeline';
 import { formatDateTime } from '../utils/dateFormatter';
@@ -112,6 +112,12 @@ const Cases: React.FC = () => {
   const [importResults, setImportResults] = useState<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Pagination
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [limit, setLimit] = useState(50);
+  const totalPages = Math.ceil(total / limit);
+
   const [formData, setFormData] = useState({
     clientId: '',
     processNumber: '',
@@ -130,6 +136,11 @@ const Cases: React.FC = () => {
     loadCases();
     loadClients();
     loadUsers();
+  }, [search, statusFilter, page, limit]);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setPage(1);
   }, [search, statusFilter]);
 
   // Filter clients based on search text
@@ -148,9 +159,10 @@ const Cases: React.FC = () => {
   const loadCases = async () => {
     try {
       const response = await api.get('/cases', {
-        params: { search, status: statusFilter, limit: 50 },
+        params: { search, status: statusFilter, page, limit },
       });
       setCases(response.data.data);
+      setTotal(response.data.total || 0);
     } catch (error) {
       toast.error('Erro ao carregar processos');
     } finally {
@@ -201,12 +213,54 @@ const Cases: React.FC = () => {
         },
       });
 
-      setImportResults(response.data.results);
-      setShowImportModal(true);
-      loadCases();
+      // Novo formato assíncrono com jobId
+      if (response.data.jobId) {
+        toast.success(`Importação iniciada: ${response.data.totalRows} registros. Aguarde...`);
 
-      if (response.data.results.success > 0) {
-        toast.success(`${response.data.results.success} processo(s) importado(s) com sucesso!`);
+        const pollStatus = async () => {
+          try {
+            const statusResponse = await api.get(`/cases/import/status/${response.data.jobId}`);
+            const status = statusResponse.data;
+
+            if (status.status === 'completed') {
+              setImportResults({
+                total: status.totalRows,
+                success: status.successCount,
+                errors: status.errors || []
+              });
+              setShowImportModal(true);
+              loadCases();
+
+              if (status.successCount > 0) {
+                toast.success(`${status.successCount} processo(s) importado(s) com sucesso!`);
+              }
+            } else if (status.status === 'failed') {
+              toast.error('Falha na importação');
+              setImportResults({
+                total: status.totalRows,
+                success: 0,
+                errors: status.errors || [{ line: 0, error: 'Falha no processamento' }]
+              });
+              setShowImportModal(true);
+            } else {
+              // Still processing, poll again
+              setTimeout(pollStatus, 2000);
+            }
+          } catch (err) {
+            toast.error('Erro ao verificar status da importação');
+          }
+        };
+
+        setTimeout(pollStatus, 2000);
+      } else {
+        // Formato antigo (fallback)
+        setImportResults(response.data.results);
+        setShowImportModal(true);
+        loadCases();
+
+        if (response.data.results.success > 0) {
+          toast.success(`${response.data.results.success} processo(s) importado(s) com sucesso!`);
+        }
       }
     } catch (error: any) {
       toast.error(error.response?.data?.error || 'Erro ao importar CSV');
@@ -850,6 +904,76 @@ const Cases: React.FC = () => {
                   </tbody>
                 </table>
               </div>
+
+              {/* Pagination */}
+              {total > 0 && (
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 px-4">
+                  <div className="text-sm text-neutral-600">
+                    Mostrando {(page - 1) * limit + 1} - {Math.min(page * limit, total)} de {total} processos
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <select
+                      value={limit}
+                      onChange={(e) => {
+                        setLimit(Number(e.target.value));
+                        setPage(1);
+                      }}
+                      className="px-2 py-1 text-sm border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    >
+                      <option value={25}>25 por página</option>
+                      <option value={50}>50 por página</option>
+                      <option value={100}>100 por página</option>
+                      <option value={200}>200 por página</option>
+                    </select>
+                    <button
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                      disabled={page === 1}
+                      className="inline-flex items-center gap-1 px-3 py-2 text-sm text-neutral-600 hover:bg-neutral-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                      Anterior
+                    </button>
+
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                        let pageNum: number;
+                        if (totalPages <= 5) {
+                          pageNum = i + 1;
+                        } else if (page <= 3) {
+                          pageNum = i + 1;
+                        } else if (page >= totalPages - 2) {
+                          pageNum = totalPages - 4 + i;
+                        } else {
+                          pageNum = page - 2 + i;
+                        }
+
+                        return (
+                          <button
+                            key={pageNum}
+                            onClick={() => setPage(pageNum)}
+                            className={`px-3 py-1 text-sm rounded-lg ${
+                              page === pageNum
+                                ? 'bg-primary-600 text-white'
+                                : 'text-neutral-600 hover:bg-neutral-100'
+                            }`}
+                          >
+                            {pageNum}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <button
+                      onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                      disabled={page === totalPages}
+                      className="inline-flex items-center gap-1 px-3 py-2 text-sm text-neutral-600 hover:bg-neutral-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Próximo
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              )}
             </>
           )}
         </div>

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import {
   Plus, Send, Trash2, MessageCircle, CheckCircle, Clock,
-  XCircle, Phone, Download, BarChart3, RefreshCw, AlertTriangle
+  XCircle, Phone, Download, BarChart3, RefreshCw, AlertTriangle,
+  ChevronLeft, ChevronRight
 } from 'lucide-react';
 import api from '../services/api';
 import toast from 'react-hot-toast';
@@ -111,6 +112,11 @@ const WhatsAppCampaigns: React.FC = () => {
   const [clients, setClients] = useState<Client[]>([]);
   const [recipientType, setRecipientType] = useState<'clients' | 'leads'>('clients');
 
+  // Pagination state
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(50);
+  const [total, setTotal] = useState(0);
+
   const statusLabels: Record<string, string> = {
     draft: 'Rascunho',
     sending: 'Enviando',
@@ -129,12 +135,15 @@ const WhatsAppCampaigns: React.FC = () => {
 
   useEffect(() => {
     checkConfig();
-    loadCampaigns();
     loadTemplates();
     loadTags();
     loadClients();
     loadLeads();
   }, []);
+
+  useEffect(() => {
+    loadCampaigns();
+  }, [page, limit]);
 
   const checkConfig = async () => {
     setCheckingConfig(true);
@@ -151,8 +160,11 @@ const WhatsAppCampaigns: React.FC = () => {
   const loadCampaigns = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/whatsapp-campaigns');
+      const response = await api.get('/whatsapp-campaigns', {
+        params: { page, limit }
+      });
       setCampaigns(response.data.data);
+      setTotal(response.data.total || 0);
     } catch (error) {
       toast.error('Erro ao carregar campanhas');
     } finally {
@@ -661,6 +673,50 @@ const WhatsAppCampaigns: React.FC = () => {
                   ))}
                 </tbody>
               </table>
+            </div>
+          </div>
+        )}
+
+        {/* Pagination */}
+        {total > 0 && (
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white rounded-lg shadow px-4 py-3">
+            <span className="text-sm text-neutral-600">
+              Mostrando {((page - 1) * limit) + 1} a {Math.min(page * limit, total)} de {total} campanhas
+            </span>
+            <div className="flex items-center gap-2">
+              <select
+                value={limit}
+                onChange={(e) => {
+                  setLimit(Number(e.target.value));
+                  setPage(1);
+                }}
+                className="px-2 py-1 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+              >
+                <option value={25}>25</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+                <option value={200}>200</option>
+              </select>
+              <span className="text-sm text-neutral-600">por página</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="p-2 rounded-md border border-neutral-300 hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <ChevronLeft size={20} />
+              </button>
+              <span className="text-sm text-neutral-700 px-3">
+                Página {page} de {Math.ceil(total / limit)}
+              </span>
+              <button
+                onClick={() => setPage(p => Math.min(Math.ceil(total / limit), p + 1))}
+                disabled={page >= Math.ceil(total / limit)}
+                className="p-2 rounded-md border border-neutral-300 hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <ChevronRight size={20} />
+              </button>
             </div>
           </div>
         )}

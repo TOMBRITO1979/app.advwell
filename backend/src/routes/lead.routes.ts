@@ -4,7 +4,8 @@ import { Request, Response, NextFunction } from 'express';
 import leadController from '../controllers/lead.controller';
 import { authenticate } from '../middleware/auth';
 import { validateTenant } from '../middleware/tenant';
-import { companyRateLimit } from '../middleware/company-rate-limit';
+import { companyRateLimit, csvImportRateLimit } from '../middleware/company-rate-limit';
+import { csvUpload, validateUploadContent } from '../middleware/upload';
 
 const router = Router();
 
@@ -130,6 +131,10 @@ router.get('/stats', leadController.stats);
 // Exportação
 router.get('/export/csv', leadController.exportCSV);
 router.get('/export/pdf', leadController.exportPDF);
+
+// Importação CSV
+router.post('/import/csv', csvImportRateLimit, csvUpload.single('file'), validateUploadContent, leadController.importCSV);
+router.get('/import/status/:jobId', leadController.getLeadImportStatus);
 
 // CRUD padrão
 router.post('/', createLeadValidation, validate, leadController.create);

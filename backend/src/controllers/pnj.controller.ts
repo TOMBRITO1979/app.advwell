@@ -903,7 +903,7 @@ export class PNJController {
       // Build where clause
       const where: any = { companyId };
 
-      if (status && status !== 'all') {
+      if (status && String(status).toLowerCase() !== 'all') {
         where.status = status;
       }
 
@@ -1004,11 +1004,16 @@ export class PNJController {
 
       const csvContent = req.file.buffer.toString('utf-8').replace(/^\ufeff/, '');
 
+      // Detectar delimitador (vírgula ou ponto e vírgula)
+      const firstLine = csvContent.split('\n')[0] || '';
+      const delimiter = firstLine.includes(';') ? ';' : ',';
+
       const records = parse(csvContent, {
         columns: true,
         skip_empty_lines: true,
         trim: true,
         bom: true,
+        delimiter,
       }) as Record<string, string>[];
 
       if (!records || records.length === 0) {

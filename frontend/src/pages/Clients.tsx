@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import Layout from '../components/Layout';
 import api from '../services/api';
 import toast from 'react-hot-toast';
-import { Plus, Search, Edit, Trash2, Eye, X, FileText, Loader2, UserPlus, UserX, Mail, Filter, Calendar, Upload, Download, FileSignature, Check, Clock, ExternalLink } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Eye, X, FileText, Loader2, UserPlus, UserX, Mail, Filter, Calendar, Upload, Download, FileSignature, Check, Clock, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
 import { ExportButton } from '../components/ui';
 import MobileCardList, { MobileCardItem } from '../components/MobileCardList';
 import { formatDate } from '../utils/dateFormatter';
@@ -131,6 +131,12 @@ const Clients: React.FC = () => {
   const [portalPassword, setPortalPassword] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Pagination
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [limit, setLimit] = useState(50);
+  const totalPages = Math.ceil(total / limit);
+
   // Documentos compartilhados
   const [sharedDocuments, setSharedDocuments] = useState<SharedDocument[]>([]);
   const [loadingDocuments, setLoadingDocuments] = useState(false);
@@ -170,6 +176,11 @@ const Clients: React.FC = () => {
 
   useEffect(() => {
     loadClients();
+  }, [search, tagFilter, dateFrom, dateTo, page, limit]);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setPage(1);
   }, [search, tagFilter, dateFrom, dateTo]);
 
   useEffect(() => {
@@ -187,13 +198,14 @@ const Clients: React.FC = () => {
 
   const loadClients = async () => {
     try {
-      const params: any = { search, limit: 100 };
+      const params: any = { search, page, limit };
       if (tagFilter) params.tagId = tagFilter;
       if (dateFrom) params.dateFrom = dateFrom;
       if (dateTo) params.dateTo = dateTo;
 
       const response = await api.get('/clients', { params });
       setClients(response.data.data);
+      setTotal(response.data.total || 0);
     } catch (error) {
       toast.error('Erro ao carregar clientes');
     } finally {
@@ -291,15 +303,62 @@ const Clients: React.FC = () => {
         },
       });
 
-      setImportResults(response.data.results);
-      setShowImportModal(true);
-      loadClients();
+      // Nova resposta assíncrona com jobId
+      if (response.data.jobId) {
+        toast.success(`Importação iniciada: ${response.data.totalRows} registros. Aguarde...`);
 
-      if (response.data.results.success > 0) {
-        toast.success(`${response.data.results.success} cliente(s) importado(s) com sucesso!`);
+        // Poll para verificar status
+        const pollStatus = async () => {
+          try {
+            const statusResponse = await api.get(`/clients/import/status/${response.data.jobId}`);
+            const status = statusResponse.data;
+
+            if (status.status === 'completed') {
+              setImportResults({
+                total: status.totalRows,
+                success: status.successCount,
+                errors: status.errors || []
+              });
+              setShowImportModal(true);
+              loadClients();
+
+              if (status.successCount > 0) {
+                toast.success(`${status.successCount} cliente(s) importado(s) com sucesso!`);
+              }
+              if (status.errorCount > 0) {
+                toast.error(`${status.errorCount} erro(s) na importação`);
+              }
+            } else if (status.status === 'failed') {
+              toast.error('Falha na importação');
+              setImportResults({
+                total: status.totalRows,
+                success: 0,
+                errors: status.errors || []
+              });
+              setShowImportModal(true);
+            } else {
+              // Ainda processando, continua polling
+              setTimeout(pollStatus, 2000);
+            }
+          } catch (err) {
+            toast.error('Erro ao verificar status da importação');
+          }
+        };
+
+        // Inicia polling após 2 segundos
+        setTimeout(pollStatus, 2000);
+      } else if (response.data.results) {
+        // Resposta antiga síncrona (backward compatibility)
+        setImportResults(response.data.results);
+        setShowImportModal(true);
+        loadClients();
+
+        if (response.data.results.success > 0) {
+          toast.success(`${response.data.results.success} cliente(s) importado(s) com sucesso!`);
+        }
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Erro ao importar CSV');
+      toast.error(error.response?.data?.error || error.response?.data?.message || 'Erro ao importar CSV');
     }
 
     // Limpar o input
@@ -868,6 +927,76 @@ const Clients: React.FC = () => {
                   </tbody>
                 </table>
               </div>
+
+              {/* Pagination */}
+              {total > 0 && (
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 px-4">
+                  <div className="text-sm text-neutral-600">
+                    Mostrando {(page - 1) * limit + 1} - {Math.min(page * limit, total)} de {total} clientes
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <select
+                      value={limit}
+                      onChange={(e) => {
+                        setLimit(Number(e.target.value));
+                        setPage(1);
+                      }}
+                      className="px-2 py-1 text-sm border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    >
+                      <option value={25}>25 por página</option>
+                      <option value={50}>50 por página</option>
+                      <option value={100}>100 por página</option>
+                      <option value={200}>200 por página</option>
+                    </select>
+                    <button
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                      disabled={page === 1}
+                      className="inline-flex items-center gap-1 px-3 py-2 text-sm text-neutral-600 hover:bg-neutral-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                      Anterior
+                    </button>
+
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                        let pageNum: number;
+                        if (totalPages <= 5) {
+                          pageNum = i + 1;
+                        } else if (page <= 3) {
+                          pageNum = i + 1;
+                        } else if (page >= totalPages - 2) {
+                          pageNum = totalPages - 4 + i;
+                        } else {
+                          pageNum = page - 2 + i;
+                        }
+
+                        return (
+                          <button
+                            key={pageNum}
+                            onClick={() => setPage(pageNum)}
+                            className={`px-3 py-1 text-sm rounded-lg ${
+                              page === pageNum
+                                ? 'bg-primary-600 text-white'
+                                : 'text-neutral-600 hover:bg-neutral-100'
+                            }`}
+                          >
+                            {pageNum}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <button
+                      onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                      disabled={page === totalPages}
+                      className="inline-flex items-center gap-1 px-3 py-2 text-sm text-neutral-600 hover:bg-neutral-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Próximo
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              )}
             </>
           )}
         </div>

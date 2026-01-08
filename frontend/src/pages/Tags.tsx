@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Tag, Plus, Edit2, Trash2, Users, UserCheck } from 'lucide-react';
+import { Tag, Plus, Edit2, Trash2, Users, UserCheck, ChevronLeft, ChevronRight } from 'lucide-react';
 import Layout from '../components/Layout';
 import api from '../services/api';
 import toast from 'react-hot-toast';
@@ -47,14 +47,23 @@ export default function Tags() {
   const [formData, setFormData] = useState<TagFormData>(initialFormData);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
+  // Pagination
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [limit, setLimit] = useState(50);
+  const totalPages = Math.ceil(total / limit);
+
   useEffect(() => {
     loadTags();
-  }, []);
+  }, [page, limit]);
 
   const loadTags = async () => {
     try {
-      const response = await api.get('/tags');
-      setTags(response.data);
+      const response = await api.get('/tags', {
+        params: { page, limit }
+      });
+      setTags(response.data.data);
+      setTotal(response.data.total);
     } catch (error) {
       toast.error('Erro ao carregar tags');
     } finally {
@@ -285,6 +294,75 @@ export default function Tags() {
                   ))}
                 </tbody>
               </table>
+            </div>
+          )}
+
+          {/* Pagination */}
+          {totalPages > 0 && (
+            <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-4 bg-white rounded-lg shadow-md p-4">
+              <div className="flex items-center gap-2 text-sm text-neutral-600">
+                <span>Mostrando {((page - 1) * limit) + 1} a {Math.min(page * limit, total)} de {total} tags</span>
+                <select
+                  value={limit}
+                  onChange={(e) => {
+                    setLimit(Number(e.target.value));
+                    setPage(1);
+                  }}
+                  className="ml-2 px-2 py-1 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                >
+                  <option value={25}>25</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                  <option value={200}>200</option>
+                </select>
+                <span>por página</span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  className="p-2 border border-neutral-300 rounded-md hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <ChevronLeft size={20} />
+                </button>
+
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let pageNum: number;
+                    if (totalPages <= 5) {
+                      pageNum = i + 1;
+                    } else if (page <= 3) {
+                      pageNum = i + 1;
+                    } else if (page >= totalPages - 2) {
+                      pageNum = totalPages - 4 + i;
+                    } else {
+                      pageNum = page - 2 + i;
+                    }
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => setPage(pageNum)}
+                        className={`px-3 py-1 rounded-md text-sm ${
+                          page === pageNum
+                            ? 'bg-primary-600 text-white'
+                            : 'border border-neutral-300 hover:bg-neutral-50'
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <button
+                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                  className="p-2 border border-neutral-300 rounded-md hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <ChevronRight size={20} />
+                </button>
+              </div>
             </div>
           )}
 

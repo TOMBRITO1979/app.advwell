@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Send, Trash2, Eye, Mail, Users, CheckCircle, Clock } from 'lucide-react';
+import { Plus, Send, Trash2, Eye, Mail, Users, CheckCircle, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
 import DOMPurify from 'dompurify';
 import api from '../services/api';
 import toast from 'react-hot-toast';
@@ -73,6 +73,12 @@ const Campaigns: React.FC = () => {
   const [recipientFilter, setRecipientFilter] = useState<'all' | 'tag'>('all');
   const [selectedTag, setSelectedTag] = useState<string>('');
 
+  // Pagination state
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(50);
+  const [total, setTotal] = useState(0);
+  const totalPages = Math.ceil(total / limit);
+
   const statusLabels = {
     draft: 'Rascunho',
     sending: 'Enviando',
@@ -90,18 +96,22 @@ const Campaigns: React.FC = () => {
   };
 
   useEffect(() => {
-    loadCampaigns();
     loadClients();
     loadLeads();
     loadTemplates();
     loadTags();
   }, []);
 
+  useEffect(() => {
+    loadCampaigns();
+  }, [page, limit]);
+
   const loadCampaigns = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/campaigns');
+      const response = await api.get('/campaigns', { params: { page, limit } });
       setCampaigns(response.data.data);
+      setTotal(response.data.total || 0);
     } catch (error) {
       toast.error('Erro ao carregar campanhas');
     } finally {
@@ -510,6 +520,50 @@ const Campaigns: React.FC = () => {
                   ))}
                 </tbody>
               </table>
+            </div>
+          </div>
+        )}
+
+        {/* Pagination */}
+        {!loading && campaigns.length > 0 && (
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white rounded-lg shadow px-4 py-3">
+            <div className="text-sm text-neutral-600">
+              Mostrando {((page - 1) * limit) + 1} a {Math.min(page * limit, total)} de {total} campanhas
+            </div>
+            <div className="flex items-center gap-2">
+              <select
+                value={limit}
+                onChange={(e) => {
+                  setLimit(Number(e.target.value));
+                  setPage(1);
+                }}
+                className="px-2 py-1 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+              >
+                <option value={25}>25</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+                <option value={200}>200</option>
+              </select>
+              <span className="text-sm text-neutral-600">por página</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] border border-neutral-300 rounded-md hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <ChevronLeft size={20} />
+              </button>
+              <span className="text-sm text-neutral-600 px-2">
+                Página {page} de {totalPages}
+              </span>
+              <button
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+                className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] border border-neutral-300 rounded-md hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <ChevronRight size={20} />
+              </button>
             </div>
           </div>
         )}

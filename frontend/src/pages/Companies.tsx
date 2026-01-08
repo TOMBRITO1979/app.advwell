@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
 import api from '../services/api';
 import toast from 'react-hot-toast';
-import { Plus, Search, Edit, X, Building2, Users, FileText, ToggleLeft, ToggleRight, Trash2, UserCog, Crown, Clock, DollarSign } from 'lucide-react';
+import { Plus, Search, Edit, X, Building2, Users, FileText, ToggleLeft, ToggleRight, Trash2, UserCog, Crown, Clock, DollarSign, Brain, RefreshCw } from 'lucide-react';
 import MobileCardList, { MobileCardItem } from '../components/MobileCardList';
 import { formatDate, formatDateTime } from '../utils/dateFormatter';
 
@@ -64,6 +64,28 @@ interface LastPaymentData {
   } | null;
 }
 
+interface AITokenShare {
+  id: string;
+  clientCompanyId: string;
+  providerCompanyId: string;
+  tokenLimit: number;
+  tokensUsed: number;
+  enabled: boolean;
+  createdAt: string;
+  clientCompany?: {
+    id: string;
+    name: string;
+    email: string;
+  };
+}
+
+interface AvailableClient {
+  id: string;
+  name: string;
+  email: string;
+  hasOwnAIConfig: boolean;
+}
+
 const Companies: React.FC = () => {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
@@ -83,6 +105,17 @@ const Companies: React.FC = () => {
     subscriptionPlan: '' as 'BRONZE' | 'PRATA' | 'OURO' | '',
     casesLimit: 1000,
   });
+
+  // AI Token Share states
+  const [showAIShareModal, setShowAIShareModal] = useState(false);
+  const [aiShares, setAIShares] = useState<AITokenShare[]>([]);
+  const [availableClients, setAvailableClients] = useState<AvailableClient[]>([]);
+  const [loadingAIShares, setLoadingAIShares] = useState(false);
+  const [aiShareForm, setAIShareForm] = useState({
+    clientCompanyId: '',
+    tokenLimit: 50000,
+  });
+  const [editingShare, setEditingShare] = useState<AITokenShare | null>(null);
 
   const [formData, setFormData] = useState({
     companyName: '',
@@ -366,6 +399,105 @@ const Companies: React.FC = () => {
     }
   };
 
+  // AI Token Share handlers
+  const loadAIShares = async (companyId: string) => {
+    setLoadingAIShares(true);
+    try {
+      const [sharesRes, clientsRes] = await Promise.all([
+        api.get(`/ai-token-share/provider/${companyId}`),
+        api.get(`/ai-token-share/provider/${companyId}/available-clients`),
+      ]);
+      setAIShares(sharesRes.data);
+      setAvailableClients(clientsRes.data);
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Erro ao carregar compartilhamentos');
+    } finally {
+      setLoadingAIShares(false);
+    }
+  };
+
+  const handleOpenAIShareModal = async (company: Company) => {
+    setSelectedCompany(company);
+    setShowAIShareModal(true);
+    setAIShareForm({ clientCompanyId: '', tokenLimit: 50000 });
+    setEditingShare(null);
+    await loadAIShares(company.id);
+  };
+
+  const handleCreateShare = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedCompany || !aiShareForm.clientCompanyId) return;
+
+    try {
+      await api.post('/ai-token-share', {
+        providerCompanyId: selectedCompany.id,
+        clientCompanyId: aiShareForm.clientCompanyId,
+        tokenLimit: aiShareForm.tokenLimit,
+      });
+      toast.success('Compartilhamento criado com sucesso!');
+      setAIShareForm({ clientCompanyId: '', tokenLimit: 50000 });
+      await loadAIShares(selectedCompany.id);
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Erro ao criar compartilhamento');
+    }
+  };
+
+  const handleUpdateShare = async (share: AITokenShare) => {
+    if (!selectedCompany) return;
+
+    try {
+      await api.put(`/ai-token-share/${share.id}`, {
+        tokenLimit: share.tokenLimit,
+        enabled: share.enabled,
+      });
+      toast.success('Compartilhamento atualizado!');
+      setEditingShare(null);
+      await loadAIShares(selectedCompany.id);
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Erro ao atualizar');
+    }
+  };
+
+  const handleDeleteShare = async (shareId: string) => {
+    if (!selectedCompany) return;
+    if (!confirm('Tem certeza que deseja remover este compartilhamento?')) return;
+
+    try {
+      await api.delete(`/ai-token-share/${shareId}`);
+      toast.success('Compartilhamento removido!');
+      await loadAIShares(selectedCompany.id);
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Erro ao remover');
+    }
+  };
+
+  const handleResetUsage = async (share: AITokenShare) => {
+    if (!selectedCompany) return;
+    if (!confirm('Zerar o uso de tokens? O cliente voltará a ter todo o limite disponível.')) return;
+
+    try {
+      await api.put(`/ai-token-share/${share.id}`, {
+        tokensUsed: 0,
+        notifiedAt80: false,
+        notifiedAt100: false,
+      });
+      toast.success('Uso zerado com sucesso!');
+      await loadAIShares(selectedCompany.id);
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Erro ao zerar uso');
+    }
+  };
+
+  const getUsagePercent = (used: number, limit: number) => {
+    return Math.min(100, Math.round((used / limit) * 100));
+  };
+
+  const getUsageColor = (percent: number) => {
+    if (percent >= 100) return 'bg-red-500';
+    if (percent >= 80) return 'bg-yellow-500';
+    return 'bg-green-500';
+  };
+
   return (
     <Layout>
       <div className="space-y-6">
@@ -510,6 +642,13 @@ const Companies: React.FC = () => {
                             title="Gerenciar Assinatura"
                           >
                             <Crown size={18} />
+                          </button>
+                          <button
+                            onClick={() => handleOpenAIShareModal(company)}
+                            className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-purple-600 hover:text-purple-700 hover:bg-purple-50 rounded-md transition-all duration-200"
+                            title="Compartilhar IA"
+                          >
+                            <Brain size={18} />
                           </button>
                           <button
                             onClick={() => handleViewUsers(company)}
@@ -1106,6 +1245,230 @@ const Companies: React.FC = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Compartilhamento de IA */}
+      {showAIShareModal && selectedCompany && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto my-4">
+            <div className="sticky top-0 bg-white border-b border-neutral-200 px-6 py-4 flex justify-between items-center">
+              <div>
+                <h2 className="text-xl font-bold text-neutral-900 flex items-center gap-2">
+                  <Brain size={24} className="text-purple-600" />
+                  Compartilhar Tokens de IA
+                </h2>
+                <p className="text-sm text-neutral-600 mt-1">{selectedCompany.name}</p>
+              </div>
+              <button
+                onClick={() => {
+                  setShowAIShareModal(false);
+                  setSelectedCompany(null);
+                  setAIShares([]);
+                  setAvailableClients([]);
+                  setEditingShare(null);
+                }}
+                className="text-neutral-400 hover:text-neutral-600 transition-colors"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-6">
+              {/* Info box */}
+              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                <p className="text-sm text-purple-800">
+                  Compartilhe acesso a IA com outras empresas usando sua chave API configurada.
+                  Defina um limite de tokens para cada empresa cliente.
+                </p>
+              </div>
+
+              {/* Formulário para novo compartilhamento */}
+              <form onSubmit={handleCreateShare} className="bg-neutral-50 rounded-lg p-4 space-y-4">
+                <h3 className="text-sm font-semibold text-neutral-900">Novo Compartilhamento</h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700">Empresa Cliente</label>
+                    <select
+                      value={aiShareForm.clientCompanyId}
+                      onChange={(e) => setAIShareForm({ ...aiShareForm, clientCompanyId: e.target.value })}
+                      className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md min-h-[44px]"
+                      required
+                    >
+                      <option value="">Selecione...</option>
+                      {availableClients.map((client) => (
+                        <option key={client.id} value={client.id}>
+                          {client.name} {client.hasOwnAIConfig && '(tem IA propria)'}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700">Limite de Tokens</label>
+                    <input
+                      type="number"
+                      min="1000"
+                      step="1000"
+                      value={aiShareForm.tokenLimit}
+                      onChange={(e) => setAIShareForm({ ...aiShareForm, tokenLimit: parseInt(e.target.value) || 50000 })}
+                      className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md min-h-[44px]"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end">
+                  <button
+                    type="submit"
+                    disabled={!aiShareForm.clientCompanyId || availableClients.length === 0}
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-purple-100 text-purple-700 border border-purple-200 hover:bg-purple-200 font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <Plus size={18} />
+                    Adicionar
+                  </button>
+                </div>
+              </form>
+
+              {/* Lista de compartilhamentos */}
+              <div>
+                <h3 className="text-sm font-semibold text-neutral-900 mb-3">
+                  Compartilhamentos Ativos ({aiShares.length})
+                </h3>
+
+                {loadingAIShares ? (
+                  <p className="text-center py-4 text-neutral-600">Carregando...</p>
+                ) : aiShares.length === 0 ? (
+                  <p className="text-center py-4 text-neutral-500 bg-neutral-50 rounded-lg">
+                    Nenhum compartilhamento configurado
+                  </p>
+                ) : (
+                  <div className="space-y-3">
+                    {aiShares.map((share) => {
+                      const usagePercent = getUsagePercent(share.tokensUsed, share.tokenLimit);
+                      const isEditing = editingShare?.id === share.id;
+
+                      return (
+                        <div
+                          key={share.id}
+                          className={`border rounded-lg p-4 ${share.enabled ? 'border-neutral-200 bg-white' : 'border-neutral-200 bg-neutral-50 opacity-75'}`}
+                        >
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium text-neutral-900">
+                                  {share.clientCompany?.name || 'Empresa'}
+                                </span>
+                                {!share.enabled && (
+                                  <span className="px-2 py-0.5 text-xs bg-neutral-200 text-neutral-600 rounded-full">
+                                    Desativado
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-xs text-neutral-500 mt-1">
+                                {share.clientCompany?.email}
+                              </p>
+
+                              {/* Progress bar */}
+                              <div className="mt-3">
+                                <div className="flex justify-between text-xs text-neutral-600 mb-1">
+                                  <span>{share.tokensUsed.toLocaleString()} usados</span>
+                                  <span>{share.tokenLimit.toLocaleString()} limite</span>
+                                </div>
+                                <div className="w-full h-2 bg-neutral-200 rounded-full overflow-hidden">
+                                  <div
+                                    className={`h-full ${getUsageColor(usagePercent)} transition-all`}
+                                    style={{ width: `${usagePercent}%` }}
+                                  />
+                                </div>
+                                <p className="text-xs text-neutral-500 mt-1">
+                                  {usagePercent}% utilizado ({(share.tokenLimit - share.tokensUsed).toLocaleString()} restantes)
+                                </p>
+                              </div>
+
+                              {/* Edit form */}
+                              {isEditing && (
+                                <div className="mt-4 p-3 bg-purple-50 rounded-lg space-y-3">
+                                  <div>
+                                    <label className="block text-xs font-medium text-neutral-700 mb-1">
+                                      Novo Limite
+                                    </label>
+                                    <input
+                                      type="number"
+                                      min="1000"
+                                      step="1000"
+                                      value={editingShare.tokenLimit}
+                                      onChange={(e) => setEditingShare({ ...editingShare, tokenLimit: parseInt(e.target.value) || 50000 })}
+                                      className="block w-full px-3 py-2 border border-neutral-300 rounded-md text-sm"
+                                    />
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <input
+                                      type="checkbox"
+                                      id={`enabled-${share.id}`}
+                                      checked={editingShare.enabled}
+                                      onChange={(e) => setEditingShare({ ...editingShare, enabled: e.target.checked })}
+                                      className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-neutral-300 rounded"
+                                    />
+                                    <label htmlFor={`enabled-${share.id}`} className="text-sm text-neutral-700">
+                                      Habilitado
+                                    </label>
+                                  </div>
+                                  <div className="flex justify-end gap-2">
+                                    <button
+                                      type="button"
+                                      onClick={() => setEditingShare(null)}
+                                      className="px-3 py-1.5 text-sm text-neutral-600 hover:bg-neutral-100 rounded-md"
+                                    >
+                                      Cancelar
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleUpdateShare(editingShare)}
+                                      className="px-3 py-1.5 text-sm bg-purple-600 text-white rounded-md hover:bg-purple-700"
+                                    >
+                                      Salvar
+                                    </button>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Actions */}
+                            {!isEditing && (
+                              <div className="flex items-center gap-1">
+                                <button
+                                  onClick={() => handleResetUsage(share)}
+                                  className="p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                                  title="Zerar uso"
+                                >
+                                  <RefreshCw size={16} />
+                                </button>
+                                <button
+                                  onClick={() => setEditingShare({ ...share })}
+                                  className="p-2 text-purple-600 hover:bg-purple-50 rounded-md transition-colors"
+                                  title="Editar"
+                                >
+                                  <Edit size={16} />
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteShare(share.id)}
+                                  className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                                  title="Remover"
+                                >
+                                  <Trash2 size={16} />
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       )}

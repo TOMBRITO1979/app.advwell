@@ -219,23 +219,32 @@ export class ClientController {
         };
       }
 
-      const clients = await prisma.client.findMany({
-        where,
-        skip,
-        take: Number(limit),
-        orderBy: { createdAt: 'desc' },
-        include: {
-          clientTags: {
-            include: {
-              tag: {
-                select: { id: true, name: true, color: true },
+      const [clients, total] = await Promise.all([
+        prisma.client.findMany({
+          where,
+          skip,
+          take: Number(limit),
+          orderBy: { createdAt: 'desc' },
+          include: {
+            clientTags: {
+              include: {
+                tag: {
+                  select: { id: true, name: true, color: true },
+                },
               },
             },
           },
-        },
-      });
+        }),
+        prisma.client.count({ where }),
+      ]);
 
-      res.json({ data: clients });
+      res.json({
+        data: clients,
+        total,
+        page: Number(page),
+        limit: Number(limit),
+        totalPages: Math.ceil(total / Number(limit)),
+      });
     } catch (error) {
       appLogger.error('Erro ao listar clientes', error as Error);
       res.status(500).json({ error: 'Erro ao listar clientes' });
@@ -667,12 +676,17 @@ export class ClientController {
       // Remover BOM se existir
       const csvContent = req.file.buffer.toString('utf-8').replace(/^\ufeff/, '');
 
+      // Detectar delimitador (vírgula ou ponto e vírgula)
+      const firstLine = csvContent.split('\n')[0] || '';
+      const delimiter = firstLine.includes(';') ? ';' : ',';
+
       // Parse do CSV para validar e contar linhas
       const records = parse(csvContent, {
         columns: true,
         skip_empty_lines: true,
         trim: true,
         bom: true,
+        delimiter,
       });
 
       // PROTEÇÃO: Limitar quantidade de linhas para evitar sobrecarga

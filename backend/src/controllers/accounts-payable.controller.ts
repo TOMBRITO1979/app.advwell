@@ -447,11 +447,16 @@ export class AccountsPayableController {
 
       const csvContent = req.file.buffer.toString('utf-8').replace(/^\ufeff/, '');
 
+      // Detectar delimitador (vírgula ou ponto e vírgula)
+      const firstLine = csvContent.split('\n')[0] || '';
+      const delimiter = firstLine.includes(';') ? ';' : ',';
+
       const records = parse(csvContent, {
         columns: true,
         skip_empty_lines: true,
         trim: true,
         bom: true,
+        delimiter,
       });
 
       const MAX_CSV_ROWS = 500;

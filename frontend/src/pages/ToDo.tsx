@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Plus, Search, CheckCircle, Circle, Edit2, Trash2 } from 'lucide-react';
+import { Calendar, Plus, Search, CheckCircle, Circle, Edit2, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import Layout from '../components/Layout';
@@ -54,6 +54,11 @@ const ToDo: React.FC = () => {
   const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null);
   const [editMode, setEditMode] = useState(false);
 
+  // Pagination state
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(50);
+  const [total, setTotal] = useState(0);
+
   const [companyUsers, setCompanyUsers] = useState<any[]>([]);
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
 
@@ -70,6 +75,11 @@ const ToDo: React.FC = () => {
   useEffect(() => {
     loadTodos();
     fetchCompanyUsers();
+  }, [searchTerm, filterCompleted, page]);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setPage(1);
   }, [searchTerm, filterCompleted]);
 
   const fetchCompanyUsers = async () => {
@@ -84,7 +94,8 @@ const ToDo: React.FC = () => {
 
   const loadTodos = async () => {
     try {
-      const params: any = {};
+      setLoading(true);
+      const params: any = { page, limit };
       if (searchTerm) params.search = searchTerm;
       if (filterCompleted) params.completed = filterCompleted;
       params.type = 'TAREFA'; // Filtrar apenas tarefas no backend
@@ -97,6 +108,7 @@ const ToDo: React.FC = () => {
         return a.completed ? 1 : -1;
       });
       setTodos(sortedTodos);
+      setTotal(response.data.total || 0);
     } catch (error: any) {
       console.error('Erro ao carregar tarefas:', error);
       toast.error(error.response?.data?.error || 'Erro ao carregar tarefas');
@@ -371,6 +383,50 @@ const ToDo: React.FC = () => {
                   </tbody>
                 </table>
               </div>
+
+              {/* Pagination */}
+              {total > 0 && (
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-4 border-t border-neutral-200">
+                  <span className="text-sm text-neutral-600">
+                    Mostrando {((page - 1) * limit) + 1} a {Math.min(page * limit, total)} de {total} tarefas
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <select
+                      value={limit}
+                      onChange={(e) => {
+                        setLimit(Number(e.target.value));
+                        setPage(1);
+                      }}
+                      className="px-2 py-1 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    >
+                      <option value={25}>25</option>
+                      <option value={50}>50</option>
+                      <option value={100}>100</option>
+                      <option value={200}>200</option>
+                    </select>
+                    <span className="text-sm text-neutral-600">por página</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setPage(p => Math.max(1, p - 1))}
+                      disabled={page === 1}
+                      className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] border border-neutral-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-50"
+                    >
+                      <ChevronLeft size={20} />
+                    </button>
+                    <span className="px-4 py-2 text-sm font-medium">
+                      Página {page} de {Math.ceil(total / limit)}
+                    </span>
+                    <button
+                      onClick={() => setPage(p => Math.min(Math.ceil(total / limit), p + 1))}
+                      disabled={page >= Math.ceil(total / limit)}
+                      className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] border border-neutral-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-50"
+                    >
+                      <ChevronRight size={20} />
+                    </button>
+                  </div>
+                </div>
+              )}
             </>
           )}
         </div>

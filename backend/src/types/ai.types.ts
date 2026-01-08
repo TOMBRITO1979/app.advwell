@@ -46,6 +46,14 @@ export interface IAIProvider {
   generateSummary(movements: CaseMovementData[], caseInfo: CaseInfo): Promise<string>;
 
   /**
+   * Generate a summary of case movements with token usage tracking
+   * @param movements - Array of case movements
+   * @param caseInfo - Additional case information (process number, subject, etc)
+   * @returns Summary text with token usage info
+   */
+  generateSummaryWithUsage(movements: CaseMovementData[], caseInfo: CaseInfo): Promise<SummaryResponse>;
+
+  /**
    * Generate text from a custom prompt
    * @param prompt - The prompt to send to the AI
    * @returns Generated text
@@ -80,6 +88,12 @@ export interface AIProviderFactory {
   config: AIConfigData;
 }
 
+// Summary response with token usage
+export interface SummaryResponse {
+  summary: string;
+  usage?: TokenUsage;
+}
+
 // Summary Generation Result
 export interface SummaryResult {
   success: boolean;
@@ -87,5 +101,6 @@ export interface SummaryResult {
   error?: string;
   provider?: AIProviderType;
   model?: string;
-  tokensUsed?: number;  // Optional for tracking
+  usage?: TokenUsage;  // Token usage for tracking
+  aiConfigId?: string;  // For linking to AIConfig when saving usage
 }

@@ -109,7 +109,11 @@ if (ENABLE_QUEUE_PROCESSORS) {
       return { success: false, error: 'CSV expired' };
     }
 
-    const records = parse(csvContent, { columns: true, skip_empty_lines: true, trim: true, bom: true });
+    // Detectar delimitador (vírgula ou ponto e vírgula)
+    const firstLine = csvContent.split('\n')[0] || '';
+    const delimiter = firstLine.includes(';') ? ';' : ',';
+
+    const records = parse(csvContent, { columns: true, skip_empty_lines: true, trim: true, bom: true, delimiter });
 
     let successCount = 0;
     let errorCount = 0;
@@ -129,7 +133,7 @@ if (ENABLE_QUEUE_PROCESSORS) {
         const importEmail = record.Email?.trim()?.toLowerCase();
         if (importEmail) {
           const existingWithEmail = await prisma.client.findFirst({
-            where: { companyId, email: importEmail },
+            where: { companyId, email: importEmail, active: true },
           });
           if (existingWithEmail) {
             errors.push({ line: lineNumber, identifier: record.Nome, error: `Email ja existe: ${existingWithEmail.name}` });
@@ -142,7 +146,7 @@ if (ENABLE_QUEUE_PROCESSORS) {
         const importCpf = record['CPF/CNPJ']?.trim() || record.CPF?.trim();
         if (importCpf) {
           const existingWithCpf = await prisma.client.findFirst({
-            where: { companyId, cpf: importCpf },
+            where: { companyId, cpf: importCpf, active: true },
           });
           if (existingWithCpf) {
             errors.push({ line: lineNumber, identifier: record.Nome, error: `CPF/CNPJ ja existe: ${existingWithCpf.name}` });
@@ -155,7 +159,7 @@ if (ENABLE_QUEUE_PROCESSORS) {
         const importPhone = record.Telefone?.trim();
         if (importPhone) {
           const existingWithPhone = await prisma.client.findFirst({
-            where: { companyId, phone: importPhone },
+            where: { companyId, phone: importPhone, active: true },
           });
           if (existingWithPhone) {
             errors.push({ line: lineNumber, identifier: record.Nome, error: `Telefone ja existe: ${existingWithPhone.name}` });
@@ -246,7 +250,11 @@ if (ENABLE_QUEUE_PROCESSORS) {
       return { success: false };
     }
 
-    const records = parse(csvContent, { columns: true, skip_empty_lines: true, trim: true, bom: true });
+    // Detectar delimitador (vírgula ou ponto e vírgula)
+    const firstLine = csvContent.split('\n')[0] || '';
+    const delimiter = firstLine.includes(';') ? ';' : ',';
+
+    const records = parse(csvContent, { columns: true, skip_empty_lines: true, trim: true, bom: true, delimiter });
 
     let successCount = 0;
     let errorCount = 0;
@@ -257,14 +265,17 @@ if (ENABLE_QUEUE_PROCESSORS) {
       const lineNumber = i + 2;
 
       try {
-        if (!record['Numero do Processo'] || record['Numero do Processo'].trim() === '') {
+        // Aceitar com ou sem acento
+        const processNumber = (record['Numero do Processo'] || record['Número do Processo'])?.trim();
+
+        if (!processNumber) {
           errors.push({ line: lineNumber, identifier: '(vazio)', error: 'Numero do processo e obrigatorio' });
           errorCount++;
           continue;
         }
 
         if (!record['CPF Cliente'] && !record['Cliente']) {
-          errors.push({ line: lineNumber, identifier: record['Numero do Processo'], error: 'CPF ou Nome do cliente e obrigatorio' });
+          errors.push({ line: lineNumber, identifier: processNumber, error: 'CPF ou Nome do cliente e obrigatorio' });
           errorCount++;
           continue;
         }
@@ -272,6 +283,7 @@ if (ENABLE_QUEUE_PROCESSORS) {
         const client = await prisma.client.findFirst({
           where: {
             companyId,
+            active: true,
             OR: [
               { cpf: record['CPF Cliente']?.trim() },
               { name: record['Cliente']?.trim() },
@@ -280,17 +292,17 @@ if (ENABLE_QUEUE_PROCESSORS) {
         });
 
         if (!client) {
-          errors.push({ line: lineNumber, identifier: record['Numero do Processo'], error: `Cliente nao encontrado` });
+          errors.push({ line: lineNumber, identifier: processNumber, error: `Cliente nao encontrado` });
           errorCount++;
           continue;
         }
 
         const existingCase = await prisma.case.findFirst({
-          where: { companyId, processNumber: record['Numero do Processo'].trim() },
+          where: { companyId, processNumber },
         });
 
         if (existingCase) {
-          errors.push({ line: lineNumber, identifier: record['Numero do Processo'], error: 'Processo ja cadastrado' });
+          errors.push({ line: lineNumber, identifier: processNumber, error: 'Processo ja cadastrado' });
           errorCount++;
           continue;
         }
@@ -306,18 +318,18 @@ if (ENABLE_QUEUE_PROCESSORS) {
           data: {
             companyId,
             clientId: client.id,
-            processNumber: record['Numero do Processo'].trim(),
+            processNumber,
             court: record.Tribunal?.trim() || '',
             subject: record.Assunto?.trim() || '',
             value,
             status: record.Status?.trim() || 'ACTIVE',
-            notes: record['Observacoes']?.trim() || null,
+            notes: record['Observacoes']?.trim() || record['Observações']?.trim() || null,
           },
         });
 
         successCount++;
       } catch (err) {
-        errors.push({ line: lineNumber, identifier: record['Numero do Processo'] || '(vazio)', error: 'Erro ao processar' });
+        errors.push({ line: lineNumber, identifier: (record['Numero do Processo'] || record['Número do Processo'] || '(vazio)'), error: 'Erro ao processar' });
         errorCount++;
       }
 
@@ -359,7 +371,11 @@ if (ENABLE_QUEUE_PROCESSORS) {
       return { success: false };
     }
 
-    const records = parse(csvContent, { columns: true, skip_empty_lines: true, trim: true, bom: true });
+    // Detectar delimitador (vírgula ou ponto e vírgula)
+    const firstLine = csvContent.split('\n')[0] || '';
+    const delimiter = firstLine.includes(';') ? ';' : ',';
+
+    const records = parse(csvContent, { columns: true, skip_empty_lines: true, trim: true, bom: true, delimiter });
 
     let successCount = 0;
     let errorCount = 0;
@@ -500,7 +516,11 @@ if (ENABLE_QUEUE_PROCESSORS) {
       return { success: false };
     }
 
-    const records = parse(csvContent, { columns: true, skip_empty_lines: true, trim: true, bom: true });
+    // Detectar delimitador (vírgula ou ponto e vírgula)
+    const firstLine = csvContent.split('\n')[0] || '';
+    const delimiter = firstLine.includes(';') ? ';' : ',';
+
+    const records = parse(csvContent, { columns: true, skip_empty_lines: true, trim: true, bom: true, delimiter });
 
     let successCount = 0;
     let errorCount = 0;
@@ -610,7 +630,11 @@ if (ENABLE_QUEUE_PROCESSORS) {
       return { success: false };
     }
 
-    const records = parse(csvContent, { columns: true, skip_empty_lines: true, trim: true, bom: true }) as Record<string, string>[];
+    // Detectar delimitador (vírgula ou ponto e vírgula)
+    const firstLine = csvContent.split('\n')[0] || '';
+    const delimiter = firstLine.includes(';') ? ';' : ',';
+
+    const records = parse(csvContent, { columns: true, skip_empty_lines: true, trim: true, bom: true, delimiter }) as Record<string, string>[];
 
     const statusMap: Record<string, string> = {
       'ativo': 'ACTIVE',
@@ -723,6 +747,143 @@ if (ENABLE_QUEUE_PROCESSORS) {
     });
 
     appLogger.info('CSV PNJ import completed', { jobId, successCount, errorCount });
+    return { success: true, successCount, errorCount };
+  });
+
+  // Processador de Leads
+  csvImportQueue.process('import-leads', 1, async (job) => {
+    const { jobId, companyId, csvKey, totalRows } = job.data;
+
+    await updateStatus(jobId, { status: 'processing', startedAt: new Date().toISOString() });
+
+    const csvContent = await redis.get(csvKey);
+    if (!csvContent) {
+      await updateStatus(jobId, { status: 'failed', errors: [{ line: 0, identifier: '', error: 'CSV expirado ou nao encontrado' }] });
+      return { success: false, error: 'CSV expired' };
+    }
+
+    // Detectar delimitador (vírgula ou ponto e vírgula)
+    const firstLine = csvContent.split('\n')[0] || '';
+    const delimiter = firstLine.includes(';') ? ';' : ',';
+
+    const records = parse(csvContent, { columns: true, skip_empty_lines: true, trim: true, bom: true, delimiter });
+
+    // Mapas de conversão
+    const statusMap: Record<string, string> = {
+      'novo': 'NOVO',
+      'contatado': 'CONTATADO',
+      'qualificado': 'QUALIFICADO',
+      'convertido': 'CONVERTIDO',
+      'perdido': 'PERDIDO',
+    };
+
+    const sourceMap: Record<string, string> = {
+      'whatsapp': 'WHATSAPP',
+      'telefone': 'TELEFONE',
+      'site': 'SITE',
+      'indicacao': 'INDICACAO',
+      'indicação': 'INDICACAO',
+      'redes sociais': 'REDES_SOCIAIS',
+      'redes_sociais': 'REDES_SOCIAIS',
+      'outros': 'OUTROS',
+    };
+
+    let successCount = 0;
+    let errorCount = 0;
+    const errors: Array<{ line: number; identifier: string; error: string }> = [];
+
+    for (let i = 0; i < records.length; i++) {
+      const record = records[i] as any;
+      const lineNumber = i + 2;
+
+      try {
+        // Nome é obrigatório
+        if (!record.Nome || record.Nome.trim() === '') {
+          errors.push({ line: lineNumber, identifier: '(vazio)', error: 'Nome e obrigatorio' });
+          errorCount++;
+          continue;
+        }
+
+        // Telefone é obrigatório para leads
+        const phone = record.Telefone?.trim();
+        if (!phone) {
+          errors.push({ line: lineNumber, identifier: record.Nome, error: 'Telefone e obrigatorio' });
+          errorCount++;
+          continue;
+        }
+
+        // Verificar se já existe lead com mesmo telefone
+        const existingWithPhone = await prisma.lead.findFirst({
+          where: { companyId, phone },
+        });
+        if (existingWithPhone) {
+          errors.push({ line: lineNumber, identifier: record.Nome, error: `Telefone ja existe: ${existingWithPhone.name}` });
+          errorCount++;
+          continue;
+        }
+
+        // Verificar email duplicado (se fornecido)
+        const importEmail = record.Email?.trim()?.toLowerCase();
+        if (importEmail) {
+          const existingWithEmail = await prisma.lead.findFirst({
+            where: { companyId, email: importEmail },
+          });
+          if (existingWithEmail) {
+            errors.push({ line: lineNumber, identifier: record.Nome, error: `Email ja existe: ${existingWithEmail.name}` });
+            errorCount++;
+            continue;
+          }
+        }
+
+        // Mapear status e origem
+        const statusRaw = (record.Status?.trim() || 'novo').toLowerCase();
+        const status = statusMap[statusRaw] || 'NOVO';
+
+        const sourceRaw = (record.Origem?.trim() || 'outros').toLowerCase();
+        const source = sourceMap[sourceRaw] || 'OUTROS';
+
+        await prisma.lead.create({
+          data: {
+            companyId,
+            name: sanitizeString(record.Nome.trim()) || record.Nome.trim(),
+            phone,
+            email: importEmail || null,
+            contactReason: record['Motivo do Contato'] ? sanitizeString(record['Motivo do Contato'].trim()) : null,
+            status: status as any,
+            source: source as any,
+            notes: record['Observacoes'] ? sanitizeString(record['Observacoes'].trim()) : (record['Observações'] ? sanitizeString(record['Observações'].trim()) : null),
+          },
+        });
+
+        successCount++;
+      } catch (err) {
+        errors.push({ line: lineNumber, identifier: record.Nome || '(vazio)', error: 'Erro ao processar linha' });
+        errorCount++;
+      }
+
+      if (i % 10 === 0 || i === records.length - 1) {
+        await updateStatus(jobId, {
+          progress: Math.round(((i + 1) / totalRows) * 100),
+          processedRows: i + 1,
+          successCount,
+          errorCount,
+        });
+      }
+    }
+
+    await redis.del(csvKey);
+
+    await updateStatus(jobId, {
+      status: 'completed',
+      progress: 100,
+      processedRows: totalRows,
+      successCount,
+      errorCount,
+      errors: errors.slice(0, 50),
+      completedAt: new Date().toISOString(),
+    });
+
+    appLogger.info('CSV lead import completed', { jobId, successCount, errorCount });
     return { success: true, successCount, errorCount };
   });
 

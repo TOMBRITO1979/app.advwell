@@ -110,6 +110,11 @@ const Schedule: React.FC = () => {
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [exporting, setExporting] = useState(false);
 
+  // Pagination state (only for table view)
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(50);
+  const [total, setTotal] = useState(0);
+
   // Autocomplete states
   const [clientSearchTerm, setClientSearchTerm] = useState('');
   const [caseSearchTerm, setCaseSearchTerm] = useState('');
@@ -198,7 +203,12 @@ const Schedule: React.FC = () => {
   useEffect(() => {
     fetchEvents();
     fetchCompanyUsers();
-  }, [searchTerm, filterType, filterCompleted]);
+  }, [searchTerm, filterType, filterCompleted, page, viewMode]);
+
+  // Reset page when filters change or view mode changes
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm, filterType, filterCompleted, viewMode]);
 
   // Buscar feriados quando mudar de semana
   useEffect(() => {
@@ -273,10 +283,19 @@ const Schedule: React.FC = () => {
   const fetchEvents = async () => {
     setLoading(true);
     try {
-      const params: any = { limit: 100 };
+      const params: any = {};
       if (searchTerm) params.search = searchTerm;
       if (filterType) params.type = filterType;
       if (filterCompleted) params.completed = filterCompleted;
+
+      // Use pagination only for table view
+      if (viewMode === 'table') {
+        params.page = page;
+        params.limit = limit;
+      } else {
+        // For calendar view, fetch more events without pagination
+        params.limit = 100;
+      }
 
       const response = await api.get('/schedule', { params });
       // Garantir que temos um array de eventos
@@ -284,6 +303,11 @@ const Schedule: React.FC = () => {
       // Ordenar eventos: hoje primeiro, depois futuros, por último passados
       const sortedEvents = sortEventsByDate(Array.isArray(eventsData) ? eventsData : []);
       setEvents(sortedEvents);
+
+      // Set total for pagination (only relevant for table view)
+      if (response.data?.total !== undefined) {
+        setTotal(response.data.total);
+      }
     } catch (error) {
       console.error('Erro ao buscar eventos:', error);
       toast.error('Erro ao carregar eventos');
@@ -892,6 +916,52 @@ const Schedule: React.FC = () => {
                   </tbody>
                 </table>
               </div>
+
+              {/* Pagination - Table View Only */}
+              {total > 0 && (
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-4 py-3 border-t border-neutral-200 bg-neutral-50">
+                  <div className="text-sm text-neutral-600">
+                    Mostrando {((page - 1) * limit) + 1} a {Math.min(page * limit, total)} de {total} eventos
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <select
+                      value={limit}
+                      onChange={(e) => {
+                        setLimit(Number(e.target.value));
+                        setPage(1);
+                      }}
+                      className="px-2 py-1 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    >
+                      <option value={25}>25</option>
+                      <option value={50}>50</option>
+                      <option value={100}>100</option>
+                      <option value={200}>200</option>
+                    </select>
+                    <span className="text-sm text-neutral-600">por página</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setPage(page - 1)}
+                      disabled={page === 1}
+                      className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-neutral-600 hover:text-neutral-800 hover:bg-neutral-100 rounded-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="Página anterior"
+                    >
+                      <ChevronLeft size={20} />
+                    </button>
+                    <span className="text-sm text-neutral-600">
+                      Página {page} de {Math.ceil(total / limit)}
+                    </span>
+                    <button
+                      onClick={() => setPage(page + 1)}
+                      disabled={page >= Math.ceil(total / limit)}
+                      className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-neutral-600 hover:text-neutral-800 hover:bg-neutral-100 rounded-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="Próxima página"
+                    >
+                      <ChevronRight size={20} />
+                    </button>
+                  </div>
+                </div>
+              )}
             </>
           )}
         </div>

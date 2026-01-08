@@ -3,6 +3,8 @@ import { AuthRequest } from '../middleware/auth';
 import prisma from '../utils/prisma';
 import { sanitizeString } from '../utils/sanitize';
 import { appLogger } from '../utils/logger';
+import { parse } from 'csv-parse/sync';
+import { enqueueCsvImport, getImportStatus } from '../queues/csv-import.queue';
 
 // Helper para construir filtros de busca (fora da classe para evitar problemas com this)
 function buildLeadWhereClause(companyId: string, query: any) {
@@ -838,6 +840,88 @@ export class LeadController {
     } catch (error) {
       appLogger.error('Erro ao exportar leads para PDF:', error as Error);
       res.status(500).json({ error: 'Erro ao exportar leads para PDF' });
+    }
+  }
+
+  /**
+   * Importar leads via CSV
+   */
+  async importCSV(req: AuthRequest, res: Response) {
+    try {
+      const companyId = req.user!.companyId;
+      const userId = req.user!.userId;
+
+      if (!companyId) {
+        return res.status(403).json({ error: 'Usuário não possui empresa associada' });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({ error: 'Nenhum arquivo enviado' });
+      }
+
+      // Remover BOM se existir
+      const csvContent = req.file.buffer.toString('utf-8').replace(/^\ufeff/, '');
+
+      // Detectar delimitador (vírgula ou ponto e vírgula)
+      const firstLine = csvContent.split('\n')[0] || '';
+      const delimiter = firstLine.includes(';') ? ';' : ',';
+
+      // Parse do CSV para validar e contar linhas
+      const records = parse(csvContent, {
+        columns: true,
+        skip_empty_lines: true,
+        trim: true,
+        bom: true,
+        delimiter,
+      });
+
+      // PROTEÇÃO: Limitar quantidade de linhas para evitar sobrecarga
+      const MAX_CSV_ROWS = 500;
+      if (records.length > MAX_CSV_ROWS) {
+        return res.status(400).json({
+          error: 'Arquivo muito grande',
+          message: `O arquivo contém ${records.length} registros. O máximo permitido é ${MAX_CSV_ROWS} registros por importação. Divida seu arquivo em partes menores.`,
+          maxRows: MAX_CSV_ROWS,
+          currentRows: records.length,
+        });
+      }
+
+      if (records.length === 0) {
+        return res.status(400).json({ error: 'Arquivo CSV vazio' });
+      }
+
+      // Enfileirar job para processamento em background
+      const jobId = await enqueueCsvImport('import-leads', companyId, userId, csvContent, records.length);
+
+      res.status(202).json({
+        message: 'Importação iniciada. O processamento ocorre em segundo plano.',
+        jobId,
+        totalRows: records.length,
+        statusUrl: `/api/leads/import/status/${jobId}`,
+      });
+    } catch (error) {
+      appLogger.error('Erro ao iniciar importação de leads', error as Error);
+      res.status(500).json({ error: 'Erro ao iniciar importação de leads' });
+    }
+  }
+
+  /**
+   * Obter status da importação de leads
+   */
+  async getLeadImportStatus(req: AuthRequest, res: Response) {
+    try {
+      const { jobId } = req.params;
+
+      const status = await getImportStatus(jobId);
+
+      if (!status) {
+        return res.status(404).json({ error: 'Job não encontrado ou expirado' });
+      }
+
+      res.json(status);
+    } catch (error) {
+      appLogger.error('Erro ao buscar status de importação', error as Error);
+      res.status(500).json({ error: 'Erro ao buscar status de importação' });
     }
   }
 }

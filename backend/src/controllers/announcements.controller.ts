@@ -11,8 +11,9 @@ export class AnnouncementsController {
   async list(req: AuthRequest, res: Response) {
     try {
       const companyId = req.user!.companyId;
-      const { active, clientId } = req.query;
+      const { active, clientId, page = 1, limit = 50 } = req.query;
 
+      const skip = (Number(page) - 1) * Number(limit);
       const whereClause: any = { companyId };
       if (active !== undefined) {
         whereClause.active = active === 'true';
@@ -21,29 +22,40 @@ export class AnnouncementsController {
         whereClause.clientId = clientId;
       }
 
-      const announcements = await prisma.announcement.findMany({
-        where: whereClause,
-        include: {
-          creator: {
-            select: {
-              id: true,
-              name: true,
+      const [announcements, total] = await Promise.all([
+        prisma.announcement.findMany({
+          where: whereClause,
+          skip,
+          take: Number(limit),
+          include: {
+            creator: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+            client: {
+              select: {
+                id: true,
+                name: true,
+              },
             },
           },
-          client: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-        },
-        orderBy: [
-          { priority: 'desc' },
-          { publishedAt: 'desc' },
-        ],
-      });
+          orderBy: [
+            { priority: 'desc' },
+            { publishedAt: 'desc' },
+          ],
+        }),
+        prisma.announcement.count({ where: whereClause }),
+      ]);
 
-      res.json(announcements);
+      res.json({
+        data: announcements,
+        total,
+        page: Number(page),
+        limit: Number(limit),
+        totalPages: Math.ceil(total / Number(limit)),
+      });
     } catch (error) {
       appLogger.error('Erro ao listar anúncios:', error as Error);
       res.status(500).json({ error: 'Erro ao buscar anúncios' });

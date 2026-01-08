@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
 import api from '../services/api';
 import toast from 'react-hot-toast';
-import { Search, Clock, Calendar, Eye, AlertCircle, Edit, CheckCircle, X } from 'lucide-react';
+import { Search, Clock, Calendar, Eye, AlertCircle, Edit, CheckCircle, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import MobileCardList, { MobileCardItem } from '../components/MobileCardList';
 import { formatDate } from '../utils/dateFormatter';
 
@@ -44,17 +44,26 @@ const Deadlines: React.FC = () => {
   const [selectedCase, setSelectedCase] = useState<Case | null>(null);
   const [editDeadline, setEditDeadline] = useState('');
   const [savingDeadline, setSavingDeadline] = useState(false);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(50);
+  const [total, setTotal] = useState(0);
+
+  useEffect(() => {
+    setPage(1);
+  }, [search]);
 
   useEffect(() => {
     loadDeadlines();
-  }, [search]);
+  }, [search, page, limit]);
 
   const loadDeadlines = async () => {
     try {
+      setLoading(true);
       const response = await api.get('/cases/deadlines', {
-        params: { search },
+        params: { search, page, limit },
       });
-      setCases(response.data);
+      setCases(response.data.data || response.data);
+      setTotal(response.data.total || response.data.length || 0);
     } catch (error) {
       toast.error('Erro ao carregar prazos');
     } finally {
@@ -357,6 +366,50 @@ const Deadlines: React.FC = () => {
                   </tbody>
                 </table>
               </div>
+
+              {/* Pagination */}
+              {total > 0 && (
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4 pt-4 border-t border-neutral-200">
+                  <p className="text-sm text-neutral-600">
+                    Mostrando {((page - 1) * limit) + 1} a {Math.min(page * limit, total)} de {total} prazos
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <select
+                      value={limit}
+                      onChange={(e) => {
+                        setLimit(Number(e.target.value));
+                        setPage(1);
+                      }}
+                      className="px-2 py-1 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    >
+                      <option value={25}>25</option>
+                      <option value={50}>50</option>
+                      <option value={100}>100</option>
+                      <option value={200}>200</option>
+                    </select>
+                    <span className="text-sm text-neutral-600">por página</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setPage(p => Math.max(1, p - 1))}
+                      disabled={page === 1}
+                      className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] border border-neutral-300 rounded-md hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <ChevronLeft size={20} />
+                    </button>
+                    <span className="text-sm text-neutral-600 px-2">
+                      Página {page} de {Math.ceil(total / limit)}
+                    </span>
+                    <button
+                      onClick={() => setPage(p => Math.min(Math.ceil(total / limit), p + 1))}
+                      disabled={page >= Math.ceil(total / limit)}
+                      className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] border border-neutral-300 rounded-md hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <ChevronRight size={20} />
+                    </button>
+                  </div>
+                </div>
+              )}
             </>
           )}
         </div>

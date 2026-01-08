@@ -11,25 +11,40 @@ export class TagController {
   async list(req: AuthRequest, res: Response) {
     try {
       const companyId = req.user!.companyId;
+      const { page = 1, limit = 50 } = req.query;
 
       if (!companyId) {
         return res.status(403).json({ error: 'Usuário não possui empresa associada' });
       }
 
-      const tags = await prisma.tag.findMany({
-        where: { companyId },
-        orderBy: { name: 'asc' },
-        include: {
-          _count: {
-            select: {
-              clients: true,
-              leads: true,
+      const skip = (Number(page) - 1) * Number(limit);
+      const where = { companyId };
+
+      const [tags, total] = await Promise.all([
+        prisma.tag.findMany({
+          where,
+          skip,
+          take: Number(limit),
+          orderBy: { name: 'asc' },
+          include: {
+            _count: {
+              select: {
+                clients: true,
+                leads: true,
+              },
             },
           },
-        },
-      });
+        }),
+        prisma.tag.count({ where }),
+      ]);
 
-      res.json(tags);
+      res.json({
+        data: tags,
+        total,
+        page: Number(page),
+        limit: Number(limit),
+        totalPages: Math.ceil(total / Number(limit)),
+      });
     } catch (error) {
       appLogger.error('Erro ao listar tags:', error as Error);
       res.status(500).json({ error: 'Erro ao listar tags' });

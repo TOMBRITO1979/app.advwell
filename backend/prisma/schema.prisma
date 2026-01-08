@@ -113,6 +113,10 @@ model Company {
   // Documentos Compartilhados (Portal do Cliente)
   sharedDocuments             SharedDocument[]
 
+  // Compartilhamento de tokens de IA
+  aiTokenSharesProvided       AITokenShare[] @relation("AITokenShareProvider")  // Tokens que esta empresa compartilha
+  aiTokenSharesReceived       AITokenShare[] @relation("AITokenShareClient")    // Tokens que esta empresa recebe
+
   @@map("companies")
 }
 
@@ -770,6 +774,28 @@ model AITokenUsage {
   @@index([companyId, createdAt])
   @@index([aiConfigId, createdAt])
   @@map("ai_token_usages")
+}
+
+// Compartilhamento de tokens de IA entre empresas
+model AITokenShare {
+  id                  String     @id @default(uuid())
+  providerCompanyId   String     @map("provider_company_id") // Empresa que fornece o acesso (dona da API key)
+  clientCompanyId     String     @map("client_company_id") // Empresa que recebe o acesso
+  tokenLimit          Int        @map("token_limit") // Limite de tokens permitido
+  tokensUsed          Int        @default(0) @map("tokens_used") // Tokens já utilizados
+  enabled             Boolean    @default(true)
+  notifiedAt80        Boolean    @default(false) @map("notified_at_80") // Notificou ao atingir 80%
+  notifiedAt100       Boolean    @default(false) @map("notified_at_100") // Notificou ao atingir 100%
+  createdAt           DateTime   @default(now()) @map("created_at")
+  updatedAt           DateTime   @updatedAt @map("updated_at")
+
+  // Relations
+  providerCompany     Company    @relation("AITokenShareProvider", fields: [providerCompanyId], references: [id], onDelete: Cascade)
+  clientCompany       Company    @relation("AITokenShareClient", fields: [clientCompanyId], references: [id], onDelete: Cascade)
+
+  @@unique([providerCompanyId, clientCompanyId])
+  @@index([clientCompanyId])
+  @@map("ai_token_shares")
 }
 
 // ============================================================================

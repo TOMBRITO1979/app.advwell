@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
 import api from '../services/api';
 import toast from 'react-hot-toast';
-import { Bell, CheckCircle, ExternalLink } from 'lucide-react';
+import { Bell, CheckCircle, ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react';
 import { formatDate, formatDateTime } from '../utils/dateFormatter';
 
 interface CaseUpdate {
@@ -30,16 +30,22 @@ const Updates: React.FC = () => {
   const [updates, setUpdates] = useState<CaseUpdate[]>([]);
   const [loading, setLoading] = useState(true);
   const [acknowledging, setAcknowledging] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(50);
+  const [total, setTotal] = useState(0);
 
   useEffect(() => {
     fetchUpdates();
-  }, []);
+  }, [page, limit]);
 
   const fetchUpdates = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/cases/updates');
-      setUpdates(response.data);
+      const response = await api.get('/cases/updates', {
+        params: { page, limit }
+      });
+      setUpdates(response.data.data || response.data);
+      setTotal(response.data.total || response.data.length || 0);
     } catch (error) {
       console.error('Erro ao carregar atualizações:', error);
       toast.error('Erro ao carregar atualizações');
@@ -64,6 +70,7 @@ const Updates: React.FC = () => {
 
       // Remove da lista
       setUpdates(updates.filter(u => u.id !== caseId));
+      setTotal(prev => Math.max(0, prev - 1));
     } catch (error) {
       console.error('Erro ao marcar como ciente:', error);
       toast.error('Erro ao marcar como ciente');
@@ -99,9 +106,9 @@ const Updates: React.FC = () => {
             </p>
           </div>
         </div>
-        {updates.length > 0 && (
+        {total > 0 && (
           <div className="bg-success-100 text-success-800 px-4 py-2 rounded-lg md:rounded-full font-semibold text-center">
-            {updates.length} {updates.length === 1 ? 'atualização' : 'atualizações'}
+            {total} {total === 1 ? 'atualização' : 'atualizações'}
           </div>
         )}
       </div>
@@ -275,6 +282,50 @@ const Updates: React.FC = () => {
               </tbody>
             </table>
           </div>
+
+          {/* Pagination */}
+          {total > 0 && (
+            <div className="px-6 py-4 border-t border-neutral-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="text-sm text-neutral-600">
+                Mostrando {((page - 1) * limit) + 1} a {Math.min(page * limit, total)} de {total} atualizações
+              </div>
+              <div className="flex items-center gap-2">
+                <select
+                  value={limit}
+                  onChange={(e) => {
+                    setLimit(Number(e.target.value));
+                    setPage(1);
+                  }}
+                  className="px-2 py-1 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                >
+                  <option value={25}>25</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                  <option value={200}>200</option>
+                </select>
+                <span className="text-sm text-neutral-600">por página</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  className="p-2 rounded-lg border border-neutral-300 hover:bg-neutral-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <span className="px-4 py-2 text-sm font-medium text-neutral-700">
+                  Página {page} de {Math.ceil(total / limit)}
+                </span>
+                <button
+                  onClick={() => setPage(p => Math.min(Math.ceil(total / limit), p + 1))}
+                  disabled={page >= Math.ceil(total / limit)}
+                  className="p-2 rounded-lg border border-neutral-300 hover:bg-neutral-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

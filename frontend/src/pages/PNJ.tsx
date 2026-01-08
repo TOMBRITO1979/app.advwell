@@ -20,6 +20,8 @@ import {
   Link,
   File,
   ExternalLink,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import MobileCardList, { MobileCardItem } from '../components/MobileCardList';
 import { formatDate } from '../utils/dateFormatter';
@@ -216,9 +218,20 @@ const PNJPage: React.FC = () => {
   const [importing, setImporting] = useState(false);
   const [exporting, setExporting] = useState(false);
 
+  // Pagination
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [limit, setLimit] = useState(50);
+  const totalPages = Math.ceil(total / limit);
+
   useEffect(() => {
     loadPNJs();
     loadClients();
+  }, [search, statusFilter, page, limit]);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setPage(1);
   }, [search, statusFilter]);
 
   // Filter clients based on search text
@@ -238,9 +251,10 @@ const PNJPage: React.FC = () => {
   const loadPNJs = async () => {
     try {
       const response = await api.get('/pnj', {
-        params: { search, status: statusFilter, limit: 100 },
+        params: { search, status: statusFilter, page, limit },
       });
       setPnjs(response.data.data);
+      setTotal(response.data.total || 0);
     } catch (error) {
       toast.error('Erro ao carregar PNJs');
     } finally {
@@ -875,6 +889,76 @@ const PNJPage: React.FC = () => {
                   </tbody>
                 </table>
               </div>
+
+              {/* Pagination */}
+              {total > 0 && (
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 px-4">
+                  <div className="text-sm text-neutral-600">
+                    Mostrando {(page - 1) * limit + 1} - {Math.min(page * limit, total)} de {total} PNJs
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <select
+                      value={limit}
+                      onChange={(e) => {
+                        setLimit(Number(e.target.value));
+                        setPage(1);
+                      }}
+                      className="px-2 py-1 text-sm border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    >
+                      <option value={25}>25 por página</option>
+                      <option value={50}>50 por página</option>
+                      <option value={100}>100 por página</option>
+                      <option value={200}>200 por página</option>
+                    </select>
+                    <button
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                      disabled={page === 1}
+                      className="inline-flex items-center gap-1 px-3 py-2 text-sm text-neutral-600 hover:bg-neutral-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                      Anterior
+                    </button>
+
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                        let pageNum: number;
+                        if (totalPages <= 5) {
+                          pageNum = i + 1;
+                        } else if (page <= 3) {
+                          pageNum = i + 1;
+                        } else if (page >= totalPages - 2) {
+                          pageNum = totalPages - 4 + i;
+                        } else {
+                          pageNum = page - 2 + i;
+                        }
+
+                        return (
+                          <button
+                            key={pageNum}
+                            onClick={() => setPage(pageNum)}
+                            className={`px-3 py-1 text-sm rounded-lg ${
+                              page === pageNum
+                                ? 'bg-primary-600 text-white'
+                                : 'text-neutral-600 hover:bg-neutral-100'
+                            }`}
+                          >
+                            {pageNum}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <button
+                      onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                      disabled={page === totalPages}
+                      className="inline-flex items-center gap-1 px-3 py-2 text-sm text-neutral-600 hover:bg-neutral-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Próximo
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              )}
             </>
           )}
         </div>

@@ -295,35 +295,44 @@ export class CaseController {
         }),
       };
 
-      const cases = await prisma.case.findMany({
-        where,
-        skip,
-        take: Number(limit),
-        orderBy: { createdAt: 'desc' },
-        include: {
-          client: {
-            select: {
-              id: true,
-              name: true,
-              cpf: true,
+      const [cases, total] = await Promise.all([
+        prisma.case.findMany({
+          where,
+          skip,
+          take: Number(limit),
+          orderBy: { createdAt: 'desc' },
+          include: {
+            client: {
+              select: {
+                id: true,
+                name: true,
+                cpf: true,
+              },
+            },
+            deadlineResponsible: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+            _count: {
+              select: {
+                movements: true,
+              },
             },
           },
-          deadlineResponsible: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-            },
-          },
-          _count: {
-            select: {
-              movements: true,
-            },
-          },
-        },
-      });
+        }),
+        prisma.case.count({ where }),
+      ]);
 
-      res.json({ data: cases });
+      res.json({
+        data: cases,
+        total,
+        page: Number(page),
+        limit: Number(limit),
+        totalPages: Math.ceil(total / Number(limit)),
+      });
     } catch (error) {
       appLogger.error('Erro ao listar processos', error as Error);
       res.status(500).json({ error: 'Erro ao listar processos' });
@@ -677,6 +686,28 @@ export class CaseController {
         return res.status(400).json({ error: result.error });
       }
 
+      // Registrar uso de tokens se disponível
+      if (result.usage && result.aiConfigId) {
+        try {
+          await prisma.aITokenUsage.create({
+            data: {
+              aiConfigId: result.aiConfigId,
+              companyId: companyId,
+              operation: 'generate_case_summary',
+              promptTokens: result.usage.promptTokens,
+              completionTokens: result.usage.completionTokens,
+              totalTokens: result.usage.totalTokens,
+              model: result.model || '',
+              provider: result.provider || '',
+              metadata: { caseId: id, processNumber: caseData.processNumber },
+            },
+          });
+        } catch (saveError) {
+          appLogger.error('Erro ao salvar uso de tokens:', saveError as Error);
+          // Não falha a operação por erro ao salvar métricas
+        }
+      }
+
       // Atualizar o campo informarCliente com o resumo gerado
       const updatedCase = await prisma.case.update({
         where: { id },
@@ -698,6 +729,7 @@ export class CaseController {
         case: updatedCase,
         provider: result.provider,
         model: result.model,
+        tokensUsed: result.usage?.totalTokens,
       });
     } catch (error) {
       appLogger.error('Erro ao gerar resumo', error as Error);
@@ -777,11 +809,16 @@ export class CaseController {
 
       const csvContent = req.file.buffer.toString('utf-8').replace(/^\ufeff/, '');
 
+      // Detectar delimitador (vírgula ou ponto e vírgula)
+      const firstLine = csvContent.split('\n')[0] || '';
+      const delimiter = firstLine.includes(';') ? ';' : ',';
+
       const records = parse(csvContent, {
         columns: true,
         skip_empty_lines: true,
         trim: true,
         bom: true,
+        delimiter,
       });
 
       const MAX_CSV_ROWS = 500;

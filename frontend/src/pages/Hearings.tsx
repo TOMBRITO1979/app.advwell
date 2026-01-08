@@ -63,6 +63,12 @@ const Hearings: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [companyUsers, setCompanyUsers] = useState<UserData[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string>('');
+
+  // Pagination
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [limit, setLimit] = useState(50);
+  const totalPages = Math.ceil(total / limit);
   const [selectedDate, setSelectedDate] = useState<string>(() => {
     const today = new Date();
     return today.toISOString().split('T')[0];
@@ -123,6 +129,11 @@ const Hearings: React.FC = () => {
     } else {
       fetchWeekHearings();
     }
+  }, [selectedDate, selectedUserId, viewMode, page, limit]);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setPage(1);
   }, [selectedDate, selectedUserId, viewMode]);
 
   // Debounce para busca de clientes
@@ -163,29 +174,24 @@ const Hearings: React.FC = () => {
     try {
       const params: any = {
         type: 'AUDIENCIA',
-        limit: 500,
+        page,
+        limit,
       };
 
-      const response = await api.get('/schedule', { params });
-      let hearings = response.data.data || [];
-
-      // Filtrar por data selecionada
+      // Adicionar filtro de data
       if (selectedDate) {
-        hearings = hearings.filter((event: ScheduleEvent) => {
-          const eventDate = new Date(event.date).toISOString().split('T')[0];
-          return eventDate === selectedDate;
-        });
+        params.startDate = selectedDate;
+        params.endDate = selectedDate + 'T23:59:59';
       }
 
-      // Filtrar por usuário selecionado
+      // Adicionar filtro de usuário
       if (selectedUserId) {
-        hearings = hearings.filter((event: ScheduleEvent) => {
-          if (event.assignedUsers && event.assignedUsers.length > 0) {
-            return event.assignedUsers.some(a => a.user.id === selectedUserId);
-          }
-          return event.user?.id === selectedUserId;
-        });
+        params.userId = selectedUserId;
       }
+
+      const response = await api.get('/schedule', { params });
+      const hearings = response.data.data || [];
+      setTotal(response.data.total || 0);
 
       setEvents(hearings);
     } catch (error) {
@@ -525,7 +531,7 @@ const Hearings: React.FC = () => {
                   {formatDateDisplay(selectedDate)}
                 </p>
                 <p className="text-sm text-neutral-500">
-                  {events.length} audiência(s) encontrada(s)
+                  {total} audiência(s) encontrada(s)
                 </p>
               </>
             ) : (
@@ -712,6 +718,76 @@ const Hearings: React.FC = () => {
                   </tbody>
                 </table>
               </div>
+
+              {/* Pagination */}
+              {total > 0 && (
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 px-4 pb-4">
+                  <div className="text-sm text-neutral-600">
+                    Mostrando {(page - 1) * limit + 1} - {Math.min(page * limit, total)} de {total} audiências
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <select
+                      value={limit}
+                      onChange={(e) => {
+                        setLimit(Number(e.target.value));
+                        setPage(1);
+                      }}
+                      className="px-2 py-1 text-sm border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    >
+                      <option value={25}>25 por página</option>
+                      <option value={50}>50 por página</option>
+                      <option value={100}>100 por página</option>
+                      <option value={200}>200 por página</option>
+                    </select>
+                    <button
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                      disabled={page === 1}
+                      className="inline-flex items-center gap-1 px-3 py-2 text-sm text-neutral-600 hover:bg-neutral-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                      Anterior
+                    </button>
+
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                        let pageNum: number;
+                        if (totalPages <= 5) {
+                          pageNum = i + 1;
+                        } else if (page <= 3) {
+                          pageNum = i + 1;
+                        } else if (page >= totalPages - 2) {
+                          pageNum = totalPages - 4 + i;
+                        } else {
+                          pageNum = page - 2 + i;
+                        }
+
+                        return (
+                          <button
+                            key={pageNum}
+                            onClick={() => setPage(pageNum)}
+                            className={`px-3 py-1 text-sm rounded-lg ${
+                              page === pageNum
+                                ? 'bg-primary-600 text-white'
+                                : 'text-neutral-600 hover:bg-neutral-100'
+                            }`}
+                          >
+                            {pageNum}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <button
+                      onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                      disabled={page === totalPages}
+                      className="inline-flex items-center gap-1 px-3 py-2 text-sm text-neutral-600 hover:bg-neutral-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Próximo
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )
         ) : (

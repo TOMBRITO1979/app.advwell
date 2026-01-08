@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Check, Repeat, FileText, Download } from 'lucide-react';
+import { Plus, Edit2, Trash2, Check, Repeat, FileText, Download, ChevronLeft, ChevronRight } from 'lucide-react';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import Layout from '../components/Layout';
@@ -39,6 +39,12 @@ const AccountsPayable: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingAccount, setEditingAccount] = useState<AccountPayable | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>('');
+
+  // Pagination state
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(50);
+  const [total, setTotal] = useState(0);
+  const totalPages = Math.ceil(total / limit);
 
   // Statement generation state
   const [showStatementModal, setShowStatementModal] = useState(false);
@@ -82,6 +88,10 @@ const AccountsPayable: React.FC = () => {
 
   useEffect(() => {
     fetchAccounts();
+  }, [filterStatus, page, limit]);
+
+  useEffect(() => {
+    setPage(1);
   }, [filterStatus]);
 
   useEffect(() => {
@@ -187,11 +197,12 @@ const AccountsPayable: React.FC = () => {
   const fetchAccounts = async () => {
     try {
       setLoading(true);
-      const params: any = {};
+      const params: any = { page, limit };
       if (filterStatus) params.status = filterStatus;
 
       const response = await api.get('/accounts-payable', { params });
       setAccounts(response.data.data);
+      setTotal(response.data.total);
     } catch (error) {
       toast.error('Erro ao carregar contas');
       console.error(error);
@@ -463,6 +474,52 @@ const AccountsPayable: React.FC = () => {
                   ))}
                 </tbody>
               </table>
+            </div>
+          </div>
+        )}
+
+        {/* Pagination */}
+        {!loading && accounts.length > 0 && (
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="text-sm text-neutral-600">
+                Mostrando {((page - 1) * limit) + 1} a {Math.min(page * limit, total)} de {total} contas
+              </div>
+              <div className="flex items-center gap-2">
+                <select
+                  value={limit}
+                  onChange={(e) => {
+                    setLimit(Number(e.target.value));
+                    setPage(1);
+                  }}
+                  className="px-2 py-1 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                >
+                  <option value={25}>25</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                  <option value={200}>200</option>
+                </select>
+                <span className="text-sm text-neutral-600">por página</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] border border-neutral-300 bg-white hover:bg-neutral-50 text-neutral-700 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <ChevronLeft size={20} />
+                </button>
+                <span className="px-4 py-2 text-sm font-medium text-neutral-700">
+                  Página {page} de {totalPages}
+                </span>
+                <button
+                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                  className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] border border-neutral-300 bg-white hover:bg-neutral-50 text-neutral-700 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <ChevronRight size={20} />
+                </button>
+              </div>
             </div>
           </div>
         )}

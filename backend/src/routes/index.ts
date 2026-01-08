@@ -14,6 +14,7 @@ import accountsPayableRoutes from './accounts-payable.routes';
 import smtpConfigRoutes from './smtp-config.routes';
 import campaignRoutes from './campaign.routes';
 import aiConfigRoutes from './ai-config.routes';
+import aiTokenShareRoutes from './ai-token-share.routes';
 import legalDocumentRoutes from './legal-document.routes';
 import subscriptionRoutes from './subscription.routes';
 import leadRoutes from './lead.routes';
@@ -59,6 +60,7 @@ router.use('/accounts-payable', accountsPayableRoutes); // Rotas de contas a pag
 router.use('/smtp-config', smtpConfigRoutes); // Configuração SMTP por empresa
 router.use('/campaigns', campaignRoutes); // Campanhas de email
 router.use('/ai-config', aiConfigRoutes); // Configuração de IA por empresa
+router.use('/ai-token-share', aiTokenShareRoutes); // Compartilhamento de tokens de IA entre empresas (SUPER_ADMIN)
 router.use('/legal-documents', legalDocumentRoutes); // Documentos jurídicos (recibos, contratos, etc.)
 router.use('/subscription', subscriptionRoutes); // Assinatura e pagamentos (Stripe)
 router.use('/leads', leadRoutes); // Gestão de leads (potenciais clientes)
