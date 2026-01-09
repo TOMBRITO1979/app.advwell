@@ -155,6 +155,12 @@ const Cases: React.FC = () => {
   const [importingPublicationId, setImportingPublicationId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Demandante/Demandado autocomplete (busca em Clientes + Adversos)
+  const [showDemandanteDropdown, setShowDemandanteDropdown] = useState(false);
+  const [showDemandadoDropdown, setShowDemandadoDropdown] = useState(false);
+  const [filteredDemandantes, setFilteredDemandantes] = useState<{id: string; name: string; type: 'cliente' | 'adverso'; extra?: string}[]>([]);
+  const [filteredDemandados, setFilteredDemandados] = useState<{id: string; name: string; type: 'cliente' | 'adverso'; extra?: string}[]>([]);
+
   // Pagination
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
@@ -210,6 +216,52 @@ const Cases: React.FC = () => {
     }
   }, [partEntitySearchText, partFormData.type, clients, adverses, lawyers, adverseLawyers]);
 
+  // Filter clients + adverses for demandante autocomplete
+  useEffect(() => {
+    if (formData.demandante.length >= 2) {
+      const searchTerm = formData.demandante.toLowerCase();
+
+      // Buscar em clientes
+      const fromClients = clients
+        .filter(c => c.name.toLowerCase().includes(searchTerm))
+        .map(c => ({ id: c.id, name: c.name, type: 'cliente' as const, extra: c.cpf }));
+
+      // Buscar em adversos
+      const fromAdverses = adverses
+        .filter(a => a.name.toLowerCase().includes(searchTerm))
+        .map(a => ({ id: a.id, name: a.name, type: 'adverso' as const, extra: a.cpfCnpj }));
+
+      // Combinar e limitar a 8 resultados
+      const combined = [...fromClients, ...fromAdverses].slice(0, 8);
+      setFilteredDemandantes(combined);
+    } else {
+      setFilteredDemandantes([]);
+    }
+  }, [formData.demandante, clients, adverses]);
+
+  // Filter clients + adverses for demandado autocomplete
+  useEffect(() => {
+    if (formData.demandado.length >= 2) {
+      const searchTerm = formData.demandado.toLowerCase();
+
+      // Buscar em clientes
+      const fromClients = clients
+        .filter(c => c.name.toLowerCase().includes(searchTerm))
+        .map(c => ({ id: c.id, name: c.name, type: 'cliente' as const, extra: c.cpf }));
+
+      // Buscar em adversos
+      const fromAdverses = adverses
+        .filter(a => a.name.toLowerCase().includes(searchTerm))
+        .map(a => ({ id: a.id, name: a.name, type: 'adverso' as const, extra: a.cpfCnpj }));
+
+      // Combinar e limitar a 8 resultados
+      const combined = [...fromClients, ...fromAdverses].slice(0, 8);
+      setFilteredDemandados(combined);
+    } else {
+      setFilteredDemandados([]);
+    }
+  }, [formData.demandado, clients, adverses]);
+
   // Handle navigation from Monitoring page with pre-filled data
   useEffect(() => {
     const state = location.state as {
@@ -217,17 +269,31 @@ const Cases: React.FC = () => {
       publicationId?: string;
       processNumber?: string;
       court?: string;
+      publicationDate?: string;
       notes?: string;
       subject?: string;
+      monitoredOab?: { id: string; name: string; oab: string; oabState: string };
     } | null;
 
     if (state?.fromPublication) {
+      // Build notes with publication info
+      let fullNotes = '';
+      if (state.publicationDate) {
+        fullNotes += `Data da Publicacao: ${new Date(state.publicationDate).toLocaleDateString('pt-BR')}\n`;
+      }
+      if (state.monitoredOab) {
+        fullNotes += `Advogado: ${state.monitoredOab.name} (OAB ${state.monitoredOab.oab}/${state.monitoredOab.oabState})\n`;
+      }
+      if (state.notes) {
+        fullNotes += `\n${state.notes}`;
+      }
+
       // Pre-fill form data and open modal
       setFormData(prev => ({
         ...prev,
         processNumber: state.processNumber || '',
         court: state.court || '',
-        notes: state.notes || '',
+        notes: fullNotes.trim(),
         subject: state.subject || '',
       }));
       setEditMode(false);
@@ -1358,31 +1424,83 @@ const Cases: React.FC = () => {
 
             <div className="p-6">
             <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Demandante e Demandado */}
+              {/* Demandante e Demandado - busca em Clientes + Adversos */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
+                <div className="relative">
                   <label className="block text-sm font-medium text-neutral-700 mb-1">
                     Demandante (Autor)
                   </label>
                   <input
                     type="text"
-                    placeholder="Nome do demandante..."
+                    placeholder="Digite 2+ letras para buscar..."
                     value={formData.demandante}
                     onChange={(e) => setFormData({ ...formData, demandante: e.target.value })}
+                    onFocus={() => setShowDemandanteDropdown(true)}
+                    onBlur={() => setTimeout(() => setShowDemandanteDropdown(false), 200)}
                     className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   />
+                  {showDemandanteDropdown && filteredDemandantes.length > 0 && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-neutral-300 rounded-md shadow-lg max-h-60 overflow-auto">
+                      {filteredDemandantes.map((item) => (
+                        <div
+                          key={`${item.type}-${item.id}`}
+                          className="px-3 py-2 hover:bg-primary-50 cursor-pointer border-b border-neutral-100 last:border-b-0"
+                          onMouseDown={() => {
+                            setFormData({ ...formData, demandante: item.name });
+                            setShowDemandanteDropdown(false);
+                          }}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="font-medium text-neutral-900">{item.name}</span>
+                            <span className={`text-xs px-2 py-0.5 rounded ${item.type === 'cliente' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
+                              {item.type === 'cliente' ? 'Cliente' : 'Adverso'}
+                            </span>
+                          </div>
+                          {item.extra && (
+                            <div className="text-xs text-neutral-500">CPF/CNPJ: {item.extra}</div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <div>
+                <div className="relative">
                   <label className="block text-sm font-medium text-neutral-700 mb-1">
                     Demandado (Réu)
                   </label>
                   <input
                     type="text"
-                    placeholder="Nome do demandado..."
+                    placeholder="Digite 2+ letras para buscar..."
                     value={formData.demandado}
                     onChange={(e) => setFormData({ ...formData, demandado: e.target.value })}
+                    onFocus={() => setShowDemandadoDropdown(true)}
+                    onBlur={() => setTimeout(() => setShowDemandadoDropdown(false), 200)}
                     className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   />
+                  {showDemandadoDropdown && filteredDemandados.length > 0 && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-neutral-300 rounded-md shadow-lg max-h-60 overflow-auto">
+                      {filteredDemandados.map((item) => (
+                        <div
+                          key={`${item.type}-${item.id}`}
+                          className="px-3 py-2 hover:bg-primary-50 cursor-pointer border-b border-neutral-100 last:border-b-0"
+                          onMouseDown={() => {
+                            setFormData({ ...formData, demandado: item.name });
+                            setShowDemandadoDropdown(false);
+                          }}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="font-medium text-neutral-900">{item.name}</span>
+                            <span className={`text-xs px-2 py-0.5 rounded ${item.type === 'cliente' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
+                              {item.type === 'cliente' ? 'Cliente' : 'Adverso'}
+                            </span>
+                          </div>
+                          {item.extra && (
+                            <div className="text-xs text-neutral-500">CPF/CNPJ: {item.extra}</div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
 

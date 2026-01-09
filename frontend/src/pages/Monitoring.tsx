@@ -132,6 +132,72 @@ const consultaStatusColors: Record<ConsultaStatus, { bg: string; text: string; l
   FAILED: { bg: 'bg-red-100', text: 'text-red-800', label: 'Falhou' },
 };
 
+/**
+ * Limpa o texto da publicacao removendo ARIA, HTML e formatando campos
+ */
+function cleanPublicationText(text: string | null | undefined): string | null {
+  if (!text) return null;
+
+  let cleaned = text
+    // Remove atributos ARIA e HTML
+    .replace(/aria-[a-z-]+="[^"]*"/gi, '')
+    .replace(/data-[a-z-]+="[^"]*"/gi, '')
+    .replace(/class="[^"]*"/gi, '')
+    .replace(/id="[^"]*"/gi, '')
+    .replace(/style="[^"]*"/gi, '')
+    .replace(/role="[^"]*"/gi, '')
+    .replace(/tabindex="[^"]*"/gi, '')
+    .replace(/d-flex[^"]*"/gi, '')
+    .replace(/align-items-[^"]*"/gi, '')
+    // Remove tags HTML
+    .replace(/<[^>]+>/g, ' ')
+    // Remove botoes de acao comuns
+    .replace(/\b(Imprimir|Copiar|Copiar sem formatação|Download|Baixar|Compartilhar)\b/gi, '')
+    // Remove padroes de interface
+    .replace(/\/?$/g, '')
+    .replace(/\.I\.\s*$/g, '')
+    // Remove underscores soltos
+    .replace(/\s*_\s*/g, ' ')
+    // Remove multiplos espacos
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  // Formata campos conhecidos em linhas separadas
+  cleaned = cleaned
+    // Processo
+    .replace(/\s*Processo\s+(\d{7}-\d{2}\.\d{4}\.\d\.\d{2}\.\d{4})/gi, '\n\nProcesso: $1')
+    // Orgao/Vara
+    .replace(/\s*(Órgão:?)\s*/gi, '\nÓrgão: ')
+    .replace(/\s*(\d+ª?\s*Vara[^.]*)/gi, '\nVara: $1')
+    // Datas
+    .replace(/\s*(Data de disponibilização:?)\s*/gi, '\nData: ')
+    .replace(/\s*(Data:?)\s+(\d{2}\/\d{2}\/\d{4})/gi, '\nData: $2')
+    // Partes
+    .replace(/\s*(Polo Ativo:?)\s*/gi, '\n\nPolo Ativo: ')
+    .replace(/\s*(Polo Passivo:?)\s*/gi, '\nPolo Passivo: ')
+    .replace(/\s*(Autor:?)\s+/gi, '\n\nAutor: ')
+    .replace(/\s*(Réu:?)\s+/gi, '\nRéu: ')
+    .replace(/\s*(Requerente:?)\s+/gi, '\n\nRequerente: ')
+    .replace(/\s*(Requerido:?)\s+/gi, '\nRequerido: ')
+    .replace(/\s*(Exequente:?)\s+/gi, '\n\nExequente: ')
+    .replace(/\s*(Executado:?)\s+/gi, '\nExecutado: ')
+    // Advogados
+    .replace(/\s*(Advogado\(?s?\)?:?)\s*/gi, '\nAdvogado(s): ')
+    .replace(/\s*-\s*OAB\s+/gi, ' - OAB ')
+    // Tipo de acao
+    .replace(/\s*(Trata-se de)\s+/gi, '\n\nTipo: ')
+    .trim();
+
+  // Remove linhas vazias extras
+  cleaned = cleaned
+    .split('\n')
+    .map(line => line.trim())
+    .filter(line => line.length > 0)
+    .join('\n');
+
+  return cleaned || null;
+}
+
 const Monitoring: React.FC = () => {
   const navigate = useNavigate();
 
@@ -386,14 +452,17 @@ const Monitoring: React.FC = () => {
 
   // Navegar para Cases com dados pre-preenchidos
   const handleImportToCase = (pub: Publication) => {
+    const cleanedText = cleanPublicationText(pub.textoComunicacao);
     navigate('/cases', {
       state: {
         fromPublication: true,
         publicationId: pub.id,
         processNumber: pub.numeroProcesso,
         court: pub.siglaTribunal,
-        notes: pub.textoComunicacao || '',
+        publicationDate: pub.dataPublicacao,
+        notes: cleanedText || pub.textoComunicacao || '',
         subject: pub.tipoComunicacao || 'Processo importado via monitoramento',
+        monitoredOab: pub.monitoredOab,
       },
     });
   };
@@ -1053,7 +1122,7 @@ const Monitoring: React.FC = () => {
                 <div>
                   <label className="text-sm font-medium text-neutral-500">Texto da Publicacao</label>
                   <div className="mt-1 p-3 bg-neutral-50 rounded-lg text-sm text-neutral-700 whitespace-pre-wrap">
-                    {selectedPublication.textoComunicacao}
+                    {cleanPublicationText(selectedPublication.textoComunicacao) || selectedPublication.textoComunicacao}
                   </div>
                 </div>
               )}
