@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import Layout from '../components/Layout';
 import api from '../services/api';
 import toast from 'react-hot-toast';
@@ -91,6 +92,7 @@ interface CaseWitness {
 }
 
 const Cases: React.FC = () => {
+  const location = useLocation();
   const [cases, setCases] = useState<Case[]>([]);
   const [clients, setClients] = useState<any[]>([]);
   const [adverses, setAdverses] = useState<any[]>([]);
@@ -148,6 +150,9 @@ const Cases: React.FC = () => {
   // Import CSV states
   const [showImportModal, setShowImportModal] = useState(false);
   const [importResults, setImportResults] = useState<any>(null);
+
+  // Publication import state (from Monitoring page)
+  const [importingPublicationId, setImportingPublicationId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Pagination
@@ -204,6 +209,39 @@ const Cases: React.FC = () => {
       setFilteredPartEntities([]);
     }
   }, [partEntitySearchText, partFormData.type, clients, adverses, lawyers, adverseLawyers]);
+
+  // Handle navigation from Monitoring page with pre-filled data
+  useEffect(() => {
+    const state = location.state as {
+      fromPublication?: boolean;
+      publicationId?: string;
+      processNumber?: string;
+      court?: string;
+      notes?: string;
+      subject?: string;
+    } | null;
+
+    if (state?.fromPublication) {
+      // Pre-fill form data and open modal
+      setFormData(prev => ({
+        ...prev,
+        processNumber: state.processNumber || '',
+        court: state.court || '',
+        notes: state.notes || '',
+        subject: state.subject || '',
+      }));
+      setEditMode(false);
+      setShowModal(true);
+
+      // Store publication ID to mark as imported after case creation
+      if (state.publicationId) {
+        setImportingPublicationId(state.publicationId);
+      }
+
+      // Clear the state to prevent re-opening on refresh
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   const loadCases = async () => {
     try {
@@ -578,6 +616,18 @@ const Cases: React.FC = () => {
         const response = await api.post('/cases', payload);
         caseId = response.data.id;
         toast.success('Processo criado com sucesso!');
+
+        // Se veio de uma publicação do Monitoramento, marcar como importada
+        if (importingPublicationId) {
+          try {
+            await api.patch(`/monitoring/publications/${importingPublicationId}/mark-imported`, {
+              caseId,
+            });
+          } catch (err) {
+            console.error('Erro ao marcar publicação como importada:', err);
+          }
+          setImportingPublicationId(null);
+        }
       }
 
       // Criar/atualizar partes de demandante e demandado do formulário principal

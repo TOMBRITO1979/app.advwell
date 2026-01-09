@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import api from '../services/api';
 import toast from 'react-hot-toast';
@@ -109,12 +110,6 @@ interface OABFormData {
   autoImport: boolean;
 }
 
-interface ImportFormData {
-  clientName: string;
-  clientCpf: string;
-  clientEmail: string;
-  clientPhone: string;
-}
 
 // Brazilian states
 const BRAZILIAN_STATES = [
@@ -138,6 +133,8 @@ const consultaStatusColors: Record<ConsultaStatus, { bg: string; text: string; l
 };
 
 const Monitoring: React.FC = () => {
+  const navigate = useNavigate();
+
   // State for tabs
   const [activeTab, setActiveTab] = useState<'oabs' | 'publications' | 'consultas'>('oabs');
 
@@ -168,13 +165,11 @@ const Monitoring: React.FC = () => {
   // Modal states
   const [showOabModal, setShowOabModal] = useState(false);
   const [showPublicationModal, setShowPublicationModal] = useState(false);
-  const [showImportModal, setShowImportModal] = useState(false);
   const [showConsultaModal, setShowConsultaModal] = useState(false);
   const [selectedOab, setSelectedOab] = useState<MonitoredOAB | null>(null);
   const [selectedPublication, setSelectedPublication] = useState<Publication | null>(null);
   const [editMode, setEditMode] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [importing, setImporting] = useState(false);
 
   // Form data
   const initialFormData: OABFormData = {
@@ -185,14 +180,6 @@ const Monitoring: React.FC = () => {
     autoImport: true,
   };
   const [formData, setFormData] = useState<OABFormData>(initialFormData);
-
-  const initialImportData: ImportFormData = {
-    clientName: '',
-    clientCpf: '',
-    clientEmail: '',
-    clientPhone: '',
-  };
-  const [importData, setImportData] = useState<ImportFormData>(initialImportData);
 
   // Consulta form
   const [consultaOabId, setConsultaOabId] = useState('');
@@ -397,27 +384,18 @@ const Monitoring: React.FC = () => {
     setShowPublicationModal(true);
   };
 
-  const handleOpenImportModal = (pub: Publication) => {
-    setSelectedPublication(pub);
-    setImportData(initialImportData);
-    setShowImportModal(true);
-  };
-
-  const handleImportPublication = async () => {
-    if (!selectedPublication) return;
-
-    try {
-      setImporting(true);
-      const response = await api.post(`/monitoring/publications/${selectedPublication.id}/import`, importData);
-      toast.success(response.data.message);
-      setShowImportModal(false);
-      loadPublications();
-      loadStats();
-    } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Erro ao importar publicacao');
-    } finally {
-      setImporting(false);
-    }
+  // Navegar para Cases com dados pre-preenchidos
+  const handleImportToCase = (pub: Publication) => {
+    navigate('/cases', {
+      state: {
+        fromPublication: true,
+        publicationId: pub.id,
+        processNumber: pub.numeroProcesso,
+        court: pub.siglaTribunal,
+        notes: pub.textoComunicacao || '',
+        subject: pub.tipoComunicacao || 'Processo importado via monitoramento',
+      },
+    });
   };
 
   // Consulta handlers
@@ -788,7 +766,7 @@ const Monitoring: React.FC = () => {
                                   </button>
                                   {!pub.imported && (
                                     <button
-                                      onClick={() => handleOpenImportModal(pub)}
+                                      onClick={() => handleImportToCase(pub)}
                                       className="p-2 text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
                                       title="Importar como Processo"
                                     >
@@ -1091,7 +1069,7 @@ const Monitoring: React.FC = () => {
                 <button
                   onClick={() => {
                     setShowPublicationModal(false);
-                    handleOpenImportModal(selectedPublication);
+                    handleImportToCase(selectedPublication);
                   }}
                   className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors flex items-center gap-2"
                 >
@@ -1099,89 +1077,6 @@ const Monitoring: React.FC = () => {
                   Importar como Processo
                 </button>
               )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Import Modal */}
-      {showImportModal && selectedPublication && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
-            <div className="flex items-center justify-between p-4 border-b">
-              <h2 className="text-lg font-semibold">Importar Publicacao</h2>
-              <button
-                onClick={() => setShowImportModal(false)}
-                className="p-2 hover:bg-neutral-100 rounded-lg transition-colors"
-              >
-                <X size={20} />
-              </button>
-            </div>
-            <div className="p-4 space-y-4">
-              <div className="bg-neutral-50 p-3 rounded-lg">
-                <div className="text-sm text-neutral-500">Processo</div>
-                <div className="font-mono font-medium">{selectedPublication.numeroProcesso}</div>
-              </div>
-              <p className="text-sm text-neutral-600">
-                Preencha os dados do cliente para criar junto com o processo. Deixe em branco para criar um cliente
-                generico.
-              </p>
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">Nome do Cliente</label>
-                <input
-                  type="text"
-                  value={importData.clientName}
-                  onChange={(e) => setImportData({ ...importData, clientName: e.target.value })}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  placeholder="Nome completo (opcional)"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">CPF</label>
-                <input
-                  type="text"
-                  value={importData.clientCpf}
-                  onChange={(e) => setImportData({ ...importData, clientCpf: e.target.value })}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  placeholder="000.000.000-00 (opcional)"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">Email</label>
-                <input
-                  type="email"
-                  value={importData.clientEmail}
-                  onChange={(e) => setImportData({ ...importData, clientEmail: e.target.value })}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  placeholder="email@exemplo.com (opcional)"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">Telefone</label>
-                <input
-                  type="text"
-                  value={importData.clientPhone}
-                  onChange={(e) => setImportData({ ...importData, clientPhone: e.target.value })}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  placeholder="(00) 00000-0000 (opcional)"
-                />
-              </div>
-            </div>
-            <div className="flex justify-end gap-3 p-4 border-t">
-              <button
-                onClick={() => setShowImportModal(false)}
-                className="px-4 py-2 border border-neutral-300 rounded-lg hover:bg-neutral-50 transition-colors"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleImportPublication}
-                disabled={importing}
-                className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50 flex items-center gap-2"
-              >
-                {importing && <Loader2 size={16} className="animate-spin" />}
-                Importar
-              </button>
             </div>
           </div>
         </div>

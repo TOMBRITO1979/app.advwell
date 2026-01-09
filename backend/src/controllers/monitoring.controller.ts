@@ -704,6 +704,55 @@ export class MonitoringController {
   }
 
   /**
+   * Marcar publicação como importada (quando processo é criado manualmente)
+   */
+  async markPublicationImported(req: AuthRequest, res: Response) {
+    try {
+      const companyId = req.user!.companyId;
+      const { id } = req.params;
+      const { caseId } = req.body;
+
+      if (!companyId) {
+        return res.status(403).json({ error: 'Usuário não possui empresa associada' });
+      }
+
+      // Buscar publicação
+      const publication = await prisma.publication.findFirst({
+        where: { id, companyId },
+      });
+
+      if (!publication) {
+        return res.status(404).json({ error: 'Publicação não encontrada' });
+      }
+
+      if (publication.imported) {
+        return res.status(400).json({ error: 'Publicação já foi importada' });
+      }
+
+      // Atualizar publicação como importada
+      await prisma.publication.update({
+        where: { id },
+        data: {
+          imported: true,
+          importedCaseId: caseId || null,
+          importedAt: new Date(),
+        },
+      });
+
+      appLogger.info('Publicação marcada como importada manualmente', {
+        companyId,
+        publicationId: id,
+        caseId,
+      });
+
+      return res.json({ message: 'Publicação marcada como importada' });
+    } catch (error) {
+      appLogger.error('Erro ao marcar publicação como importada', error as Error);
+      return res.status(500).json({ error: 'Erro ao marcar publicação' });
+    }
+  }
+
+  /**
    * Dashboard stats
    */
   async getStats(req: AuthRequest, res: Response) {

@@ -52,8 +52,11 @@ router.get('/queue/stats', (req, res) => monitoringController.getQueueStats(req,
 // Listar publicações
 router.get('/publications', (req, res) => monitoringController.listPublications(req, res));
 
-// Importar publicação como processo
+// Importar publicação como processo (legado - cria cliente automaticamente)
 router.post('/publications/:id/import', (req, res) => monitoringController.importPublication(req, res));
+
+// Marcar publicação como importada (usado quando processo é criado manualmente)
+router.patch('/publications/:id/mark-imported', (req, res) => monitoringController.markPublicationImported(req, res));
 
 // ========================================
 // STATS
