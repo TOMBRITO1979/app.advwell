@@ -114,7 +114,7 @@ export class AdvApiService {
       const callbackUrl = request.callbackUrl ||
         `${process.env.API_URL || 'https://api.advwell.pro'}/api/advapi-webhook`;
 
-      const response = await this.client.post<AdvApiConsultaResponse>('/api/consulta', {
+      const response = await this.client.post('/api/consulta', {
         companyId: request.companyId,
         advogadoNome: request.advogadoNome,
         advogadoOab: request.advogadoOab,
@@ -126,9 +126,16 @@ export class AdvApiService {
         companyId: request.companyId,
         advogadoNome: request.advogadoNome,
         callbackUrl,
+        responseData: response.data,
       });
 
-      return response.data;
+      // ADVAPI retorna {message, consultaId, jobId, advogadoId, status, estimativa}
+      // Converter para o formato esperado
+      return {
+        success: !!response.data.consultaId || !!response.data.message,
+        consultaId: response.data.consultaId,
+        message: response.data.message,
+      };
     } catch (error: any) {
       appLogger.error('ADVAPI: Erro ao iniciar consulta', error as Error, {
         request: { advogadoOab: request.advogadoOab, ufOab: request.ufOab },
