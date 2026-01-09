@@ -5,6 +5,76 @@ import { appLogger } from '../utils/logger';
 const router = Router();
 
 /**
+ * Limpa o texto da publicação removendo:
+ * - Atributos ARIA e HTML
+ * - Botões de ação (Imprimir, Copiar, etc)
+ * - Espaços extras e caracteres de controle
+ */
+function cleanPublicationText(text: string | null | undefined): string | null {
+  if (!text) return null;
+
+  let cleaned = text
+    // Remove atributos ARIA e HTML
+    .replace(/aria-[a-z-]+="[^"]*"/gi, '')
+    .replace(/data-[a-z-]+="[^"]*"/gi, '')
+    .replace(/class="[^"]*"/gi, '')
+    .replace(/id="[^"]*"/gi, '')
+    .replace(/style="[^"]*"/gi, '')
+    .replace(/role="[^"]*"/gi, '')
+    .replace(/tabindex="[^"]*"/gi, '')
+    .replace(/d-flex[^"]*"/gi, '')
+    .replace(/align-items-[^"]*"/gi, '')
+    // Remove tags HTML
+    .replace(/<[^>]+>/g, ' ')
+    // Remove botões de ação comuns
+    .replace(/\b(Imprimir|Copiar|Copiar sem formatação|Download|Baixar|Compartilhar)\b/gi, '')
+    // Remove padrões de interface
+    .replace(/\/?$/g, '')
+    .replace(/\.I\.\s*$/g, '')
+    // Remove underscores soltos
+    .replace(/\s*_\s*/g, ' ')
+    // Remove múltiplos espaços
+    .replace(/\s+/g, ' ')
+    // Remove espaços no início e fim
+    .trim();
+
+  // Formata campos conhecidos em linhas separadas
+  cleaned = cleaned
+    // Processo
+    .replace(/\s*Processo\s+(\d{7}-\d{2}\.\d{4}\.\d\.\d{2}\.\d{4})/gi, '\n\nProcesso: $1')
+    // Órgão/Vara
+    .replace(/\s*(Órgão:?)\s*/gi, '\nÓrgão: ')
+    .replace(/\s*(\d+ª?\s*Vara[^\.]*)/gi, '\nVara: $1')
+    // Datas
+    .replace(/\s*(Data de disponibilização:?)\s*/gi, '\nData: ')
+    .replace(/\s*(Data:?)\s+(\d{2}\/\d{2}\/\d{4})/gi, '\nData: $2')
+    // Partes
+    .replace(/\s*(Polo Ativo:?)\s*/gi, '\n\nPolo Ativo: ')
+    .replace(/\s*(Polo Passivo:?)\s*/gi, '\nPolo Passivo: ')
+    .replace(/\s*(Autor:?)\s+/gi, '\n\nAutor: ')
+    .replace(/\s*(Réu:?)\s+/gi, '\nRéu: ')
+    .replace(/\s*(Requerente:?)\s+/gi, '\n\nRequerente: ')
+    .replace(/\s*(Requerido:?)\s+/gi, '\nRequerido: ')
+    .replace(/\s*(Exequente:?)\s+/gi, '\n\nExequente: ')
+    .replace(/\s*(Executado:?)\s+/gi, '\nExecutado: ')
+    // Advogados
+    .replace(/\s*(Advogado\(?s?\)?:?)\s*/gi, '\nAdvogado(s): ')
+    .replace(/\s*-\s*OAB\s+/gi, ' - OAB ')
+    // Tipo de ação
+    .replace(/\s*(Trata-se de)\s+/gi, '\n\nTipo: ')
+    .trim();
+
+  // Remove linhas vazias extras e formata
+  cleaned = cleaned
+    .split('\n')
+    .map(line => line.trim())
+    .filter(line => line.length > 0)
+    .join('\n');
+
+  return cleaned || null;
+}
+
+/**
  * Webhook endpoint para receber callbacks da ADVAPI
  *
  * A ADVAPI envia os resultados das consultas para este endpoint
@@ -115,7 +185,7 @@ async function processNovaPublicacaoCallback(payload: any) {
       return;
     }
 
-    // Criar nova publicação
+    // Criar nova publicação (com texto limpo)
     const newPub = await prisma.publication.create({
       data: {
         companyId,
@@ -124,7 +194,7 @@ async function processNovaPublicacaoCallback(payload: any) {
         siglaTribunal: publicacao.siglaTribunal,
         dataPublicacao: new Date(publicacao.dataPublicacao),
         tipoComunicacao: publicacao.tipoComunicacao || null,
-        textoComunicacao: publicacao.textoComunicacao || null,
+        textoComunicacao: cleanPublicationText(publicacao.textoComunicacao),
       },
     });
 
@@ -218,7 +288,7 @@ async function processPublicacoesCallback(payload: any) {
             siglaTribunal: pub.siglaTribunal || pub.tribunal,
             dataPublicacao: new Date(pub.dataPublicacao),
             tipoComunicacao: pub.tipoComunicacao || pub.tipo || null,
-            textoComunicacao: pub.textoComunicacao || pub.texto || null,
+            textoComunicacao: cleanPublicationText(pub.textoComunicacao || pub.texto),
           },
         });
 
