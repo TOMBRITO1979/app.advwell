@@ -70,7 +70,20 @@ Row-level multitenancy with `companyId` on all models. Middleware `validateTenan
 Jobs processed by dedicated worker (not API replicas):
 - `ENABLE_QUEUE_PROCESSORS=false` on API replicas
 - `ENABLE_QUEUE_PROCESSORS=true` on worker
-- Queues: `datajud-sync`, `email-campaign`, `whatsapp-messages`, `csv-import`
+- Queues: `datajud-sync`, `email-campaign`, `whatsapp-messages`, `csv-import`, `monitoring`
+
+## Key Modules
+
+| Module | Description |
+|--------|-------------|
+| Cases | Process management with DataJud sync, parts (demandante/demandado), witnesses |
+| Clients | Client management with portal access |
+| Adverses | Adverse parties management |
+| Lawyers | Internal lawyers management |
+| Financial | Accounts payable/receivable, installments |
+| Monitoring | OAB publication monitoring via ADVAPI |
+| Documents | Legal document generation |
+| Schedule | Calendar events, hearings, deadlines |
 
 ## Key Files
 
@@ -81,8 +94,6 @@ Jobs processed by dedicated worker (not API replicas):
 | Queue config | `backend/src/queues/*.ts` |
 | Auth middleware | `backend/src/middleware/auth.ts` |
 | Tenant middleware | `backend/src/middleware/tenant.ts` |
-| AI service | `backend/src/services/ai/ai.service.ts` |
-| AI token sharing | `backend/src/controllers/ai-token-share.controller.ts` |
 | Docker config | `docker-compose.yml` |
 
 ## Environment Variables
