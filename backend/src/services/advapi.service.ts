@@ -62,7 +62,7 @@ export class AdvApiService {
 
   constructor(apiKey: string, baseUrl?: string) {
     this.apiKey = apiKey;
-    this.baseUrl = baseUrl || process.env.ADVAPI_BASE_URL || 'https://api.advapi.com';
+    this.baseUrl = baseUrl || process.env.ADVAPI_BASE_URL || 'https://api.advtom.com';
 
     this.client = axios.create({
       baseURL: this.baseUrl,
