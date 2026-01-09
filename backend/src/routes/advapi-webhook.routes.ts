@@ -33,18 +33,23 @@ router.post('/', async (req: Request, res: Response) => {
     const payload = req.body;
 
     appLogger.info('ADVAPI Webhook: Callback recebido', {
+      tipo: payload.tipo,
       consultaId: payload.consultaId,
       status: payload.status,
-      totalPublicacoes: payload.publicacoes?.length || 0,
+      totalPublicacoes: payload.publicacoes?.length || (payload.publicacao ? 1 : 0),
     });
 
     // Validar payload
-    if (!payload.consultaId && !payload.companyId) {
-      return res.status(400).json({ error: 'Payload inválido: consultaId ou companyId necessário' });
+    if (!payload.consultaId && !payload.companyId && !payload.tipo) {
+      return res.status(400).json({ error: 'Payload inválido: consultaId, companyId ou tipo necessário' });
     }
 
-    // Processar diferentes tipos de callback
-    if (payload.status === 'completed' && payload.publicacoes) {
+    // NOVO FORMATO: tipo: "nova_publicacao" com publicacao única
+    if (payload.tipo === 'nova_publicacao' && payload.publicacao) {
+      await processNovaPublicacaoCallback(payload);
+    }
+    // FORMATO LEGADO: status + publicacoes array
+    else if (payload.status === 'completed' && payload.publicacoes) {
       // Callback com publicações encontradas
       await processPublicacoesCallback(payload);
     } else if (payload.status === 'failed') {
@@ -62,6 +67,89 @@ router.post('/', async (req: Request, res: Response) => {
     return res.status(500).json({ error: 'Erro interno ao processar callback' });
   }
 });
+
+/**
+ * Processar callback de nova publicação (NOVO FORMATO v2)
+ * Recebe uma publicação por vez
+ */
+async function processNovaPublicacaoCallback(payload: any) {
+  const { companyId, advogadoNome, advogadoId, publicacao } = payload;
+
+  appLogger.info('ADVAPI Webhook: Processando nova publicação', {
+    companyId,
+    advogadoNome,
+    numeroProcesso: publicacao?.numeroProcesso,
+  });
+
+  if (!companyId || !publicacao) {
+    appLogger.warn('ADVAPI Webhook: Dados incompletos no callback', { companyId, publicacao });
+    return;
+  }
+
+  // Buscar OAB monitorada pelo nome do advogado
+  const monitoredOab = await prisma.monitoredOAB.findFirst({
+    where: {
+      companyId,
+      name: { contains: advogadoNome, mode: 'insensitive' },
+      status: 'ACTIVE',
+    },
+  });
+
+  if (!monitoredOab) {
+    appLogger.warn('ADVAPI Webhook: OAB monitorada não encontrada', { companyId, advogadoNome });
+    return;
+  }
+
+  try {
+    // Verificar se publicação já existe
+    const existing = await prisma.publication.findFirst({
+      where: {
+        companyId,
+        monitoredOabId: monitoredOab.id,
+        numeroProcesso: publicacao.numeroProcesso,
+      },
+    });
+
+    if (existing) {
+      appLogger.debug('ADVAPI Webhook: Publicação já existe', { numeroProcesso: publicacao.numeroProcesso });
+      return;
+    }
+
+    // Criar nova publicação
+    const newPub = await prisma.publication.create({
+      data: {
+        companyId,
+        monitoredOabId: monitoredOab.id,
+        numeroProcesso: publicacao.numeroProcesso,
+        siglaTribunal: publicacao.siglaTribunal,
+        dataPublicacao: new Date(publicacao.dataPublicacao),
+        tipoComunicacao: publicacao.tipoComunicacao || null,
+        textoComunicacao: publicacao.textoComunicacao || null,
+      },
+    });
+
+    appLogger.info('ADVAPI Webhook: Publicação salva', {
+      id: newPub.id,
+      numeroProcesso: publicacao.numeroProcesso,
+    });
+
+    // Auto-importar se configurado
+    if (monitoredOab.autoImport) {
+      await autoImportPublication(companyId, newPub.id, publicacao);
+    }
+
+    // Atualizar última consulta da OAB
+    await prisma.monitoredOAB.update({
+      where: { id: monitoredOab.id },
+      data: { lastConsultaAt: new Date() },
+    });
+
+  } catch (error) {
+    appLogger.error('ADVAPI Webhook: Erro ao salvar publicação', error as Error, {
+      numeroProcesso: publicacao.numeroProcesso,
+    });
+  }
+}
 
 /**
  * Processar callback com publicações encontradas
