@@ -54,4 +54,4 @@ USER nodejs
 
 EXPOSE 3000
 
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/index.js"]
+CMD ["sh", "-c", "npx prisma migrate deploy || echo 'Migration skipped (already applied or failed)' && node dist/index.js"]

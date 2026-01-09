@@ -44,7 +44,8 @@ export class ClientController {
   async create(req: AuthRequest, res: Response) {
     try {
       const {
-        personType, name, cpf, rg, email, phone, address, city, state, zipCode,
+        personType, clientCondition, name, cpf, rg, pis, ctps, ctpsSerie, motherName,
+        email, phone, phone2, instagram, facebook, address, city, state, zipCode,
         profession, maritalStatus, birthDate, representativeName, representativeCpf, notes, tag, tagIds
       } = req.body;
       const companyId = req.user!.companyId;
@@ -114,11 +115,19 @@ export class ClientController {
           data: {
             companyId,
             personType: personType || 'FISICA',
+            clientCondition: clientCondition || null,
             name,
             cpf: cleanCpf,
             rg: cleanRg,
+            pis: pis?.trim() || null,
+            ctps: ctps?.trim() || null,
+            ctpsSerie: ctpsSerie?.trim() || null,
+            motherName: sanitizeString(motherName) || null,
             email: cleanEmail,
             phone: cleanPhone,
+            phone2: phone2?.trim() || null,
+            instagram: instagram?.trim() || null,
+            facebook: facebook?.trim() || null,
             address: sanitizeString(address) || null,
             city: city?.trim() || null,
             state: state?.trim() || null,
@@ -291,7 +300,8 @@ export class ClientController {
       const { id } = req.params;
       const companyId = req.user!.companyId;
       const {
-        personType, name, cpf, rg, email, phone, address, city, state, zipCode,
+        personType, clientCondition, name, cpf, rg, pis, ctps, ctpsSerie, motherName,
+        email, phone, phone2, instagram, facebook, address, city, state, zipCode,
         profession, maritalStatus, birthDate, representativeName, representativeCpf, notes, tag, tagIds
       } = req.body;
 
@@ -373,11 +383,19 @@ export class ClientController {
           where: { id },
           data: {
             personType: personType || 'FISICA',
+            clientCondition: clientCondition || null,
             name,
             cpf: cleanCpf,
             rg: cleanRg,
+            pis: pis?.trim() || null,
+            ctps: ctps?.trim() || null,
+            ctpsSerie: ctpsSerie?.trim() || null,
+            motherName: sanitizeString(motherName) || null,
             email: cleanEmail,
             phone: cleanPhone,
+            phone2: phone2?.trim() || null,
+            instagram: instagram?.trim() || null,
+            facebook: facebook?.trim() || null,
             address: sanitizeString(address) || null,
             city: city?.trim() || null,
             state: state?.trim() || null,
@@ -493,16 +511,24 @@ export class ClientController {
       });
 
       // Cabeçalho do CSV
-      const csvHeader = 'Tipo,Nome,CPF/CNPJ,RG,Email,Telefone,Endereço,Cidade,Estado,CEP,Profissão,Estado Civil,Data de Nascimento,Tags,Representante Legal,CPF Representante,Observações,Data de Cadastro\n';
+      const csvHeader = 'Tipo,Condição,Nome,CPF/CNPJ,RG,PIS,CTPS,CTPS Série,Nome da Mãe,Email,Telefone 1,Telefone 2,Instagram,Facebook,Endereço,Cidade,Estado,CEP,Profissão,Estado Civil,Data de Nascimento,Tags,Representante Legal,CPF Representante,Observações,Data de Cadastro\n';
 
       // Linhas do CSV
       const csvRows = clients.map(client => {
         const personType = `"${client.personType || 'FISICA'}"`;
+        const clientCondition = `"${client.clientCondition || ''}"`;
         const name = `"${client.name || ''}"`;
         const cpf = `"${client.cpf || ''}"`;
         const rg = `"${client.rg || ''}"`;
+        const pis = `"${client.pis || ''}"`;
+        const ctps = `"${client.ctps || ''}"`;
+        const ctpsSerie = `"${client.ctpsSerie || ''}"`;
+        const motherName = `"${client.motherName || ''}"`;
         const email = `"${client.email || ''}"`;
         const phone = `"${client.phone || ''}"`;
+        const phone2 = `"${client.phone2 || ''}"`;
+        const instagram = `"${client.instagram || ''}"`;
+        const facebook = `"${client.facebook || ''}"`;
         const address = `"${client.address || ''}"`;
         const city = `"${client.city || ''}"`;
         const state = `"${client.state || ''}"`;
@@ -516,7 +542,7 @@ export class ClientController {
         const notes = `"${(client.notes || '').replace(/"/g, '""')}"`;
         const createdAt = `"${new Date(client.createdAt).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}"`;
 
-        return `${personType},${name},${cpf},${rg},${email},${phone},${address},${city},${state},${zipCode},${profession},${maritalStatus},${birthDate},${tags},${representativeName},${representativeCpf},${notes},${createdAt}`;
+        return `${personType},${clientCondition},${name},${cpf},${rg},${pis},${ctps},${ctpsSerie},${motherName},${email},${phone},${phone2},${instagram},${facebook},${address},${city},${state},${zipCode},${profession},${maritalStatus},${birthDate},${tags},${representativeName},${representativeCpf},${notes},${createdAt}`;
       }).join('\n');
 
       const csv = csvHeader + csvRows;

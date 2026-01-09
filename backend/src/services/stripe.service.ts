@@ -2,8 +2,24 @@ import Stripe from 'stripe';
 import prisma from '../utils/prisma';
 import { appLogger } from '../utils/logger';
 
-// Initialize Stripe with secret key
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '');
+// Lazy initialize Stripe - only create when needed and API key is available
+let stripeInstance: Stripe | null = null;
+
+function getStripe(): Stripe {
+  if (!stripeInstance) {
+    const apiKey = process.env.STRIPE_SECRET_KEY;
+    if (!apiKey) {
+      throw new Error('STRIPE_SECRET_KEY not configured. Stripe features are unavailable.');
+    }
+    stripeInstance = new Stripe(apiKey);
+  }
+  return stripeInstance;
+}
+
+// Getter for use in places that check availability
+export function isStripeConfigured(): boolean {
+  return !!process.env.STRIPE_SECRET_KEY;
+}
 
 // Plan configuration
 export const SUBSCRIPTION_PLANS = {
@@ -55,7 +71,7 @@ export async function getOrCreateStripeCustomer(companyId: string): Promise<stri
 
   // Create new Stripe customer
   const adminEmail = company.users[0]?.email || company.email;
-  const customer = await stripe.customers.create({
+  const customer = await getStripe().customers.create({
     email: adminEmail,
     name: company.name,
     metadata: {
@@ -85,7 +101,7 @@ export async function createCheckoutSession(
   const planConfig = SUBSCRIPTION_PLANS[plan];
 
   // Create Stripe checkout session
-  const session = await stripe.checkout.sessions.create({
+  const session = await getStripe().checkout.sessions.create({
     customer: customerId,
     mode: 'subscription',
     payment_method_types: ['card'],
@@ -131,7 +147,7 @@ export async function createBillingPortalSession(
     throw new Error('No Stripe customer found for this company');
   }
 
-  const session = await stripe.billingPortal.sessions.create({
+  const session = await getStripe().billingPortal.sessions.create({
     customer: company.stripeCustomerId,
     return_url: returnUrl,
   });
@@ -155,7 +171,7 @@ export async function handleWebhook(
   let event: Stripe.Event;
 
   try {
-    event = stripe.webhooks.constructEvent(payload, signature, webhookSecret);
+    event = getStripe().webhooks.constructEvent(payload, signature, webhookSecret);
   } catch (err: any) {
     throw new Error(`Webhook signature verification failed: ${err.message}`);
   }
@@ -511,7 +527,7 @@ export async function getLastPayment(companyId: string): Promise<{
 
   try {
     // Get the last successful invoice from Stripe
-    const invoices = await stripe.invoices.list({
+    const invoices = await getStripe().invoices.list({
       customer: company.stripeCustomerId,
       status: 'paid',
       limit: 1,

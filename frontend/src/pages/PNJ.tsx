@@ -88,6 +88,12 @@ interface PNJ {
     email?: string;
     phone?: string;
   };
+  adverseId?: string;
+  adverse?: {
+    id: string;
+    name: string;
+    cpf?: string;
+  };
   creator?: {
     id: string;
     name: string;
@@ -107,6 +113,13 @@ interface PNJ {
 interface Client {
   id: string;
   name: string;
+  cpf?: string;
+}
+
+interface Adverse {
+  id: string;
+  name: string;
+  cpf?: string;
 }
 
 interface PNJFormData {
@@ -116,6 +129,7 @@ interface PNJFormData {
   description: string;
   status: PNJStatus;
   clientId: string;
+  adverseId: string;
   openDate: string;
 }
 
@@ -139,8 +153,8 @@ const statusColors: Record<PNJStatus, { bg: string; text: string; label: string 
 };
 
 const partTypeLabels: Record<PNJPartType, string> = {
-  AUTHOR: 'Autor/Requerente',
-  DEFENDANT: 'Reu/Requerido',
+  AUTHOR: 'Demandante',
+  DEFENDANT: 'Demandado',
   INTERESTED: 'Interessado',
   THIRD_PARTY: 'Terceiro',
   OTHER: 'Outro',
@@ -149,6 +163,7 @@ const partTypeLabels: Record<PNJPartType, string> = {
 const PNJPage: React.FC = () => {
   const [pnjs, setPnjs] = useState<PNJ[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
+  const [adverses, setAdverses] = useState<Adverse[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
@@ -189,6 +204,7 @@ const PNJPage: React.FC = () => {
     description: '',
     status: 'ACTIVE',
     clientId: '',
+    adverseId: '',
     openDate: new Date().toISOString().split('T')[0],
   });
 
@@ -196,6 +212,11 @@ const PNJPage: React.FC = () => {
   const [clientSearch, setClientSearch] = useState('');
   const [showClientDropdown, setShowClientDropdown] = useState(false);
   const [filteredClients, setFilteredClients] = useState<Client[]>([]);
+
+  // Adverse search/autocomplete state
+  const [adverseSearch, setAdverseSearch] = useState('');
+  const [showAdverseDropdown, setShowAdverseDropdown] = useState(false);
+  const [filteredAdverses, setFilteredAdverses] = useState<Adverse[]>([]);
 
   // Inline movement form state (at bottom of details modal)
   const [inlineMovementDate, setInlineMovementDate] = useState(new Date().toISOString().split('T')[0]);
@@ -227,6 +248,7 @@ const PNJPage: React.FC = () => {
   useEffect(() => {
     loadPNJs();
     loadClients();
+    loadAdverses();
   }, [search, statusFilter, page, limit]);
 
   // Reset page when filters change
@@ -247,6 +269,20 @@ const PNJPage: React.FC = () => {
       setShowClientDropdown(false);
     }
   }, [clientSearch, clients]);
+
+  // Filter adverses based on search text
+  useEffect(() => {
+    if (adverseSearch.trim()) {
+      const filtered = adverses.filter((adverse) =>
+        adverse.name.toLowerCase().includes(adverseSearch.toLowerCase())
+      );
+      setFilteredAdverses(filtered);
+      setShowAdverseDropdown(true);
+    } else {
+      setFilteredAdverses([]);
+      setShowAdverseDropdown(false);
+    }
+  }, [adverseSearch, adverses]);
 
   const loadPNJs = async () => {
     try {
@@ -271,6 +307,15 @@ const PNJPage: React.FC = () => {
     }
   };
 
+  const loadAdverses = async () => {
+    try {
+      const response = await api.get('/adverses', { params: { limit: 1000 } });
+      setAdverses(response.data.data || []);
+    } catch (error) {
+      console.error('Erro ao carregar adversos:', error);
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       number: '',
@@ -279,8 +324,11 @@ const PNJPage: React.FC = () => {
       description: '',
       status: 'ACTIVE',
       clientId: '',
+      adverseId: '',
       openDate: new Date().toISOString().split('T')[0],
     });
+    setClientSearch('');
+    setAdverseSearch('');
   };
 
   const resetPartForm = () => {
@@ -332,10 +380,13 @@ const PNJPage: React.FC = () => {
       description: pnj.description || '',
       status: pnj.status,
       clientId: pnj.clientId || '',
+      adverseId: pnj.adverseId || '',
       openDate: pnj.openDate ? pnj.openDate.split('T')[0] : new Date().toISOString().split('T')[0],
     });
     // Set client search text for autocomplete
     setClientSearch(pnj.client?.name || '');
+    // Set adverse search text for autocomplete
+    setAdverseSearch(pnj.adverse?.name || '');
     setEditMode(true);
     setShowModal(true);
   };
@@ -349,6 +400,17 @@ const PNJPage: React.FC = () => {
   const handleClearClient = () => {
     setFormData({ ...formData, clientId: '' });
     setClientSearch('');
+  };
+
+  const handleSelectAdverse = (adverse: Adverse) => {
+    setFormData({ ...formData, adverseId: adverse.id });
+    setAdverseSearch(adverse.name);
+    setShowAdverseDropdown(false);
+  };
+
+  const handleClearAdverse = () => {
+    setFormData({ ...formData, adverseId: '' });
+    setAdverseSearch('');
   };
 
   const handleDelete = async (pnj: PNJ) => {
@@ -378,7 +440,6 @@ const PNJPage: React.FC = () => {
 
   const handleNewPNJ = () => {
     resetForm();
-    setClientSearch('');
     setEditMode(false);
     setSelectedPNJ(null);
     setShowModal(true);
@@ -1038,7 +1099,7 @@ const PNJPage: React.FC = () => {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="relative">
                     <label className="block text-sm font-medium text-neutral-700 mb-1">
                       Cliente
@@ -1085,6 +1146,55 @@ const PNJPage: React.FC = () => {
                       </div>
                     )}
                   </div>
+                  <div className="relative">
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">
+                      Adverso
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        placeholder="Digite para buscar..."
+                        value={adverseSearch}
+                        onChange={(e) => {
+                          setAdverseSearch(e.target.value);
+                          if (!e.target.value) {
+                            setFormData({ ...formData, adverseId: '' });
+                          }
+                        }}
+                        onFocus={() => {
+                          if (adverseSearch.trim()) setShowAdverseDropdown(true);
+                        }}
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] pr-8"
+                      />
+                      {formData.adverseId && (
+                        <button
+                          type="button"
+                          onClick={handleClearAdverse}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
+                        >
+                          <X size={16} />
+                        </button>
+                      )}
+                    </div>
+                    {/* Adverse dropdown */}
+                    {showAdverseDropdown && filteredAdverses.length > 0 && (
+                      <div className="absolute z-50 w-full mt-1 bg-white border border-neutral-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                        {filteredAdverses.map((adverse) => (
+                          <button
+                            key={adverse.id}
+                            type="button"
+                            onClick={() => handleSelectAdverse(adverse)}
+                            className="w-full px-3 py-2 text-left hover:bg-neutral-100 text-sm text-neutral-700"
+                          >
+                            {adverse.name}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-neutral-700 mb-1">
                       Status
@@ -1243,6 +1353,10 @@ const PNJPage: React.FC = () => {
                     <div>
                       <p className="text-sm font-medium text-neutral-500">Cliente</p>
                       <p className="text-sm text-neutral-900 mt-1">{selectedPNJ.client?.name || '-'}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-neutral-500">Adverso</p>
+                      <p className="text-sm text-neutral-900 mt-1">{selectedPNJ.adverse?.name || '-'}</p>
                     </div>
                     <div>
                       <p className="text-sm font-medium text-neutral-500">Data de Abertura</p>
@@ -1584,8 +1698,8 @@ const PNJPage: React.FC = () => {
                     onChange={(e) => setPartFormData({ ...partFormData, type: e.target.value as PNJPartType })}
                     className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   >
-                    <option value="AUTHOR">Autor/Requerente</option>
-                    <option value="DEFENDANT">Reu/Requerido</option>
+                    <option value="AUTHOR">Demandante</option>
+                    <option value="DEFENDANT">Demandado</option>
                     <option value="INTERESTED">Interessado</option>
                     <option value="THIRD_PARTY">Terceiro</option>
                     <option value="OTHER">Outro</option>

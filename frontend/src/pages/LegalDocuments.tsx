@@ -20,6 +20,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import MobileCardList, { MobileCardItem } from '../components/MobileCardList';
+import RichTextEditor from '../components/RichTextEditor';
 
 interface Client {
   id: string;
@@ -52,8 +53,8 @@ interface CaseWithParts {
 }
 
 const CASE_PART_TYPE_LABELS: Record<string, string> = {
-  AUTOR: 'Autor',
-  REU: 'Réu',
+  AUTOR: 'Demandante',
+  REU: 'Demandado',
   REPRESENTANTE_LEGAL: 'Representante Legal',
 };
 
@@ -771,7 +772,7 @@ const LegalDocuments: React.FC = () => {
                   </label>
 
                   {/* Busca e Seletor de Processo */}
-                  <div className="mb-3">
+                  <div className="mb-3 relative">
                     <label className="block text-xs font-medium text-neutral-600 mb-1">
                       Buscar Processo
                     </label>
@@ -780,24 +781,45 @@ const LegalDocuments: React.FC = () => {
                       value={caseSearchText}
                       onChange={(e) => setCaseSearchText(e.target.value)}
                       placeholder="Digite nº processo, nome do cliente ou assunto..."
-                      className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] mb-2"
-                    />
-                    <select
-                      value={selectedCaseId}
-                      onChange={(e) => {
-                        setSelectedCaseId(e.target.value);
-                        loadCaseParts(e.target.value);
-                      }}
                       className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
-                    >
-                      <option value="">Selecione um processo... ({filteredCases.length} encontrados)</option>
-                      {filteredCases.map((caseItem) => (
-                        <option key={caseItem.id} value={caseItem.id}>
-                          {caseItem.processNumber} - {caseItem.subject?.substring(0, 50)}
-                          {caseItem.client?.name ? ` (${caseItem.client.name})` : ''}
-                        </option>
-                      ))}
-                    </select>
+                    />
+                    {/* Suggestions dropdown - only shows when typing */}
+                    {caseSearchText.trim() && filteredCases.length > 0 && (
+                      <div className="absolute z-50 w-full mt-1 bg-white border border-neutral-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                        {filteredCases.slice(0, 10).map((caseItem) => (
+                          <button
+                            key={caseItem.id}
+                            type="button"
+                            onClick={() => {
+                              setSelectedCaseId(caseItem.id);
+                              setCaseSearchText(`${caseItem.processNumber} - ${caseItem.subject?.substring(0, 30)}`);
+                              loadCaseParts(caseItem.id);
+                            }}
+                            className="w-full px-3 py-2 text-left hover:bg-neutral-100 text-sm text-neutral-700 border-b border-neutral-100 last:border-b-0"
+                          >
+                            <div className="font-medium">{caseItem.processNumber}</div>
+                            <div className="text-xs text-neutral-500">
+                              {caseItem.subject?.substring(0, 50)}
+                              {caseItem.client?.name && ` - ${caseItem.client.name}`}
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    {selectedCaseId && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedCaseId('');
+                          setCaseSearchText('');
+                          setCaseParts([]);
+                          setSelectedPartIds([]);
+                        }}
+                        className="absolute right-2 top-7 text-neutral-400 hover:text-neutral-600"
+                      >
+                        <X size={16} />
+                      </button>
+                    )}
                   </div>
 
                   {/* Lista de Partes com Checkbox */}
@@ -874,12 +896,11 @@ const LegalDocuments: React.FC = () => {
                   <label className="block text-sm font-medium text-neutral-700 mb-1">
                     Texto do Documento
                   </label>
-                  <textarea
+                  <RichTextEditor
                     value={formData.content}
-                    onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                    onChange={(value) => setFormData({ ...formData, content: value })}
                     placeholder="Deixe vazio para a IA criar o documento com base no título, ou digite o conteúdo para revisão..."
-                    rows={12}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    minHeight="300px"
                   />
                 </div>
 

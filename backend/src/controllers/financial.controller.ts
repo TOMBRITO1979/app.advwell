@@ -18,7 +18,7 @@ const toNumber = (value: Decimal | number | null | undefined): number => {
 // Listar transações financeiras com filtros e paginação
 export const listTransactions = async (req: AuthRequest, res: Response) => {
   try {
-    const { search, clientId, caseId, type, startDate, endDate, page = 1, limit = 50 } = req.query;
+    const { search, clientId, caseId, type, status, startDate, endDate, page = 1, limit = 50 } = req.query;
     const companyId = req.user!.companyId;
 
     const skip = (Number(page) - 1) * Number(limit);
@@ -61,6 +61,11 @@ export const listTransactions = async (req: AuthRequest, res: Response) => {
     // Filtro por tipo
     if (type && (type === 'INCOME' || type === 'EXPENSE')) {
       where.type = type;
+    }
+
+    // Filtro por status
+    if (status && ['PENDING', 'PAID', 'PARTIAL', 'CANCELLED'].includes(String(status))) {
+      where.status = String(status);
     }
 
     const [transactions, total] = await Promise.all([
@@ -166,7 +171,7 @@ export const getTransaction = async (req: AuthRequest, res: Response) => {
 // Criar nova transação
 export const createTransaction = async (req: AuthRequest, res: Response) => {
   try {
-    const { clientId, caseId, type, description, amount, date, isInstallment, installmentCount, installmentInterval } = req.body;
+    const { clientId, caseId, type, status, description, amount, date, isInstallment, installmentCount, installmentInterval } = req.body;
     const companyId = req.user!.companyId;
 
     if (!companyId) {
@@ -216,12 +221,17 @@ export const createTransaction = async (req: AuthRequest, res: Response) => {
       }
     }
 
+    // Validar status se fornecido
+    const validStatuses = ['PENDING', 'PAID', 'PARTIAL', 'CANCELLED'];
+    const transactionStatus = status && validStatuses.includes(status) ? status : 'PENDING';
+
     const transaction = await prisma.financialTransaction.create({
       data: {
         companyId,
         clientId,
         caseId: caseId || null,
         type,
+        status: transactionStatus,
         description: sanitizeString(description) || '',
         amount: parseFloat(amount),
         date: date ? new Date(date) : new Date(),
@@ -287,7 +297,7 @@ export const createTransaction = async (req: AuthRequest, res: Response) => {
 export const updateTransaction = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const { clientId, caseId, type, description, amount, date } = req.body;
+    const { clientId, caseId, type, status, description, amount, date } = req.body;
     const companyId = req.user!.companyId;
 
     // Verificar se a transação existe e pertence à empresa
@@ -332,12 +342,16 @@ export const updateTransaction = async (req: AuthRequest, res: Response) => {
       }
     }
 
+    // Validar status se fornecido
+    const validStatuses = ['PENDING', 'PAID', 'PARTIAL', 'CANCELLED'];
+
     const transaction = await prisma.financialTransaction.update({
       where: { id },
       data: {
         ...(clientId && { clientId }),
         ...(caseId !== undefined && { caseId: caseId || null }),
         ...(type && { type }),
+        ...(status && validStatuses.includes(status) && { status }),
         ...(description && { description: sanitizeString(description) }),
         ...(amount && { amount: parseFloat(amount) }),
         ...(date && { date: new Date(date) }),

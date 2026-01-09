@@ -14,4 +14,10 @@ router.post('/:caseId/parts', casePartController.create);
 router.put('/:caseId/parts/:partId', casePartController.update);
 router.delete('/:caseId/parts/:partId', casePartController.delete);
 
+// Rotas de testemunhas do processo
+router.get('/:caseId/witnesses', casePartController.listWitnesses);
+router.post('/:caseId/witnesses', casePartController.createWitness);
+router.put('/:caseId/witnesses/:witnessId', casePartController.updateWitness);
+router.delete('/:caseId/witnesses/:witnessId', casePartController.deleteWitness);
+
 export default router;

@@ -141,6 +141,21 @@ export interface PortalDashboard {
   }[];
 }
 
+// Message Types
+export interface PortalMessage {
+  id: string;
+  sender: 'CLIENT' | 'OFFICE';
+  subject: string | null;
+  content: string;
+  readAt: string | null;
+  createdAt: string;
+  creator?: {
+    id: string;
+    name: string;
+  };
+  replies?: PortalMessage[];
+}
+
 // Document Types
 export interface PortalDocument {
   id: string;
@@ -248,6 +263,17 @@ export const portalApi = {
     const response = await api.post('/portal/documents/upload', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
+    return response.data;
+  },
+
+  // Message endpoints
+  getMessages: async (): Promise<PortalMessage[]> => {
+    const response = await api.get('/client-messages/client');
+    return response.data;
+  },
+
+  sendMessage: async (subject: string | null, content: string, parentId?: string): Promise<PortalMessage> => {
+    const response = await api.post('/client-messages/client', { subject, content, parentId });
     return response.data;
   },
 };

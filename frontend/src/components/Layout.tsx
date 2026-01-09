@@ -37,6 +37,7 @@ import {
   MessageCircle,
   Tag,
   BarChart3,
+  Radar,
 } from 'lucide-react';
 
 interface SubscriptionStatus {
@@ -58,6 +59,10 @@ interface TasksDueToday {
   count: number;
 }
 
+interface UnreadMessagesCount {
+  count: number;
+}
+
 interface LayoutProps {
   children: React.ReactNode;
 }
@@ -74,6 +79,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [accountsDueToday, setAccountsDueToday] = React.useState<AccountsDueToday | null>(null);
   const [deadlinesDueToday, setDeadlinesDueToday] = React.useState<DeadlinesDueToday | null>(null);
   const [tasksDueToday, setTasksDueToday] = React.useState<TasksDueToday | null>(null);
+  const [unreadMessagesCount, setUnreadMessagesCount] = React.useState<UnreadMessagesCount | null>(null);
 
   // Verificar se a sidebar deve ser escondida para este usuário
   const shouldHideSidebar = user?.hideSidebar === true;
@@ -173,6 +179,27 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     }
   }, [user]);
 
+  // Verificar mensagens não lidas de clientes (apenas para ADMIN e SUPER_ADMIN)
+  React.useEffect(() => {
+    const checkUnreadMessages = async () => {
+      try {
+        const response = await api.get('/client-messages/office/unread-count');
+        setUnreadMessagesCount({
+          count: response.data.count,
+        });
+      } catch (error) {
+        console.error('Error checking unread messages:', error);
+      }
+    };
+
+    if (user && (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN')) {
+      checkUnreadMessages();
+      // Atualizar a cada 2 minutos
+      const interval = setInterval(checkUnreadMessages, 2 * 60 * 1000);
+      return () => clearInterval(interval);
+    }
+  }, [user]);
+
   // Salvar estado do sidebar no localStorage
   const toggleSidebarCollapse = () => {
     const newState = !sidebarCollapsed;
@@ -203,8 +230,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { path: '/dashboard', label: 'Dashboard', icon: Home },
     { path: '/schedule', label: 'Agenda', icon: Calendar },
     { path: '/clients', label: 'Clientes', icon: Users },
+    { path: '/adverses', label: 'Adversos', icon: Users },
+    { path: '/lawyers', label: 'Advogados', icon: Scale },
     { path: '/cases', label: 'Processos', icon: FileText },
     { path: '/pnj', label: 'PNJ', icon: FileText },
+    { path: '/monitoring', label: 'Monitoramento', icon: Radar },
     { path: '/deadlines', label: 'Prazos', icon: Clock },
     { path: '/hearings', label: 'Audiências', icon: Gavel },
     { path: '/updates', label: 'Atualizações', icon: Bell },
@@ -224,11 +254,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     menuItems.push({ path: '/tags', label: 'Tags', icon: Tag });
   }
 
-  // Campanhas e Avisos vem após Leads (apenas para Admin)
+  // Campanhas e Portal do Cliente vem após Leads (apenas para Admin)
   if (user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') {
     menuItems.push({ path: '/campaigns', label: 'Campanhas', icon: Mail });
     menuItems.push({ path: '/whatsapp-campaigns', label: 'Campanhas WhatsApp', icon: MessageCircle });
-    menuItems.push({ path: '/announcements', label: 'Avisos', icon: Megaphone });
+    menuItems.push({ path: '/announcements', label: 'Portal do Cliente', icon: Megaphone });
   }
 
   // Financeiro e Contas a Pagar
@@ -446,18 +476,26 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 const showDeadlinesBadge = item.path === '/deadlines' && deadlinesDueToday && deadlinesDueToday.count > 0;
                 // Badge para Tarefas
                 const showTasksBadge = item.path === '/todos' && tasksDueToday && tasksDueToday.count > 0;
+                // Badge para Portal do Cliente (mensagens não lidas)
+                const showMessagesBadge = item.path === '/announcements' && unreadMessagesCount && unreadMessagesCount.count > 0;
                 // Badge genérico
-                const showBadge = showAccountsBadge || showDeadlinesBadge || showTasksBadge;
+                const showBadge = showAccountsBadge || showDeadlinesBadge || showTasksBadge || showMessagesBadge;
                 const badgeCount = showAccountsBadge
                   ? accountsDueToday?.count
                   : (showDeadlinesBadge
                     ? deadlinesDueToday?.count
-                    : (showTasksBadge ? tasksDueToday?.count : 0));
+                    : (showTasksBadge
+                      ? tasksDueToday?.count
+                      : (showMessagesBadge ? unreadMessagesCount?.count : 0)));
                 const badgeTitle = showAccountsBadge
                   ? `${item.label} (${accountsDueToday?.count} vencendo hoje)`
                   : (showDeadlinesBadge
                     ? `${item.label} (${deadlinesDueToday?.count} vencendo hoje)`
-                    : (showTasksBadge ? `${item.label} (${tasksDueToday?.count} vencendo hoje)` : item.label));
+                    : (showTasksBadge
+                      ? `${item.label} (${tasksDueToday?.count} vencendo hoje)`
+                      : (showMessagesBadge
+                        ? `${item.label} (${unreadMessagesCount?.count} mensagem(ns) não lida(s))`
+                        : item.label)));
 
                 return (
                   <Link
@@ -491,7 +529,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                               ? `R$ ${accountsDueToday?.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} vencendo hoje`
                               : (showDeadlinesBadge
                                 ? `${deadlinesDueToday?.count} prazo(s) vencendo hoje`
-                                : `${tasksDueToday?.count} tarefa(s) vencendo hoje`)}
+                                : (showTasksBadge
+                                  ? `${tasksDueToday?.count} tarefa(s) vencendo hoje`
+                                  : `${unreadMessagesCount?.count} mensagem(ns) não lida(s)`))}
                           >
                             {badgeCount}
                           </span>

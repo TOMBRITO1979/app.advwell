@@ -24,6 +24,7 @@ interface Company {
   trialEndsAt: string | null;
   subscriptionEndsAt: string | null;
   casesLimit: number | null;
+  monitoringLimit: number | null;
   stripeCustomerId: string | null;
   stripeSubscriptionId: string | null;
   _count: {
@@ -104,6 +105,7 @@ const Companies: React.FC = () => {
     subscriptionStatus: '' as 'TRIAL' | 'ACTIVE' | 'EXPIRED' | 'CANCELLED' | '',
     subscriptionPlan: '' as 'BRONZE' | 'PRATA' | 'OURO' | '',
     casesLimit: 1000,
+    monitoringLimit: 500,
   });
 
   // AI Token Share states
@@ -362,6 +364,7 @@ const Companies: React.FC = () => {
       subscriptionStatus: company.subscriptionStatus || '',
       subscriptionPlan: company.subscriptionPlan || '',
       casesLimit: company.casesLimit || 1000,
+      monitoringLimit: company.monitoringLimit || 500,
     });
     setLastPaymentData(null);
     setShowSubscriptionModal(true);
@@ -389,6 +392,7 @@ const Companies: React.FC = () => {
         subscriptionStatus: subscriptionForm.subscriptionStatus || null,
         subscriptionPlan: subscriptionForm.subscriptionPlan || null,
         casesLimit: subscriptionForm.casesLimit,
+        monitoringLimit: subscriptionForm.monitoringLimit,
       });
       toast.success('Assinatura atualizada com sucesso!');
       setShowSubscriptionModal(false);
@@ -1222,6 +1226,18 @@ const Companies: React.FC = () => {
                   className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md min-h-[44px]"
                 />
                 <p className="text-xs text-neutral-500 mt-1">Deixe 0 para ilimitado</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-neutral-700">Limite de Monitoramento (Publicações/mês)</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={subscriptionForm.monitoringLimit}
+                  onChange={(e) => setSubscriptionForm({ ...subscriptionForm, monitoringLimit: parseInt(e.target.value) || 0 })}
+                  className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md min-h-[44px]"
+                />
+                <p className="text-xs text-neutral-500 mt-1">Quantidade de publicações que podem ser importadas por mês via monitoramento OAB. Deixe 0 para ilimitado.</p>
               </div>
 
               <div className="flex justify-end gap-3 pt-4 border-t border-neutral-200">

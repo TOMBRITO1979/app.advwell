@@ -436,7 +436,7 @@ export class CompanyController {
   async updateSubscription(req: AuthRequest, res: Response) {
     try {
       const { id } = req.params;
-      const { subscriptionStatus, subscriptionPlan, casesLimit, trialEndsAt } = req.body;
+      const { subscriptionStatus, subscriptionPlan, casesLimit, monitoringLimit, trialEndsAt } = req.body;
 
       // Verifica se a empresa existe
       const company = await prisma.company.findUnique({
@@ -460,6 +460,10 @@ export class CompanyController {
 
       if (casesLimit !== undefined) {
         updateData.casesLimit = casesLimit;
+      }
+
+      if (monitoringLimit !== undefined) {
+        updateData.monitoringLimit = monitoringLimit;
       }
 
       if (trialEndsAt !== undefined) {

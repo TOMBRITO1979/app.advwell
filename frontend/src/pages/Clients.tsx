@@ -32,12 +32,20 @@ interface ClientTag {
 interface Client {
   id: string;
   personType?: 'FISICA' | 'JURIDICA';
+  clientCondition?: 'DEMANDANTE' | 'DEMANDADO';
   name: string;
   cpf?: string;
   stateRegistration?: string;
   rg?: string;
+  pis?: string;
+  ctps?: string;
+  ctpsSerie?: string;
+  motherName?: string;
   email?: string;
   phone?: string;
+  phone2?: string;
+  instagram?: string;
+  facebook?: string;
   address?: string;
   city?: string;
   state?: string;
@@ -58,12 +66,20 @@ interface Client {
 
 interface ClientFormData {
   personType: 'FISICA' | 'JURIDICA';
+  clientCondition: 'DEMANDANTE' | 'DEMANDADO' | '';
   name: string;
   cpf: string;
   stateRegistration: string;
   rg: string;
+  pis: string;
+  ctps: string;
+  ctpsSerie: string;
+  motherName: string;
   email: string;
   phone: string;
+  phone2: string;
+  instagram: string;
+  facebook: string;
   address: string;
   city: string;
   state: string;
@@ -153,12 +169,20 @@ const Clients: React.FC = () => {
 
   const [formData, setFormData] = useState<ClientFormData>({
     personType: 'FISICA',
+    clientCondition: '',
     name: '',
     cpf: '',
     stateRegistration: '',
     rg: '',
+    pis: '',
+    ctps: '',
+    ctpsSerie: '',
+    motherName: '',
     email: '',
     phone: '',
+    phone2: '',
+    instagram: '',
+    facebook: '',
     address: '',
     city: '',
     state: '',
@@ -370,12 +394,20 @@ const Clients: React.FC = () => {
   const resetForm = () => {
     setFormData({
       personType: 'FISICA',
+      clientCondition: '',
       name: '',
       cpf: '',
       stateRegistration: '',
       rg: '',
+      pis: '',
+      ctps: '',
+      ctpsSerie: '',
+      motherName: '',
       email: '',
       phone: '',
+      phone2: '',
+      instagram: '',
+      facebook: '',
       address: '',
       city: '',
       state: '',
@@ -416,12 +448,20 @@ const Clients: React.FC = () => {
     setSelectedClient(client);
     setFormData({
       personType: client.personType || 'FISICA',
+      clientCondition: client.clientCondition || '',
       name: client.name || '',
       cpf: client.cpf || '',
       stateRegistration: client.stateRegistration || '',
       rg: client.rg || '',
+      pis: client.pis || '',
+      ctps: client.ctps || '',
+      ctpsSerie: client.ctpsSerie || '',
+      motherName: client.motherName || '',
       email: client.email || '',
       phone: client.phone || '',
+      phone2: client.phone2 || '',
+      instagram: client.instagram || '',
+      facebook: client.facebook || '',
       address: client.address || '',
       city: client.city || '',
       state: client.state || '',
@@ -1047,6 +1087,22 @@ const Clients: React.FC = () => {
                       </select>
                     </div>
 
+                    {/* Condição do Cliente */}
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                        Condição do Cliente
+                      </label>
+                      <select
+                        value={formData.clientCondition}
+                        onChange={(e) => setFormData({ ...formData, clientCondition: e.target.value as 'DEMANDANTE' | 'DEMANDADO' | '' })}
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                      >
+                        <option value="">Selecione...</option>
+                        <option value="DEMANDANTE">Demandante</option>
+                        <option value="DEMANDADO">Demandado</option>
+                      </select>
+                    </div>
+
                     <div>
                       <label className="block text-sm font-medium text-neutral-700 mb-1">
                         {formData.personType === 'FISICA' ? 'Nome Completo' : 'Razão Social'} <span className="text-error-500">*</span>
@@ -1099,6 +1155,50 @@ const Clients: React.FC = () => {
                             type="text"
                             value={formData.rg}
                             onChange={(e) => setFormData({ ...formData, rg: e.target.value })}
+                            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-neutral-700 mb-1">Número do PIS</label>
+                          <input
+                            type="text"
+                            value={formData.pis}
+                            onChange={(e) => setFormData({ ...formData, pis: e.target.value })}
+                            placeholder="000.00000.00-0"
+                            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-neutral-700 mb-1">CTPS</label>
+                          <input
+                            type="text"
+                            value={formData.ctps}
+                            onChange={(e) => setFormData({ ...formData, ctps: e.target.value })}
+                            placeholder="Número da CTPS"
+                            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-neutral-700 mb-1">CTPS Série</label>
+                          <input
+                            type="text"
+                            value={formData.ctpsSerie}
+                            onChange={(e) => setFormData({ ...formData, ctpsSerie: e.target.value })}
+                            placeholder="Série da CTPS"
+                            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-neutral-700 mb-1">Nome da Mãe</label>
+                          <input
+                            type="text"
+                            value={formData.motherName}
+                            onChange={(e) => setFormData({ ...formData, motherName: e.target.value })}
+                            placeholder="Nome completo da mãe"
                             className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                           />
                         </div>
@@ -1278,13 +1378,52 @@ const Clients: React.FC = () => {
 
                     <div>
                       <label className="block text-sm font-medium text-neutral-700 mb-1">
-                        Celular
+                        Telefone 1
                       </label>
                       <input
                         type="text"
                         value={formData.phone}
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                         placeholder="(00) 00000-0000"
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                        Telefone 2
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.phone2}
+                        onChange={(e) => setFormData({ ...formData, phone2: e.target.value })}
+                        placeholder="(00) 00000-0000"
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                        Instagram
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.instagram}
+                        onChange={(e) => setFormData({ ...formData, instagram: e.target.value })}
+                        placeholder="@usuario"
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                        Facebook
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.facebook}
+                        onChange={(e) => setFormData({ ...formData, facebook: e.target.value })}
+                        placeholder="URL ou nome de usuário"
                         className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
@@ -1450,6 +1589,13 @@ const Clients: React.FC = () => {
                     </p>
                   </div>
                   <div>
+                    <p className="text-sm font-medium text-neutral-500">Condição</p>
+                    <p className="text-sm text-neutral-900 mt-1">
+                      {selectedClient.clientCondition === 'DEMANDANTE' ? 'Demandante' :
+                       selectedClient.clientCondition === 'DEMANDADO' ? 'Demandado' : '-'}
+                    </p>
+                  </div>
+                  <div>
                     <p className="text-sm font-medium text-neutral-500">
                       {selectedClient.personType === 'JURIDICA' ? 'Razão Social' : 'Nome Completo'}
                     </p>
@@ -1474,6 +1620,22 @@ const Clients: React.FC = () => {
                       <div>
                         <p className="text-sm font-medium text-neutral-500">RG</p>
                         <p className="text-sm text-neutral-900 mt-1">{selectedClient.rg || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-neutral-500">PIS</p>
+                        <p className="text-sm text-neutral-900 mt-1">{selectedClient.pis || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-neutral-500">CTPS</p>
+                        <p className="text-sm text-neutral-900 mt-1">{selectedClient.ctps || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-neutral-500">CTPS Série</p>
+                        <p className="text-sm text-neutral-900 mt-1">{selectedClient.ctpsSerie || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-neutral-500">Nome da Mãe</p>
+                        <p className="text-sm text-neutral-900 mt-1">{selectedClient.motherName || '-'}</p>
                       </div>
                       <div>
                         <p className="text-sm font-medium text-neutral-500">Data de Nascimento</p>
@@ -1534,8 +1696,20 @@ const Clients: React.FC = () => {
                     <p className="text-sm text-neutral-900 mt-1">{selectedClient.email || '-'}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-500">Celular</p>
+                    <p className="text-sm font-medium text-neutral-500">Telefone 1</p>
                     <p className="text-sm text-neutral-900 mt-1">{selectedClient.phone || '-'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-neutral-500">Telefone 2</p>
+                    <p className="text-sm text-neutral-900 mt-1">{selectedClient.phone2 || '-'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-neutral-500">Instagram</p>
+                    <p className="text-sm text-neutral-900 mt-1">{selectedClient.instagram || '-'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-neutral-500">Facebook</p>
+                    <p className="text-sm text-neutral-900 mt-1">{selectedClient.facebook || '-'}</p>
                   </div>
                 </div>
               </div>

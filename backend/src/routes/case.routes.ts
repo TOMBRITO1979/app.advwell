@@ -67,7 +67,7 @@ const validate = (req: Request, res: Response, next: NextFunction) => {
 // Validações para criação de processo
 const createCaseValidation = [
   body('clientId')
-    .notEmpty()
+    .optional({ checkFalsy: true })
     .isUUID()
     .withMessage('ID do cliente inválido'),
   body('processNumber')

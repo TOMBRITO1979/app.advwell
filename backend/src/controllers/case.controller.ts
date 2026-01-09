@@ -49,7 +49,7 @@ async function syncDeadlineToSchedule(
   companyId: string,
   deadline: Date | null,
   processNumber: string,
-  clientId: string,
+  clientId: string | undefined,
   createdBy: string,
   deadlineResponsibleId?: string | null
 ): Promise<void> {
@@ -126,29 +126,32 @@ export class CaseController {
 
   async create(req: AuthRequest, res: Response) {
     try {
-      const { clientId, processNumber, court, subject, value, notes, status, deadline, deadlineResponsibleId, informarCliente, linkProcesso } = req.body;
+      const { clientId, processNumber, court, subject, value, notes, status, deadline, deadlineResponsibleId, lawyerId, informarCliente, linkProcesso, phase, nature, rite, distributionDate } = req.body;
       const companyId = req.user!.companyId;
 
       // Converter strings vazias em null/undefined
       const cleanValue = value === '' || value === null || value === undefined ? undefined : parseFloat(value);
       const cleanLinkProcesso = linkProcesso === '' ? null : linkProcesso;
       const cleanDeadline = deadline && deadline !== '' ? fixDateTimezone(deadline) : undefined;
+      const cleanDistributionDate = distributionDate && distributionDate !== '' ? fixDateTimezone(distributionDate) : undefined;
       const cleanStatus = status || 'ACTIVE';
 
       if (!companyId) {
         return res.status(403).json({ error: 'Usuário não possui empresa associada' });
       }
 
-      // Verifica se o cliente pertence à mesma empresa
-      const client = await prisma.client.findFirst({
-        where: {
-          id: clientId,
-          companyId,
-        },
-      });
+      // Verifica se o cliente pertence à mesma empresa (apenas se fornecido)
+      if (clientId) {
+        const client = await prisma.client.findFirst({
+          where: {
+            id: clientId,
+            companyId,
+          },
+        });
 
-      if (!client) {
-        return res.status(404).json({ error: 'Cliente não encontrado' });
+        if (!client) {
+          return res.status(404).json({ error: 'Cliente não encontrado' });
+        }
       }
 
       // Verifica se o processo já existe na mesma empresa
@@ -180,19 +183,24 @@ export class CaseController {
       const caseData = await prisma.case.create({
         data: {
           companyId,
-          clientId,
+          clientId: clientId || null,
           processNumber,
           court: court || datajudData?.tribunal || '',
           subject: sanitizeString(subject || datajudData?.assuntos?.[0]?.nome) || '',
           status: cleanStatus,
           deadline: cleanDeadline,
           ...(deadlineResponsibleId && { deadlineResponsibleId }),
+          ...(lawyerId && { lawyerId }),
           value: cleanValue,
           notes: sanitizeString(notes),
           ultimoAndamento,
           informarCliente: sanitizeString(informarCliente) || null,
           linkProcesso: cleanLinkProcesso,
           lastSyncedAt: datajudData ? new Date() : null,
+          phase: phase || null,
+          nature: nature || null,
+          rite: rite || null,
+          distributionDate: cleanDistributionDate,
         },
       });
 
@@ -275,7 +283,16 @@ export class CaseController {
   async list(req: AuthRequest, res: Response) {
     try {
       const companyId = req.user!.companyId;
-      const { page = 1, limit = 10, search = '', status = '' } = req.query;
+      const {
+        page = 1,
+        limit = 10,
+        search = '',
+        status = '',
+        demandante = '',
+        demandado = '',
+        lawyerName = '',
+        lawyerOab = ''
+      } = req.query;
 
       if (!companyId) {
         return res.status(403).json({ error: 'Usuário não possui empresa associada' });
@@ -283,17 +300,67 @@ export class CaseController {
 
       const skip = (Number(page) - 1) * Number(limit);
 
+      // Construir where clause base
       const where: any = {
         companyId,
         ...(status && { status: String(status) }),
-        ...(search && {
-          OR: [
-            { processNumber: { contains: String(search) } },
-            { subject: { contains: String(search), mode: 'insensitive' } },
-            { client: { name: { contains: String(search), mode: 'insensitive' } } },
-          ],
-        }),
       };
+
+      // Busca geral em varios campos
+      if (search) {
+        where.OR = [
+          { processNumber: { contains: String(search) } },
+          { subject: { contains: String(search), mode: 'insensitive' } },
+          { client: { name: { contains: String(search), mode: 'insensitive' } } },
+          // Buscar em demandantes (CasePart -> Client)
+          { parts: { some: {
+            type: 'DEMANDANTE',
+            client: { name: { contains: String(search), mode: 'insensitive' } }
+          }}},
+          // Buscar em demandados (CasePart -> Adverse)
+          { parts: { some: {
+            type: 'DEMANDADO',
+            adverse: { name: { contains: String(search), mode: 'insensitive' } }
+          }}},
+          // Buscar em advogado
+          { lawyer: { name: { contains: String(search), mode: 'insensitive' } } },
+        ];
+      }
+
+      // Filtros especificos
+      if (demandante) {
+        where.parts = {
+          ...where.parts,
+          some: {
+            type: 'DEMANDANTE',
+            client: { name: { contains: String(demandante), mode: 'insensitive' } }
+          }
+        };
+      }
+
+      if (demandado) {
+        where.parts = {
+          ...where.parts,
+          some: {
+            type: 'DEMANDADO',
+            adverse: { name: { contains: String(demandado), mode: 'insensitive' } }
+          }
+        };
+      }
+
+      if (lawyerName) {
+        where.lawyer = {
+          ...where.lawyer,
+          name: { contains: String(lawyerName), mode: 'insensitive' }
+        };
+      }
+
+      if (lawyerOab) {
+        where.lawyer = {
+          ...where.lawyer,
+          oab: { contains: String(lawyerOab), mode: 'insensitive' }
+        };
+      }
 
       const [cases, total] = await Promise.all([
         prisma.case.findMany({
@@ -309,12 +376,29 @@ export class CaseController {
                 cpf: true,
               },
             },
+            lawyer: {
+              select: {
+                id: true,
+                name: true,
+                oab: true,
+                oabState: true,
+              },
+            },
             deadlineResponsible: {
               select: {
                 id: true,
                 name: true,
                 email: true,
               },
+            },
+            parts: {
+              where: {
+                type: { in: ['DEMANDANTE', 'DEMANDADO'] }
+              },
+              include: {
+                client: { select: { id: true, name: true } },
+                adverse: { select: { id: true, name: true } },
+              }
             },
             _count: {
               select: {
@@ -326,8 +410,23 @@ export class CaseController {
         prisma.case.count({ where }),
       ]);
 
+      // Adicionar campos calculados de demandante/demandado
+      const casesWithParties = cases.map(c => ({
+        ...c,
+        demandanteNames: c.parts
+          .filter(p => p.type === 'DEMANDANTE')
+          .map(p => p.client?.name || p.name)
+          .filter(Boolean)
+          .join(', '),
+        demandadoNames: c.parts
+          .filter(p => p.type === 'DEMANDADO')
+          .map(p => p.adverse?.name || p.name)
+          .filter(Boolean)
+          .join(', '),
+      }));
+
       res.json({
-        data: cases,
+        data: casesWithParties,
         total,
         page: Number(page),
         limit: Number(limit),
@@ -358,6 +457,14 @@ export class CaseController {
               email: true,
             },
           },
+          lawyer: {
+            select: {
+              id: true,
+              name: true,
+              oab: true,
+              oabState: true,
+            },
+          },
           movements: {
             orderBy: { movementDate: 'desc' },
           },
@@ -365,6 +472,40 @@ export class CaseController {
             orderBy: { createdAt: 'desc' },
           },
           parts: {
+            orderBy: { createdAt: 'desc' },
+            include: {
+              client: {
+                select: {
+                  id: true,
+                  name: true,
+                  cpf: true,
+                  email: true,
+                  phone: true,
+                },
+              },
+              adverse: {
+                select: {
+                  id: true,
+                  name: true,
+                  cpf: true,
+                  email: true,
+                  phone: true,
+                },
+              },
+              lawyer: {
+                select: {
+                  id: true,
+                  name: true,
+                  oab: true,
+                  oabState: true,
+                  email: true,
+                  phone: true,
+                  affiliation: true,
+                },
+              },
+            },
+          },
+          witnesses: {
             orderBy: { createdAt: 'desc' },
           },
         },
@@ -385,7 +526,7 @@ export class CaseController {
     try {
       const { id } = req.params;
       const companyId = req.user!.companyId;
-      const { court, subject, value, status, deadline, deadlineResponsibleId, notes, informarCliente, linkProcesso } = req.body;
+      const { court, subject, value, status, deadline, deadlineResponsibleId, lawyerId, notes, informarCliente, linkProcesso, phase, nature, rite, distributionDate } = req.body;
 
       const oldCaseData = await prisma.case.findFirst({
         where: {
@@ -413,6 +554,7 @@ export class CaseController {
 
       // Converter deadline se fornecido (null para limpar o campo)
       const cleanDeadline = deadline && deadline !== '' ? fixDateTimezone(deadline) : null;
+      const cleanDistributionDate = distributionDate && distributionDate !== '' ? fixDateTimezone(distributionDate) : null;
 
       // Sanitiza informarCliente se fornecido
       const sanitizedInformarCliente = informarCliente !== undefined ? sanitizeString(informarCliente) : undefined;
@@ -433,11 +575,17 @@ export class CaseController {
           status,
           ...(deadline !== undefined && { deadline: cleanDeadline }),
           ...(deadlineResponsibleId !== undefined && { deadlineResponsibleId: deadlineResponsibleId || null }),
+          ...(lawyerId !== undefined && { lawyerId: lawyerId || null }),
           notes: sanitizeString(notes),
           ...(sanitizedInformarCliente !== undefined && { informarCliente: sanitizedInformarCliente }),
           ...(linkProcesso !== undefined && { linkProcesso }),
           // Se o prazo mudou, resetar o status de cumprido (sincroniza com aba Prazos)
           ...(deadlineChanged && { deadlineCompleted: false, deadlineCompletedAt: null }),
+          // New fields
+          ...(phase !== undefined && { phase: phase || null }),
+          ...(nature !== undefined && { nature: nature || null }),
+          ...(rite !== undefined && { rite: rite || null }),
+          ...(distributionDate !== undefined && { distributionDate: cleanDistributionDate }),
         },
       });
 
@@ -498,7 +646,7 @@ export class CaseController {
           companyId!,
           cleanDeadline,
           caseData.processNumber,
-          caseData.clientId,
+          caseData.clientId || undefined,
           req.user!.userId,
           deadlineResponsibleId !== undefined ? deadlineResponsibleId : caseData.deadlineResponsibleId
         );
@@ -511,7 +659,7 @@ export class CaseController {
           sanitizedInformarCliente !== caseData.informarCliente) {
 
         // Verificar se o cliente tem email
-        if (caseData.client.email) {
+        if (caseData.client?.email) {
           try {
             await sendCaseUpdateNotification(
               caseData.client.email,
@@ -528,7 +676,7 @@ export class CaseController {
             appLogger.error('Erro ao enviar email de notificação', emailError as Error);
             // Não bloqueia a atualização se o email falhar
           }
-        } else {
+        } else if (caseData.client) {
           appLogger.info('Cliente não possui email cadastrado - Notificação não enviada', {
             clientName: caseData.client.name
           });
@@ -1189,7 +1337,7 @@ export class CaseController {
         companyId,
         fixedDeadline,
         caseData.processNumber,
-        caseData.clientId,
+        caseData.clientId || undefined,
         req.user!.userId,
         deadlineResponsibleId || null
       );

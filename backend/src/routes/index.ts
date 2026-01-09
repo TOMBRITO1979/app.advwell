@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import authRoutes from './auth.routes';
 import clientRoutes from './client.routes';
+import adverseRoutes from './adverse.routes';
+import lawyerRoutes from './lawyer.routes';
 import caseRoutes from './case.routes';
 import casePartRoutes from './case-part.routes';
 import companyRoutes from './company.routes';
@@ -34,6 +36,9 @@ import whatsappConfigRoutes from './whatsapp-config.routes';
 import whatsappCampaignRoutes from './whatsapp-campaign.routes';
 import whatsappWebhookRoutes from './whatsapp-webhook.routes';
 import sharedDocumentRoutes from './shared-document.routes';
+import clientMessageRoutes from './client-message.routes';
+import monitoringRoutes from './monitoring.routes';
+import advapiWebhookRoutes from './advapi-webhook.routes';
 
 const router = Router();
 
@@ -43,10 +48,15 @@ router.use('/auth', authRoutes);
 // WhatsApp Webhook (sem autenticação - verificado por token)
 router.use('/whatsapp-webhook', whatsappWebhookRoutes);
 
+// ADVAPI Webhook (sem autenticação - verificado por X-API-Key)
+router.use('/advapi-webhook', advapiWebhookRoutes);
+
 // Nota: companyRateLimit é aplicado em cada route file após authenticate
 // para garantir que req.user esteja disponível
 
 router.use('/clients', clientRoutes);
+router.use('/adverses', adverseRoutes);
+router.use('/lawyers', lawyerRoutes);
 router.use('/cases', caseRoutes);
 router.use('/cases', casePartRoutes); // Rotas de partes do processo (/cases/:caseId/parts)
 router.use('/companies', companyRoutes);
@@ -79,5 +89,7 @@ router.use('/google-calendar-config', googleCalendarConfigRoutes); // Configura�
 router.use('/whatsapp-config', whatsappConfigRoutes); // Configuração WhatsApp Business API por empresa (ADMIN)
 router.use('/whatsapp-campaigns', whatsappCampaignRoutes); // Campanhas de marketing WhatsApp (ADMIN)
 router.use('/', sharedDocumentRoutes); // Documentos compartilhados entre escritório e cliente (Portal)
+router.use('/client-messages', clientMessageRoutes); // Mensagens bidirecionais entre clientes e escritório
+router.use('/monitoring', monitoringRoutes); // Monitoramento de OABs e publicações (ADVAPI v2)
 
 export default router;

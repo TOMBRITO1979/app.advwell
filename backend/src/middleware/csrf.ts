@@ -35,6 +35,10 @@ const EXEMPT_ROUTES = [
   '/lgpd/consent',                  // Sem prefixo /api
   '/api/integration/chatwoot/sso',  // SSO externo
   '/integration/chatwoot/sso',      // Sem prefixo /api
+  '/api/whatsapp-webhook',          // WhatsApp webhook (valida por token)
+  '/whatsapp-webhook',              // Sem prefixo /api
+  '/api/advapi-webhook',            // ADVAPI webhook (valida por X-API-Key)
+  '/advapi-webhook',                // Sem prefixo /api
   '/health',                        // Health checks
 ];
 

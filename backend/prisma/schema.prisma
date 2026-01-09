@@ -48,6 +48,7 @@ model Company {
   stripeSubscriptionId  String?            // ID da assinatura no Stripe
   subscriptionEndsAt    DateTime?          // Data de expiração da assinatura atual
   casesLimit            Int                @default(1000) // Limite de processos do plano
+  monitoringLimit       Int                @default(500)  @map("monitoring_limit") // Limite de publicações monitoradas por mês
 
   // LGPD - Dados do DPO (Encarregado de Dados)
   dpoName               String?                // Nome do DPO/Encarregado
@@ -58,6 +59,8 @@ model Company {
 
   users                 User[]
   clients               Client[]
+  adverses              Adverse[]
+  lawyers               Lawyer[]
   cases                 Case[]
   financialTransactions FinancialTransaction[]
   documents             Document[]
@@ -80,6 +83,7 @@ model Company {
   caseMovements         CaseMovement[]
   caseDocuments         CaseDocument[]
   caseParts             CasePart[]
+  caseWitnesses         CaseWitness[]
   caseAuditLogs         CaseAuditLog[]
   installmentPayments   InstallmentPayment[]
   eventAssignments      EventAssignment[]
@@ -113,9 +117,17 @@ model Company {
   // Documentos Compartilhados (Portal do Cliente)
   sharedDocuments             SharedDocument[]
 
+  // Mensagens do Portal do Cliente
+  clientMessages              ClientMessage[]
+
   // Compartilhamento de tokens de IA
   aiTokenSharesProvided       AITokenShare[] @relation("AITokenShareProvider")  // Tokens que esta empresa compartilha
   aiTokenSharesReceived       AITokenShare[] @relation("AITokenShareClient")    // Tokens que esta empresa recebe
+
+  // Monitoramento de OABs
+  monitoredOabs               MonitoredOAB[]
+  oabConsultas                OABConsulta[]
+  publications                Publication[]
 
   @@map("companies")
 }
@@ -200,6 +212,9 @@ model User {
   // Documentos compartilhados
   sharedDocumentsShared   SharedDocument[]  @relation("SharedDocumentSharedBy")
 
+  // Mensagens do Portal
+  clientMessagesCreated   ClientMessage[]   @relation("MessageCreator")
+
   @@unique([companyId, email])  // Email único por empresa (permite mesmo email em empresas diferentes)
   @@index([companyId])
   @@index([email])  // Índice para buscas por email
@@ -230,12 +245,20 @@ model Client {
   id            String     @id @default(uuid())
   companyId     String
   personType    PersonType @default(FISICA) // Tipo de pessoa: Física ou Jurídica
+  clientCondition ClientCondition? @map("client_condition") // Condição: Demandante ou Demandado
   name          String
   cpf           String? // CPF para Pessoa Física ou CNPJ para Pessoa Jurídica
-  stateRegistration String? // Inscrição Estadual (para Pessoa Jurídica)
+  stateRegistration String? @map("state_registration") // Inscrição Estadual (para Pessoa Jurídica)
   rg            String?
+  pis           String?   // Número do PIS
+  ctps          String?   // CTPS
+  ctpsSerie     String?   @map("ctps_serie") // CTPS Série
+  motherName    String?   @map("mother_name") // Nome da mãe
   email         String?
-  phone         String?
+  phone         String?   // Telefone 1 (principal)
+  phone2        String?   // Telefone 2
+  instagram     String?   // Instagram
+  facebook      String?   // Facebook
   address       String?
   city          String?
   state         String?
@@ -265,6 +288,8 @@ model Client {
   pnjs                  PNJ[]                 // Processos Não Judiciais
   clientTags            ClientTag[]           // Tags do cliente (many-to-many)
   sharedDocuments       SharedDocument[]      // Documentos compartilhados via portal
+  messages              ClientMessage[]       // Mensagens do portal
+  caseParts             CasePart[]            // Partes de processo onde é demandante
 
   @@unique([companyId, cpf]) // CPF único por empresa (NULL é permitido para múltiplos clientes)
   @@unique([companyId, email]) // Email único por empresa (NULL é permitido para múltiplos clientes)
@@ -282,6 +307,101 @@ enum PersonType {
   JURIDICA
 }
 
+// Enum para condição do cliente (demandante ou demandado)
+enum ClientCondition {
+  DEMANDANTE
+  DEMANDADO
+}
+
+// Tabela de adversos (parte contrária)
+model Adverse {
+  id            String     @id @default(uuid())
+  companyId     String     @map("company_id")
+  personType    PersonType @default(FISICA) @map("person_type")
+  name          String
+  cpf           String?
+  stateRegistration String? @map("state_registration")
+  rg            String?
+  pis           String?
+  ctps          String?
+  ctpsSerie     String?   @map("ctps_serie")
+  motherName    String?   @map("mother_name")
+  email         String?
+  phone         String?
+  phone2        String?
+  instagram     String?
+  facebook      String?
+  address       String?
+  city          String?
+  state         String?
+  zipCode       String?   @map("zip_code")
+  profession    String?
+  nationality   String?
+  maritalStatus String?   @map("marital_status")
+  birthDate     DateTime? @map("birth_date")
+  representativeName String? @map("representative_name")
+  representativeCpf  String? @map("representative_cpf")
+  notes         String?
+  active        Boolean   @default(true)
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  company       Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  caseParts     CasePart[]  // Partes de processo onde é demandado
+
+  @@index([companyId])
+  @@index([companyId, cpf])
+  @@map("adverses")
+}
+
+// Enum para tipo de advogado
+enum LawyerType {
+  SOCIO       // Sócio
+  ASSOCIADO   // Associado
+  ESTAGIARIO  // Estagiário
+  EXTERNO     // Externo/Correspondente
+}
+
+// Enum para vínculo do advogado
+enum LawyerAffiliation {
+  ESCRITORIO  // Advogado do próprio escritório
+  ADVERSO     // Advogado da parte contrária
+}
+
+// Tabela de advogados da empresa
+model Lawyer {
+  id            String            @id @default(uuid())
+  companyId     String
+  name          String
+  cpf           String?
+  oab           String?           // Número da OAB (ex: 123456)
+  oabState      String?           @map("oab_state") // Estado da OAB (ex: SP)
+  lawyerType    LawyerType        @default(ASSOCIADO) @map("lawyer_type")
+  affiliation   LawyerAffiliation @default(ESCRITORIO) // Vínculo: escritório ou adverso
+  team          String?           // Equipe/Área (ex: Trabalhista, Cível, Tributário)
+  email         String?
+  phone         String?
+  phone2        String?
+  instagram     String?
+  facebook      String?
+  address       String?
+  city          String?
+  state         String?
+  zipCode       String?   @map("zip_code")
+  notes         String?
+  active        Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  company       Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  cases         Case[]
+  caseParts     CasePart[] @relation("CasePartLawyer")  // Partes de processo como advogado
+
+  @@index([companyId])
+  @@index([companyId, oab])
+  @@map("lawyers")
+}
+
 // Enum para status do processo
 enum CaseStatus {
   PENDENTE
@@ -294,7 +414,7 @@ enum CaseStatus {
 model Case {
   id                    String     @id @default(uuid())
   companyId             String
-  clientId              String
+  clientId              String?    // Opcional - usar CasePart para Demandante/Demandado
   processNumber         String     // Número do processo (único por empresa)
   court                 String     // Tribunal
   subject               String     // Assunto
@@ -302,6 +422,7 @@ model Case {
   status                CaseStatus @default(ACTIVE)
   deadline              DateTime?  // Prazo do processo
   deadlineResponsibleId String?    // ID do usuário responsável pelo prazo
+  lawyerId              String?    // ID do advogado responsável pelo processo
   deadlineCompleted     Boolean    @default(false) // Prazo foi cumprido
   deadlineCompletedAt   DateTime?  // Data/hora que o prazo foi marcado como cumprido
   notes                 String?
@@ -313,13 +434,19 @@ model Case {
   updatedAt             DateTime   @updatedAt
   lastSyncedAt          DateTime?  // Última sincronização com DataJud
   lastAcknowledgedAt    DateTime?  // Última vez que o advogado marcou como "ciente" das atualizações
+  phase                 String?    // Fase do processo (ex: Inicial, Instrução, Sentença)
+  nature                String?    // Natureza do processo (ex: Cível, Trabalhista, Criminal)
+  rite                  String?    // Rito processual (ex: Ordinário, Sumário, Sumaríssimo)
+  distributionDate      DateTime?  @map("distribution_date") // Data de distribuição do processo
 
   company               Company               @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  client                Client                @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  client                Client?               @relation(fields: [clientId], references: [id], onDelete: SetNull)
   deadlineResponsible   User?                 @relation("CaseDeadlineResponsible", fields: [deadlineResponsibleId], references: [id], onDelete: SetNull)
+  lawyer                Lawyer?               @relation(fields: [lawyerId], references: [id], onDelete: SetNull)
   movements             CaseMovement[]
   caseDocuments         CaseDocument[]        @relation("CaseDocuments")
   parts                 CasePart[]
+  witnesses             CaseWitness[]         // Testemunhas do processo
   financialTransactions FinancialTransaction[]
   documents             Document[]
   scheduleEvents        ScheduleEvent[]
@@ -376,30 +503,63 @@ model CaseDocument {
 
 // Enum para tipo de parte do processo
 enum CasePartType {
-  AUTOR                // Autor/Requerente
-  REU                  // Réu/Requerido
-  REPRESENTANTE_LEGAL  // Representante Legal
+  DEMANDANTE           // Demandante (autor) - busca de Clientes
+  DEMANDADO            // Demandado (réu) - busca de Adversos
+  ADVOGADO             // Advogado do escritório - busca de Lawyers (ESCRITORIO)
+  ADVOGADO_ADVERSO     // Advogado da parte contrária - busca de Lawyers (ADVERSO)
 }
 
-// Tabela de partes do processo (Autor, Réu, Representante Legal)
+// Tabela de partes do processo - referencia entidades existentes
 model CasePart {
   id              String       @id @default(uuid())
   caseId          String
   companyId       String       // TAREFA 4.3: Isolamento de tenant direto
   type            CasePartType
 
-  // Campos comuns
-  name            String
-  cpfCnpj         String?      // CPF ou CNPJ
+  // Referências às entidades (apenas um será preenchido baseado no type)
+  clientId        String?      // Para DEMANDANTE - referência ao Cliente
+  adverseId       String?      // Para DEMANDADO - referência ao Adverso
+  lawyerId        String?      // Para ADVOGADO/ADVOGADO_ADVERSO - referência ao Advogado
+
+  // Campos legados (mantidos para compatibilidade com dados antigos)
+  name            String?
+  cpfCnpj         String?
   phone           String?
   address         String?
-
-  // Campos específicos para AUTOR
   email           String?
-  civilStatus     String?      // Estado civil
-  profession      String?      // Profissão
-  rg              String?      // RG
-  birthDate       DateTime?    // Data de nascimento
+  civilStatus     String?
+  profession      String?
+  rg              String?
+  birthDate       DateTime?
+
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  case            Case         @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  company         Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  client          Client?      @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  adverse         Adverse?     @relation(fields: [adverseId], references: [id], onDelete: SetNull)
+  lawyer          Lawyer?      @relation("CasePartLawyer", fields: [lawyerId], references: [id], onDelete: SetNull)
+
+  @@index([caseId])
+  @@index([companyId])
+  @@index([clientId])
+  @@index([adverseId])
+  @@index([lawyerId])
+  @@map("case_parts")
+}
+
+// Tabela de testemunhas do processo
+model CaseWitness {
+  id              String       @id @default(uuid())
+  caseId          String
+  companyId       String       // Isolamento de tenant direto
+
+  // Dados da testemunha
+  name            String
+  address         String?
+  phone           String?      // Telefone fixo
+  mobile          String?      // Celular
 
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
@@ -409,7 +569,7 @@ model CasePart {
 
   @@index([caseId])
   @@index([companyId])
-  @@map("case_parts")
+  @@map("case_witnesses")
 }
 
 // Tabela de auditoria de processos (histórico de ações)
@@ -449,6 +609,14 @@ enum TransactionType {
   EXPENSE   // Despesa
 }
 
+// Enum para status de transação financeira
+enum TransactionStatus {
+  PENDING    // Pendente
+  PAID       // Pago
+  PARTIAL    // Parcialmente Pago
+  CANCELLED  // Cancelado
+}
+
 // Tabela de transações financeiras
 model FinancialTransaction {
   id          String          @id @default(uuid())
@@ -456,6 +624,7 @@ model FinancialTransaction {
   clientId    String
   caseId      String?         // Opcional - pode não estar vinculado a um processo
   type        TransactionType
+  status      TransactionStatus @default(PENDING) // Status da transação
   description String
   amount      Decimal         @db.Decimal(15, 2) // Valor total da transação
   date        DateTime        @default(now())
@@ -477,8 +646,10 @@ model FinancialTransaction {
   @@index([clientId])
   @@index([caseId])
   @@index([type])
+  @@index([status])
   @@index([date])
   @@index([companyId, date])
+  @@index([companyId, status])
   @@map("financial_transactions")
 }
 
@@ -486,6 +657,7 @@ model FinancialTransaction {
 enum InstallmentStatus {
   PENDING    // Pendente
   PAID       // Pago
+  PARTIAL    // Parcialmente Pago
   OVERDUE    // Atrasado
   CANCELLED  // Cancelado
 }
@@ -1388,8 +1560,8 @@ enum PNJStatus {
 
 // Enum para tipo de parte do PNJ
 enum PNJPartType {
-  AUTHOR        // Autor/Requerente
-  DEFENDANT     // Réu/Requerido
+  AUTHOR        // Demandante
+  DEFENDANT     // Demandado
   INTERESTED    // Interessado
   THIRD_PARTY   // Terceiro
   OTHER         // Outro
@@ -1805,4 +1977,173 @@ model SharedDocument {
   @@index([status])
   @@index([sharedAt])
   @@map("shared_documents")
+}
+
+// ============================================================================
+// CLIENT MESSAGING SYSTEM (Portal do Cliente)
+// ============================================================================
+
+// Enum para remetente da mensagem
+enum MessageSender {
+  CLIENT    // Mensagem enviada pelo cliente
+  OFFICE    // Mensagem enviada pelo escritório
+}
+
+// Tabela de mensagens entre cliente e escritório
+model ClientMessage {
+  id          String        @id @default(uuid())
+  companyId   String
+  clientId    String
+
+  // Dados da mensagem
+  sender      MessageSender // Quem enviou (CLIENT ou OFFICE)
+  subject     String?       // Assunto (opcional)
+  content     String        @db.Text
+
+  // Leitura
+  readAt      DateTime?     // Data/hora em que foi lida
+  readBy      String?       // ID do usuário que leu (para msgs do cliente)
+
+  // Resposta (thread)
+  parentId    String?       // ID da mensagem pai (para respostas)
+
+  // Metadados
+  createdBy   String?       // ID do usuário que enviou (para msgs do escritório)
+  createdAt   DateTime      @default(now())
+
+  // Relations
+  company     Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  client      Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  creator     User?         @relation("MessageCreator", fields: [createdBy], references: [id], onDelete: SetNull)
+  parent      ClientMessage? @relation("MessageReplies", fields: [parentId], references: [id], onDelete: SetNull)
+  replies     ClientMessage[] @relation("MessageReplies")
+
+  @@index([companyId])
+  @@index([clientId])
+  @@index([companyId, clientId])
+  @@index([parentId])
+  @@index([createdAt])
+  @@map("client_messages")
+}
+
+// ============================================================================
+// OAB MONITORING SYSTEM (Monitoramento de Publicações)
+// ============================================================================
+
+// Status do monitoramento
+enum MonitoringStatus {
+  ACTIVE    // Monitoramento ativo
+  PAUSED    // Pausado temporariamente
+  INACTIVE  // Desativado
+}
+
+// Status da consulta de publicações
+enum ConsultaStatus {
+  PENDING     // Aguardando processamento
+  PROCESSING  // Em processamento
+  COMPLETED   // Concluído
+  FAILED      // Falhou
+}
+
+// OAB Monitorada (advogado cadastrado para monitoramento)
+model MonitoredOAB {
+  id           String           @id @default(uuid())
+  companyId    String
+
+  // Dados do advogado
+  name         String           // Nome completo do advogado
+  oab          String           // Número da OAB
+  oabState     String           @map("oab_state") // Estado da OAB (SP, RJ, MG, etc)
+
+  // Status do monitoramento
+  status       MonitoringStatus @default(ACTIVE)
+
+  // Configurações
+  tribunais    String[]         @default([]) // Tribunais para buscar (vazio = todos)
+  autoImport   Boolean          @default(true) @map("auto_import") // Importar automaticamente
+
+  // Última consulta
+  lastConsultaAt DateTime?      @map("last_consulta_at")
+  lastConsultaId String?        @map("last_consulta_id") // ID da última consulta na ADVAPI
+
+  // Metadados
+  createdAt    DateTime         @default(now()) @map("created_at")
+  updatedAt    DateTime         @updatedAt @map("updated_at")
+
+  // Relations
+  company      Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  consultas    OABConsulta[]
+  publications Publication[]
+
+  @@unique([companyId, oab, oabState]) // OAB única por estado e empresa
+  @@index([companyId])
+  @@index([companyId, status])
+  @@map("monitored_oabs")
+}
+
+// Consulta realizada na ADVAPI
+model OABConsulta {
+  id               String         @id @default(uuid())
+  companyId        String
+  monitoredOabId   String         @map("monitored_oab_id")
+
+  // Dados da consulta
+  advApiConsultaId String?        @map("adv_api_consulta_id") // ID retornado pela ADVAPI
+  status           ConsultaStatus @default(PENDING)
+  dataInicio       DateTime       @map("data_inicio") // Data inicial da busca
+  dataFim          DateTime       @map("data_fim") // Data final da busca
+  tribunais        String[]       @default([]) // Tribunais consultados
+
+  // Resultado
+  totalPublicacoes Int            @default(0) @map("total_publicacoes")
+  importedCount    Int            @default(0) @map("imported_count")
+  errorMessage     String?        @map("error_message")
+  notes            String?        // Observações sobre a consulta (ex: limite atingido)
+
+  // Metadados
+  createdAt        DateTime       @default(now()) @map("created_at")
+  completedAt      DateTime?      @map("completed_at")
+
+  // Relations
+  company          Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  monitoredOab     MonitoredOAB   @relation(fields: [monitoredOabId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+  @@index([monitoredOabId])
+  @@index([status])
+  @@map("oab_consultas")
+}
+
+// Publicações encontradas (publicações do diário oficial)
+model Publication {
+  id                String        @id @default(uuid())
+  companyId         String
+  monitoredOabId    String        @map("monitored_oab_id")
+
+  // Dados da publicação
+  numeroProcesso    String        @map("numero_processo") // Número do processo
+  siglaTribunal     String        @map("sigla_tribunal") // Ex: TJSP, TRT2
+  dataPublicacao    DateTime      @map("data_publicacao")
+  tipoComunicacao   String?       @map("tipo_comunicacao") // Ex: Intimação, Citação
+  textoComunicacao  String?       @db.Text @map("texto_comunicacao") // Texto da publicação
+
+  // Status de importação
+  imported          Boolean       @default(false) // Se foi importado como processo
+  importedCaseId    String?       @map("imported_case_id") // ID do processo criado
+  importedClientId  String?       @map("imported_client_id") // ID do cliente criado
+
+  // Metadados
+  createdAt         DateTime      @default(now()) @map("created_at")
+  importedAt        DateTime?     @map("imported_at")
+
+  // Relations
+  company           Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  monitoredOab      MonitoredOAB  @relation(fields: [monitoredOabId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, numeroProcesso, monitoredOabId]) // Evita duplicatas
+  @@index([companyId])
+  @@index([monitoredOabId])
+  @@index([imported])
+  @@index([companyId, imported])
+  @@map("publications")
 }

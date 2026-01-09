@@ -25,8 +25,8 @@ const statusConfig: Record<string, { label: string; color: string; icon: typeof 
 };
 
 const partTypeLabels: Record<string, string> = {
-  AUTOR: 'Autor',
-  REU: 'Réu',
+  AUTOR: 'Demandante',
+  REU: 'Demandado',
   REPRESENTANTE_LEGAL: 'Representante Legal',
 };
 

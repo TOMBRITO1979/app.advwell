@@ -14,6 +14,8 @@ const VerifyEmail = lazy(() => import('./pages/VerifyEmail'));
 const ResendVerification = lazy(() => import('./pages/ResendVerification'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Clients = lazy(() => import('./pages/Clients'));
+const Adverses = lazy(() => import('./pages/Adverses'));
+const Lawyers = lazy(() => import('./pages/Lawyers'));
 const Cases = lazy(() => import('./pages/Cases'));
 const Deadlines = lazy(() => import('./pages/Deadlines'));
 const Updates = lazy(() => import('./pages/Updates'));
@@ -37,6 +39,7 @@ const Leads = lazy(() => import('./pages/Leads'));
 const LeadAnalytics = lazy(() => import('./pages/LeadAnalytics'));
 const Tags = lazy(() => import('./pages/Tags'));
 const PNJ = lazy(() => import('./pages/PNJ'));
+const Monitoring = lazy(() => import('./pages/Monitoring'));
 const Subscription = lazy(() => import('./pages/Subscription'));
 const SubscriptionAlerts = lazy(() => import('./pages/SubscriptionAlerts'));
 const StripeConfig = lazy(() => import('./pages/StripeConfig'));
@@ -62,6 +65,7 @@ const PortalProfile = lazy(() => import('./portal/pages/PortalProfile'));
 const PortalCompany = lazy(() => import('./portal/pages/PortalCompany'));
 const PortalAnnouncements = lazy(() => import('./portal/pages/PortalAnnouncements'));
 const PortalDocuments = lazy(() => import('./portal/pages/PortalDocuments'));
+const PortalMessages = lazy(() => import('./portal/pages/PortalMessages'));
 
 // Loading spinner component
 const LoadingSpinner = () => (
@@ -187,6 +191,22 @@ function App() {
             }
           />
           <Route
+            path="/adverses"
+            element={
+              <PrivateRoute>
+                <Adverses />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/lawyers"
+            element={
+              <PrivateRoute>
+                <Lawyers />
+              </PrivateRoute>
+            }
+          />
+          <Route
             path="/leads"
             element={
               <PrivateRoute>
@@ -223,6 +243,14 @@ function App() {
             element={
               <PrivateRoute>
                 <PNJ />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/monitoring"
+            element={
+              <PrivateRoute>
+                <Monitoring />
               </PrivateRoute>
             }
           />
@@ -512,6 +540,14 @@ function App() {
             element={
               <PortalRoute>
                 <PortalDocuments />
+              </PortalRoute>
+            }
+          />
+          <Route
+            path="/portal/messages"
+            element={
+              <PortalRoute>
+                <PortalMessages />
               </PortalRoute>
             }
           />

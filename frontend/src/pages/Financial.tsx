@@ -23,6 +23,7 @@ interface Case {
 interface Transaction {
   id: string;
   type: 'INCOME' | 'EXPENSE';
+  status: 'PAID' | 'PENDING' | 'CANCELLED' | 'PARTIAL';
   description: string;
   amount: number;
   date: string;
@@ -38,6 +39,7 @@ interface FormData {
   clientId: string;
   caseId: string;
   type: 'INCOME' | 'EXPENSE';
+  status: 'PAID' | 'PENDING' | 'CANCELLED' | 'PARTIAL';
   description: string;
   amount: string;
   date: string;
@@ -62,6 +64,7 @@ const Financial: React.FC = () => {
   const [filterClientId, setFilterClientId] = useState<string>('');
   const [filterStartDate, setFilterStartDate] = useState<string>('');
   const [filterEndDate, setFilterEndDate] = useState<string>('');
+  const [filterStatus, setFilterStatus] = useState<string>('');
   const [showModal, setShowModal] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [editMode, setEditMode] = useState(false);
@@ -88,6 +91,7 @@ const Financial: React.FC = () => {
     clientId: '',
     caseId: '',
     type: 'INCOME',
+    status: 'PENDING',
     description: '',
     amount: '',
     date: new Date().toISOString().split('T')[0],
@@ -110,12 +114,12 @@ const Financial: React.FC = () => {
     loadTransactions();
     loadClients();
     loadCases();
-  }, [search, filterType, filterClientId, filterStartDate, filterEndDate, page, limit]);
+  }, [search, filterType, filterClientId, filterStartDate, filterEndDate, filterStatus, page, limit]);
 
   // Reset page when filters change
   useEffect(() => {
     setPage(1);
-  }, [search, filterType, filterClientId, filterStartDate, filterEndDate]);
+  }, [search, filterType, filterClientId, filterStartDate, filterEndDate, filterStatus]);
 
   // Filter clients based on search text
   useEffect(() => {
@@ -151,6 +155,7 @@ const Financial: React.FC = () => {
       if (filterClientId) params.clientId = filterClientId;
       if (filterStartDate) params.startDate = filterStartDate;
       if (filterEndDate) params.endDate = filterEndDate;
+      if (filterStatus) params.status = filterStatus;
 
       const response = await api.get('/financial', { params });
       setTransactions(response.data.data);
@@ -186,6 +191,7 @@ const Financial: React.FC = () => {
       clientId: '',
       caseId: '',
       type: 'INCOME',
+      status: 'PENDING',
       description: '',
       amount: '',
       date: new Date().toISOString().split('T')[0],
@@ -236,6 +242,7 @@ const Financial: React.FC = () => {
       clientId: transaction.client.id,
       caseId: transaction.case?.id || '',
       type: transaction.type,
+      status: transaction.status || 'PENDING',
       description: transaction.description,
       amount: transaction.amount.toString(),
       date: transaction.date.split('T')[0],
@@ -302,6 +309,7 @@ const Financial: React.FC = () => {
     setFilterClientId('');
     setFilterStartDate('');
     setFilterEndDate('');
+    setFilterStatus('');
   };
 
   const handleClientSelect = (client: Client) => {
@@ -576,6 +584,24 @@ const Financial: React.FC = () => {
                   </select>
                 </div>
 
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">Status</label>
+                  <select
+                    value={filterStatus}
+                    onChange={(e) => setFilterStatus(e.target.value)}
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                  >
+                    <option value="">Todos</option>
+                    <option value="PAID">Pago</option>
+                    <option value="PENDING">Pendente</option>
+                    <option value="CANCELLED">Cancelado</option>
+                    <option value="PARTIAL">Parcialmente Pago</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Linha 2: Cliente */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-neutral-700 mb-1">Cliente</label>
                   <select
@@ -946,10 +972,13 @@ const Financial: React.FC = () => {
                     value={clientSearchText}
                     onChange={(e) => {
                       setClientSearchText(e.target.value);
-                      setShowClientSuggestions(true);
+                      if (e.target.value.trim()) {
+                        setShowClientSuggestions(true);
+                      } else {
+                        setShowClientSuggestions(false);
+                      }
                       setFormData({ ...formData, clientId: '' });
                     }}
-                    onFocus={() => setShowClientSuggestions(true)}
                     className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   />
                   {showClientSuggestions && filteredClients.length > 0 && (
@@ -980,10 +1009,13 @@ const Financial: React.FC = () => {
                     value={caseSearchText}
                     onChange={(e) => {
                       setCaseSearchText(e.target.value);
-                      setShowCaseSuggestions(true);
+                      if (e.target.value.trim()) {
+                        setShowCaseSuggestions(true);
+                      } else {
+                        setShowCaseSuggestions(false);
+                      }
                       setFormData({ ...formData, caseId: '' });
                     }}
-                    onFocus={() => setShowCaseSuggestions(true)}
                     className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   />
                   {showCaseSuggestions && filteredCases.length > 0 && (
@@ -1060,6 +1092,23 @@ const Financial: React.FC = () => {
                       className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                     />
                   </div>
+                </div>
+
+                {/* Status */}
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    Status <span className="text-error-500">*</span>
+                  </label>
+                  <select
+                    value={formData.status}
+                    onChange={(e) => setFormData({ ...formData, status: e.target.value as 'PAID' | 'PENDING' | 'CANCELLED' | 'PARTIAL' })}
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                  >
+                    <option value="PENDING">Pendente</option>
+                    <option value="PAID">Pago</option>
+                    <option value="PARTIAL">Parcialmente Pago</option>
+                    <option value="CANCELLED">Cancelado</option>
+                  </select>
                 </div>
 
                 {/* Parcelamento */}

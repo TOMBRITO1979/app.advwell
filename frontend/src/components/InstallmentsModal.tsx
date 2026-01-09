@@ -11,7 +11,7 @@ interface Installment {
   dueDate: string;
   paidDate?: string;
   paidAmount?: number;
-  status: 'PENDING' | 'PAID' | 'OVERDUE' | 'CANCELLED';
+  status: 'PENDING' | 'PAID' | 'PARTIAL' | 'OVERDUE' | 'CANCELLED';
   notes?: string;
 }
 
@@ -37,7 +37,7 @@ const InstallmentsModal: React.FC<InstallmentsModalProps> = ({
   const [editForm, setEditForm] = useState({
     paidDate: '',
     paidAmount: '',
-    status: 'PENDING' as 'PENDING' | 'PAID' | 'OVERDUE' | 'CANCELLED',
+    status: 'PENDING' as 'PENDING' | 'PAID' | 'PARTIAL' | 'OVERDUE' | 'CANCELLED',
     notes: '',
   });
 
@@ -141,12 +141,14 @@ const InstallmentsModal: React.FC<InstallmentsModalProps> = ({
     const badges = {
       PENDING: 'bg-yellow-100 text-yellow-800',
       PAID: 'bg-success-100 text-success-800',
+      PARTIAL: 'bg-blue-100 text-blue-800',
       OVERDUE: 'bg-red-100 text-red-800',
       CANCELLED: 'bg-neutral-100 text-neutral-800',
     };
     const labels = {
       PENDING: 'Pendente',
       PAID: 'Pago',
+      PARTIAL: 'Parcial',
       OVERDUE: 'Atrasado',
       CANCELLED: 'Cancelado',
     };
@@ -326,6 +328,7 @@ const InstallmentsModal: React.FC<InstallmentsModalProps> = ({
                 >
                   <option value="PENDING">Pendente</option>
                   <option value="PAID">Pago</option>
+                  <option value="PARTIAL">Parcialmente Pago</option>
                   <option value="OVERDUE">Atrasado</option>
                   <option value="CANCELLED">Cancelado</option>
                 </select>
