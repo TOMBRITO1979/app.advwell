@@ -52,7 +52,10 @@ interface LawyerFormData {
   phone2: string;
   instagram: string;
   facebook: string;
+  customField1: string;
+  customField2: string;
   address: string;
+  neighborhood: string;
   city: string;
   state: string;
   zipCode: string;
@@ -128,7 +131,10 @@ export default function Lawyers() {
     phone2: '',
     instagram: '',
     facebook: '',
+    customField1: '',
+    customField2: '',
     address: '',
+    neighborhood: '',
     city: '',
     state: '',
     zipCode: '',
@@ -170,7 +176,10 @@ export default function Lawyers() {
       phone2: '',
       instagram: '',
       facebook: '',
+      customField1: '',
+      customField2: '',
       address: '',
+      neighborhood: '',
       city: '',
       state: '',
       zipCode: '',
@@ -213,7 +222,10 @@ export default function Lawyers() {
       phone2: lawyer.phone2 || '',
       instagram: lawyer.instagram || '',
       facebook: lawyer.facebook || '',
+      customField1: (lawyer as any).customField1 || '',
+      customField2: (lawyer as any).customField2 || '',
       address: lawyer.address || '',
+      neighborhood: (lawyer as any).neighborhood || '',
       city: lawyer.city || '',
       state: lawyer.state || '',
       zipCode: lawyer.zipCode || '',
@@ -675,6 +687,28 @@ export default function Lawyers() {
                         className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-700 mb-1">Outros</label>
+                      <input
+                        type="text"
+                        value={formData.customField1}
+                        onChange={(e) => setFormData({ ...formData, customField1: e.target.value })}
+                        placeholder="Informações adicionais"
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-700 mb-1">Outros 2</label>
+                      <input
+                        type="text"
+                        value={formData.customField2}
+                        onChange={(e) => setFormData({ ...formData, customField2: e.target.value })}
+                        placeholder="Informações adicionais"
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                      />
+                    </div>
                   </div>
                 </div>
 
@@ -689,6 +723,17 @@ export default function Lawyers() {
                         value={formData.address}
                         onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                         placeholder="Rua, número, complemento"
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-700 mb-1">Bairro</label>
+                      <input
+                        type="text"
+                        value={formData.neighborhood}
+                        onChange={(e) => setFormData({ ...formData, neighborhood: e.target.value })}
+                        placeholder="Nome do bairro"
                         className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>

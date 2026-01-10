@@ -9,7 +9,8 @@ export class AdverseController {
     try {
       const {
         personType, name, cpf, rg, pis, ctps, ctpsSerie, motherName,
-        email, phone, phone2, instagram, facebook, address, city, state, zipCode,
+        email, phone, phone2, instagram, facebook, customField1, customField2,
+        address, neighborhood, city, state, zipCode,
         profession, nationality, maritalStatus, birthDate, representativeName, representativeCpf, notes
       } = req.body;
       const companyId = req.user!.companyId;
@@ -42,7 +43,10 @@ export class AdverseController {
           phone2: phone2?.trim() || null,
           instagram: instagram?.trim() || null,
           facebook: facebook?.trim() || null,
+          customField1: customField1?.trim() || null,
+          customField2: customField2?.trim() || null,
           address: sanitizeString(address) || null,
+          neighborhood: neighborhood?.trim() || null,
           city: city?.trim() || null,
           state: state?.trim() || null,
           zipCode: zipCode?.trim() || null,
@@ -138,7 +142,8 @@ export class AdverseController {
       const companyId = req.user!.companyId;
       const {
         personType, name, cpf, rg, pis, ctps, ctpsSerie, motherName,
-        email, phone, phone2, instagram, facebook, address, city, state, zipCode,
+        email, phone, phone2, instagram, facebook, customField1, customField2,
+        address, neighborhood, city, state, zipCode,
         profession, nationality, maritalStatus, birthDate, representativeName, representativeCpf, notes
       } = req.body;
 
@@ -173,7 +178,10 @@ export class AdverseController {
           phone2: phone2?.trim() || null,
           instagram: instagram?.trim() || null,
           facebook: facebook?.trim() || null,
+          customField1: customField1?.trim() || null,
+          customField2: customField2?.trim() || null,
           address: sanitizeString(address) || null,
+          neighborhood: neighborhood?.trim() || null,
           city: city?.trim() || null,
           state: state?.trim() || null,
           zipCode: zipCode?.trim() || null,

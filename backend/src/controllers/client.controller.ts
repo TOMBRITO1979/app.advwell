@@ -45,8 +45,9 @@ export class ClientController {
     try {
       const {
         personType, clientCondition, name, cpf, rg, pis, ctps, ctpsSerie, motherName,
-        email, phone, phone2, instagram, facebook, address, city, state, zipCode,
-        profession, maritalStatus, birthDate, representativeName, representativeCpf, notes, tag, tagIds
+        email, phone, phone2, instagram, facebook, address, neighborhood, city, state, zipCode,
+        profession, nationality, customField1, customField2, maritalStatus, birthDate,
+        representativeName, representativeCpf, notes, tag, tagIds
       } = req.body;
       const companyId = req.user!.companyId;
 
@@ -128,11 +129,15 @@ export class ClientController {
             phone2: phone2?.trim() || null,
             instagram: instagram?.trim() || null,
             facebook: facebook?.trim() || null,
+            customField1: customField1?.trim() || null,
+            customField2: customField2?.trim() || null,
             address: sanitizeString(address) || null,
+            neighborhood: neighborhood?.trim() || null,
             city: city?.trim() || null,
             state: state?.trim() || null,
             zipCode: zipCode?.trim() || null,
             profession: sanitizeString(profession) || null,
+            nationality: nationality?.trim() || null,
             maritalStatus: sanitizeString(maritalStatus) || null,
             birthDate: birthDate ? new Date(birthDate) : null,
             representativeName: sanitizeString(representativeName) || null,
@@ -301,8 +306,9 @@ export class ClientController {
       const companyId = req.user!.companyId;
       const {
         personType, clientCondition, name, cpf, rg, pis, ctps, ctpsSerie, motherName,
-        email, phone, phone2, instagram, facebook, address, city, state, zipCode,
-        profession, maritalStatus, birthDate, representativeName, representativeCpf, notes, tag, tagIds
+        email, phone, phone2, instagram, facebook, address, neighborhood, city, state, zipCode,
+        profession, nationality, customField1, customField2, maritalStatus, birthDate,
+        representativeName, representativeCpf, notes, tag, tagIds
       } = req.body;
 
       const oldClient = await prisma.client.findFirst({
@@ -396,11 +402,15 @@ export class ClientController {
             phone2: phone2?.trim() || null,
             instagram: instagram?.trim() || null,
             facebook: facebook?.trim() || null,
+            customField1: customField1?.trim() || null,
+            customField2: customField2?.trim() || null,
             address: sanitizeString(address) || null,
+            neighborhood: neighborhood?.trim() || null,
             city: city?.trim() || null,
             state: state?.trim() || null,
             zipCode: zipCode?.trim() || null,
             profession: sanitizeString(profession) || null,
+            nationality: nationality?.trim() || null,
             maritalStatus: sanitizeString(maritalStatus) || null,
             birthDate: birthDate ? new Date(birthDate) : null,
             representativeName: sanitizeString(representativeName) || null,

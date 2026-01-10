@@ -260,11 +260,14 @@ model Client {
   instagram     String?   // Instagram
   facebook      String?   // Facebook
   address       String?
+  neighborhood  String?   // Bairro
   city          String?
   state         String?
   zipCode       String?
   profession    String?   // Profissão
   nationality   String?   // Nacionalidade
+  customField1  String?   @map("custom_field_1") // Campo personalizado 1 (Outros)
+  customField2  String?   @map("custom_field_2") // Campo personalizado 2 (Outros 2)
   maritalStatus String?   // Estado civil
   birthDate     DateTime? // Data de nascimento
   representativeName String? // Nome do representante legal (para Pessoa Jurídica)
@@ -331,7 +334,10 @@ model Adverse {
   phone2        String?
   instagram     String?
   facebook      String?
+  customField1  String?   @map("custom_field_1") // Campo personalizado 1 (Outros)
+  customField2  String?   @map("custom_field_2") // Campo personalizado 2 (Outros 2)
   address       String?
+  neighborhood  String?   // Bairro
   city          String?
   state         String?
   zipCode       String?   @map("zip_code")
@@ -384,7 +390,10 @@ model Lawyer {
   phone2        String?
   instagram     String?
   facebook      String?
+  customField1  String?   @map("custom_field_1") // Campo personalizado 1 (Outros)
+  customField2  String?   @map("custom_field_2") // Campo personalizado 2 (Outros 2)
   address       String?
+  neighborhood  String?   // Bairro
   city          String?
   state         String?
   zipCode       String?   @map("zip_code")
