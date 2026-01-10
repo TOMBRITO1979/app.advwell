@@ -558,7 +558,7 @@ export class MonitoringController {
           court: publication.siglaTribunal,
           subject: publication.tipoComunicacao || 'Processo importado via monitoramento',
           status: 'ACTIVE',
-          notes: publication.textoComunicacao,
+          ultimaPublicacaoAdvapi: publication.textoComunicacao,
         },
       });
 

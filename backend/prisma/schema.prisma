@@ -435,7 +435,8 @@ model Case {
   deadlineCompleted     Boolean    @default(false) // Prazo foi cumprido
   deadlineCompletedAt   DateTime?  // Data/hora que o prazo foi marcado como cumprido
   notes                 String?
-  ultimoAndamento       String?    // Último movimento do processo (atualizado via API)
+  ultimoAndamento       String?    // Último movimento do processo (atualizado via DataJud)
+  ultimaPublicacaoAdvapi String?   @db.Text // Última publicação do Diário Oficial (via ADVAPI)
   informarCliente       String?    @db.Text // Texto explicativo do andamento para informar ao cliente
   linkProcesso          String?    // Link/URL do processo no tribunal
   aiSummary             String?    @db.Text // Resumo gerado por IA dos movimentos do processo

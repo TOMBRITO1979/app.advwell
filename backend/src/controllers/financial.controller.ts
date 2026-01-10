@@ -19,7 +19,7 @@ const toNumber = (value: Decimal | number | null | undefined): number => {
 // Listar transações financeiras com filtros e paginação
 export const listTransactions = async (req: AuthRequest, res: Response) => {
   try {
-    const { search, clientId, caseId, caseNumber, type, status, startDate, endDate, page = 1, limit = 50 } = req.query;
+    const { search, clientId, caseId, caseNumber, type, status, startDate, endDate, valueMin, valueMax, description, page = 1, limit = 50 } = req.query;
     const companyId = req.user!.companyId;
 
     const skip = (Number(page) - 1) * Number(limit);
@@ -35,6 +35,11 @@ export const listTransactions = async (req: AuthRequest, res: Response) => {
       ];
     }
 
+    // Filtro por descrição específica
+    if (description) {
+      where.description = { contains: String(description), mode: 'insensitive' as const };
+    }
+
     // Filtro por período (data inicial e final)
     if (startDate || endDate) {
       where.date = {};
@@ -46,6 +51,17 @@ export const listTransactions = async (req: AuthRequest, res: Response) => {
         const parsedEndDate = new Date(String(endDate));
         parsedEndDate.setUTCHours(23, 59, 59, 999);
         where.date.lte = parsedEndDate;
+      }
+    }
+
+    // Filtro por valor (min/max)
+    if (valueMin || valueMax) {
+      where.amount = {};
+      if (valueMin) {
+        where.amount.gte = Number(valueMin);
+      }
+      if (valueMax) {
+        where.amount.lte = Number(valueMax);
       }
     }
 

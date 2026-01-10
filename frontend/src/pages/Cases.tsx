@@ -31,6 +31,7 @@ interface Case {
   value?: number;
   notes?: string;
   ultimoAndamento?: string;
+  ultimaPublicacaoAdvapi?: string;
   informarCliente?: string;
   linkProcesso?: string;
   phase?: string;
@@ -2519,23 +2520,32 @@ const Cases: React.FC = () => {
                       <span className="text-sm text-neutral-500">Dados via ADVAPI</span>
                     </div>
 
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                      <p className="text-sm text-blue-700">
-                        As publicações relacionadas a este processo aparecerão aqui quando encontradas pelo monitoramento de OAB.
-                      </p>
-                      <p className="text-sm text-blue-600 mt-2">
-                        Configure o monitoramento na aba <strong>Monitoramento</strong> para acompanhar as publicações do Diário Oficial.
-                      </p>
-                    </div>
+                    {selectedCase.ultimaPublicacaoAdvapi ? (
+                      <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                        <h4 className="text-sm font-medium text-purple-700 mb-2">Última Publicação</h4>
+                        <p className="text-purple-900 whitespace-pre-wrap">{selectedCase.ultimaPublicacaoAdvapi}</p>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                          <p className="text-sm text-blue-700">
+                            As publicações relacionadas a este processo aparecerão aqui quando encontradas pelo monitoramento de OAB.
+                          </p>
+                          <p className="text-sm text-blue-600 mt-2">
+                            Configure o monitoramento na aba <strong>Monitoramento</strong> para acompanhar as publicações do Diário Oficial.
+                          </p>
+                        </div>
 
-                    {/* Placeholder para publicacoes futuras */}
-                    <div className="border border-neutral-200 rounded-lg p-6 text-center">
-                      <FileText size={48} className="mx-auto text-neutral-300 mb-4" />
-                      <p className="text-neutral-500">Nenhuma publicação encontrada para este processo</p>
-                      <p className="text-sm text-neutral-400 mt-1">
-                        Número: {selectedCase.processNumber}
-                      </p>
-                    </div>
+                        {/* Placeholder para publicacoes futuras */}
+                        <div className="border border-neutral-200 rounded-lg p-6 text-center">
+                          <FileText size={48} className="mx-auto text-neutral-300 mb-4" />
+                          <p className="text-neutral-500">Nenhuma publicação encontrada para este processo</p>
+                          <p className="text-sm text-neutral-400 mt-1">
+                            Número: {selectedCase.processNumber}
+                          </p>
+                        </div>
+                      </>
+                    )}
                   </div>
                 )}
               </>
@@ -2820,9 +2830,13 @@ const Cases: React.FC = () => {
                     <FileText size={16} />
                     Última Publicação (ADVAPI)
                   </h3>
-                  <p className="text-purple-600 italic">
-                    Nenhuma publicação disponível. Configure o monitoramento de OAB para receber publicações do Diário Oficial.
-                  </p>
+                  {selectedCase.ultimaPublicacaoAdvapi ? (
+                    <p className="text-purple-900 whitespace-pre-wrap">{selectedCase.ultimaPublicacaoAdvapi}</p>
+                  ) : (
+                    <p className="text-purple-600 italic">
+                      Nenhuma publicação disponível. Configure o monitoramento de OAB para receber publicações do Diário Oficial.
+                    </p>
+                  )}
                 </div>
 
                 {/* Caixa 3: Informar ao Cliente (editável) */}

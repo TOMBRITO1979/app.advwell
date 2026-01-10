@@ -270,7 +270,7 @@ app.use(helmet({
 // SEGURANCA: Usa Redis store para compartilhar contadores entre replicas
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 300, // Ajustado para 300 requisições por 15 min por IP
+  max: 500, // Ajustado para 500 requisições por 15 min por IP
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many attempts. Please try again later.', retry_after: 15 * 60 },

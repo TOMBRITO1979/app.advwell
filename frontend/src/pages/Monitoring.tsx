@@ -28,6 +28,13 @@ import { formatDate, formatDateTime } from '../utils/dateFormatter';
 type MonitoringStatus = 'ACTIVE' | 'PAUSED' | 'INACTIVE';
 type ConsultaStatus = 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
 
+interface Lawyer {
+  id: string;
+  name: string;
+  oab?: string;
+  oabState?: string;
+}
+
 interface MonitoredOAB {
   id: string;
   name: string;
@@ -210,6 +217,10 @@ const Monitoring: React.FC = () => {
   const [searchOab, setSearchOab] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('');
 
+  // Lawyers state (para selecionar advogado existente)
+  const [lawyers, setLawyers] = useState<Lawyer[]>([]);
+  const [selectedLawyerId, setSelectedLawyerId] = useState<string>('');
+
   // Publications state
   const [publications, setPublications] = useState<Publication[]>([]);
   const [loadingPublications, setLoadingPublications] = useState(false);
@@ -257,6 +268,7 @@ const Monitoring: React.FC = () => {
   useEffect(() => {
     loadStats();
     loadOabs();
+    loadLawyers();
   }, []);
 
   useEffect(() => {
@@ -329,6 +341,19 @@ const Monitoring: React.FC = () => {
     }
   };
 
+  const loadLawyers = async () => {
+    try {
+      const response = await api.get('/lawyers', { params: { limit: 1000 } });
+      // Filtrar apenas advogados que têm OAB cadastrada
+      const lawyersWithOab = (response.data.data || response.data || []).filter(
+        (l: Lawyer) => l.oab && l.oabState
+      );
+      setLawyers(lawyersWithOab);
+    } catch (error) {
+      console.error('Error loading lawyers:', error);
+    }
+  };
+
   const loadPublications = async () => {
     try {
       setLoadingPublications(true);
@@ -387,6 +412,31 @@ const Monitoring: React.FC = () => {
     setShowOabModal(false);
     setSelectedOab(null);
     setFormData(initialFormData);
+    setSelectedLawyerId('');
+  };
+
+  // Handler para quando seleciona um advogado existente
+  const handleSelectLawyer = (lawyerId: string) => {
+    setSelectedLawyerId(lawyerId);
+    if (lawyerId) {
+      const lawyer = lawyers.find(l => l.id === lawyerId);
+      if (lawyer) {
+        setFormData({
+          ...formData,
+          name: lawyer.name,
+          oab: lawyer.oab || '',
+          oabState: lawyer.oabState || 'SP',
+        });
+      }
+    } else {
+      // Limpar campos se desmarcar
+      setFormData({
+        ...formData,
+        name: '',
+        oab: '',
+        oabState: 'SP',
+      });
+    }
   };
 
   const handleSaveOab = async () => {
@@ -1002,6 +1052,30 @@ const Monitoring: React.FC = () => {
               </button>
             </div>
             <div className="p-4 space-y-4">
+              {/* Select para escolher advogado existente */}
+              {!editMode && lawyers.length > 0 && (
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    Selecionar Advogado Cadastrado
+                  </label>
+                  <select
+                    value={selectedLawyerId}
+                    onChange={(e) => handleSelectLawyer(e.target.value)}
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  >
+                    <option value="">-- Digitar manualmente --</option>
+                    {lawyers.map((lawyer) => (
+                      <option key={lawyer.id} value={lawyer.id}>
+                        {lawyer.name} (OAB {lawyer.oab}/{lawyer.oabState})
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-neutral-500 mt-1">
+                    Selecione um advogado ja cadastrado ou digite manualmente abaixo
+                  </p>
+                </div>
+              )}
+
               <div>
                 <label className="block text-sm font-medium text-neutral-700 mb-1">
                   Nome do Advogado <span className="text-red-500">*</span>
@@ -1010,7 +1084,8 @@ const Monitoring: React.FC = () => {
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  disabled={!!selectedLawyerId}
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-neutral-100"
                   placeholder="Nome completo"
                 />
               </div>
@@ -1023,7 +1098,7 @@ const Monitoring: React.FC = () => {
                     type="text"
                     value={formData.oab}
                     onChange={(e) => setFormData({ ...formData, oab: e.target.value })}
-                    disabled={editMode}
+                    disabled={editMode || !!selectedLawyerId}
                     className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-neutral-100"
                     placeholder="123456"
                   />
@@ -1035,7 +1110,7 @@ const Monitoring: React.FC = () => {
                   <select
                     value={formData.oabState}
                     onChange={(e) => setFormData({ ...formData, oabState: e.target.value })}
-                    disabled={editMode}
+                    disabled={editMode || !!selectedLawyerId}
                     className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-neutral-100"
                   >
                     {BRAZILIAN_STATES.map((state) => (

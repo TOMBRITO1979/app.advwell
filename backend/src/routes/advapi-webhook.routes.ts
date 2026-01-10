@@ -428,7 +428,7 @@ async function autoImportPublication(
         court: pubData.siglaTribunal || pubData.tribunal,
         subject: pubData.tipoComunicacao || pubData.tipo || 'Processo importado via monitoramento',
         status: 'ACTIVE',
-        notes: pubData.textoComunicacao || pubData.texto,
+        ultimaPublicacaoAdvapi: pubData.textoComunicacao || pubData.texto,
       },
     });
 

@@ -185,6 +185,23 @@ export class ScheduleController {
       // Log de auditoria
       await auditLogService.logScheduleEventCreate(event, req);
 
+      // SINCRONIZAÇÃO PRAZO → CASE: Se criou um evento tipo PRAZO vinculado a um processo, atualizar Case.deadline
+      if (type === 'PRAZO' && caseId) {
+        try {
+          await prisma.case.update({
+            where: { id: caseId },
+            data: {
+              deadline: new Date(date),
+              deadlineCompleted: false,
+              deadlineCompletedAt: null,
+            },
+          });
+          appLogger.info('Sincronização PRAZO→Case: deadline atualizado', { eventId: event.id, caseId });
+        } catch (syncError) {
+          appLogger.error('Erro ao sincronizar prazo com Case', syncError as Error, { eventId: event.id, caseId });
+        }
+      }
+
       // Google Calendar Sync: Criar evento no Google Calendar de todos os usuários envolvidos
       // Inclui o criador + todos os usuários atribuídos
       const usersToSync = new Set<string>();
@@ -638,6 +655,24 @@ export class ScheduleController {
       // Log de auditoria
       await auditLogService.logScheduleEventUpdate(oldEvent, updatedEvent, req);
 
+      // SINCRONIZAÇÃO PRAZO → CASE: Se atualizou um evento tipo PRAZO vinculado a um processo, atualizar Case.deadline
+      const updatedCaseId = updatedEvent.caseId;
+      if (updatedEvent.type === 'PRAZO' && updatedCaseId) {
+        try {
+          await prisma.case.update({
+            where: { id: updatedCaseId },
+            data: {
+              deadline: updatedEvent.date,
+              deadlineCompleted: updatedEvent.completed,
+              deadlineCompletedAt: updatedEvent.completed ? new Date() : null,
+            },
+          });
+          appLogger.info('Sincronização PRAZO→Case: deadline atualizado via update', { eventId: updatedEvent.id, caseId: updatedCaseId });
+        } catch (syncError) {
+          appLogger.error('Erro ao sincronizar prazo com Case', syncError as Error, { eventId: updatedEvent.id, caseId: updatedCaseId });
+        }
+      }
+
       // Google Calendar Sync: Atualizar/Criar/Remover eventos no Google Calendar
       const eventData = {
         id: updatedEvent.id,
@@ -804,6 +839,22 @@ export class ScheduleController {
 
       // Log de auditoria
       await auditLogService.logScheduleEventUpdate(oldEvent, updatedEvent, req);
+
+      // SINCRONIZAÇÃO PRAZO → CASE: Se toggle em evento tipo PRAZO vinculado a processo, atualizar Case.deadlineCompleted
+      if (event.type === 'PRAZO' && event.caseId) {
+        try {
+          await prisma.case.update({
+            where: { id: event.caseId },
+            data: {
+              deadlineCompleted: updatedEvent.completed,
+              deadlineCompletedAt: updatedEvent.completed ? new Date() : null,
+            },
+          });
+          appLogger.info('Sincronização PRAZO→Case: deadlineCompleted atualizado via toggle', { eventId: event.id, caseId: event.caseId });
+        } catch (syncError) {
+          appLogger.error('Erro ao sincronizar toggle prazo com Case', syncError as Error, { eventId: event.id, caseId: event.caseId });
+        }
+      }
 
       res.json(updatedEvent);
     } catch (error) {

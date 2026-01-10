@@ -1270,6 +1270,29 @@ export class CaseController {
         },
       });
 
+      // SINCRONIZAÇÃO CASE → AGENDA: Atualizar status do evento PRAZO na agenda
+      try {
+        const existingEvent = await prisma.scheduleEvent.findFirst({
+          where: {
+            caseId: id,
+            companyId,
+            type: 'PRAZO',
+          },
+        });
+
+        if (existingEvent) {
+          await prisma.scheduleEvent.update({
+            where: { id: existingEvent.id },
+            data: {
+              completed: completed,
+            },
+          });
+          appLogger.info('Sincronização Case→PRAZO: completed atualizado via toggle', { caseId: id, eventId: existingEvent.id });
+        }
+      } catch (syncError) {
+        appLogger.error('Erro ao sincronizar toggle prazo com Agenda', syncError as Error, { caseId: id });
+      }
+
       res.json(updatedCase);
     } catch (error) {
       appLogger.error('Erro ao atualizar status do prazo', error as Error);

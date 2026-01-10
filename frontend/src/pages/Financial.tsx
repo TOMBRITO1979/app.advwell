@@ -67,6 +67,9 @@ const Financial: React.FC = () => {
   const [filterEndDate, setFilterEndDate] = useState<string>('');
   const [filterStatus, setFilterStatus] = useState<string>('');
   const [filterCaseNumber, setFilterCaseNumber] = useState<string>('');
+  const [filterValueMin, setFilterValueMin] = useState<string>('');
+  const [filterValueMax, setFilterValueMax] = useState<string>('');
+  const [filterDescription, setFilterDescription] = useState<string>('');
   const [showModal, setShowModal] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [editMode, setEditMode] = useState(false);
@@ -116,12 +119,12 @@ const Financial: React.FC = () => {
     loadTransactions();
     loadClients();
     loadCases();
-  }, [search, filterType, filterClientId, filterStartDate, filterEndDate, filterStatus, filterCaseNumber, page, limit]);
+  }, [search, filterType, filterClientId, filterStartDate, filterEndDate, filterStatus, filterCaseNumber, filterValueMin, filterValueMax, filterDescription, page, limit]);
 
   // Reset page when filters change
   useEffect(() => {
     setPage(1);
-  }, [search, filterType, filterClientId, filterStartDate, filterEndDate, filterStatus, filterCaseNumber]);
+  }, [search, filterType, filterClientId, filterStartDate, filterEndDate, filterStatus, filterCaseNumber, filterValueMin, filterValueMax, filterDescription]);
 
   // Filter clients based on search text
   useEffect(() => {
@@ -159,6 +162,9 @@ const Financial: React.FC = () => {
       if (filterEndDate) params.endDate = filterEndDate;
       if (filterStatus) params.status = filterStatus;
       if (filterCaseNumber) params.caseNumber = filterCaseNumber;
+      if (filterValueMin) params.valueMin = filterValueMin;
+      if (filterValueMax) params.valueMax = filterValueMax;
+      if (filterDescription) params.description = filterDescription;
 
       const response = await api.get('/financial', { params });
       setTransactions(response.data.data);
@@ -340,6 +346,9 @@ const Financial: React.FC = () => {
     setFilterEndDate('');
     setFilterStatus('');
     setFilterCaseNumber('');
+    setFilterValueMin('');
+    setFilterValueMax('');
+    setFilterDescription('');
   };
 
   const handleClientSelect = (client: Client) => {
@@ -597,7 +606,45 @@ const Financial: React.FC = () => {
 
           {showFilters && (
             <div className="mt-4 pt-4 border-t border-neutral-200 space-y-4">
-              {/* Linha 1: Filtros de data */}
+              {/* Linha 1: Descrição e Valores */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">Descrição</label>
+                  <input
+                    type="text"
+                    placeholder="Filtrar por descrição..."
+                    value={filterDescription}
+                    onChange={(e) => setFilterDescription(e.target.value)}
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">Valor Mínimo</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    placeholder="R$ 0,00"
+                    value={filterValueMin}
+                    onChange={(e) => setFilterValueMin(e.target.value)}
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">Valor Máximo</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    placeholder="R$ 999.999,99"
+                    value={filterValueMax}
+                    onChange={(e) => setFilterValueMax(e.target.value)}
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                  />
+                </div>
+              </div>
+
+              {/* Linha 2: Filtros de data, tipo e status */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-neutral-700 mb-1">Data Inicial</label>
@@ -648,7 +695,7 @@ const Financial: React.FC = () => {
                 </div>
               </div>
 
-              {/* Linha 2: Cliente e PNJ */}
+              {/* Linha 3: Cliente e PNJ */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-neutral-700 mb-1">Cliente</label>
@@ -677,7 +724,7 @@ const Financial: React.FC = () => {
                 </div>
               </div>
 
-              {/* Linha 2: Botões de atalho e limpar */}
+              {/* Linha 4: Botões de atalho e limpar */}
               <div className="flex flex-wrap gap-2 items-center justify-between">
                 <div className="flex flex-wrap gap-2">
                   <button
