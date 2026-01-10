@@ -514,6 +514,7 @@ export class AccountsPayableController {
 
       // Usar query raw SQL para comparar apenas a data (ignorando timezone)
       // Isso garante que funcione corretamente independente do timezone do servidor
+      // Buscar contas pendentes vencendo hoje OU já vencidas (não pagas)
       const accounts = await prisma.$queryRaw<Array<{
         id: string;
         supplier: string;
@@ -526,8 +527,8 @@ export class AccountsPayableController {
         FROM accounts_payable
         WHERE "companyId" = ${companyId}
           AND status = 'PENDING'
-          AND DATE("dueDate") = CURRENT_DATE
-        ORDER BY amount DESC
+          AND DATE("dueDate") <= CURRENT_DATE
+        ORDER BY "dueDate" ASC, amount DESC
       `;
 
       const total = accounts.reduce((sum, account) => sum + Number(account.amount), 0);
@@ -829,6 +830,9 @@ export class AccountsPayableController {
     const nextDate = new Date(currentDueDate);
 
     switch (period) {
+      case 'DAYS_7':
+        nextDate.setDate(nextDate.getDate() + 7);
+        break;
       case 'DAYS_15':
         nextDate.setDate(nextDate.getDate() + 15);
         break;

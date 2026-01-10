@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Check, Repeat, FileText, Download, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Edit2, Trash2, Check, Circle, Repeat, FileText, Download, ChevronLeft, ChevronRight } from 'lucide-react';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import Layout from '../components/Layout';
@@ -267,6 +267,19 @@ const AccountsPayable: React.FC = () => {
     }
   };
 
+  const handleMarkAsPending = async (id: string) => {
+    try {
+      await api.put(`/accounts-payable/${id}`, {
+        status: 'PENDING',
+        paidDate: null,
+      });
+      toast.success('Conta voltou para pendente!');
+      fetchAccounts();
+    } catch (error) {
+      toast.error('Erro ao reverter status');
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       supplier: '',
@@ -421,12 +434,12 @@ const AccountsPayable: React.FC = () => {
                       <td className="px-4 py-3 text-sm text-neutral-900 truncate" title={account.supplier}>
                         {account.supplier}
                       </td>
-                      <td className="px-4 py-3 text-sm text-neutral-600 truncate" title={account.description}>
-                        <div className="flex items-center gap-2 truncate">
+                      <td className="px-4 py-3 text-sm text-neutral-600" title={account.description}>
+                        <div className="flex flex-col gap-1">
                           <span className="truncate">{account.description}</span>
                           {(account as any).isRecurring && (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-primary-100 text-primary-800" title="Conta recorrente">
-                              <Repeat size={16} className="mr-1" />
+                            <span className="inline-flex items-center w-fit px-2 py-0.5 rounded text-xs font-medium bg-primary-100 text-primary-800" title="Conta recorrente">
+                              <Repeat size={12} className="mr-1" />
                               Recorrente
                             </span>
                           )}
@@ -452,6 +465,15 @@ const AccountsPayable: React.FC = () => {
                               title="Marcar como pago"
                             >
                               <Check size={18} />
+                            </button>
+                          )}
+                          {account.status === 'PAID' && (
+                            <button
+                              onClick={() => handleMarkAsPending(account.id)}
+                              className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50 rounded-md transition-all duration-200"
+                              title="Voltar para pendente"
+                            >
+                              <Circle size={18} />
                             </button>
                           )}
                           <button
@@ -814,6 +836,7 @@ const AccountsPayable: React.FC = () => {
                           className="w-full px-3 py-2 border border-gray-300 rounded-md min-h-[44px]"
                         >
                           <option value="">Selecione o período</option>
+                          <option value="DAYS_7">A cada 7 dias (semanal)</option>
                           <option value="DAYS_15">A cada 15 dias</option>
                           <option value="DAYS_30">A cada 30 dias (mensal)</option>
                           <option value="MONTHS_6">A cada 6 meses (semestral)</option>
