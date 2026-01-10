@@ -18,7 +18,7 @@ const toNumber = (value: Decimal | number | null | undefined): number => {
 // Listar transações financeiras com filtros e paginação
 export const listTransactions = async (req: AuthRequest, res: Response) => {
   try {
-    const { search, clientId, caseId, type, status, startDate, endDate, page = 1, limit = 50 } = req.query;
+    const { search, clientId, caseId, caseNumber, type, status, startDate, endDate, page = 1, limit = 50 } = req.query;
     const companyId = req.user!.companyId;
 
     const skip = (Number(page) - 1) * Number(limit);
@@ -53,9 +53,16 @@ export const listTransactions = async (req: AuthRequest, res: Response) => {
       where.clientId = String(clientId);
     }
 
-    // Filtro por processo
+    // Filtro por processo (ID)
     if (caseId) {
       where.caseId = String(caseId);
+    }
+
+    // Filtro por número do processo (PNJ)
+    if (caseNumber) {
+      where.case = {
+        processNumber: { contains: String(caseNumber), mode: 'insensitive' },
+      };
     }
 
     // Filtro por tipo
@@ -776,6 +783,66 @@ export const listInstallments = async (req: AuthRequest, res: Response) => {
   } catch (error) {
     appLogger.error('Erro ao listar parcelas', error as Error);
     res.status(500).json({ error: 'Erro ao listar parcelas' });
+  }
+};
+
+// Criar nova parcela em uma transação existente
+export const createInstallment = async (req: AuthRequest, res: Response) => {
+  try {
+    const { transactionId } = req.params;
+    const { amount, dueDate } = req.body;
+    const companyId = req.user!.companyId;
+
+    if (!amount || !dueDate) {
+      return res.status(400).json({ error: 'Valor e data de vencimento são obrigatórios' });
+    }
+
+    // Verificar se a transação existe e pertence à empresa
+    const transaction = await prisma.financialTransaction.findFirst({
+      where: { id: transactionId, companyId },
+      include: {
+        installments: {
+          orderBy: { installmentNumber: 'desc' },
+          take: 1,
+        },
+      },
+    });
+
+    if (!transaction) {
+      return res.status(404).json({ error: 'Transação não encontrada' });
+    }
+
+    // Obter o próximo número de parcela
+    const lastInstallment = transaction.installments[0];
+    const nextNumber = lastInstallment ? lastInstallment.installmentNumber + 1 : 1;
+
+    // Criar a nova parcela
+    const newInstallment = await prisma.installmentPayment.create({
+      data: {
+        companyId: companyId!,
+        financialTransactionId: transactionId,
+        installmentNumber: nextNumber,
+        amount: parseFloat(amount),
+        dueDate: new Date(dueDate),
+        status: 'PENDING',
+      },
+    });
+
+    // Atualizar o valor total da transação (se necessário)
+    await prisma.financialTransaction.update({
+      where: { id: transactionId },
+      data: {
+        amount: {
+          increment: parseFloat(amount),
+        },
+        isInstallment: true,
+      },
+    });
+
+    res.status(201).json(newInstallment);
+  } catch (error) {
+    appLogger.error('Erro ao criar parcela', error as Error);
+    res.status(500).json({ error: 'Erro ao criar parcela' });
   }
 };
 

@@ -65,6 +65,7 @@ const Financial: React.FC = () => {
   const [filterStartDate, setFilterStartDate] = useState<string>('');
   const [filterEndDate, setFilterEndDate] = useState<string>('');
   const [filterStatus, setFilterStatus] = useState<string>('');
+  const [filterCaseNumber, setFilterCaseNumber] = useState<string>('');
   const [showModal, setShowModal] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [editMode, setEditMode] = useState(false);
@@ -114,12 +115,12 @@ const Financial: React.FC = () => {
     loadTransactions();
     loadClients();
     loadCases();
-  }, [search, filterType, filterClientId, filterStartDate, filterEndDate, filterStatus, page, limit]);
+  }, [search, filterType, filterClientId, filterStartDate, filterEndDate, filterStatus, filterCaseNumber, page, limit]);
 
   // Reset page when filters change
   useEffect(() => {
     setPage(1);
-  }, [search, filterType, filterClientId, filterStartDate, filterEndDate, filterStatus]);
+  }, [search, filterType, filterClientId, filterStartDate, filterEndDate, filterStatus, filterCaseNumber]);
 
   // Filter clients based on search text
   useEffect(() => {
@@ -156,6 +157,7 @@ const Financial: React.FC = () => {
       if (filterStartDate) params.startDate = filterStartDate;
       if (filterEndDate) params.endDate = filterEndDate;
       if (filterStatus) params.status = filterStatus;
+      if (filterCaseNumber) params.caseNumber = filterCaseNumber;
 
       const response = await api.get('/financial', { params });
       setTransactions(response.data.data);
@@ -310,6 +312,7 @@ const Financial: React.FC = () => {
     setFilterStartDate('');
     setFilterEndDate('');
     setFilterStatus('');
+    setFilterCaseNumber('');
   };
 
   const handleClientSelect = (client: Client) => {
@@ -600,7 +603,7 @@ const Financial: React.FC = () => {
                 </div>
               </div>
 
-              {/* Linha 2: Cliente */}
+              {/* Linha 2: Cliente e PNJ */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-neutral-700 mb-1">Cliente</label>
@@ -616,6 +619,16 @@ const Financial: React.FC = () => {
                       </option>
                     ))}
                   </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">PNJ / Nº Processo</label>
+                  <input
+                    type="text"
+                    placeholder="Digite o número do processo..."
+                    value={filterCaseNumber}
+                    onChange={(e) => setFilterCaseNumber(e.target.value)}
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                  />
                 </div>
               </div>
 

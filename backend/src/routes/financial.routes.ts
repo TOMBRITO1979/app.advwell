@@ -18,6 +18,7 @@ import {
   importCSV,
   getFinancialImportStatus,
   listInstallments,
+  createInstallment,
   updateInstallment,
   generateInstallmentReceipt,
   generateTransactionReceipt,
@@ -111,6 +112,7 @@ router.delete('/:id', deleteTransaction);             // Excluir transação
 
 // Rotas de parcelamento
 router.get('/:transactionId/installments', listInstallments);           // Listar parcelas de uma transação
+router.post('/:transactionId/installments', createInstallment);         // Adicionar nova parcela
 router.put('/installments/:installmentId', updateInstallment);          // Atualizar parcela
 router.get('/installments/:installmentId/receipt', generateInstallmentReceipt); // Gerar PDF de recibo
 

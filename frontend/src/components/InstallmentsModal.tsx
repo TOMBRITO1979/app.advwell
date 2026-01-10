@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { X, Download, Calendar, Check } from 'lucide-react';
+import { X, Download, Calendar, Check, Plus } from 'lucide-react';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import { formatDate } from '../utils/dateFormatter';
@@ -39,6 +39,11 @@ const InstallmentsModal: React.FC<InstallmentsModalProps> = ({
     paidAmount: '',
     status: 'PENDING' as 'PENDING' | 'PAID' | 'PARTIAL' | 'OVERDUE' | 'CANCELLED',
     notes: '',
+  });
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [addForm, setAddForm] = useState({
+    amount: '',
+    dueDate: '',
   });
 
   useEffect(() => {
@@ -102,6 +107,26 @@ const InstallmentsModal: React.FC<InstallmentsModalProps> = ({
       loadInstallments();
     } catch (error: any) {
       toast.error(error.response?.data?.error || 'Erro ao atualizar parcela');
+    }
+  };
+
+  const handleAddInstallment = async () => {
+    if (!addForm.amount || !addForm.dueDate) {
+      toast.error('Preencha o valor e a data de vencimento');
+      return;
+    }
+
+    try {
+      await api.post(`/financial/${transactionId}/installments`, {
+        amount: parseFloat(addForm.amount),
+        dueDate: addForm.dueDate,
+      });
+      toast.success('Parcela adicionada com sucesso!');
+      setShowAddModal(false);
+      setAddForm({ amount: '', dueDate: '' });
+      loadInstallments();
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Erro ao adicionar parcela');
     }
   };
 
@@ -180,12 +205,21 @@ const InstallmentsModal: React.FC<InstallmentsModalProps> = ({
               </h2>
               <p className="text-sm text-neutral-600 mt-1">{transactionDescription}</p>
             </div>
-            <button
-              onClick={onClose}
-              className="text-neutral-400 hover:text-neutral-600 transition-colors"
-            >
-              <X size={24} />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowAddModal(true)}
+                className="inline-flex items-center gap-2 px-3 py-2 bg-primary-100 text-primary-700 border border-primary-200 rounded-md hover:bg-primary-200 transition-colors text-sm font-medium"
+              >
+                <Plus size={18} />
+                Adicionar Parcela
+              </button>
+              <button
+                onClick={onClose}
+                className="text-neutral-400 hover:text-neutral-600 transition-colors"
+              >
+                <X size={24} />
+              </button>
+            </div>
           </div>
 
           {/* Resumo Financeiro */}
@@ -379,6 +413,75 @@ const InstallmentsModal: React.FC<InstallmentsModalProps> = ({
                   className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors"
                 >
                   Salvar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Adicionar Parcela */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-bold text-neutral-800">
+                Adicionar Nova Parcela
+              </h3>
+              <button
+                onClick={() => setShowAddModal(false)}
+                className="text-neutral-400 hover:text-neutral-600"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                  Valor da Parcela <span className="text-error-500">*</span>
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0.01"
+                  value={addForm.amount}
+                  onChange={(e) => setAddForm({ ...addForm, amount: e.target.value })}
+                  placeholder="Digite o valor"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                  Data de Vencimento <span className="text-error-500">*</span>
+                </label>
+                <input
+                  type="date"
+                  value={addForm.dueDate}
+                  onChange={(e) => setAddForm({ ...addForm, dueDate: e.target.value })}
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+              </div>
+
+              <div className="p-3 bg-info-50 rounded-md border border-info-200">
+                <p className="text-sm text-info-700">
+                  A nova parcela será adicionada ao plano de pagamento. O saldo devedor será ajustado automaticamente.
+                </p>
+              </div>
+
+              <div className="flex justify-end gap-3 mt-6">
+                <button
+                  onClick={() => setShowAddModal(false)}
+                  className="px-4 py-2 border border-neutral-300 rounded-md text-neutral-700 hover:bg-neutral-50 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleAddInstallment}
+                  className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors"
+                >
+                  Adicionar
                 </button>
               </div>
             </div>
