@@ -55,6 +55,13 @@ export class AccountsPayableController {
         limit = 20,
         search = '',
         status,
+        supplier,
+        description,
+        category,
+        dateFrom,
+        dateTo,
+        valueMin,
+        valueMax,
       } = req.query;
 
       if (!companyId) {
@@ -68,7 +75,7 @@ export class AccountsPayableController {
         companyId,
       };
 
-      // Filtro de busca
+      // Filtro de busca geral
       if (search) {
         where.OR = [
           { supplier: { contains: String(search), mode: 'insensitive' as const } },
@@ -76,9 +83,46 @@ export class AccountsPayableController {
         ];
       }
 
+      // Filtro por fornecedor
+      if (supplier) {
+        where.supplier = { contains: String(supplier), mode: 'insensitive' as const };
+      }
+
+      // Filtro por descrição
+      if (description) {
+        where.description = { contains: String(description), mode: 'insensitive' as const };
+      }
+
+      // Filtro por categoria
+      if (category) {
+        where.category = String(category);
+      }
+
       // Filtro por status
       if (status) {
         where.status = status;
+      }
+
+      // Filtro por data de vencimento
+      if (dateFrom || dateTo) {
+        where.dueDate = {};
+        if (dateFrom) {
+          where.dueDate.gte = new Date(String(dateFrom));
+        }
+        if (dateTo) {
+          where.dueDate.lte = new Date(String(dateTo) + 'T23:59:59.999Z');
+        }
+      }
+
+      // Filtro por valor
+      if (valueMin || valueMax) {
+        where.amount = {};
+        if (valueMin) {
+          where.amount.gte = Number(valueMin);
+        }
+        if (valueMax) {
+          where.amount.lte = Number(valueMax);
+        }
       }
 
       const [accounts, total] = await Promise.all([

@@ -39,6 +39,13 @@ const AccountsPayable: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingAccount, setEditingAccount] = useState<AccountPayable | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>('');
+  const [filterSupplier, setFilterSupplier] = useState('');
+  const [filterDescription, setFilterDescription] = useState('');
+  const [filterCategory, setFilterCategory] = useState('');
+  const [filterDateFrom, setFilterDateFrom] = useState('');
+  const [filterDateTo, setFilterDateTo] = useState('');
+  const [filterValueMin, setFilterValueMin] = useState('');
+  const [filterValueMax, setFilterValueMax] = useState('');
 
   // Pagination state
   const [page, setPage] = useState(1);
@@ -88,11 +95,16 @@ const AccountsPayable: React.FC = () => {
 
   useEffect(() => {
     fetchAccounts();
-  }, [filterStatus, page, limit]);
+  }, [filterStatus, filterSupplier, filterDescription, filterCategory, filterDateFrom, filterDateTo, filterValueMin, filterValueMax, page, limit]);
 
   useEffect(() => {
     setPage(1);
-  }, [filterStatus]);
+  }, [filterStatus, filterSupplier, filterDescription, filterCategory, filterDateFrom, filterDateTo, filterValueMin, filterValueMax]);
+
+  // Carregar categorias ao montar o componente
+  useEffect(() => {
+    fetchCategories();
+  }, []);
 
   useEffect(() => {
     if (showStatementModal) {
@@ -199,6 +211,13 @@ const AccountsPayable: React.FC = () => {
       setLoading(true);
       const params: any = { page, limit };
       if (filterStatus) params.status = filterStatus;
+      if (filterSupplier) params.supplier = filterSupplier;
+      if (filterDescription) params.description = filterDescription;
+      if (filterCategory) params.category = filterCategory;
+      if (filterDateFrom) params.dateFrom = filterDateFrom;
+      if (filterDateTo) params.dateTo = filterDateTo;
+      if (filterValueMin) params.valueMin = filterValueMin;
+      if (filterValueMax) params.valueMax = filterValueMax;
 
       const response = await api.get('/accounts-payable', { params });
       setAccounts(response.data.data);
@@ -331,22 +350,104 @@ const AccountsPayable: React.FC = () => {
 
         {/* Filtros */}
         <div className="bg-white rounded-lg shadow p-4">
-          <div className="flex gap-4">
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-1">
-                Status
-              </label>
+          <div className="flex flex-col gap-4">
+            {/* Linha 1: Fornecedor, Descrição, Categoria */}
+            <div className="flex flex-wrap gap-3">
+              <input
+                type="text"
+                placeholder="Fornecedor..."
+                value={filterSupplier}
+                onChange={(e) => setFilterSupplier(e.target.value)}
+                className="flex-1 min-w-[150px] px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm"
+              />
+              <input
+                type="text"
+                placeholder="Descrição..."
+                value={filterDescription}
+                onChange={(e) => setFilterDescription(e.target.value)}
+                className="flex-1 min-w-[150px] px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm"
+              />
+              <select
+                value={filterCategory}
+                onChange={(e) => setFilterCategory(e.target.value)}
+                className="flex-1 min-w-[150px] px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm bg-white"
+              >
+                <option value="">Todas Categorias</option>
+                {categories.map((cat) => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-md min-h-[44px]"
+                className="flex-1 min-w-[120px] px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm bg-white"
               >
-                <option value="">Todos</option>
+                <option value="">Todos Status</option>
                 <option value="PENDING">Pendente</option>
                 <option value="PAID">Pago</option>
                 <option value="OVERDUE">Atrasado</option>
                 <option value="CANCELLED">Cancelado</option>
               </select>
+            </div>
+
+            {/* Linha 2: Data e Valor */}
+            <div className="flex flex-wrap gap-3 items-end">
+              <div className="flex-1 min-w-[140px]">
+                <label className="block text-xs font-medium text-neutral-500 mb-1">Data de</label>
+                <input
+                  type="date"
+                  value={filterDateFrom}
+                  onChange={(e) => setFilterDateFrom(e.target.value)}
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm"
+                />
+              </div>
+              <div className="flex-1 min-w-[140px]">
+                <label className="block text-xs font-medium text-neutral-500 mb-1">Data até</label>
+                <input
+                  type="date"
+                  value={filterDateTo}
+                  onChange={(e) => setFilterDateTo(e.target.value)}
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm"
+                />
+              </div>
+              <div className="flex-1 min-w-[120px]">
+                <label className="block text-xs font-medium text-neutral-500 mb-1">Valor mín</label>
+                <input
+                  type="number"
+                  placeholder="R$ 0,00"
+                  value={filterValueMin}
+                  onChange={(e) => setFilterValueMin(e.target.value)}
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm"
+                />
+              </div>
+              <div className="flex-1 min-w-[120px]">
+                <label className="block text-xs font-medium text-neutral-500 mb-1">Valor máx</label>
+                <input
+                  type="number"
+                  placeholder="R$ 0,00"
+                  value={filterValueMax}
+                  onChange={(e) => setFilterValueMax(e.target.value)}
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm"
+                />
+              </div>
+              {/* Botão limpar filtros */}
+              {(filterSupplier || filterDescription || filterCategory || filterStatus || filterDateFrom || filterDateTo || filterValueMin || filterValueMax) && (
+                <button
+                  onClick={() => {
+                    setFilterSupplier('');
+                    setFilterDescription('');
+                    setFilterCategory('');
+                    setFilterStatus('');
+                    setFilterDateFrom('');
+                    setFilterDateTo('');
+                    setFilterValueMin('');
+                    setFilterValueMax('');
+                  }}
+                  className="px-4 py-2 text-sm text-neutral-600 hover:text-neutral-800 hover:bg-neutral-100 rounded-lg transition-colors min-h-[44px]"
+                >
+                  Limpar filtros
+                </button>
+              )}
             </div>
           </div>
         </div>
