@@ -69,7 +69,7 @@ export class AdvApiService {
       timeout: 30000,
       headers: {
         'Content-Type': 'application/json',
-        'X-API-Key': this.apiKey,
+        'x-api-key': this.apiKey,
       },
     });
 
@@ -160,6 +160,71 @@ export class AdvApiService {
         consultaId,
       });
       return null;
+    }
+  }
+
+  /**
+   * Consultar buffer de publicações (v2 - resposta instantânea)
+   *
+   * API ADVAPI v2:
+   * GET /api/consulta/buffer?companyId=X&advogadoNome=Y
+   * Retorna publicações disponíveis no buffer instantaneamente
+   */
+  async consultarBuffer(companyId: string, advogadoNome?: string, advogadoOab?: string): Promise<AdvApiPublicacoesResponse> {
+    try {
+      const params: Record<string, any> = { companyId };
+      if (advogadoNome) params.advogadoNome = advogadoNome;
+      if (advogadoOab) params.advogadoOab = advogadoOab;
+
+      const response = await this.client.get('/api/consulta/buffer', { params });
+
+      appLogger.info('ADVAPI: Buffer consultado', {
+        companyId,
+        advogadoNome,
+        advogadoOab,
+        total: response.data?.total || response.data?.publicacoes?.length || 0,
+      });
+
+      // Normalizar resposta (ADVAPI pode retornar formatos diferentes)
+      const data = response.data;
+      return {
+        success: true,
+        publicacoes: data.publicacoes || data.data || [],
+        total: data.total || data.publicacoes?.length || 0,
+        page: data.page || 1,
+        pageSize: data.pageSize || 50,
+        totalPages: data.totalPages || 1,
+      };
+    } catch (error: any) {
+      appLogger.error('ADVAPI: Erro ao consultar buffer', error as Error, {
+        companyId,
+        advogadoNome,
+      });
+
+      return {
+        success: false,
+        publicacoes: [],
+        total: 0,
+        page: 1,
+        pageSize: 50,
+        totalPages: 0,
+      };
+    }
+  }
+
+  /**
+   * Listar advogados cadastrados na empresa
+   *
+   * API ADVAPI v2:
+   * GET /api/advogados?companyId=X
+   */
+  async listarAdvogados(companyId: string): Promise<any[]> {
+    try {
+      const response = await this.client.get('/api/advogados', { params: { companyId } });
+      return response.data?.advogados || response.data || [];
+    } catch (error) {
+      appLogger.error('ADVAPI: Erro ao listar advogados', error as Error, { companyId });
+      return [];
     }
   }
 
