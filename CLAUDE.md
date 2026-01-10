@@ -11,7 +11,7 @@ AdvWell is a multitenant SaaS for Brazilian law firms with DataJud CNJ integrati
 - Backend API: https://api.advwell.pro
 - Grafana: https://grafana.advwell.pro
 
-**Current Version:** v1.8.86 (Backend) | v1.8.86 (Frontend)
+**Current Version:** v1.8.87 (Backend) | v1.8.87 (Frontend)
 
 ## Technology Stack
 
@@ -70,7 +70,7 @@ Row-level multitenancy with `companyId` on all models. Middleware `validateTenan
 Jobs processed by dedicated worker (not API replicas):
 - `ENABLE_QUEUE_PROCESSORS=false` on API replicas
 - `ENABLE_QUEUE_PROCESSORS=true` on worker
-- Queues: `datajud-sync`, `email-campaign`, `whatsapp-messages`, `csv-import`, `monitoring`
+- Queues: `datajud-sync`, `email-campaign`, `whatsapp-messages`, `csv-import`, `csv-export`, `monitoring`
 
 ## Key Modules
 
