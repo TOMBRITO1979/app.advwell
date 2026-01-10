@@ -158,9 +158,11 @@ const InstallmentsModal: React.FC<InstallmentsModalProps> = ({
   };
 
   // Calcular resumo financeiro
-  const totalPaid = installments.reduce((sum, inst) => sum + (inst.paidAmount || 0), 0);
-  const saldoDevedor = transactionAmount - totalPaid;
-  const paidCount = installments.filter(i => i.paidAmount && i.paidAmount >= i.amount).length;
+  // IMPORTANTE: Prisma Decimal é serializado como string, precisa converter para number
+  const totalPaid = installments.reduce((sum, inst) => sum + (Number(inst.paidAmount) || 0), 0);
+  const transactionAmountNum = Number(transactionAmount) || 0;
+  const saldoDevedor = transactionAmountNum - totalPaid;
+  const paidCount = installments.filter(i => Number(i.paidAmount) >= Number(i.amount)).length;
 
   const getStatusBadge = (status: string) => {
     const badges = {
@@ -226,7 +228,7 @@ const InstallmentsModal: React.FC<InstallmentsModalProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 p-4 bg-neutral-50 rounded-lg">
             <div className="text-center">
               <p className="text-xs text-neutral-500 uppercase font-medium">Valor Total</p>
-              <p className="text-lg font-bold text-neutral-800">{formatCurrency(transactionAmount)}</p>
+              <p className="text-lg font-bold text-neutral-800">{formatCurrency(transactionAmountNum)}</p>
             </div>
             <div className="text-center">
               <p className="text-xs text-neutral-500 uppercase font-medium">Total Pago</p>
@@ -278,7 +280,7 @@ const InstallmentsModal: React.FC<InstallmentsModalProps> = ({
                       {formatDate(installment.dueDate)}
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm font-semibold text-neutral-900">
-                      {formatCurrency(installment.amount)}
+                      {formatCurrency(Number(installment.amount) || 0)}
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm">
                       {getStatusBadge(installment.status)}
@@ -289,7 +291,7 @@ const InstallmentsModal: React.FC<InstallmentsModalProps> = ({
                           <div>{formatDate(installment.paidDate)}</div>
                           {installment.paidAmount && (
                             <div className="text-xs text-success-600">
-                              {formatCurrency(installment.paidAmount)}
+                              {formatCurrency(Number(installment.paidAmount) || 0)}
                             </div>
                           )}
                         </div>

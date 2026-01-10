@@ -251,12 +251,30 @@ const Clients: React.FC = () => {
       if (dateFrom) params.dateFrom = dateFrom;
       if (dateTo) params.dateTo = dateTo;
 
+      // Usa arraybuffer para poder verificar se é JSON ou CSV
       const response = await api.get('/clients/export/csv', {
         params,
-        responseType: 'blob',
+        responseType: 'arraybuffer',
       });
 
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+      // Verifica se a resposta é JSON (export enfileirado) ou CSV (download direto)
+      const contentType = response.headers['content-type'] || '';
+
+      if (contentType.includes('application/json')) {
+        // Resposta JSON - export foi enfileirado
+        const decoder = new TextDecoder('utf-8');
+        const jsonText = decoder.decode(response.data);
+        const data = JSON.parse(jsonText);
+
+        if (data.queued) {
+          toast.success(data.message || 'Exportação enfileirada! Você receberá o arquivo por email.');
+          return;
+        }
+      }
+
+      // Resposta CSV - download direto
+      const blob = new Blob([response.data], { type: 'text/csv;charset=utf-8' });
+      const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
       link.setAttribute('download', `clientes_${new Date().toISOString().split('T')[0]}.csv`);

@@ -66,7 +66,7 @@ export class AdvApiService {
 
     this.client = axios.create({
       baseURL: this.baseUrl,
-      timeout: 30000,
+      timeout: 60000, // 60 segundos para consultas mais demoradas
       headers: {
         'Content-Type': 'application/json',
         'x-api-key': this.apiKey,

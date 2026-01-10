@@ -232,7 +232,7 @@ const Register: React.FC = () => {
               className="block w-full border-none rounded-md shadow-sm bg-white/30 appearance-none outline outline-1 focus:outline focus:outline-2 text-neutral-900 placeholder:text-neutral-500 sm:text-sm sm:leading-6 px-3 py-3 outline-primary-400/60 hover:outline-primary-500 focus:outline-primary-500 focus:bg-white/40 min-h-[44px]"
             />
             <p className="mt-1 text-xs text-neutral-500">
-              Minimo 12 caracteres, com letra maiuscula, minuscula, numero e caractere especial (!@#$%...)
+              Mínimo 12 caracteres, com letra maiúscula, minúscula, número e caractere especial (!@#$%...)
             </p>
           </div>
 

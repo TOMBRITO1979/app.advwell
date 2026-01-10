@@ -124,6 +124,7 @@ router.get('/', validatePagination, clientController.list);
 router.get('/search', validatePagination, clientController.search); // Busca rápida para autocomplete
 router.get('/export/csv', validatePagination, clientController.exportCSV);
 router.get('/export/pdf', validatePagination, clientController.exportPDF);
+router.get('/export/status/:jobId', clientController.getExportStatus);
 router.post('/import/csv', csvImportRateLimit, csvUpload.single('file'), validateUploadContent, clientController.importCSV);
 router.get('/import/status/:jobId', clientController.getImportStatus);
 router.get('/:id', clientController.get);

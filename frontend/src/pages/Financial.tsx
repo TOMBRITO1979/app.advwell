@@ -18,6 +18,7 @@ interface Case {
   id: string;
   processNumber: string;
   subject: string;
+  type?: 'CASE' | 'PNJ';
 }
 
 interface Transaction {
@@ -181,8 +182,34 @@ const Financial: React.FC = () => {
 
   const loadCases = async () => {
     try {
-      const response = await api.get('/cases', { params: { limit: 1000 } });
-      setCases(response.data.data);
+      // Carregar processos judiciais (Cases) e PNJs em paralelo
+      const [casesResponse, pnjsResponse] = await Promise.all([
+        api.get('/cases', { params: { limit: 1000 } }),
+        api.get('/pnj', { params: { limit: 1000 } })
+      ]);
+
+      // Mapear casos judiciais
+      const casesData = (casesResponse.data.data || []).map((c: any) => ({
+        id: c.id,
+        processNumber: c.processNumber,
+        subject: c.subject || 'Sem assunto',
+        type: 'CASE' as const
+      }));
+
+      // Mapear PNJs para o mesmo formato
+      const pnjsData = (pnjsResponse.data.data || []).map((p: any) => ({
+        id: p.id,
+        processNumber: p.number,
+        subject: p.title || 'Sem título',
+        type: 'PNJ' as const
+      }));
+
+      // Combinar e ordenar por número
+      const combined = [...casesData, ...pnjsData].sort((a, b) =>
+        (a.processNumber || '').localeCompare(b.processNumber || '')
+      );
+
+      setCases(combined);
     } catch (error) {
       console.error('Erro ao carregar processos');
     }
@@ -364,12 +391,30 @@ const Financial: React.FC = () => {
       if (filterStartDate) params.startDate = filterStartDate;
       if (filterEndDate) params.endDate = filterEndDate;
 
+      // Usa arraybuffer para poder verificar se é JSON ou CSV
       const response = await api.get('/financial/export/csv', {
         params,
-        responseType: 'blob'
+        responseType: 'arraybuffer'
       });
 
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+      // Verifica se a resposta é JSON (export enfileirado) ou CSV (download direto)
+      const contentType = response.headers['content-type'] || '';
+
+      if (contentType.includes('application/json')) {
+        // Resposta JSON - export foi enfileirado
+        const decoder = new TextDecoder('utf-8');
+        const jsonText = decoder.decode(response.data);
+        const data = JSON.parse(jsonText);
+
+        if (data.queued) {
+          toast.success(data.message || 'Exportação enfileirada! Você receberá o arquivo por email.');
+          return;
+        }
+      }
+
+      // Resposta CSV - download direto
+      const blob = new Blob([response.data], { type: 'text/csv;charset=utf-8' });
+      const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
       link.setAttribute('download', `relatorio_financeiro_${new Date().toISOString().split('T')[0]}.csv`);
@@ -1039,7 +1084,16 @@ const Financial: React.FC = () => {
                           onClick={() => handleCaseSelect(caseItem)}
                           className="px-4 py-2 hover:bg-neutral-100 cursor-pointer min-h-[44px]"
                         >
-                          <p className="font-medium text-sm">{caseItem.processNumber}</p>
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium text-sm">{caseItem.processNumber}</p>
+                            <span className={`text-xs px-1.5 py-0.5 rounded ${
+                              caseItem.type === 'PNJ'
+                                ? 'bg-purple-100 text-purple-700'
+                                : 'bg-blue-100 text-blue-700'
+                            }`}>
+                              {caseItem.type === 'PNJ' ? 'PNJ' : 'Judicial'}
+                            </span>
+                          </div>
                           <p className="text-xs text-neutral-500">{caseItem.subject}</p>
                         </div>
                       ))}

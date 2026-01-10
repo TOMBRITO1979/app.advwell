@@ -118,7 +118,7 @@ const PrivacyPolicy: React.FC = () => {
               ) : (
                 <div className="text-center py-12">
                   <AlertTriangle className="w-16 h-16 text-warning-500 mx-auto mb-4" />
-                  <p className="text-neutral-600">Politica de privacidade nao disponivel no momento.</p>
+                  <p className="text-neutral-600">Política de privacidade não disponível no momento.</p>
                 </div>
               )}
             </div>

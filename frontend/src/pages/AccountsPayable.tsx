@@ -405,13 +405,13 @@ const AccountsPayable: React.FC = () => {
 
             {/* Desktop Table View */}
             <div className="desktop-table-view overflow-x-auto">
-              <table className="w-full table-fixed divide-y divide-neutral-200">
+              <table className="min-w-[950px] w-full divide-y divide-neutral-200">
                 <thead className="bg-neutral-50">
                   <tr>
-                    <th className="w-[25%] px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
+                    <th className="w-[20%] px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
                       Fornecedor
                     </th>
-                    <th className="w-[30%] px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
+                    <th className="w-[25%] px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
                       Descrição
                     </th>
                     <th className="w-[12%] px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
@@ -420,10 +420,10 @@ const AccountsPayable: React.FC = () => {
                     <th className="w-[12%] px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
                       Vencimento
                     </th>
-                    <th className="w-[10%] px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
+                    <th className="w-[13%] px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
                       Status
                     </th>
-                    <th className="w-[11%] px-4 py-3 text-right text-sm font-semibold text-neutral-900 uppercase">
+                    <th className="w-[18%] px-4 py-3 text-right text-sm font-semibold text-neutral-900 uppercase">
                       Ações
                     </th>
                   </tr>

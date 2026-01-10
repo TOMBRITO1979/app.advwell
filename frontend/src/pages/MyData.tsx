@@ -163,7 +163,7 @@ const MyData: React.FC = () => {
     const configs: Record<string, { color: string; icon: React.ReactNode; label: string }> = {
       PENDING: { color: 'bg-warning-100 text-warning-700', icon: <Clock className="w-4 h-4" />, label: 'Pendente' },
       IN_PROGRESS: { color: 'bg-primary-100 text-primary-700', icon: <RefreshCw className="w-4 h-4" />, label: 'Em Processamento' },
-      COMPLETED: { color: 'bg-success-100 text-success-700', icon: <CheckCircle className="w-4 h-4" />, label: 'Concluido' },
+      COMPLETED: { color: 'bg-success-100 text-success-700', icon: <CheckCircle className="w-4 h-4" />, label: 'Concluído' },
       REJECTED: { color: 'bg-danger-100 text-danger-700', icon: <XCircle className="w-4 h-4" />, label: 'Rejeitado' },
     };
     const config = configs[status] || configs.PENDING;
@@ -398,7 +398,7 @@ const MyData: React.FC = () => {
                       <p className="text-sm text-neutral-500 mb-2">
                         Solicitado em {formatDate(request.requestedAt)}
                         {request.completedAt && (
-                          <span> | Concluido em {formatDate(request.completedAt)}</span>
+                          <span> | Concluído em {formatDate(request.completedAt)}</span>
                         )}
                       </p>
                       {request.description && (

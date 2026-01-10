@@ -128,7 +128,7 @@ const statusColors: Record<MonitoringStatus, { bg: string; text: string; label: 
 const consultaStatusColors: Record<ConsultaStatus, { bg: string; text: string; label: string }> = {
   PENDING: { bg: 'bg-blue-100', text: 'text-blue-800', label: 'Pendente' },
   PROCESSING: { bg: 'bg-yellow-100', text: 'text-yellow-800', label: 'Processando' },
-  COMPLETED: { bg: 'bg-green-100', text: 'text-green-800', label: 'Concluido' },
+  COMPLETED: { bg: 'bg-green-100', text: 'text-green-800', label: 'Concluído' },
   FAILED: { bg: 'bg-red-100', text: 'text-red-800', label: 'Falhou' },
 };
 
@@ -621,7 +621,7 @@ const Monitoring: React.FC = () => {
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" size={20} />
                     <input
                       type="text"
-                      placeholder="Buscar por nome ou numero da OAB..."
+                      placeholder="Buscar por nome ou número da OAB..."
                       value={searchOab}
                       onChange={(e) => setSearchOab(e.target.value)}
                       className="w-full pl-10 pr-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
@@ -733,7 +733,7 @@ const Monitoring: React.FC = () => {
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" size={20} />
                     <input
                       type="text"
-                      placeholder="Buscar por numero do processo ou tribunal..."
+                      placeholder="Buscar por número do processo ou tribunal..."
                       value={searchPublication}
                       onChange={(e) => {
                         setSearchPublication(e.target.value);
@@ -1084,7 +1084,7 @@ const Monitoring: React.FC = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-4 border-b sticky top-0 bg-white">
-              <h2 className="text-lg font-semibold">Detalhes da Publicacao</h2>
+              <h2 className="text-lg font-semibold">Detalhes da Publicação</h2>
               <button
                 onClick={() => setShowPublicationModal(false)}
                 className="p-2 hover:bg-neutral-100 rounded-lg transition-colors"
@@ -1103,7 +1103,7 @@ const Monitoring: React.FC = () => {
                   <div className="text-neutral-900">{selectedPublication.siglaTribunal}</div>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-neutral-500">Data da Publicacao</label>
+                  <label className="text-sm font-medium text-neutral-500">Data da Publicação</label>
                   <div className="text-neutral-900">{formatDate(selectedPublication.dataPublicacao)}</div>
                 </div>
                 <div>
@@ -1120,7 +1120,7 @@ const Monitoring: React.FC = () => {
               </div>
               {selectedPublication.textoComunicacao && (
                 <div>
-                  <label className="text-sm font-medium text-neutral-500">Texto da Publicacao</label>
+                  <label className="text-sm font-medium text-neutral-500">Texto da Publicação</label>
                   <div className="mt-1 p-3 bg-neutral-50 rounded-lg text-sm text-neutral-700 whitespace-pre-wrap">
                     {cleanPublicationText(selectedPublication.textoComunicacao) || selectedPublication.textoComunicacao}
                   </div>

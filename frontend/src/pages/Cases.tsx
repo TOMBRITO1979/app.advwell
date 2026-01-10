@@ -108,7 +108,7 @@ const Cases: React.FC = () => {
   const [oabFilter, setOabFilter] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
-  const [detailsTab, setDetailsTab] = useState<'info' | 'timeline'>('info');
+  const [detailsTab, setDetailsTab] = useState<'info' | 'timeline' | 'cnj'>('info');
   const [showAndamentoModal, setShowAndamentoModal] = useState(false);
   const [selectedCase, setSelectedCase] = useState<CaseDetail | null>(null);
   const [loadingDetails, setLoadingDetails] = useState(false);
@@ -1079,35 +1079,35 @@ const Cases: React.FC = () => {
             </select>
           </div>
 
-          {/* Filtros avancados */}
-          <div className="flex flex-wrap gap-2 mb-4">
+          {/* Filtros avancados - linha completa */}
+          <div className="flex flex-wrap gap-3 mb-4">
             <input
               type="text"
               placeholder="Demandante..."
               value={demandanteFilter}
               onChange={(e) => setDemandanteFilter(e.target.value)}
-              className="w-full sm:w-36 px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 min-h-[44px] text-sm"
+              className="flex-1 min-w-[150px] px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm"
             />
             <input
               type="text"
               placeholder="Demandado..."
               value={demandadoFilter}
               onChange={(e) => setDemandadoFilter(e.target.value)}
-              className="w-full sm:w-36 px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 min-h-[44px] text-sm"
+              className="flex-1 min-w-[150px] px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm"
             />
             <input
               type="text"
               placeholder="Advogado..."
               value={lawyerFilter}
               onChange={(e) => setLawyerFilter(e.target.value)}
-              className="w-full sm:w-36 px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 min-h-[44px] text-sm"
+              className="flex-1 min-w-[150px] px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm"
             />
             <input
               type="text"
               placeholder="OAB..."
               value={oabFilter}
               onChange={(e) => setOabFilter(e.target.value)}
-              className="w-full sm:w-28 px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 min-h-[44px] text-sm"
+              className="flex-1 min-w-[100px] px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm"
             />
             {(demandanteFilter || demandadoFilter || lawyerFilter || oabFilter) && (
               <button
@@ -1117,7 +1117,7 @@ const Cases: React.FC = () => {
                   setLawyerFilter('');
                   setOabFilter('');
                 }}
-                className="px-3 py-2 text-sm text-neutral-600 hover:text-neutral-800 hover:bg-neutral-100 rounded-md min-h-[44px]"
+                className="px-3 py-2 text-sm text-neutral-600 hover:text-neutral-800 hover:bg-neutral-100 rounded-lg transition-colors min-h-[44px]"
               >
                 Limpar filtros
               </button>
@@ -2064,6 +2064,16 @@ const Cases: React.FC = () => {
                     >
                       Linha do Tempo
                     </button>
+                    <button
+                      onClick={() => setDetailsTab('cnj')}
+                      className={`py-3 px-4 border-b-2 font-medium text-sm transition-colors ${
+                        detailsTab === 'cnj'
+                          ? 'border-primary-600 text-primary-600'
+                          : 'border-transparent text-neutral-500 hover:text-neutral-700'
+                      }`}
+                    >
+                      CNJ (ADVAPI)
+                    </button>
                   </div>
                 </div>
 
@@ -2500,6 +2510,34 @@ const Cases: React.FC = () => {
                 {detailsTab === 'timeline' && (
                   <CaseTimeline caseId={selectedCase.id} />
                 )}
+
+                {/* Tab: CNJ (ADVAPI) */}
+                {detailsTab === 'cnj' && (
+                  <div className="p-6 space-y-4">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-lg font-semibold text-neutral-900">Publicações do Diário Oficial</h3>
+                      <span className="text-sm text-neutral-500">Dados via ADVAPI</span>
+                    </div>
+
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <p className="text-sm text-blue-700">
+                        As publicações relacionadas a este processo aparecerão aqui quando encontradas pelo monitoramento de OAB.
+                      </p>
+                      <p className="text-sm text-blue-600 mt-2">
+                        Configure o monitoramento na aba <strong>Monitoramento</strong> para acompanhar as publicações do Diário Oficial.
+                      </p>
+                    </div>
+
+                    {/* Placeholder para publicacoes futuras */}
+                    <div className="border border-neutral-200 rounded-lg p-6 text-center">
+                      <FileText size={48} className="mx-auto text-neutral-300 mb-4" />
+                      <p className="text-neutral-500">Nenhuma publicação encontrada para este processo</p>
+                      <p className="text-sm text-neutral-400 mt-1">
+                        Número: {selectedCase.processNumber}
+                      </p>
+                    </div>
+                  </div>
+                )}
               </>
             )}
           </div>
@@ -2745,10 +2783,15 @@ const Cases: React.FC = () => {
       {/* Modal de Visualização do Andamento para Cliente */}
       {showAndamentoModal && selectedCase && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-center mb-4 pb-4 border-b">
-                <h2 className="text-2xl font-bold text-neutral-900">Andamento para Cliente</h2>
+                <div>
+                  <h2 className="text-2xl font-bold text-neutral-900">Andamento para Cliente</h2>
+                  <p className="text-sm text-neutral-500 mt-1">
+                    {selectedCase.processNumber} - {selectedCase.client?.name || 'Sem cliente'}
+                  </p>
+                </div>
                 <button
                   onClick={() => setShowAndamentoModal(false)}
                   className="text-neutral-500 hover:text-neutral-700"
@@ -2758,45 +2801,63 @@ const Cases: React.FC = () => {
               </div>
 
               <div className="space-y-4">
-                <div className="bg-neutral-50 border border-neutral-200 rounded-md p-4">
-                  <h3 className="text-sm font-medium text-neutral-700 mb-1">Processo</h3>
-                  <p className="text-lg font-semibold text-neutral-900">{selectedCase.processNumber}</p>
+                {/* Caixa 1: Último Andamento DataJud (readonly) */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <h3 className="text-sm font-medium text-blue-700 mb-2 flex items-center gap-2">
+                    <FileText size={16} />
+                    Último Andamento (DataJud)
+                  </h3>
+                  {selectedCase.ultimoAndamento ? (
+                    <p className="text-blue-900 whitespace-pre-wrap">{selectedCase.ultimoAndamento}</p>
+                  ) : (
+                    <p className="text-blue-600 italic">Nenhum andamento disponível do DataJud</p>
+                  )}
                 </div>
 
-                {selectedCase.client && (
-                <div className="bg-neutral-50 border border-neutral-200 rounded-md p-4">
-                  <h3 className="text-sm font-medium text-neutral-700 mb-1">Cliente</h3>
-                  <p className="text-neutral-900">{selectedCase.client.name}</p>
+                {/* Caixa 2: Última Publicação ADVAPI (readonly) */}
+                <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                  <h3 className="text-sm font-medium text-purple-700 mb-2 flex items-center gap-2">
+                    <FileText size={16} />
+                    Última Publicação (ADVAPI)
+                  </h3>
+                  <p className="text-purple-600 italic">
+                    Nenhuma publicação disponível. Configure o monitoramento de OAB para receber publicações do Diário Oficial.
+                  </p>
                 </div>
-                )}
 
-                <div className="bg-neutral-50 border border-neutral-200 rounded-md p-4">
-                  <h3 className="text-sm font-medium text-neutral-700 mb-1">Assunto</h3>
-                  <p className="text-neutral-900">{selectedCase.subject}</p>
+                {/* Caixa 3: Informar ao Cliente (editável) */}
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                  <h3 className="text-sm font-medium text-amber-700 mb-2 flex items-center gap-2">
+                    <Edit size={16} />
+                    Informar ao Cliente
+                  </h3>
+                  <textarea
+                    value={formData.informarCliente || selectedCase.informarCliente || ''}
+                    onChange={(e) => setFormData({ ...formData, informarCliente: e.target.value })}
+                    rows={4}
+                    placeholder="Digite aqui a informação que será enviada ou mostrada ao cliente..."
+                    className="w-full px-3 py-2 border border-amber-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white text-neutral-900"
+                  />
+                  <button
+                    onClick={async () => {
+                      try {
+                        await api.put(`/cases/${selectedCase.id}`, {
+                          informarCliente: formData.informarCliente || selectedCase.informarCliente
+                        });
+                        toast.success('Informação salva com sucesso!');
+                        loadCaseDetails(selectedCase.id);
+                      } catch (error) {
+                        toast.error('Erro ao salvar informação');
+                      }
+                    }}
+                    className="mt-3 px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors text-sm font-medium min-h-[44px]"
+                  >
+                    Salvar Informação
+                  </button>
                 </div>
-
-                {selectedCase.ultimoAndamento && (
-                  <div className="bg-success-50 border border-primary-200 rounded-md p-4">
-                    <h3 className="text-sm font-medium text-primary-800 mb-1">Último Andamento (DataJud)</h3>
-                    <p className="text-primary-700">{selectedCase.ultimoAndamento}</p>
-                  </div>
-                )}
-
-                {selectedCase.informarCliente ? (
-                  <div className="bg-success-50 border border-primary-200 rounded-md p-4">
-                    <h3 className="text-sm font-medium text-primary-800 mb-2">Informação para o Cliente</h3>
-                    <div className="text-success-800 whitespace-pre-wrap">{selectedCase.informarCliente}</div>
-                  </div>
-                ) : (
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
-                    <p className="text-yellow-800 text-center">
-                      Nenhuma informação de andamento registrada para este cliente.
-                    </p>
-                  </div>
-                )}
 
                 {selectedCase.linkProcesso && (
-                  <div className="bg-neutral-50 border border-neutral-200 rounded-md p-4">
+                  <div className="bg-neutral-50 border border-neutral-200 rounded-lg p-4">
                     <h3 className="text-sm font-medium text-neutral-700 mb-1">Link do Processo</h3>
                     <a
                       href={selectedCase.linkProcesso}
@@ -2813,7 +2874,7 @@ const Cases: React.FC = () => {
               <div className="mt-6 flex justify-end">
                 <button
                   onClick={() => setShowAndamentoModal(false)}
-                  className="px-4 py-2 bg-neutral-500 text-neutral-900 rounded hover:bg-neutral-600 transition-colors min-h-[44px]"
+                  className="px-4 py-2 bg-neutral-100 text-neutral-700 border border-neutral-300 rounded-lg hover:bg-neutral-200 transition-colors min-h-[44px]"
                 >
                   Fechar
                 </button>

@@ -373,7 +373,7 @@ const Settings: React.FC = () => {
 
           {/* Informações Adicionais */}
           <div className="mt-6 bg-success-50 border border-primary-200 rounded-lg p-4">
-            <h3 className="font-semibold text-primary-800 mb-2">Informacao</h3>
+            <h3 className="font-semibold text-primary-800 mb-2">Informação</h3>
             <p className="text-sm text-success-800">
               Os dados configurados aqui serão automaticamente incluídos no cabeçalho dos relatórios
               financeiros em PDF, dando um aspecto mais profissional aos seus documentos.

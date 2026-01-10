@@ -751,7 +751,7 @@ const Schedule: React.FC = () => {
                       { label: 'Prioridade', value: priorityLabels[event.priority || 'MEDIA'] },
                       { label: 'Cliente', value: event.client?.name || '-' },
                       { label: 'Processo', value: event.case?.processNumber || '-' },
-                      { label: 'Status', value: event.completed ? 'Concluido' : 'Pendente' },
+                      { label: 'Status', value: event.completed ? 'Concluído' : 'Pendente' },
                     ],
                     onView: () => handleView(event),
                     onEdit: () => handleEdit(event),

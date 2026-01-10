@@ -112,6 +112,19 @@ export default function Lawyers() {
   const [selectedLawyer, setSelectedLawyer] = useState<Lawyer | null>(null);
   const [editMode, setEditMode] = useState(false);
 
+  // Filtros
+  const [filterLawyerType, setFilterLawyerType] = useState('');
+  const [filterAffiliation, setFilterAffiliation] = useState('');
+  const [filterTeam, setFilterTeam] = useState('');
+
+  // Filtrar advogados com base nos filtros selecionados
+  const filteredLawyers = lawyers.filter((lawyer) => {
+    const matchesType = !filterLawyerType || lawyer.lawyerType === filterLawyerType;
+    const matchesAffiliation = !filterAffiliation || lawyer.affiliation === filterAffiliation;
+    const matchesTeam = !filterTeam || lawyer.team?.toLowerCase().includes(filterTeam.toLowerCase());
+    return matchesType && matchesAffiliation && matchesTeam;
+  });
+
   // Paginação
   const [page, setPage] = useState(1);
   const [limit] = useState(50);
@@ -255,7 +268,7 @@ export default function Lawyers() {
   };
 
   // Mobile card items
-  const mobileCardItems: MobileCardItem[] = lawyers.map((lawyer) => ({
+  const mobileCardItems: MobileCardItem[] = filteredLawyers.map((lawyer) => ({
     id: lawyer.id,
     title: lawyer.name,
     subtitle: formatOAB(lawyer.oab, lawyer.oabState),
@@ -306,8 +319,9 @@ export default function Lawyers() {
           </button>
         </div>
 
-        {/* Busca */}
-        <div className="flex flex-col sm:flex-row gap-4">
+        {/* Busca e Filtros */}
+        <div className="flex flex-col gap-4">
+          {/* Linha 1: Busca */}
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400" size={20} />
             <input
@@ -318,6 +332,53 @@ export default function Lawyers() {
               className="w-full pl-10 pr-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
             />
           </div>
+
+          {/* Linha 2: Filtros */}
+          <div className="flex flex-wrap gap-3">
+            <select
+              value={filterLawyerType}
+              onChange={(e) => setFilterLawyerType(e.target.value)}
+              className="flex-1 min-w-[150px] px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white text-sm"
+            >
+              <option value="">Todos os Tipos</option>
+              <option value="SOCIO">Sócio</option>
+              <option value="ASSOCIADO">Associado</option>
+              <option value="ESTAGIARIO">Estagiário</option>
+              <option value="EXTERNO">Externo</option>
+            </select>
+
+            <select
+              value={filterAffiliation}
+              onChange={(e) => setFilterAffiliation(e.target.value)}
+              className="flex-1 min-w-[150px] px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white text-sm"
+            >
+              <option value="">Todos os Vínculos</option>
+              <option value="ESCRITORIO">Escritório</option>
+              <option value="ADVERSO">Adverso</option>
+            </select>
+
+            <input
+              type="text"
+              placeholder="Equipe/Área"
+              value={filterTeam}
+              onChange={(e) => setFilterTeam(e.target.value)}
+              className="flex-1 min-w-[150px] px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm"
+            />
+
+            {/* Botão limpar filtros */}
+            {(filterLawyerType || filterAffiliation || filterTeam) && (
+              <button
+                onClick={() => {
+                  setFilterLawyerType('');
+                  setFilterAffiliation('');
+                  setFilterTeam('');
+                }}
+                className="px-3 py-2 text-sm text-neutral-600 hover:text-neutral-800 hover:bg-neutral-100 rounded-lg transition-colors"
+              >
+                Limpar filtros
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Lista */}
@@ -327,12 +388,14 @@ export default function Lawyers() {
               <Loader2 className="animate-spin mx-auto text-primary-600" size={32} />
               <p className="text-neutral-500 mt-2">Carregando...</p>
             </div>
-          ) : lawyers.length === 0 ? (
+          ) : filteredLawyers.length === 0 ? (
             <div className="p-8 text-center">
               <Scale size={48} className="mx-auto text-neutral-300 mb-4" />
               <h3 className="text-lg font-medium text-neutral-900 mb-2">Nenhum advogado encontrado</h3>
               <p className="text-neutral-500 mb-4">
-                {search ? 'Tente ajustar sua busca' : 'Cadastre o primeiro advogado'}
+                {search || filterLawyerType || filterAffiliation || filterTeam
+                  ? 'Tente ajustar sua busca ou filtros'
+                  : 'Cadastre o primeiro advogado'}
               </p>
             </div>
           ) : (
@@ -371,7 +434,7 @@ export default function Lawyers() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-neutral-200">
-                    {lawyers.map((lawyer) => (
+                    {filteredLawyers.map((lawyer) => (
                       <tr key={lawyer.id} className="hover:bg-neutral-50">
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm font-medium text-neutral-900">{lawyer.name}</div>

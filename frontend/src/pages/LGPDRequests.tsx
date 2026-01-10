@@ -122,7 +122,7 @@ const LGPDRequests: React.FC = () => {
     const configs: Record<string, { color: string; icon: React.ReactNode; label: string }> = {
       PENDING: { color: 'bg-warning-100 text-warning-700', icon: <Clock className="w-4 h-4" />, label: 'Pendente' },
       IN_PROGRESS: { color: 'bg-primary-100 text-primary-700', icon: <RefreshCw className="w-4 h-4" />, label: 'Em Processamento' },
-      COMPLETED: { color: 'bg-success-100 text-success-700', icon: <CheckCircle className="w-4 h-4" />, label: 'Concluido' },
+      COMPLETED: { color: 'bg-success-100 text-success-700', icon: <CheckCircle className="w-4 h-4" />, label: 'Concluído' },
       REJECTED: { color: 'bg-danger-100 text-danger-700', icon: <XCircle className="w-4 h-4" />, label: 'Rejeitado' },
     };
     const config = configs[status] || configs.PENDING;
@@ -241,7 +241,7 @@ const LGPDRequests: React.FC = () => {
               <option value="">Todos os Status</option>
               <option value="PENDING">Pendente</option>
               <option value="IN_PROGRESS">Em Processamento</option>
-              <option value="COMPLETED">Concluido</option>
+              <option value="COMPLETED">Concluído</option>
               <option value="REJECTED">Rejeitado</option>
             </select>
             <select
@@ -287,7 +287,7 @@ const LGPDRequests: React.FC = () => {
                     const statusConfig: Record<string, { label: string; color: 'yellow' | 'blue' | 'green' | 'red' | 'gray' }> = {
                       PENDING: { label: 'Pendente', color: 'yellow' },
                       IN_PROGRESS: { label: 'Em Processamento', color: 'blue' },
-                      COMPLETED: { label: 'Concluido', color: 'green' },
+                      COMPLETED: { label: 'Concluído', color: 'green' },
                       REJECTED: { label: 'Rejeitado', color: 'red' },
                     };
                     const status = statusConfig[request.status] || { label: request.status, color: 'gray' };
@@ -429,7 +429,7 @@ const LGPDRequests: React.FC = () => {
                         className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500"
                       >
                         <option value="IN_PROGRESS">Em Processamento</option>
-                        <option value="COMPLETED">Concluido</option>
+                        <option value="COMPLETED">Concluído</option>
                         <option value="REJECTED">Rejeitado</option>
                       </select>
                     </div>
