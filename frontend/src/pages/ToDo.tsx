@@ -488,9 +488,26 @@ const ToDo: React.FC = () => {
 
                   {/* Assigned Users */}
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-2">
-                      Atribuir a usuários (opcional)
-                    </label>
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="block text-sm font-medium text-neutral-700">
+                        Atribuir a usuários (opcional)
+                      </label>
+                      {companyUsers.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (selectedUserIds.length === companyUsers.length) {
+                              setSelectedUserIds([]);
+                            } else {
+                              setSelectedUserIds(companyUsers.map(u => u.id));
+                            }
+                          }}
+                          className="text-sm text-primary-600 hover:text-primary-800 font-medium"
+                        >
+                          {selectedUserIds.length === companyUsers.length ? 'Desmarcar Todos' : 'Selecionar Todos'}
+                        </button>
+                      )}
+                    </div>
                     <div className="border border-gray-300 rounded-md p-3 max-h-48 overflow-y-auto">
                       {companyUsers.length === 0 ? (
                         <p className="text-sm text-neutral-500 italic">Nenhum usuário disponível</p>
