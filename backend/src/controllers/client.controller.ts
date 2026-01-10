@@ -6,6 +6,7 @@ import { sanitizeString } from '../utils/sanitize';
 import { auditLogService } from '../services/audit-log.service';
 import { appLogger } from '../utils/logger';
 import { enqueueCsvImport, getImportStatus } from '../queues/csv-import.queue';
+import { enqueueExport, getExportStatus, SYNC_EXPORT_LIMIT } from '../queues/csv-export.queue';
 
 // Helper para construir filtros de busca (fora da classe para evitar problemas com this)
 function buildClientWhereClause(companyId: string, query: any) {
@@ -498,6 +499,8 @@ export class ClientController {
   async exportCSV(req: AuthRequest, res: Response) {
     try {
       const companyId = req.user!.companyId;
+      const userId = req.user!.userId;
+      const userEmail = req.user!.email;
 
       if (!companyId) {
         return res.status(403).json({ error: 'Usuário não possui empresa associada' });
@@ -505,7 +508,29 @@ export class ClientController {
 
       const where = buildClientWhereClause(companyId, req.query);
 
-      // Buscar clientes com filtros
+      // Primeiro, contar quantos registros serão exportados
+      const totalRecords = await prisma.client.count({ where });
+
+      // Se exceder o limite, enfileirar e enviar por email
+      if (totalRecords >= SYNC_EXPORT_LIMIT) {
+        const jobId = await enqueueExport(
+          'clients',
+          companyId,
+          userId,
+          userEmail,
+          req.query as Record<string, any>,
+          totalRecords
+        );
+
+        return res.json({
+          queued: true,
+          jobId,
+          message: `Exportação com ${totalRecords.toLocaleString('pt-BR')} registros foi enfileirada. Você receberá o arquivo por email em alguns minutos.`,
+          totalRecords,
+        });
+      }
+
+      // Export síncrono para datasets menores
       const clients = await prisma.client.findMany({
         where,
         orderBy: { createdAt: 'desc' },
@@ -566,6 +591,23 @@ export class ClientController {
     } catch (error) {
       appLogger.error('Erro ao exportar clientes', error as Error);
       res.status(500).json({ error: 'Erro ao exportar clientes' });
+    }
+  }
+
+  // Verificar status de exportação
+  async getExportStatus(req: AuthRequest, res: Response) {
+    try {
+      const { jobId } = req.params;
+      const status = await getExportStatus(jobId);
+
+      if (!status) {
+        return res.status(404).json({ error: 'Exportação não encontrada' });
+      }
+
+      res.json(status);
+    } catch (error) {
+      appLogger.error('Erro ao buscar status de exportação', error as Error);
+      res.status(500).json({ error: 'Erro ao buscar status' });
     }
   }
 

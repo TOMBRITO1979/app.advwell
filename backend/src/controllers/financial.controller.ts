@@ -7,6 +7,7 @@ import { Decimal } from '@prisma/client/runtime/library';
 import { appLogger } from '../utils/logger';
 import * as pdfStyles from '../utils/pdfStyles';
 import { enqueueCsvImport, getImportStatus } from '../queues/csv-import.queue';
+import { enqueueExport, SYNC_EXPORT_LIMIT } from '../queues/csv-export.queue';
 
 // Helper para converter Prisma Decimal para number (necessário após migração Float → Decimal)
 const toNumber = (value: Decimal | number | null | undefined): number => {
@@ -623,6 +624,8 @@ export const exportCSV = async (req: AuthRequest, res: Response) => {
   try {
     const { search, clientId, caseId, type, startDate, endDate } = req.query;
     const companyId = req.user!.companyId;
+    const userId = req.user!.userId;
+    const userEmail = req.user!.email;
 
     const where: any = { companyId };
 
@@ -650,6 +653,28 @@ export const exportCSV = async (req: AuthRequest, res: Response) => {
     if (clientId) where.clientId = String(clientId);
     if (caseId) where.caseId = String(caseId);
     if (type && (type === 'INCOME' || type === 'EXPENSE')) where.type = type;
+
+    // Contar registros primeiro
+    const totalRecords = await prisma.financialTransaction.count({ where });
+
+    // Se exceder o limite, enfileirar e enviar por email
+    if (totalRecords >= SYNC_EXPORT_LIMIT) {
+      const jobId = await enqueueExport(
+        'financial',
+        companyId!,
+        userId,
+        userEmail,
+        req.query as Record<string, any>,
+        totalRecords
+      );
+
+      return res.json({
+        queued: true,
+        jobId,
+        message: `Exportação com ${totalRecords.toLocaleString('pt-BR')} registros foi enfileirada. Você receberá o arquivo por email em alguns minutos.`,
+        totalRecords,
+      });
+    }
 
     const transactions = await prisma.financialTransaction.findMany({
       where,
