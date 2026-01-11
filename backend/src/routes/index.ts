@@ -40,6 +40,7 @@ import clientMessageRoutes from './client-message.routes';
 import monitoringRoutes from './monitoring.routes';
 import advapiWebhookRoutes from './advapi-webhook.routes';
 import deadLetterRoutes from './dead-letter.routes';
+import manualRoutes from './manual.routes';
 
 const router = Router();
 
@@ -93,5 +94,6 @@ router.use('/', sharedDocumentRoutes); // Documentos compartilhados entre escrit
 router.use('/client-messages', clientMessageRoutes); // Mensagens bidirecionais entre clientes e escritório
 router.use('/monitoring', monitoringRoutes); // Monitoramento de OABs e publicações (ADVAPI v2)
 router.use('/admin/dead-letter', deadLetterRoutes); // Dead Letter Queue (jobs falhados) - ADMIN/SUPER_ADMIN
+router.use('/manual', manualRoutes); // Manual do usuário e FAQ (público + admin SUPER_ADMIN)
 
 export default router;

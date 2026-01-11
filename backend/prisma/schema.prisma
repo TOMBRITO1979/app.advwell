@@ -2175,3 +2175,74 @@ model Publication {
   @@index([companyId, imported])
   @@map("publications")
 }
+
+// ============================================================================
+// MANUAL / FAQ SYSTEM (Sistema de Manual e FAQ)
+// ============================================================================
+
+// Categorias do manual
+model ManualCategory {
+  id          String   @id @default(uuid())
+  name        String   // Nome da categoria (ex: "Início Rápido", "Processos")
+  slug        String   @unique // URL slug (ex: "inicio-rapido")
+  description String?  // Descrição da categoria
+  icon        String?  // Nome do ícone Lucide (ex: "Rocket", "Scale")
+  order       Int      @default(0) // Ordem de exibição
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  articles    ManualArticle[]
+  faqs        ManualFAQ[]
+
+  @@index([order])
+  @@index([active])
+  @@map("ManualCategory")
+}
+
+// Artigos/Tutoriais do manual
+model ManualArticle {
+  id           String          @id @default(uuid())
+  categoryId   String
+  title        String          // Título do artigo
+  slug         String          // URL slug (único por categoria)
+  summary      String?         // Resumo/descrição curta
+  content      String          @db.Text // Conteúdo em HTML/Markdown
+  videoUrl     String?         // URL do vídeo (YouTube, Vimeo, etc)
+  thumbnailUrl String?         // Thumbnail do vídeo
+  order        Int             @default(0) // Ordem dentro da categoria
+  active       Boolean         @default(true)
+  viewCount    Int             @default(0) // Contador de visualizações
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  category     ManualCategory  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([categoryId, slug])
+  @@index([categoryId])
+  @@index([order])
+  @@index([active])
+  @@index([slug])
+  @@map("ManualArticle")
+}
+
+// Perguntas frequentes (FAQ)
+model ManualFAQ {
+  id          String          @id @default(uuid())
+  categoryId  String?         // Categoria (opcional - pode ser FAQ geral)
+  question    String          // Pergunta
+  answer      String          @db.Text // Resposta
+  order       Int             @default(0) // Ordem de exibição
+  active      Boolean         @default(true)
+  helpful     Int             @default(0) // Contador de "útil"
+  notHelpful  Int             @default(0) // Contador de "não útil"
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  category    ManualCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  @@index([categoryId])
+  @@index([order])
+  @@index([active])
+  @@map("ManualFAQ")
+}

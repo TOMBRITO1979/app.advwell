@@ -37,6 +37,7 @@ import {
   Tag,
   BarChart3,
   Radar,
+  Book,
   LucideProps,
 } from 'lucide-react';
 
@@ -414,6 +415,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   // Logs de Auditoria para todos os usuários (USER vê apenas seus próprios logs)
   if (user?.role === 'USER') {
     afterCredentialsItems.push({ path: '/audit-logs', label: 'Meus Logs', icon: History });
+  }
+
+  // Manual do Usuário (disponível para todos)
+  afterCredentialsItems.push({ path: '/manual', label: 'Manual', icon: Book });
+
+  // Gerenciar Manual (apenas SUPER_ADMIN)
+  if (user?.role === 'SUPER_ADMIN') {
+    afterCredentialsItems.push({ path: '/manual-admin', label: 'Gerenciar Manual', icon: Book });
   }
 
   // Determinar se deve mostrar o banner de assinatura
