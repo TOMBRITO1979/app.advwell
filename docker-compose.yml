@@ -362,6 +362,20 @@ services:
         - "traefik.http.services.advwell-backend.loadbalancer.healthcheck.path=/health"
         - "traefik.http.services.advwell-backend.loadbalancer.healthcheck.interval=10s"
         - "traefik.docker.network=network_public"
+    # Docker Secrets - credenciais sensíveis carregadas via entrypoint
+    secrets:
+      - postgres_password
+      - redis_password
+      - jwt_secret
+      - encryption_key
+      - aws_secret_access_key
+      - smtp_password
+      - datajud_api_key
+      - advapi_api_key
+      - advapi_webhook_key
+      - stripe_secret_key
+      - stripe_webhook_secret
+      - health_check_key
 
   # ===========================================
   # BACKEND WORKER - Processamento de filas e cron jobs
@@ -440,6 +454,20 @@ services:
       labels:
         # Worker nao expoe endpoints HTTP via Traefik
         - "traefik.enable=false"
+    # Docker Secrets - credenciais sensíveis carregadas via entrypoint
+    secrets:
+      - postgres_password
+      - redis_password
+      - jwt_secret
+      - encryption_key
+      - aws_secret_access_key
+      - smtp_password
+      - datajud_api_key
+      - advapi_api_key
+      - advapi_webhook_key
+      - stripe_secret_key
+      - stripe_webhook_secret
+      - health_check_key
 
   frontend:
     image: tomautomations/advtom-frontend:v1.8.105
