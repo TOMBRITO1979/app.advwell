@@ -531,6 +531,53 @@ export class SharedDocumentController {
   }
 
   /**
+   * Marcar documento enviado por cliente como baixado/visualizado pelo escritório
+   * PUT /api/shared-documents/:id/download-from-client
+   */
+  async downloadFromClient(req: AuthRequest, res: Response) {
+    try {
+      const { id } = req.params;
+      const companyId = req.user!.companyId;
+
+      if (!companyId) {
+        return res.status(403).json({ error: 'Usuário não possui empresa associada' });
+      }
+
+      const document = await prisma.sharedDocument.findFirst({
+        where: { id, companyId, uploadedByClient: true },
+      });
+
+      if (!document) {
+        return res.status(404).json({ error: 'Documento não encontrado' });
+      }
+
+      // Atualizar status para DOWNLOADED se ainda estava UPLOADED
+      if (document.status === 'UPLOADED') {
+        await prisma.sharedDocument.update({
+          where: { id },
+          data: {
+            status: 'DOWNLOADED',
+            downloadedAt: new Date(),
+          },
+        });
+      }
+
+      // Retornar URL assinada para download
+      const signedFileUrl = await getSignedS3Url(document.fileKey);
+
+      res.json({
+        ...document,
+        status: 'DOWNLOADED',
+        downloadedAt: new Date(),
+        fileUrl: signedFileUrl,
+      });
+    } catch (error) {
+      appLogger.error('Erro ao baixar documento do cliente', error as Error);
+      res.status(500).json({ error: 'Erro ao baixar documento' });
+    }
+  }
+
+  /**
    * Atualizar configurações do documento
    * PUT /api/shared-documents/:id
    */
@@ -581,6 +628,50 @@ export class SharedDocumentController {
     } catch (error) {
       appLogger.error('Erro ao atualizar documento compartilhado', error as Error);
       res.status(500).json({ error: 'Erro ao atualizar documento' });
+    }
+  }
+
+  /**
+   * Listar todos os documentos enviados por clientes (para o escritório)
+   * GET /api/shared-documents/uploaded-by-clients
+   */
+  async listUploadedByClients(req: AuthRequest, res: Response) {
+    try {
+      const companyId = req.user!.companyId;
+
+      if (!companyId) {
+        return res.status(403).json({ error: 'Usuário não possui empresa associada' });
+      }
+
+      const documents = await prisma.sharedDocument.findMany({
+        where: {
+          companyId,
+          uploadedByClient: true,
+        },
+        include: {
+          client: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+        },
+        orderBy: { uploadedAt: 'desc' },
+      });
+
+      // Gerar URLs assinadas para cada documento
+      const documentsWithUrls = await Promise.all(
+        documents.map(async (doc) => ({
+          ...doc,
+          fileUrl: await getSignedS3Url(doc.fileKey),
+        }))
+      );
+
+      res.json(documentsWithUrls);
+    } catch (error) {
+      appLogger.error('Erro ao listar documentos enviados por clientes', error as Error);
+      res.status(500).json({ error: 'Erro ao listar documentos' });
     }
   }
 }

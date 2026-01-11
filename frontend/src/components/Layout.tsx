@@ -84,6 +84,8 @@ interface TasksDueToday {
 
 interface UnreadMessagesCount {
   count: number;
+  messages: number;
+  documents: number;
 }
 
 interface ChatwellStatus {
@@ -227,24 +229,38 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     }
   }, [user]);
 
-  // Verificar mensagens não lidas de clientes (apenas para ADMIN e SUPER_ADMIN)
+  // Verificar mensagens não lidas de clientes e documentos (apenas para ADMIN e SUPER_ADMIN)
   React.useEffect(() => {
     const checkUnreadMessages = async () => {
       try {
         const response = await api.get('/client-messages/office/unread-count');
         setUnreadMessagesCount({
-          count: response.data.count,
+          count: response.data.count || 0,
+          messages: response.data.messages || 0,
+          documents: response.data.documents || 0,
         });
       } catch (error) {
         console.error('Error checking unread messages:', error);
       }
     };
 
+    // Listener para atualização manual do contador (quando marcar mensagem como lida ou baixar documento)
+    const handleRefreshUnread = () => {
+      checkUnreadMessages();
+    };
+
     if (user && (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN')) {
       checkUnreadMessages();
-      // Atualizar a cada 2 minutos
-      const interval = setInterval(checkUnreadMessages, 2 * 60 * 1000);
-      return () => clearInterval(interval);
+      // Atualizar a cada 1 minuto para alertas mais rápidos
+      const interval = setInterval(checkUnreadMessages, 1 * 60 * 1000);
+
+      // Escutar evento de atualização manual
+      window.addEventListener('refreshUnreadCount', handleRefreshUnread);
+
+      return () => {
+        clearInterval(interval);
+        window.removeEventListener('refreshUnreadCount', handleRefreshUnread);
+      };
     }
   }, [user]);
 
@@ -848,12 +864,21 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 const Icon = item.icon;
                 const isActive = location.pathname.startsWith(item.path);
 
-                // Badge para Portal do Cliente (mensagens não lidas)
+                // Badge para Portal do Cliente (mensagens não lidas + documentos de clientes)
                 const showMessagesBadge = item.path === '/announcements' && unreadMessagesCount && unreadMessagesCount.count > 0;
                 const badgeCount = showMessagesBadge ? unreadMessagesCount?.count : 0;
-                const badgeTitle = showMessagesBadge
-                  ? `${item.label} (${unreadMessagesCount?.count} mensagem(ns) não lida(s))`
-                  : item.label;
+                const getBadgeTitle = () => {
+                  if (!showMessagesBadge) return item.label;
+                  const parts = [];
+                  if (unreadMessagesCount?.messages && unreadMessagesCount.messages > 0) {
+                    parts.push(`${unreadMessagesCount.messages} mensagem(ns)`);
+                  }
+                  if (unreadMessagesCount?.documents && unreadMessagesCount.documents > 0) {
+                    parts.push(`${unreadMessagesCount.documents} documento(s)`);
+                  }
+                  return parts.length > 0 ? `${item.label} - ${parts.join(' e ')} de clientes` : item.label;
+                };
+                const badgeTitle = getBadgeTitle();
 
                 return (
                   <Link
@@ -883,7 +908,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                         {showMessagesBadge && (
                           <span
                             className="bg-red-500 text-white text-xs font-bold rounded-full px-2 py-0.5 ml-2"
-                            title={`${unreadMessagesCount?.count} mensagem(ns) não lida(s)`}
+                            title={badgeTitle}
                           >
                             {badgeCount}
                           </span>

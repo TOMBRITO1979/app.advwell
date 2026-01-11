@@ -721,9 +721,34 @@ const Clients: React.FC = () => {
     }
   };
 
+  const handleDownloadFromClient = async (doc: SharedDocument) => {
+    try {
+      // Chama endpoint para marcar como baixado e obter URL assinada
+      const response = await api.put(`/shared-documents/${doc.id}/download-from-client`);
+      const { downloadUrl } = response.data;
+
+      // Abre o documento em nova aba
+      window.open(downloadUrl || doc.fileUrl, '_blank');
+
+      // Recarrega a lista de documentos para atualizar o status
+      if (selectedClient) {
+        loadSharedDocuments(selectedClient.id);
+      }
+
+      // Disparar evento para atualizar badge no sidebar
+      window.dispatchEvent(new Event('refreshUnreadCount'));
+    } catch {
+      // Se falhar, abre o documento normalmente
+      window.open(doc.fileUrl, '_blank');
+    }
+  };
+
   const getStatusBadge = (doc: SharedDocument) => {
     if (doc.uploadedByClient) {
-      return <span className="px-2 py-1 text-xs rounded-full bg-info-100 text-info-700">Enviado pelo cliente</span>;
+      if (doc.status === 'DOWNLOADED') {
+        return <span className="px-2 py-1 text-xs rounded-full bg-success-100 text-success-700 flex items-center gap-1"><Check size={12} /> Baixado</span>;
+      }
+      return <span className="px-2 py-1 text-xs rounded-full bg-warning-100 text-warning-700 flex items-center gap-1"><Clock size={12} /> Novo do cliente</span>;
     }
     switch (doc.status) {
       case 'SIGNED':
@@ -2019,15 +2044,25 @@ const Clients: React.FC = () => {
                             </div>
                             <div className="flex items-center gap-2 sm:flex-shrink-0">
                               {getStatusBadge(doc)}
-                              <a
-                                href={doc.fileUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="p-2 text-neutral-500 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
-                                title="Abrir documento"
-                              >
-                                <ExternalLink size={18} />
-                              </a>
+                              {doc.uploadedByClient ? (
+                                <button
+                                  onClick={() => handleDownloadFromClient(doc)}
+                                  className="p-2 text-neutral-500 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+                                  title="Baixar documento do cliente"
+                                >
+                                  <ExternalLink size={18} />
+                                </button>
+                              ) : (
+                                <a
+                                  href={doc.fileUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="p-2 text-neutral-500 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+                                  title="Abrir documento"
+                                >
+                                  <ExternalLink size={18} />
+                                </a>
+                              )}
                               {doc.signatureUrl && (
                                 <a
                                   href={doc.signatureUrl}

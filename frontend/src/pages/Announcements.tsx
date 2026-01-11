@@ -21,6 +21,10 @@ import {
   Clock,
   ChevronDown,
   ChevronUp,
+  FileText,
+  Download,
+  ExternalLink,
+  Search,
 } from 'lucide-react';
 import Layout from '../components/Layout';
 import api from '../services/api';
@@ -54,6 +58,24 @@ interface ClientMessage {
   replies?: ClientMessage[];
 }
 
+interface ClientDocument {
+  id: string;
+  name: string;
+  description: string | null;
+  fileUrl: string;
+  fileKey: string;
+  fileSize: number;
+  fileType: string;
+  status: 'PENDING' | 'VIEWED' | 'DOWNLOADED' | 'SIGNED' | 'UPLOADED';
+  uploadedAt: string;
+  uploadedByClient: boolean;
+  client: {
+    id: string;
+    name: string;
+    email: string | null;
+  };
+}
+
 interface Announcement {
   id: string;
   title: string;
@@ -85,7 +107,7 @@ const getPriorityConfig = (priority: string) => {
 
 export default function Announcements() {
   // Tab state
-  const [activeTab, setActiveTab] = useState<'avisos' | 'mensagens'>('avisos');
+  const [activeTab, setActiveTab] = useState<'avisos' | 'mensagens' | 'documentos'>('avisos');
 
   // Announcements state
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
@@ -123,6 +145,15 @@ export default function Announcements() {
   const [showNewMessageForm, setShowNewMessageForm] = useState(false);
   const [newMessageClientSearch, setNewMessageClientSearch] = useState('');
 
+  // Documents state
+  const [clientDocuments, setClientDocuments] = useState<ClientDocument[]>([]);
+  const [documentsLoading, setDocumentsLoading] = useState(false);
+  const [unreadDocsCount, setUnreadDocsCount] = useState(0);
+
+  // Filter states
+  const [messagesFilter, setMessagesFilter] = useState('');
+  const [documentsFilter, setDocumentsFilter] = useState('');
+
   useEffect(() => {
     loadAnnouncements();
     loadClients();
@@ -132,6 +163,8 @@ export default function Announcements() {
   useEffect(() => {
     if (activeTab === 'mensagens') {
       loadMessages();
+    } else if (activeTab === 'documentos') {
+      loadClientDocuments();
     }
   }, [activeTab]);
 
@@ -176,9 +209,53 @@ export default function Announcements() {
     try {
       const response = await api.get('/client-messages/office/unread-count');
       setUnreadCount(response.data.count);
+      setUnreadDocsCount(response.data.documents || 0);
     } catch (error) {
       console.error('Erro ao carregar contagem de não lidas:', error);
     }
+  };
+
+  const loadClientDocuments = async () => {
+    setDocumentsLoading(true);
+    try {
+      const response = await api.get('/shared-documents/uploaded-by-clients');
+      setClientDocuments(response.data);
+    } catch (error) {
+      toast.error('Erro ao carregar documentos');
+    } finally {
+      setDocumentsLoading(false);
+    }
+  };
+
+  const handleDownloadDocument = async (doc: ClientDocument) => {
+    try {
+      // Chama endpoint para marcar como baixado e obter URL assinada
+      const response = await api.put(`/shared-documents/${doc.id}/download-from-client`);
+      const { downloadUrl, fileUrl } = response.data;
+
+      // Abre o documento em nova aba
+      window.open(downloadUrl || fileUrl || doc.fileUrl, '_blank');
+
+      // Atualiza estado local
+      setClientDocuments(prev => prev.map(d =>
+        d.id === doc.id ? { ...d, status: 'DOWNLOADED' as const } : d
+      ));
+
+      // Recarrega contagem
+      loadUnreadCount();
+
+      // Disparar evento para atualizar badge no sidebar
+      window.dispatchEvent(new Event('refreshUnreadCount'));
+    } catch {
+      // Se falhar, abre o documento normalmente
+      window.open(doc.fileUrl, '_blank');
+    }
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   };
 
   const handleMarkAsRead = async (messageId: string) => {
@@ -189,6 +266,8 @@ export default function Announcements() {
       setMessages(prev => prev.map(m =>
         m.id === messageId ? { ...m, readAt: new Date().toISOString() } : m
       ));
+      // Disparar evento para atualizar badge no sidebar
+      window.dispatchEvent(new Event('refreshUnreadCount'));
     } catch (error) {
       console.error('Erro ao marcar como lida:', error);
     }
@@ -410,6 +489,24 @@ export default function Announcements() {
               {unreadCount > 0 && (
                 <span className="px-2 py-0.5 bg-red-500 text-white text-xs rounded-full">
                   {unreadCount}
+                </span>
+              )}
+            </div>
+          </button>
+          <button
+            onClick={() => setActiveTab('documentos')}
+            className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === 'documentos'
+                ? 'border-green-600 text-green-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <FileText size={18} />
+              Documentos
+              {unreadDocsCount > 0 && (
+                <span className="px-2 py-0.5 bg-red-500 text-white text-xs rounded-full">
+                  {unreadDocsCount}
                 </span>
               )}
             </div>
@@ -706,6 +803,28 @@ export default function Announcements() {
               </div>
             )}
 
+            {/* Filter */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+              <div className="flex items-center gap-2">
+                <Search size={20} className="text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Filtrar por nome do cliente..."
+                  value={messagesFilter}
+                  onChange={(e) => setMessagesFilter(e.target.value)}
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                />
+                {messagesFilter && (
+                  <button
+                    onClick={() => setMessagesFilter('')}
+                    className="p-2 text-gray-400 hover:text-gray-600"
+                  >
+                    <X size={18} />
+                  </button>
+                )}
+              </div>
+            </div>
+
             {/* Messages List */}
             {messagesLoading ? (
               <div className="flex items-center justify-center h-64">
@@ -721,7 +840,9 @@ export default function Announcements() {
               </div>
             ) : (
               <div className="space-y-4">
-                {messages.map((message) => (
+                {messages
+                  .filter((m) => !messagesFilter || m.client?.name?.toLowerCase().includes(messagesFilter.toLowerCase()))
+                  .map((message) => (
                   <div
                     key={message.id}
                     className={`bg-white rounded-xl shadow-sm border overflow-hidden ${
@@ -843,6 +964,105 @@ export default function Announcements() {
                         </div>
                       </div>
                     )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Documentos Tab Content */}
+        {activeTab === 'documentos' && (
+          <>
+            {/* Filter */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+              <div className="flex items-center gap-2">
+                <Search size={20} className="text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Filtrar por nome do cliente..."
+                  value={documentsFilter}
+                  onChange={(e) => setDocumentsFilter(e.target.value)}
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                />
+                {documentsFilter && (
+                  <button
+                    onClick={() => setDocumentsFilter('')}
+                    className="p-2 text-gray-400 hover:text-gray-600"
+                  >
+                    <X size={18} />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {documentsLoading ? (
+              <div className="flex items-center justify-center h-64">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600" />
+              </div>
+            ) : clientDocuments.length === 0 ? (
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
+                <FileText className="mx-auto h-16 w-16 text-gray-300 mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhum documento</h3>
+                <p className="text-gray-500 mb-4">
+                  Quando seus clientes enviarem documentos pelo portal, eles aparecerão aqui.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {clientDocuments
+                  .filter((d) => !documentsFilter || d.client?.name?.toLowerCase().includes(documentsFilter.toLowerCase()))
+                  .map((doc) => (
+                  <div
+                    key={doc.id}
+                    className={`bg-white rounded-xl shadow-sm border overflow-hidden ${
+                      doc.status === 'UPLOADED' ? 'border-green-300 border-l-4' : 'border-gray-200'
+                    }`}
+                  >
+                    <div className="p-4">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2 flex-wrap">
+                            <span className="px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                              {doc.client?.name}
+                            </span>
+                            {doc.status === 'UPLOADED' ? (
+                              <span className="px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded text-xs font-medium flex items-center gap-1">
+                                <Clock size={12} />
+                                Novo
+                              </span>
+                            ) : (
+                              <span className="px-2 py-0.5 bg-green-100 text-green-800 rounded text-xs font-medium flex items-center gap-1">
+                                <Download size={12} />
+                                Baixado
+                              </span>
+                            )}
+                          </div>
+                          <h3 className="font-medium text-gray-900 mb-1">{doc.name}</h3>
+                          {doc.description && (
+                            <p className="text-gray-600 text-sm mb-2">{doc.description}</p>
+                          )}
+                          <div className="flex items-center gap-4 text-xs text-gray-500">
+                            <span>{formatFileSize(doc.fileSize)}</span>
+                            <span>{doc.fileType}</span>
+                            <span className="flex items-center gap-1">
+                              <Calendar size={12} />
+                              {doc.uploadedAt && format(new Date(doc.uploadedAt), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 ml-4">
+                          <button
+                            onClick={() => handleDownloadDocument(doc)}
+                            className="inline-flex items-center gap-2 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
+                            title="Baixar documento"
+                          >
+                            <ExternalLink size={16} />
+                            {doc.status === 'UPLOADED' ? 'Baixar' : 'Abrir'}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>

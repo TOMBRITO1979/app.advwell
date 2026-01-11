@@ -32,8 +32,14 @@ router.post(
   sharedDocumentController.shareFromLegal
 );
 
+// GET /api/shared-documents/uploaded-by-clients - Listar documentos enviados por clientes
+router.get('/shared-documents/uploaded-by-clients', sharedDocumentController.listUploadedByClients);
+
 // GET /api/shared-documents/:id - Buscar documento por ID
 router.get('/shared-documents/:id', sharedDocumentController.getById);
+
+// PUT /api/shared-documents/:id/download-from-client - Baixar documento enviado por cliente
+router.put('/shared-documents/:id/download-from-client', sharedDocumentController.downloadFromClient);
 
 // PUT /api/shared-documents/:id - Atualizar documento
 router.put('/shared-documents/:id', sharedDocumentController.update);

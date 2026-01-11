@@ -248,7 +248,8 @@ export class ClientMessageController {
         return res.status(403).json({ error: 'Usuário não possui empresa associada' });
       }
 
-      const count = await prisma.clientMessage.count({
+      // Contar mensagens não lidas de clientes
+      const messagesCount = await prisma.clientMessage.count({
         where: {
           companyId,
           sender: 'CLIENT',
@@ -256,7 +257,22 @@ export class ClientMessageController {
         },
       });
 
-      res.json({ count });
+      // Contar documentos enviados por clientes ainda não baixados pelo escritório
+      const documentsCount = await prisma.sharedDocument.count({
+        where: {
+          companyId,
+          uploadedByClient: true,
+          status: 'UPLOADED', // Ainda não foi baixado
+        },
+      });
+
+      const totalCount = messagesCount + documentsCount;
+
+      res.json({
+        count: totalCount,
+        messages: messagesCount,
+        documents: documentsCount,
+      });
     } catch (error) {
       logger.error('Erro ao contar mensagens não lidas:', error as Error);
       res.status(500).json({ error: 'Erro ao contar mensagens' });
