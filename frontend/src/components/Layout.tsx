@@ -105,6 +105,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [credentialsOpen, setCredentialsOpen] = React.useState(false);
   const [agendaOpen, setAgendaOpen] = React.useState(false);
   const [pessoasOpen, setPessoasOpen] = React.useState(false);
+  const [processosOpen, setProcessosOpen] = React.useState(false);
   const [subscriptionStatus, setSubscriptionStatus] = React.useState<SubscriptionStatus | null>(null);
   const [showSubscriptionBanner, setShowSubscriptionBanner] = React.useState(true);
   const [accountsDueToday, setAccountsDueToday] = React.useState<AccountsDueToday | null>(null);
@@ -315,15 +316,19 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       : []),
   ];
 
+  // Submenu Processos (dropdown)
+  const processosItems = [
+    { path: '/cases', label: 'Judiciais', icon: FileText },
+    { path: '/pnj', label: 'PNJ', icon: FileText },
+    { path: '/deadlines', label: 'Prazos', icon: Clock },
+    { path: '/monitoring', label: 'Monitoramento', icon: Radar },
+    { path: '/updates', label: 'Atualizações', icon: Bell },
+    { path: '/hearings', label: 'Audiências', icon: Gavel },
+  ];
+
   const menuItems = [
     { path: '/dashboard', label: 'Dashboard', icon: Home },
-    // Agenda e Pessoas serão renderizados como dropdowns separadamente
-    { path: '/cases', label: 'Processos', icon: FileText },
-    { path: '/pnj', label: 'PNJ', icon: FileText },
-    { path: '/monitoring', label: 'Monitoramento', icon: Radar },
-    { path: '/deadlines', label: 'Prazos', icon: Clock },
-    { path: '/hearings', label: 'Audiências', icon: Gavel },
-    { path: '/updates', label: 'Atualizações', icon: Bell },
+    // Agenda, Pessoas e Processos serão renderizados como dropdowns separadamente
     { path: '/legal-documents', label: 'Documentos', icon: Scale },
     { path: '/documents', label: 'Uploads', icon: FolderOpen },
     { path: '/leads', label: 'Leads', icon: UserPlus },
@@ -686,6 +691,73 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 </div>
               )}
 
+              {/* Dropdown Processos */}
+              <button
+                onClick={() => setProcessosOpen(!processosOpen)}
+                className={`w-full flex items-center ${
+                  sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-6'
+                } py-3 transition-all duration-200 font-medium ${
+                  processosItems.some(item => location.pathname.startsWith(item.path))
+                    ? 'bg-primary-50 text-primary-600'
+                    : 'text-neutral-700 hover:bg-neutral-50 hover:text-primary-600'
+                }`}
+                title={sidebarCollapsed ? 'Processos' : ''}
+              >
+                <FileText size={20} />
+                {!sidebarCollapsed && (
+                  <div className="flex items-center justify-between flex-1">
+                    <span className="text-sm">Processos</span>
+                    <ChevronDown
+                      size={16}
+                      className={`transition-transform duration-200 ${processosOpen ? 'rotate-180' : ''}`}
+                    />
+                  </div>
+                )}
+              </button>
+              {(processosOpen || sidebarCollapsed) && (
+                <div className={sidebarCollapsed ? '' : 'bg-neutral-50'}>
+                  {processosItems.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = location.pathname === item.path;
+                    const showDeadlinesBadge = item.path === '/deadlines' && deadlinesDueToday && deadlinesDueToday.count > 0;
+                    return (
+                      <Link
+                        key={item.path}
+                        to={item.path}
+                        className={`flex items-center ${
+                          sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-6 pl-10'
+                        } py-2.5 transition-all duration-200 font-medium ${
+                          isActive
+                            ? 'bg-primary-50 text-primary-600 border-r-4 border-primary-500'
+                            : 'text-neutral-600 hover:bg-neutral-100 hover:text-primary-600'
+                        }`}
+                        onClick={() => setSidebarOpen(false)}
+                        title={sidebarCollapsed ? item.label : ''}
+                      >
+                        <div className="relative">
+                          <Icon size={18} />
+                          {showDeadlinesBadge && sidebarCollapsed && (
+                            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                              {deadlinesDueToday && deadlinesDueToday.count > 9 ? '9+' : deadlinesDueToday?.count}
+                            </span>
+                          )}
+                        </div>
+                        {!sidebarCollapsed && (
+                          <div className="flex items-center justify-between flex-1">
+                            <span className="text-sm">{item.label}</span>
+                            {showDeadlinesBadge && (
+                              <span className="bg-red-500 text-white text-xs font-bold rounded-full px-2 py-0.5 ml-2">
+                                {deadlinesDueToday?.count}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+
               {/* Demais itens do menu (exceto Dashboard que já foi renderizado) */}
               {menuItems.filter(item => item.path !== '/dashboard').map((item) => {
                 const Icon = item.icon;
@@ -693,24 +765,18 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
                 // Badge para Contas a Pagar
                 const showAccountsBadge = item.path === '/accounts-payable' && accountsDueToday && accountsDueToday.count > 0;
-                // Badge para Prazos
-                const showDeadlinesBadge = item.path === '/deadlines' && deadlinesDueToday && deadlinesDueToday.count > 0;
                 // Badge para Portal do Cliente (mensagens não lidas)
                 const showMessagesBadge = item.path === '/announcements' && unreadMessagesCount && unreadMessagesCount.count > 0;
                 // Badge genérico
-                const showBadge = showAccountsBadge || showDeadlinesBadge || showMessagesBadge;
+                const showBadge = showAccountsBadge || showMessagesBadge;
                 const badgeCount = showAccountsBadge
                   ? accountsDueToday?.count
-                  : (showDeadlinesBadge
-                    ? deadlinesDueToday?.count
-                    : (showMessagesBadge ? unreadMessagesCount?.count : 0));
+                  : (showMessagesBadge ? unreadMessagesCount?.count : 0);
                 const badgeTitle = showAccountsBadge
                   ? `${item.label} (${accountsDueToday?.count} vencendo hoje)`
-                  : (showDeadlinesBadge
-                    ? `${item.label} (${deadlinesDueToday?.count} vencendo hoje)`
-                    : (showMessagesBadge
-                      ? `${item.label} (${unreadMessagesCount?.count} mensagem(ns) não lida(s))`
-                      : item.label));
+                  : (showMessagesBadge
+                    ? `${item.label} (${unreadMessagesCount?.count} mensagem(ns) não lida(s))`
+                    : item.label);
 
                 return (
                   <Link
@@ -742,9 +808,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                             className="bg-red-500 text-white text-xs font-bold rounded-full px-2 py-0.5 ml-2"
                             title={showAccountsBadge
                               ? `R$ ${accountsDueToday?.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} vencendo hoje`
-                              : (showDeadlinesBadge
-                                ? `${deadlinesDueToday?.count} prazo(s) vencendo hoje`
-                                : `${unreadMessagesCount?.count} mensagem(ns) não lida(s)`)}
+                              : `${unreadMessagesCount?.count} mensagem(ns) não lida(s)`}
                           >
                             {badgeCount}
                           </span>
