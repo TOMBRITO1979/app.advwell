@@ -101,6 +101,7 @@ model Company {
 
   // Google Calendar
   googleCalendarCompanyConfig  GoogleCalendarCompanyConfig?
+  googleCalendarConfigs        GoogleCalendarConfig[]
 
   // PNJ - Processos Não Judiciais
   pnjs                  PNJ[]
@@ -1551,6 +1552,7 @@ model GoogleCalendarCompanyConfig {
 model GoogleCalendarConfig {
   id            String   @id @default(uuid())
   userId        String   @unique  // Conexão por usuário (1:1)
+  companyId     String   // Isolamento direto de tenant
 
   // OAuth Tokens (criptografados com ENCRYPTION_KEY via AES-256-CBC)
   accessToken   String   @db.Text
@@ -1566,7 +1568,9 @@ model GoogleCalendarConfig {
   updatedAt     DateTime @updatedAt
 
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company       Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
+  @@index([companyId])
   @@map("google_calendar_configs")
 }
 

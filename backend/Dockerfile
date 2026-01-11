@@ -46,6 +46,10 @@ COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/jest.config.prod.js ./jest.config.js
 
+# Copy Docker Secrets entrypoint script
+COPY scripts/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 # Change ownership
 RUN chown -R nodejs:nodejs /app
 
@@ -54,4 +58,6 @@ USER nodejs
 
 EXPOSE 3000
 
+# Use entrypoint to load Docker Secrets into env vars
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 CMD ["sh", "-c", "npx prisma migrate deploy || echo 'Migration skipped (already applied or failed)' && node dist/index.js"]

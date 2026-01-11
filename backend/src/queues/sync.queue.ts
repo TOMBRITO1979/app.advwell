@@ -4,6 +4,7 @@ import datajudService from '../services/datajud.service';
 import { AIService } from '../services/ai/ai.service';
 import { createRedisClient } from '../utils/redis';
 import { appLogger } from '../utils/logger';
+import { moveToDeadLetter } from './dead-letter.queue';
 
 // ESCALABILIDADE: Parametros configuráveis via ambiente
 const SYNC_CONCURRENCY = parseInt(process.env.SYNC_CONCURRENCY || '5');
@@ -262,8 +263,13 @@ syncQueue.on('completed', (job, result) => {
   }
 });
 
-syncQueue.on('failed', (job, err) => {
+syncQueue.on('failed', async (job, err) => {
   appLogger.error('Job failed', err as Error, { jobName: job.name });
+
+  // Move para Dead Letter Queue se excedeu todas as tentativas
+  if (job.attemptsMade >= (job.opts.attempts || 3)) {
+    await moveToDeadLetter('datajud-sync', job, err);
+  }
 });
 
 syncQueue.on('stalled', (job) => {

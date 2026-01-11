@@ -5,6 +5,7 @@ import { decrypt } from '../utils/encryption';
 import { replaceTemplateVariables } from '../utils/email-templates';
 import { createRedisClient } from '../utils/redis';
 import { appLogger } from '../utils/logger';
+import { moveToDeadLetter } from './dead-letter.queue';
 
 // ISSUE 1 FIX: Controle de processadores para evitar duplicação em múltiplas replicas
 const ENABLE_QUEUE_PROCESSORS = process.env.ENABLE_QUEUE_PROCESSORS !== 'false'; // Default: true
@@ -166,8 +167,13 @@ emailQueue.on('completed', (job, result) => {
   }
 });
 
-emailQueue.on('failed', (job, err) => {
+emailQueue.on('failed', async (job, err) => {
   appLogger.error('Email job failed', err as Error, { jobName: job.name });
+
+  // Move para Dead Letter Queue se excedeu todas as tentativas
+  if (job.attemptsMade >= (job.opts.attempts || 3)) {
+    await moveToDeadLetter('email-campaign', job, err);
+  }
 });
 
 } else {

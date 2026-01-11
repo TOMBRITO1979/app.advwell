@@ -246,7 +246,7 @@ services:
 
   # OTIMIZADO: 16GB server - 2 replicas para 50-80 escritorios
   backend:
-    image: tomautomations/advtom-backend:v1.8.100
+    image: tomautomations/advtom-backend:v1.8.101
     environment:
       # Timezone Brasil (São Paulo)
       - TZ=${TZ:-America/Sao_Paulo}
@@ -368,7 +368,7 @@ services:
   # ISSUE 1 FIX: Separa processamento de jobs das replicas API
   # ===========================================
   backend-worker:
-    image: tomautomations/advtom-backend:v1.8.100
+    image: tomautomations/advtom-backend:v1.8.101
     environment:
       - TZ=${TZ:-America/Sao_Paulo}
       # ISSUE 3 FIX: sslmode=require para conexao criptografada
@@ -688,3 +688,36 @@ volumes:
   prometheus_data:
   alertmanager_data:
   grafana_data:
+
+# ===========================================
+# DOCKER SECRETS (opcional - migração gradual)
+# ===========================================
+# Para ativar, crie os secrets com:
+#   echo "valor" | docker secret create nome_do_secret -
+# E descomente as linhas de secrets nos serviços backend e backend-worker
+# Documentação: docs/DOCKER_SECRETS.md
+secrets:
+  postgres_password:
+    external: true
+  redis_password:
+    external: true
+  jwt_secret:
+    external: true
+  encryption_key:
+    external: true
+  aws_secret_access_key:
+    external: true
+  smtp_password:
+    external: true
+  datajud_api_key:
+    external: true
+  advapi_api_key:
+    external: true
+  advapi_webhook_key:
+    external: true
+  stripe_secret_key:
+    external: true
+  stripe_webhook_secret:
+    external: true
+  health_check_key:
+    external: true

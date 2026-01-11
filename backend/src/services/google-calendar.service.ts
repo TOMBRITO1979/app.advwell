@@ -165,6 +165,7 @@ class GoogleCalendarService {
       where: { userId: stateData.userId },
       create: {
         userId: stateData.userId,
+        companyId: stateData.companyId, // Isolamento de tenant
         accessToken: encryptedAccessToken,
         refreshToken: encryptedRefreshToken,
         tokenExpiry,
