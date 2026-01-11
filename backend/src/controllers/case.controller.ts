@@ -4,6 +4,7 @@ import prisma from '../utils/prisma';
 import datajudService from '../services/datajud.service';
 import { parse } from 'csv-parse/sync';
 import { sanitizeString } from '../utils/sanitize';
+import { normalizeProcessNumber } from '../utils/processNumber';
 import { AIService } from '../services/ai/ai.service';
 import { sendCaseUpdateNotification } from '../utils/email';
 import AuditService from '../services/audit.service';
@@ -126,8 +127,11 @@ export class CaseController {
 
   async create(req: AuthRequest, res: Response) {
     try {
-      const { clientId, processNumber, court, subject, value, notes, status, deadline, deadlineResponsibleId, lawyerId, informarCliente, linkProcesso, phase, nature, rite, distributionDate } = req.body;
+      const { clientId, processNumber: rawProcessNumber, court, subject, value, notes, status, deadline, deadlineResponsibleId, lawyerId, informarCliente, linkProcesso, phase, nature, rite, distributionDate } = req.body;
       const companyId = req.user!.companyId;
+
+      // Normalizar número do processo (apenas dígitos)
+      const processNumber = normalizeProcessNumber(rawProcessNumber);
 
       // Converter strings vazias em null/undefined
       const cleanValue = value === '' || value === null || value === undefined ? undefined : parseFloat(value);
@@ -715,7 +719,10 @@ export class CaseController {
       );
 
       if (!datajudData) {
-        return res.status(404).json({ error: 'Processo não encontrado no DataJud' });
+        return res.status(404).json({
+          error: 'Processo não encontrado no DataJud',
+          processNumber: caseData.processNumber,
+        });
       }
 
       // Deleta movimentações antigas
@@ -744,12 +751,39 @@ export class CaseController {
         ? getUltimoAndamento(datajudData.movimentos)
         : null;
 
-      // Atualiza a data de sincronização e o último andamento
+      // Extrai campos MTD 1.2
+      const numeroBoletimOcorrencia = datajudData.numeroBoletimOcorrencia?.join(', ') || null;
+      const numeroInqueritoPolicial = datajudData.numeroInqueritoPolicial?.join(', ') || null;
+
+      // Busca primeira prioridade encontrada nas partes
+      let prioridadeProcessual: string | null = null;
+      let prioridadeDataConcessao: Date | null = null;
+      let prioridadeDataFim: Date | null = null;
+
+      if (datajudData.partes) {
+        for (const parte of datajudData.partes) {
+          if (parte.prioridade && parte.prioridade.length > 0) {
+            const prioridade = parte.prioridade[0];
+            prioridadeProcessual = prioridade.tipoPrioridade;
+            prioridadeDataConcessao = prioridade.dataConcessao ? new Date(prioridade.dataConcessao) : null;
+            prioridadeDataFim = prioridade.dataFim ? new Date(prioridade.dataFim) : null;
+            break;
+          }
+        }
+      }
+
+      // Atualiza a data de sincronização, último andamento e campos MTD 1.2
       await prisma.case.update({
         where: { id },
         data: {
           lastSyncedAt: new Date(),
           ultimoAndamento,
+          // Campos MTD 1.2
+          numeroBoletimOcorrencia,
+          numeroInqueritoPolicial,
+          prioridadeProcessual,
+          prioridadeDataConcessao,
+          prioridadeDataFim,
         },
       });
 
@@ -807,6 +841,75 @@ export class CaseController {
     } catch (error) {
       appLogger.error('Erro ao sincronizar movimentações', error as Error);
       res.status(500).json({ error: 'Erro ao sincronizar movimentações' });
+    }
+  }
+
+  /**
+   * Sincroniza apenas dados do ADVAPI para um processo específico
+   * Busca publicações pelo número do processo na tabela local de publicações
+   */
+  async syncAdvapi(req: AuthRequest, res: Response) {
+    try {
+      const { id } = req.params;
+      const companyId = req.user!.companyId;
+
+      const caseData = await prisma.case.findFirst({
+        where: {
+          id,
+          companyId: companyId!,
+        },
+      });
+
+      if (!caseData) {
+        return res.status(404).json({ error: 'Processo não encontrado' });
+      }
+
+      // Busca a publicação mais recente para este número de processo
+      const latestPublication = await prisma.publication.findFirst({
+        where: {
+          companyId: companyId!,
+          numeroProcesso: caseData.processNumber,
+        },
+        orderBy: { dataPublicacao: 'desc' },
+      });
+
+      if (!latestPublication) {
+        return res.status(404).json({
+          error: 'Nenhuma publicação encontrada para este processo no ADVAPI',
+          processNumber: caseData.processNumber,
+        });
+      }
+
+      // Atualiza o caso com a última publicação do ADVAPI
+      const updatedCase = await prisma.case.update({
+        where: { id },
+        data: {
+          ultimaPublicacaoAdvapi: latestPublication.textoComunicacao || caseData.ultimaPublicacaoAdvapi,
+        },
+        include: {
+          client: true,
+          movements: {
+            orderBy: { movementDate: 'desc' },
+          },
+        },
+      });
+
+      appLogger.info('Processo sincronizado via ADVAPI manualmente', {
+        caseId: id,
+        processNumber: caseData.processNumber,
+        publicationId: latestPublication.id,
+        publicationDate: latestPublication.dataPublicacao,
+      });
+
+      res.json({
+        ...updatedCase,
+        syncSource: 'advapi',
+        publicationDate: latestPublication.dataPublicacao,
+        message: 'Publicação ADVAPI atualizada com sucesso',
+      });
+    } catch (error) {
+      appLogger.error('Erro ao sincronizar ADVAPI', error as Error);
+      res.status(500).json({ error: 'Erro ao sincronizar ADVAPI' });
     }
   }
 
@@ -1024,11 +1127,13 @@ export class CaseController {
 
       // Busca processos onde:
       // 1. lastSyncedAt não é null (foi sincronizado)
-      // 2. lastAcknowledgedAt é null OU lastSyncedAt > lastAcknowledgedAt
+      // 2. ultimoAndamento não é null (tem dados do DataJud - exclui processos só do ADVAPI)
+      // 3. lastAcknowledgedAt é null OU lastSyncedAt > lastAcknowledgedAt
       const pendingUpdates = await prisma.case.findMany({
         where: {
           companyId,
           lastSyncedAt: { not: null },
+          ultimoAndamento: { not: null }, // Apenas processos com dados do DataJud
           OR: [
             { lastAcknowledgedAt: null },
             {

@@ -2,17 +2,23 @@ import Queue from 'bull';
 import prisma from '../utils/prisma';
 import { createRedisClient, redis } from '../utils/redis';
 import { appLogger } from '../utils/logger';
-import { getAdvApiService } from '../services/advapi.service';
+import { getAdvApiService, AdvApiPublicacao } from '../services/advapi.service';
+import { normalizeProcessNumber } from '../utils/processNumber';
 
 // ESCALABILIDADE: Configuração via ambiente
 const MONITORING_CONCURRENCY = parseInt(process.env.MONITORING_CONCURRENCY || '3');
-const MONITORING_BATCH_SIZE = parseInt(process.env.MONITORING_BATCH_SIZE || '100');
 const ENABLE_QUEUE_PROCESSORS = process.env.ENABLE_QUEUE_PROCESSORS !== 'false';
+
+// Configuração de lotes
+const BATCH_DAYS = 7; // Processar 7 dias por lote
+const MAX_BATCHES_PER_JOB = 12; // Máximo 12 lotes por job (84 dias)
+const BATCH_DELAY_MS = 1000; // 1 segundo entre lotes
 
 appLogger.info('Monitoring Queue config', {
   concurrency: MONITORING_CONCURRENCY,
-  batchSize: MONITORING_BATCH_SIZE,
   processorsEnabled: ENABLE_QUEUE_PROCESSORS,
+  batchDays: BATCH_DAYS,
+  maxBatchesPerJob: MAX_BATCHES_PER_JOB,
 });
 
 // Interface para status da consulta
@@ -22,8 +28,9 @@ interface MonitoringConsultaStatus {
   totalPublications: number;
   savedCount: number;
   importedCount: number;
-  currentPage: number;
-  totalPages: number;
+  advogadoCadastrado: boolean;
+  currentBatch: number;
+  totalBatches: number;
   errorMessage?: string;
   startedAt?: string;
   completedAt?: string;
@@ -36,7 +43,7 @@ const monitoringQueue = new Queue('oab-monitoring', {
     attempts: 3,
     backoff: {
       type: 'exponential',
-      delay: 10000, // 10 segundos entre retentativas
+      delay: 10000,
     },
     removeOnComplete: 100,
     removeOnFail: 500,
@@ -48,7 +55,7 @@ async function updateConsultaStatus(consultaId: string, status: Partial<Monitori
   const key = `monitoring:${consultaId}:status`;
   const current = await redis.get(key);
   const parsed = current ? JSON.parse(current) : {};
-  await redis.setex(key, 86400 * 7, JSON.stringify({ ...parsed, ...status })); // TTL 7 dias
+  await redis.setex(key, 86400 * 7, JSON.stringify({ ...parsed, ...status }));
 }
 
 // Helper para buscar status
@@ -56,6 +63,18 @@ export async function getConsultaQueueStatus(consultaId: string): Promise<Monito
   const key = `monitoring:${consultaId}:status`;
   const data = await redis.get(key);
   return data ? JSON.parse(data) : null;
+}
+
+// Helper para formatar data como YYYY-MM-DD
+function formatDate(date: Date): string {
+  return date.toISOString().split('T')[0];
+}
+
+// Helper para adicionar dias a uma data
+function addDays(date: Date, days: number): Date {
+  const result = new Date(date);
+  result.setDate(result.getDate() + days);
+  return result;
 }
 
 // Enfileirar nova consulta de OAB
@@ -80,8 +99,9 @@ export async function enqueueOabConsulta(
     totalPublications: 0,
     savedCount: 0,
     importedCount: 0,
-    currentPage: 0,
-    totalPages: 0,
+    advogadoCadastrado: false,
+    currentBatch: 0,
+    totalBatches: 0,
   });
 
   // Enfileirar job
@@ -102,13 +122,14 @@ export async function enqueueOabConsulta(
     },
     {
       jobId,
-      delay: 1000, // Pequeno delay para garantir que o registro foi salvo
+      delay: 500,
     }
   );
 
   appLogger.info('OAB consulta enqueued', {
     jobId,
     consultaId,
+    advogadoNome,
     advogadoOab,
     ufOab,
   });
@@ -132,9 +153,8 @@ if (ENABLE_QUEUE_PROCESSORS) {
       advogadoNome,
       advogadoOab,
       ufOab,
-      dataInicio,
-      dataFim,
-      tribunais,
+      dataInicio: requestedDataInicio,
+      dataFim: requestedDataFim,
       autoImport,
     } = job.data;
 
@@ -150,68 +170,80 @@ if (ENABLE_QUEUE_PROCESSORS) {
         data: { status: 'PROCESSING' },
       });
 
-      // Iniciar consulta na ADVAPI
-      const advApiService = getAdvApiService();
-
-      appLogger.info('Starting ADVAPI consulta', {
-        consultaId,
-        advogadoOab,
-        ufOab,
-        dataInicio,
-        dataFim,
+      // Buscar OAB monitorada para pegar lastSyncDate
+      const monitoredOab = await prisma.monitoredOAB.findUnique({
+        where: { id: monitoredOabId },
+        select: { lastSyncDate: true },
       });
 
-      const response = await advApiService.iniciarConsulta({
-        companyId,
-        advogadoNome,
-        advogadoOab,
-        ufOab,
-        tribunais,
-        dataInicio,
-        dataFim,
-      });
-
-      if (!response.success) {
-        throw new Error(response.error || 'Erro ao iniciar consulta na ADVAPI');
-      }
-
-      const advApiConsultaId = response.consultaId;
-
-      // Atualizar com ID da ADVAPI
-      await prisma.oABConsulta.update({
-        where: { id: consultaId },
-        data: { advApiConsultaId },
-      });
-
-      // Aguardar e verificar status (polling)
-      await updateConsultaStatus(consultaId, { status: 'fetching' });
-
-      let apiStatus = await advApiService.verificarStatusConsulta(advApiConsultaId!);
-      let attempts = 0;
-      const maxAttempts = 60; // Máximo 10 minutos (60 * 10s)
-
-      while (apiStatus && apiStatus.status !== 'completed' && apiStatus.status !== 'failed' && attempts < maxAttempts) {
-        await new Promise(resolve => setTimeout(resolve, 10000)); // Espera 10 segundos
-        apiStatus = await advApiService.verificarStatusConsulta(advApiConsultaId!);
-        attempts++;
-
-        if (apiStatus?.processedCount) {
-          await updateConsultaStatus(consultaId, {
-            progress: Math.round((apiStatus.processedCount / (apiStatus.totalPublicacoes || 1)) * 50),
+      // Determinar data inicial real (usar lastSyncDate se disponível para sync incremental)
+      let effectiveDataInicio = new Date(requestedDataInicio);
+      if (monitoredOab?.lastSyncDate) {
+        const lastSync = new Date(monitoredOab.lastSyncDate);
+        // Usar o dia seguinte ao último sync para não repetir
+        const nextDay = addDays(lastSync, 1);
+        if (nextDay > effectiveDataInicio) {
+          effectiveDataInicio = nextDay;
+          appLogger.info('Using incremental sync', {
+            consultaId,
+            lastSyncDate: monitoredOab.lastSyncDate,
+            effectiveDataInicio: formatDate(effectiveDataInicio),
           });
         }
       }
 
-      if (!apiStatus || apiStatus.status === 'failed') {
-        throw new Error(apiStatus?.errorMessage || 'Consulta falhou na ADVAPI');
+      const dataFim = new Date(requestedDataFim);
+
+      // Se data inicial é maior que data fim, não há nada para sincronizar
+      if (effectiveDataInicio > dataFim) {
+        appLogger.info('No new data to sync', {
+          consultaId,
+          effectiveDataInicio: formatDate(effectiveDataInicio),
+          dataFim: formatDate(dataFim),
+        });
+
+        await prisma.oABConsulta.update({
+          where: { id: consultaId },
+          data: {
+            status: 'COMPLETED',
+            totalPublicacoes: 0,
+            importedCount: 0,
+            completedAt: new Date(),
+            notes: 'Sem novas publicações para sincronizar (já atualizado)',
+          },
+        });
+
+        await updateConsultaStatus(consultaId, {
+          status: 'completed',
+          progress: 100,
+          totalPublications: 0,
+          savedCount: 0,
+          completedAt: new Date().toISOString(),
+        });
+
+        return { success: true, message: 'No new data to sync' };
       }
 
-      if (attempts >= maxAttempts) {
-        throw new Error('Timeout aguardando resposta da ADVAPI');
-      }
+      // Obter serviço ADVAPI
+      const advApiService = getAdvApiService();
 
-      // Buscar publicações paginadas
-      await updateConsultaStatus(consultaId, { status: 'saving' });
+      // Calcular número de lotes necessários
+      const totalDays = Math.ceil((dataFim.getTime() - effectiveDataInicio.getTime()) / (1000 * 60 * 60 * 24));
+      const totalBatches = Math.min(Math.ceil(totalDays / BATCH_DAYS), MAX_BATCHES_PER_JOB);
+
+      appLogger.info('Starting batch processing', {
+        consultaId,
+        totalDays,
+        totalBatches,
+        effectiveDataInicio: formatDate(effectiveDataInicio),
+        dataFim: formatDate(dataFim),
+      });
+
+      await updateConsultaStatus(consultaId, {
+        status: 'fetching',
+        totalBatches,
+        currentBatch: 0,
+      });
 
       // Buscar limite de monitoramento da empresa
       const company = await prisma.company.findUnique({
@@ -219,7 +251,7 @@ if (ENABLE_QUEUE_PROCESSORS) {
         select: { monitoringLimit: true },
       });
 
-      const monthlyLimit = company?.monitoringLimit || 0; // 0 = ilimitado
+      const monthlyLimit = company?.monitoringLimit || 0;
 
       // Contar publicações já importadas neste mês
       const startOfMonth = new Date();
@@ -233,102 +265,152 @@ if (ENABLE_QUEUE_PROCESSORS) {
         },
       });
 
-      // Calcular quantas ainda podem ser importadas
       const remainingQuota = monthlyLimit > 0 ? Math.max(0, monthlyLimit - currentMonthCount) : Infinity;
-      let quotaExhausted = false;
+      let quotaExhausted = monthlyLimit > 0 && remainingQuota === 0;
 
-      if (monthlyLimit > 0) {
-        appLogger.info('Monitoring limit check', {
-          consultaId,
-          companyId,
-          monthlyLimit,
-          currentMonthCount,
-          remainingQuota,
-        });
-
-        if (remainingQuota === 0) {
-          appLogger.warn('Monthly monitoring limit reached', {
-            consultaId,
-            companyId,
-            monthlyLimit,
-            currentMonthCount,
-          });
-          quotaExhausted = true;
-        }
-      }
-
-      let page = 1;
       let totalPublications = 0;
       let savedCount = 0;
       let importedCount = 0;
-      let hasMore = !quotaExhausted;
+      let advogadoCadastrado = false;
+      let latestPublicationDate: Date | null = null;
 
-      while (hasMore) {
-        const pubResponse = await advApiService.listarPublicacoes(
-          advogadoOab,
-          ufOab,
-          page,
-          MONITORING_BATCH_SIZE,
-          dataInicio,
-          dataFim
-        );
+      // Processar em lotes
+      for (let batchIndex = 0; batchIndex < totalBatches && !quotaExhausted; batchIndex++) {
+        const batchStart = addDays(effectiveDataInicio, batchIndex * BATCH_DAYS);
+        const batchEnd = new Date(Math.min(
+          addDays(batchStart, BATCH_DAYS - 1).getTime(),
+          dataFim.getTime()
+        ));
 
-        if (!pubResponse.success || pubResponse.publicacoes.length === 0) {
-          hasMore = false;
-          break;
-        }
-
-        totalPublications = pubResponse.total;
-        const totalPages = pubResponse.totalPages;
-
-        await updateConsultaStatus(consultaId, {
-          totalPublications,
-          currentPage: page,
-          totalPages,
-          progress: 50 + Math.round((page / totalPages) * 50),
+        appLogger.info('Processing batch', {
+          consultaId,
+          batchIndex: batchIndex + 1,
+          totalBatches,
+          batchStart: formatDate(batchStart),
+          batchEnd: formatDate(batchEnd),
         });
 
-        // Salvar publicações em batch
-        for (const pub of pubResponse.publicacoes) {
+        await updateConsultaStatus(consultaId, {
+          currentBatch: batchIndex + 1,
+          progress: Math.round((batchIndex / totalBatches) * 100),
+        });
+
+        // Consultar buffer para este lote
+        const bufferResponse = await advApiService.consultarBuffer(
+          companyId,
+          advogadoNome,
+          formatDate(batchStart),
+          formatDate(batchEnd)
+        );
+
+        // Se advogado não está cadastrado, cadastrar e sair
+        if (!bufferResponse.encontrado && batchIndex === 0) {
+          appLogger.info('Advogado não encontrado, cadastrando na ADVAPI', {
+            consultaId,
+            advogadoNome,
+            advogadoOab,
+            ufOab,
+          });
+
+          const cadastroResponse = await advApiService.cadastrarAdvogado(
+            companyId,
+            advogadoNome,
+            advogadoOab,
+            ufOab
+          );
+
+          if (cadastroResponse.error) {
+            throw new Error(`Erro ao cadastrar advogado: ${cadastroResponse.error}`);
+          }
+
+          advogadoCadastrado = true;
+
+          await prisma.oABConsulta.update({
+            where: { id: consultaId },
+            data: {
+              status: 'COMPLETED',
+              totalPublicacoes: 0,
+              importedCount: 0,
+              completedAt: new Date(),
+              notes: 'Advogado cadastrado para monitoramento. Publicações serão disponibilizadas após processamento (7h-21h, seg-sáb).',
+            },
+          });
+
+          await prisma.monitoredOAB.update({
+            where: { id: monitoredOabId },
+            data: { lastConsultaAt: new Date() },
+          });
+
+          await updateConsultaStatus(consultaId, {
+            status: 'completed',
+            progress: 100,
+            advogadoCadastrado: true,
+            totalPublications: 0,
+            savedCount: 0,
+            importedCount: 0,
+            completedAt: new Date().toISOString(),
+          });
+
+          return {
+            success: true,
+            advogadoCadastrado: true,
+            totalPublications: 0,
+            savedCount: 0,
+            importedCount: 0,
+          };
+        }
+
+        // Processar publicações deste lote
+        const publicacoes = bufferResponse.publicacoes || [];
+        totalPublications += publicacoes.length;
+
+        await updateConsultaStatus(consultaId, { status: 'saving' });
+
+        for (const pub of publicacoes) {
+          if (quotaExhausted) break;
+
           try {
+            // Normalizar número do processo
+            const numeroProcesso = normalizeProcessNumber(pub.numeroProcesso);
+
             // Verificar se já existe
             const existing = await prisma.publication.findFirst({
               where: {
                 companyId,
                 monitoredOabId,
-                numeroProcesso: pub.numeroProcesso,
+                numeroProcesso,
               },
             });
 
             if (!existing) {
+              const pubDate = new Date(pub.dataPublicacao || pub.dataDisponibilizacao || new Date());
+
               const newPub = await prisma.publication.create({
                 data: {
                   companyId,
                   monitoredOabId,
-                  numeroProcesso: pub.numeroProcesso,
-                  siglaTribunal: pub.siglaTribunal,
-                  dataPublicacao: new Date(pub.dataPublicacao),
-                  tipoComunicacao: pub.tipoComunicacao || null,
-                  textoComunicacao: pub.textoComunicacao || null,
+                  numeroProcesso,
+                  siglaTribunal: pub.siglaTribunal || pub.tribunal || 'N/A',
+                  dataPublicacao: pubDate,
+                  tipoComunicacao: pub.tipoComunicacao || pub.classeProcessual || null,
+                  textoComunicacao: pub.textoLimpo || pub.textoComunicacao || pub.texto || null,
                 },
               });
 
               savedCount++;
 
-              // Verificar se atingiu o limite mensal
+              // Atualizar data da publicação mais recente
+              if (!latestPublicationDate || pubDate > latestPublicationDate) {
+                latestPublicationDate = pubDate;
+              }
+
+              // Verificar limite mensal
               if (monthlyLimit > 0 && savedCount >= remainingQuota) {
-                appLogger.info('Monthly monitoring limit reached during import', {
-                  consultaId,
-                  companyId,
-                  monthlyLimit,
-                  savedCount,
-                  remainingQuota,
-                });
                 quotaExhausted = true;
               }
 
               // Auto-importar se configurado
-              if (autoImport) {
+              if (autoImport && !quotaExhausted) {
                 const imported = await autoImportPublication(companyId, newPub.id, pub);
                 if (imported) importedCount++;
               }
@@ -338,29 +420,32 @@ if (ENABLE_QUEUE_PROCESSORS) {
               numeroProcesso: pub.numeroProcesso,
             });
           }
-
-          // Sair do loop se o limite foi atingido
-          if (quotaExhausted) break;
         }
 
-        await updateConsultaStatus(consultaId, { savedCount, importedCount });
-
-        // Verificar se deve continuar para próxima página
-        if (quotaExhausted) {
-          hasMore = false;
-          appLogger.info('Stopping pagination due to quota limit', {
-            consultaId,
-            savedCount,
-            remainingQuota,
+        // Checkpoint: Atualizar lastSyncDate após cada lote processado com sucesso
+        if (savedCount > 0 || publicacoes.length > 0) {
+          await prisma.monitoredOAB.update({
+            where: { id: monitoredOabId },
+            data: { lastSyncDate: batchEnd },
           });
-        } else {
-          page++;
-          hasMore = page <= totalPages;
+
+          appLogger.info('Batch checkpoint saved', {
+            consultaId,
+            batchIndex: batchIndex + 1,
+            lastSyncDate: formatDate(batchEnd),
+            savedCount,
+          });
         }
 
-        // Pequeno delay entre páginas para não sobrecarregar
-        if (hasMore) {
-          await new Promise(resolve => setTimeout(resolve, 1000));
+        await updateConsultaStatus(consultaId, {
+          savedCount,
+          importedCount,
+          totalPublications,
+        });
+
+        // Delay entre lotes para evitar sobrecarga
+        if (batchIndex < totalBatches - 1 && !quotaExhausted) {
+          await new Promise(resolve => setTimeout(resolve, BATCH_DELAY_MS));
         }
       }
 
@@ -380,18 +465,19 @@ if (ENABLE_QUEUE_PROCESSORS) {
         },
       });
 
-      // Atualizar última consulta da OAB
+      // Atualizar última consulta e última data sincronizada
       await prisma.monitoredOAB.update({
         where: { id: monitoredOabId },
         data: {
           lastConsultaAt: new Date(),
-          lastConsultaId: advApiConsultaId,
+          lastSyncDate: latestPublicationDate || dataFim,
         },
       });
 
       await updateConsultaStatus(consultaId, {
         status: 'completed',
         progress: 100,
+        advogadoCadastrado,
         totalPublications,
         savedCount,
         importedCount,
@@ -404,11 +490,12 @@ if (ENABLE_QUEUE_PROCESSORS) {
         savedCount,
         importedCount,
         quotaExhausted,
-        monthlyLimit,
+        totalBatches,
       });
 
       return {
         success: true,
+        advogadoCadastrado,
         totalPublications,
         savedCount,
         importedCount,
@@ -468,16 +555,27 @@ if (ENABLE_QUEUE_PROCESSORS) {
 async function autoImportPublication(
   companyId: string,
   publicationId: string,
-  pubData: any
+  pubData: AdvApiPublicacao
 ): Promise<boolean> {
   try {
+    // Normalizar número do processo
+    const processNumber = normalizeProcessNumber(pubData.numeroProcesso);
+
     // Verificar se já existe processo com este número
     const existingCase = await prisma.case.findFirst({
-      where: { companyId, processNumber: pubData.numeroProcesso },
+      where: { companyId, processNumber },
     });
 
     if (existingCase) {
-      // Apenas marcar como importado
+      // Atualiza o campo ADVAPI do processo existente
+      await prisma.case.update({
+        where: { id: existingCase.id },
+        data: {
+          ultimaPublicacaoAdvapi: pubData.textoLimpo || pubData.textoComunicacao || pubData.texto || existingCase.ultimaPublicacaoAdvapi,
+        },
+      });
+
+      // Marcar publicação como importada
       await prisma.publication.update({
         where: { id: publicationId },
         data: {
@@ -486,28 +584,22 @@ async function autoImportPublication(
           importedAt: new Date(),
         },
       });
+
+      appLogger.info('Processo existente atualizado com nova publicação ADVAPI', {
+        caseId: existingCase.id,
+        processNumber,
+      });
+
       return true;
     }
 
-    // Criar cliente genérico
-    const client = await prisma.client.create({
-      data: {
-        companyId,
-        name: `Parte - ${pubData.numeroProcesso}`,
-        notes: `Cliente criado automaticamente via monitoramento. Tribunal: ${pubData.siglaTribunal}. Aguardando dados completos.`,
-      },
-    });
-
-    // Criar caso
+    // Criar processo apenas com número e andamento ADVAPI
+    // Demais dados (tribunal, assunto, cliente) serão preenchidos manualmente pelo usuário
     const newCase = await prisma.case.create({
       data: {
         companyId,
-        clientId: client.id,
-        processNumber: pubData.numeroProcesso,
-        court: pubData.siglaTribunal,
-        subject: pubData.tipoComunicacao || 'Processo importado via monitoramento',
-        status: 'ACTIVE',
-        ultimaPublicacaoAdvapi: pubData.textoComunicacao,
+        processNumber,
+        ultimaPublicacaoAdvapi: pubData.textoLimpo || pubData.textoComunicacao || pubData.texto || null,
       },
     });
 
@@ -517,7 +609,6 @@ async function autoImportPublication(
       data: {
         imported: true,
         importedCaseId: newCase.id,
-        importedClientId: client.id,
         importedAt: new Date(),
       },
     });
@@ -526,7 +617,7 @@ async function autoImportPublication(
   } catch (error) {
     appLogger.error('Auto import failed', error as Error, {
       publicationId,
-      processNumber: pubData.numeroProcesso,
+      processNumber: normalizeProcessNumber(pubData.numeroProcesso),
     });
     return false;
   }
@@ -564,9 +655,9 @@ export const enqueueDailyMonitoring = async () => {
 
   appLogger.info('Found active OABs for daily monitoring', { count: validOabs.length });
 
-  // Últimos 3 dias
+  // Período: últimos 7 dias (será ajustado pelo lastSyncDate)
   const dataFim = new Date().toISOString().split('T')[0];
-  const dataInicio = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+  const dataInicio = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
   for (const oab of validOabs) {
     try {
@@ -597,7 +688,7 @@ export const enqueueDailyMonitoring = async () => {
       );
 
       // Delay entre OABs para distribuir carga
-      await new Promise(resolve => setTimeout(resolve, Math.random() * 5000));
+      await new Promise(resolve => setTimeout(resolve, Math.random() * 2000));
 
     } catch (error) {
       appLogger.error('Failed to enqueue daily monitoring for OAB', error as Error, {

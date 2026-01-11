@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import prisma from '../utils/prisma';
 import { appLogger } from '../utils/logger';
+import { normalizeProcessNumber } from '../utils/processNumber';
 
 const router = Router();
 
@@ -145,10 +146,13 @@ router.post('/', async (req: Request, res: Response) => {
 async function processNovaPublicacaoCallback(payload: any) {
   const { companyId, advogadoNome, advogadoId, publicacao } = payload;
 
+  // Normalizar número do processo (apenas dígitos)
+  const numeroProcesso = normalizeProcessNumber(publicacao?.numeroProcesso);
+
   appLogger.info('ADVAPI Webhook: Processando nova publicação', {
     companyId,
     advogadoNome,
-    numeroProcesso: publicacao?.numeroProcesso,
+    numeroProcesso,
   });
 
   if (!companyId || !publicacao) {
@@ -176,21 +180,21 @@ async function processNovaPublicacaoCallback(payload: any) {
       where: {
         companyId,
         monitoredOabId: monitoredOab.id,
-        numeroProcesso: publicacao.numeroProcesso,
+        numeroProcesso,
       },
     });
 
     if (existing) {
-      appLogger.debug('ADVAPI Webhook: Publicação já existe', { numeroProcesso: publicacao.numeroProcesso });
+      appLogger.debug('ADVAPI Webhook: Publicação já existe', { numeroProcesso });
       return;
     }
 
-    // Criar nova publicação (com texto limpo)
+    // Criar nova publicação (com texto limpo e número normalizado)
     const newPub = await prisma.publication.create({
       data: {
         companyId,
         monitoredOabId: monitoredOab.id,
-        numeroProcesso: publicacao.numeroProcesso,
+        numeroProcesso,
         siglaTribunal: publicacao.siglaTribunal,
         dataPublicacao: new Date(publicacao.dataPublicacao),
         tipoComunicacao: publicacao.tipoComunicacao || null,
@@ -200,7 +204,7 @@ async function processNovaPublicacaoCallback(payload: any) {
 
     appLogger.info('ADVAPI Webhook: Publicação salva', {
       id: newPub.id,
-      numeroProcesso: publicacao.numeroProcesso,
+      numeroProcesso,
     });
 
     // Auto-importar se configurado
@@ -392,9 +396,12 @@ async function autoImportPublication(
   pubData: any
 ): Promise<boolean> {
   try {
+    // Normalizar número do processo
+    const processNumber = normalizeProcessNumber(pubData.numeroProcesso);
+
     // Verificar se já existe processo com este número
     const existingCase = await prisma.case.findFirst({
-      where: { companyId, processNumber: pubData.numeroProcesso },
+      where: { companyId, processNumber },
     });
 
     if (existingCase) {
@@ -410,25 +417,13 @@ async function autoImportPublication(
       return true;
     }
 
-    // Criar cliente genérico
-    const client = await prisma.client.create({
-      data: {
-        companyId,
-        name: `Parte - ${pubData.numeroProcesso}`,
-        notes: `Cliente criado automaticamente via monitoramento. Tribunal: ${pubData.siglaTribunal || pubData.tribunal}. Aguardando dados completos.`,
-      },
-    });
-
-    // Criar caso
+    // Criar processo apenas com número e andamento ADVAPI
+    // Demais dados (tribunal, assunto, cliente) serão preenchidos manualmente pelo usuário
     const newCase = await prisma.case.create({
       data: {
         companyId,
-        clientId: client.id,
-        processNumber: pubData.numeroProcesso,
-        court: pubData.siglaTribunal || pubData.tribunal,
-        subject: pubData.tipoComunicacao || pubData.tipo || 'Processo importado via monitoramento',
-        status: 'ACTIVE',
-        ultimaPublicacaoAdvapi: pubData.textoComunicacao || pubData.texto,
+        processNumber,
+        ultimaPublicacaoAdvapi: pubData.textoComunicacao || pubData.texto || null,
       },
     });
 
@@ -438,7 +433,6 @@ async function autoImportPublication(
       data: {
         imported: true,
         importedCaseId: newCase.id,
-        importedClientId: client.id,
         importedAt: new Date(),
       },
     });
@@ -447,7 +441,7 @@ async function autoImportPublication(
   } catch (error) {
     appLogger.error('ADVAPI Webhook: Auto import failed', error as Error, {
       publicationId,
-      processNumber: pubData.numeroProcesso,
+      processNumber: normalizeProcessNumber(pubData.numeroProcesso),
     });
     return false;
   }

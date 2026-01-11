@@ -54,6 +54,7 @@ const BackupSettings = lazy(() => import('./pages/BackupSettings'));
 const Announcements = lazy(() => import('./pages/Announcements'));
 const GoogleCalendarSettings = lazy(() => import('./pages/GoogleCalendarSettings'));
 const GoogleCalendarCompanySettings = lazy(() => import('./pages/GoogleCalendarCompanySettings'));
+const Chatwell = lazy(() => import('./pages/Chatwell'));
 
 // Portal pages
 const PortalLogin = lazy(() => import('./portal/pages/PortalLogin'));
@@ -299,6 +300,14 @@ function App() {
             element={
               <PrivateRoute>
                 <Schedule />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/chatwell"
+            element={
+              <PrivateRoute>
+                <Chatwell />
               </PrivateRoute>
             }
           />

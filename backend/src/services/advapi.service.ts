@@ -5,54 +5,59 @@ import { appLogger } from '../utils/logger';
  * Service para integração com ADVAPI v2
  * API para consulta de publicações do Diário Oficial por OAB
  *
- * Documentação: https://github.com/TOMBRITO1979/advapi-v2
+ * Documentação: /root/projects/advwell/advapi-v2/INTEGRACAO_ADVWELL.md
+ *
+ * Endpoints:
+ * - GET /api/consulta/buffer - Consultar publicações (resposta instantânea)
+ * - POST /api/consulta - Cadastrar advogado para monitoramento
+ * - GET /api/advogados - Listar advogados cadastrados
  */
 
-// Interfaces da API
-export interface AdvApiConsultaRequest {
-  companyId: string;
-  advogadoNome: string;
-  advogadoOab: string;
-  ufOab: string;
-  tribunais?: string[];
-  dataInicio: string; // YYYY-MM-DD
-  dataFim: string;    // YYYY-MM-DD
-  callbackUrl?: string;
-}
-
-export interface AdvApiConsultaResponse {
-  success: boolean;
-  consultaId?: string;
-  message?: string;
-  error?: string;
-}
-
-export interface AdvApiConsultaStatus {
-  consultaId: string;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
-  totalPublicacoes?: number;
-  processedCount?: number;
-  errorMessage?: string;
-}
-
+// Interfaces da API conforme resposta real da ADVAPI
 export interface AdvApiPublicacao {
   id: string;
   numeroProcesso: string;
   siglaTribunal: string;
-  dataPublicacao: string;
+  dataPublicacao: string | null;
+  dataDisponibilizacao?: string;
   tipoComunicacao?: string;
   textoComunicacao?: string;
-  advogadoId: string;
-  advogadoNome: string;
+  textoLimpo?: string;
+  parteAutor?: string;
+  parteReu?: string;
+  comarca?: string;
+  classeProcessual?: string;
+  // Campos alternativos para compatibilidade
+  tribunal?: string;
+  texto?: string;
 }
 
-export interface AdvApiPublicacoesResponse {
-  success: boolean;
+export interface AdvApiAdvogado {
+  id: string;
+  nome: string;
+  oab: string;
+  uf: string;
+}
+
+export interface AdvApiBufferResponse {
+  encontrado: boolean;
+  advogado?: AdvApiAdvogado;
   publicacoes: AdvApiPublicacao[];
   total: number;
-  page: number;
-  pageSize: number;
-  totalPages: number;
+  ultimaAtualizacao?: string;
+  message?: string;
+}
+
+export interface AdvApiCadastroResponse {
+  message: string;
+  jobIds?: string[];
+  advogados?: number;
+  error?: string;
+}
+
+export interface AdvApiAdvogadosResponse {
+  advogados: AdvApiAdvogado[];
+  total: number;
 }
 
 export class AdvApiService {
@@ -66,7 +71,7 @@ export class AdvApiService {
 
     this.client = axios.create({
       baseURL: this.baseUrl,
-      timeout: 60000, // 60 segundos para consultas mais demoradas
+      timeout: 60000, // 60 segundos
       headers: {
         'Content-Type': 'application/json',
         'x-api-key': this.apiKey,
@@ -78,7 +83,7 @@ export class AdvApiService {
       appLogger.debug('ADVAPI Request', {
         method: config.method,
         url: config.url,
-        data: config.data,
+        params: config.params,
       });
       return config;
     });
@@ -87,7 +92,8 @@ export class AdvApiService {
       (response) => {
         appLogger.debug('ADVAPI Response', {
           status: response.status,
-          data: response.data,
+          encontrado: response.data?.encontrado,
+          total: response.data?.total || response.data?.publicacoes?.length,
         });
         return response;
       },
@@ -102,99 +108,37 @@ export class AdvApiService {
   }
 
   /**
-   * Iniciar uma consulta de publicações para um advogado
+   * Consultar publicações do buffer (resposta instantânea)
    *
-   * API ADVAPI:
-   * POST /api/consulta
-   * Body: { companyId, advogadoNome, callbackUrl }
-   */
-  async iniciarConsulta(request: AdvApiConsultaRequest): Promise<AdvApiConsultaResponse> {
-    try {
-      // Construir callbackUrl se não fornecida
-      const callbackUrl = request.callbackUrl ||
-        `${process.env.API_URL || 'https://api.advwell.pro'}/api/advapi-webhook`;
-
-      const response = await this.client.post('/api/consulta', {
-        companyId: request.companyId,
-        advogadoNome: request.advogadoNome,
-        advogadoOab: request.advogadoOab,
-        ufOab: request.ufOab,
-        callbackUrl,
-      });
-
-      appLogger.info('ADVAPI: Consulta iniciada', {
-        companyId: request.companyId,
-        advogadoNome: request.advogadoNome,
-        callbackUrl,
-        responseData: response.data,
-      });
-
-      // ADVAPI retorna {message, consultaId, jobId, advogadoId, status, estimativa}
-      // Converter para o formato esperado
-      return {
-        success: !!response.data.consultaId || !!response.data.message,
-        consultaId: response.data.consultaId,
-        message: response.data.message,
-      };
-    } catch (error: any) {
-      appLogger.error('ADVAPI: Erro ao iniciar consulta', error as Error, {
-        request: { advogadoOab: request.advogadoOab, ufOab: request.ufOab },
-      });
-
-      return {
-        success: false,
-        error: error.response?.data?.error || error.message || 'Erro ao iniciar consulta',
-      };
-    }
-  }
-
-  /**
-   * Verificar status de uma consulta
-   */
-  async verificarStatusConsulta(consultaId: string): Promise<AdvApiConsultaStatus | null> {
-    try {
-      const response = await this.client.get<AdvApiConsultaStatus>(`/api/consulta/${consultaId}/status`);
-      return response.data;
-    } catch (error) {
-      appLogger.error('ADVAPI: Erro ao verificar status da consulta', error as Error, {
-        consultaId,
-      });
-      return null;
-    }
-  }
-
-  /**
-   * Consultar buffer de publicações (v2 - resposta instantânea)
+   * GET /api/consulta/buffer
    *
-   * API ADVAPI v2:
-   * GET /api/consulta/buffer?companyId=X&advogadoNome=Y
-   * Retorna publicações disponíveis no buffer instantaneamente
+   * Retorna publicações já armazenadas no banco de dados.
+   * Se o advogado não estiver cadastrado, retorna encontrado: false
    */
-  async consultarBuffer(companyId: string, advogadoNome?: string, advogadoOab?: string): Promise<AdvApiPublicacoesResponse> {
+  async consultarBuffer(
+    companyId: string,
+    advogadoNome: string,
+    dataInicio?: string,
+    dataFim?: string
+  ): Promise<AdvApiBufferResponse> {
     try {
-      const params: Record<string, any> = { companyId };
-      if (advogadoNome) params.advogadoNome = advogadoNome;
-      if (advogadoOab) params.advogadoOab = advogadoOab;
+      const params: Record<string, string> = {
+        companyId,
+        advogadoNome,
+      };
+      if (dataInicio) params.dataInicio = dataInicio;
+      if (dataFim) params.dataFim = dataFim;
 
-      const response = await this.client.get('/api/consulta/buffer', { params });
+      const response = await this.client.get<AdvApiBufferResponse>('/api/consulta/buffer', { params });
 
       appLogger.info('ADVAPI: Buffer consultado', {
         companyId,
         advogadoNome,
-        advogadoOab,
-        total: response.data?.total || response.data?.publicacoes?.length || 0,
+        encontrado: response.data.encontrado,
+        total: response.data.total || 0,
       });
 
-      // Normalizar resposta (ADVAPI pode retornar formatos diferentes)
-      const data = response.data;
-      return {
-        success: true,
-        publicacoes: data.publicacoes || data.data || [],
-        total: data.total || data.publicacoes?.length || 0,
-        page: data.page || 1,
-        pageSize: data.pageSize || 50,
-        totalPages: data.totalPages || 1,
-      };
+      return response.data;
     } catch (error: any) {
       appLogger.error('ADVAPI: Erro ao consultar buffer', error as Error, {
         companyId,
@@ -202,12 +146,56 @@ export class AdvApiService {
       });
 
       return {
-        success: false,
+        encontrado: false,
         publicacoes: [],
         total: 0,
-        page: 1,
-        pageSize: 50,
-        totalPages: 0,
+        message: error.response?.data?.error || error.message,
+      };
+    }
+  }
+
+  /**
+   * Cadastrar advogado para monitoramento
+   *
+   * POST /api/consulta
+   *
+   * Cadastra um novo advogado e inicia o monitoramento de publicações.
+   * A raspagem ocorre automaticamente entre 7h-21h, segunda a sábado.
+   */
+  async cadastrarAdvogado(
+    companyId: string,
+    nome: string,
+    oab: string,
+    uf: string
+  ): Promise<AdvApiCadastroResponse> {
+    try {
+      const response = await this.client.post<AdvApiCadastroResponse>('/api/consulta', {
+        companyId,
+        advogadoNome: nome,
+        oab,
+        uf,
+      });
+
+      appLogger.info('ADVAPI: Advogado cadastrado', {
+        companyId,
+        advogadoNome: nome,
+        oab,
+        uf,
+        message: response.data.message,
+      });
+
+      return response.data;
+    } catch (error: any) {
+      appLogger.error('ADVAPI: Erro ao cadastrar advogado', error as Error, {
+        companyId,
+        nome,
+        oab,
+        uf,
+      });
+
+      return {
+        message: 'Erro ao cadastrar advogado',
+        error: error.response?.data?.error || error.message,
       };
     }
   }
@@ -215,72 +203,21 @@ export class AdvApiService {
   /**
    * Listar advogados cadastrados na empresa
    *
-   * API ADVAPI v2:
-   * GET /api/advogados?companyId=X
+   * GET /api/advogados
    */
-  async listarAdvogados(companyId: string): Promise<any[]> {
+  async listarAdvogados(companyId: string): Promise<AdvApiAdvogadosResponse> {
     try {
-      const response = await this.client.get('/api/advogados', { params: { companyId } });
-      return response.data?.advogados || response.data || [];
-    } catch (error) {
-      appLogger.error('ADVAPI: Erro ao listar advogados', error as Error, { companyId });
-      return [];
-    }
-  }
-
-  /**
-   * Listar publicações encontradas
-   */
-  async listarPublicacoes(
-    advogadoOab: string,
-    ufOab: string,
-    page: number = 1,
-    pageSize: number = 50,
-    dataInicio?: string,
-    dataFim?: string
-  ): Promise<AdvApiPublicacoesResponse> {
-    try {
-      const params: Record<string, any> = {
-        advogadoOab,
-        ufOab,
-        page,
-        pageSize,
-      };
-
-      if (dataInicio) params.dataInicio = dataInicio;
-      if (dataFim) params.dataFim = dataFim;
-
-      const response = await this.client.get<AdvApiPublicacoesResponse>('/api/publicacoes', { params });
-      return response.data;
-    } catch (error) {
-      appLogger.error('ADVAPI: Erro ao listar publicações', error as Error, {
-        advogadoOab,
-        ufOab,
+      const response = await this.client.get<AdvApiAdvogadosResponse>('/api/advogados', {
+        params: { companyId },
       });
 
       return {
-        success: false,
-        publicacoes: [],
-        total: 0,
-        page: 1,
-        pageSize,
-        totalPages: 0,
+        advogados: response.data.advogados || response.data as any || [],
+        total: response.data.total || (response.data.advogados?.length || 0),
       };
-    }
-  }
-
-  /**
-   * Buscar publicação específica por ID
-   */
-  async buscarPublicacao(publicacaoId: string): Promise<AdvApiPublicacao | null> {
-    try {
-      const response = await this.client.get<AdvApiPublicacao>(`/api/publicacoes/${publicacaoId}`);
-      return response.data;
     } catch (error) {
-      appLogger.error('ADVAPI: Erro ao buscar publicação', error as Error, {
-        publicacaoId,
-      });
-      return null;
+      appLogger.error('ADVAPI: Erro ao listar advogados', error as Error, { companyId });
+      return { advogados: [], total: 0 };
     }
   }
 
@@ -297,7 +234,7 @@ export class AdvApiService {
   }
 }
 
-// Singleton para uso global (se API key for configurada via env)
+// Singleton para uso global
 let defaultAdvApiService: AdvApiService | null = null;
 
 export function getAdvApiService(apiKey?: string): AdvApiService {

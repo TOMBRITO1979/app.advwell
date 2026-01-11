@@ -3,7 +3,7 @@ import Layout from '../components/Layout';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import { Plus, Search, Edit, Trash2, Eye, X, FileText, Loader2, UserPlus, UserX, Mail, Filter, Calendar, Upload, Download, FileSignature, Check, Clock, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
-import { ExportButton } from '../components/ui';
+import { ExportButton, ActionsDropdown } from '../components/ui';
 import MobileCardList, { MobileCardItem } from '../components/MobileCardList';
 import { formatDate } from '../utils/dateFormatter';
 import TagSelector from '../components/TagSelector';
@@ -968,29 +968,13 @@ const Clients: React.FC = () => {
                           )}
                         </td>
                         <td className="px-4 py-3 text-sm text-center">
-                          <div className="flex items-center justify-center gap-2">
-                            <button
-                              onClick={() => handleViewDetails(client)}
-                              className="action-btn action-btn-info"
-                              title="Ver detalhes"
-                            >
-                              <Eye size={18} />
-                            </button>
-                            <button
-                              onClick={() => handleEdit(client)}
-                              className="action-btn action-btn-primary"
-                              title="Editar"
-                            >
-                              <Edit size={18} />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(client)}
-                              className="action-btn action-btn-danger"
-                              title="Excluir"
-                            >
-                              <Trash2 size={18} />
-                            </button>
-                          </div>
+                          <ActionsDropdown
+                            actions={[
+                              { label: 'Ver Detalhes', icon: <Eye size={16} />, onClick: () => handleViewDetails(client), variant: 'info' },
+                              { label: 'Editar', icon: <Edit size={16} />, onClick: () => handleEdit(client), variant: 'primary' },
+                              { label: 'Excluir', icon: <Trash2 size={16} />, onClick: () => handleDelete(client), variant: 'danger' },
+                            ]}
+                          />
                         </td>
                       </tr>
                     ))}

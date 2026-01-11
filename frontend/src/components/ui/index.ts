@@ -16,3 +16,6 @@ export { default as Loading } from './Loading';
 
 export { default as ExportButton } from './ExportButton';
 export type { ExportButtonType } from './ExportButton';
+
+export { default as ActionsDropdown } from './ActionsDropdown';
+export type { ActionItem } from './ActionsDropdown';

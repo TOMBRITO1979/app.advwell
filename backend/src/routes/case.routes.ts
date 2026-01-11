@@ -198,7 +198,8 @@ router.get('/:id', idParamValidation, validate, caseController.get);
 router.put('/:id', updateCaseValidation, validate, caseController.update);
 router.delete('/:id', idParamValidation, validate, caseController.delete); // Excluir processo
 // TAREFA 2.5: Rate limits especificos para operacoes externas
-router.post('/:id/sync', datajudSyncRateLimiter, idParamValidation, validate, caseController.syncMovements);
+router.post('/:id/sync', datajudSyncRateLimiter, idParamValidation, validate, caseController.syncMovements); // Sync DataJud
+router.post('/:id/sync-advapi', idParamValidation, validate, caseController.syncAdvapi); // Sync ADVAPI
 router.post('/:id/generate-summary', aiSummaryRateLimiter, idParamValidation, validate, caseController.generateSummary); // Gera resumo com IA
 router.post('/:id/acknowledge', idParamValidation, validate, caseController.acknowledgeUpdate); // Marca como ciente
 

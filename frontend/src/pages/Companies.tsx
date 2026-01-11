@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
 import api from '../services/api';
 import toast from 'react-hot-toast';
-import { Plus, Search, Edit, X, Building2, Users, FileText, ToggleLeft, ToggleRight, Trash2, UserCog, Crown, Clock, DollarSign, Brain, RefreshCw } from 'lucide-react';
+import { Plus, Search, Edit, X, Building2, Users, FileText, ToggleLeft, ToggleRight, Trash2, UserCog, Crown, Clock, DollarSign, Brain, RefreshCw, MessageCircle } from 'lucide-react';
 import MobileCardList, { MobileCardItem } from '../components/MobileCardList';
 import { formatDate, formatDateTime } from '../utils/dateFormatter';
 
@@ -87,6 +87,13 @@ interface AvailableClient {
   hasOwnAIConfig: boolean;
 }
 
+interface ChatwellConfig {
+  companyId: string;
+  companyName: string;
+  enabled: boolean;
+  url: string | null;
+}
+
 const Companies: React.FC = () => {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
@@ -118,6 +125,15 @@ const Companies: React.FC = () => {
     tokenLimit: 50000,
   });
   const [editingShare, setEditingShare] = useState<AITokenShare | null>(null);
+
+  // Chatwell Integration states
+  const [showChatwellModal, setShowChatwellModal] = useState(false);
+  const [chatwellConfig, setChatwellConfig] = useState<ChatwellConfig | null>(null);
+  const [loadingChatwell, setLoadingChatwell] = useState(false);
+  const [chatwellForm, setChatwellForm] = useState({
+    enabled: false,
+    url: '',
+  });
 
   const [formData, setFormData] = useState({
     companyName: '',
@@ -502,6 +518,45 @@ const Companies: React.FC = () => {
     return 'bg-green-500';
   };
 
+  // Chatwell handlers
+  const handleOpenChatwellModal = async (company: Company) => {
+    setSelectedCompany(company);
+    setShowChatwellModal(true);
+    setLoadingChatwell(true);
+    setChatwellForm({ enabled: false, url: '' });
+
+    try {
+      const response = await api.get(`/companies/${company.id}/chatwell`);
+      setChatwellConfig(response.data);
+      setChatwellForm({
+        enabled: response.data.enabled || false,
+        url: response.data.url || '',
+      });
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Erro ao carregar configuração do Chatwell');
+    } finally {
+      setLoadingChatwell(false);
+    }
+  };
+
+  const handleSaveChatwell = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedCompany) return;
+
+    try {
+      await api.put(`/companies/${selectedCompany.id}/chatwell`, {
+        enabled: chatwellForm.enabled,
+        url: chatwellForm.url || null,
+      });
+      toast.success('Configuração do Chatwell salva com sucesso!');
+      setShowChatwellModal(false);
+      setSelectedCompany(null);
+      setChatwellConfig(null);
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Erro ao salvar configuração do Chatwell');
+    }
+  };
+
   return (
     <Layout>
       <div className="space-y-6">
@@ -653,6 +708,13 @@ const Companies: React.FC = () => {
                             title="Compartilhar IA"
                           >
                             <Brain size={18} />
+                          </button>
+                          <button
+                            onClick={() => handleOpenChatwellModal(company)}
+                            className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-green-600 hover:text-green-700 hover:bg-green-50 rounded-md transition-all duration-200"
+                            title="Configurar Chatwell"
+                          >
+                            <MessageCircle size={18} />
                           </button>
                           <button
                             onClick={() => handleViewUsers(company)}
@@ -1485,6 +1547,127 @@ const Companies: React.FC = () => {
                 )}
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Configuração do Chatwell */}
+      {showChatwellModal && selectedCompany && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
+          <div className="bg-white rounded-lg max-w-lg w-full max-h-[90vh] overflow-y-auto my-4">
+            <div className="sticky top-0 bg-white border-b border-neutral-200 px-6 py-4 flex justify-between items-center">
+              <div>
+                <h2 className="text-xl font-bold text-neutral-900 flex items-center gap-2">
+                  <MessageCircle size={24} className="text-green-600" />
+                  Configurar Chatwell
+                </h2>
+                <p className="text-sm text-neutral-600 mt-1">{selectedCompany.name}</p>
+              </div>
+              <button
+                onClick={() => {
+                  setShowChatwellModal(false);
+                  setSelectedCompany(null);
+                  setChatwellConfig(null);
+                }}
+                className="text-neutral-400 hover:text-neutral-600 transition-colors"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            {loadingChatwell ? (
+              <div className="p-6 text-center">
+                <p className="text-neutral-600">Carregando configuração...</p>
+              </div>
+            ) : (
+              <form onSubmit={handleSaveChatwell} className="p-6 space-y-4">
+                {/* Info box */}
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <p className="text-sm text-green-800">
+                    Configure o acesso ao Chatwell para esta empresa. Os usuários poderão acessar
+                    o Chatwell diretamente pelo menu do AdvWell.
+                  </p>
+                </div>
+
+                {/* Status atual */}
+                {chatwellConfig && (
+                  <div className="bg-neutral-50 p-3 rounded-lg text-sm space-y-1">
+                    <p>
+                      <strong>Status:</strong>{' '}
+                      <span className={chatwellConfig.enabled ? 'text-green-600' : 'text-neutral-500'}>
+                        {chatwellConfig.enabled ? 'Habilitado' : 'Desabilitado'}
+                      </span>
+                    </p>
+                    <p><strong>URL configurada:</strong> {chatwellConfig.url || 'Não configurada'}</p>
+                  </div>
+                )}
+
+                {/* Toggle habilitar */}
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setChatwellForm({ ...chatwellForm, enabled: !chatwellForm.enabled })}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      chatwellForm.enabled ? 'bg-green-600' : 'bg-neutral-300'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        chatwellForm.enabled ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                  <span className="text-sm font-medium text-neutral-700">
+                    {chatwellForm.enabled ? 'Chatwell Habilitado' : 'Chatwell Desabilitado'}
+                  </span>
+                </div>
+
+                {/* URL */}
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700">URL do Chatwell</label>
+                  <input
+                    type="url"
+                    placeholder="https://chat.advwell.pro"
+                    value={chatwellForm.url}
+                    onChange={(e) => setChatwellForm({ ...chatwellForm, url: e.target.value })}
+                    className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md min-h-[44px] focus:ring-green-500 focus:border-green-500"
+                  />
+                  <p className="text-xs text-neutral-500 mt-1">
+                    URL do Chatwell. Use um subdomínio do mesmo domínio (ex: chat.advwell.pro) para que o login persista.
+                  </p>
+                </div>
+
+                {/* Info sobre login */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <p className="text-sm text-blue-800 font-medium mb-1">Sobre o login</p>
+                  <p className="text-xs text-blue-700">
+                    O usuário fará login manualmente no Chatwell uma única vez.
+                    Como ambos estão no mesmo domínio, a sessão será mantida automaticamente.
+                  </p>
+                </div>
+
+                <div className="flex justify-end gap-3 pt-4 border-t border-neutral-200">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowChatwellModal(false);
+                      setSelectedCompany(null);
+                      setChatwellConfig(null);
+                    }}
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 bg-white hover:bg-neutral-50 text-neutral-700 font-medium rounded-lg transition-all duration-200"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-green-100 text-green-700 border border-green-200 hover:bg-green-200 font-medium rounded-lg transition-all duration-200"
+                  >
+                    <MessageCircle size={18} />
+                    Salvar Configuração
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
         </div>
       )}

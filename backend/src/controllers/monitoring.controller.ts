@@ -2,6 +2,7 @@ import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import prisma from '../utils/prisma';
 import { sanitizeString } from '../utils/sanitize';
+import { normalizeProcessNumber } from '../utils/processNumber';
 import { appLogger } from '../utils/logger';
 import { enqueueOabConsulta, getConsultaQueueStatus, getMonitoringQueueStats } from '../queues/monitoring.queue';
 
@@ -480,9 +481,12 @@ export class MonitoringController {
         return res.status(400).json({ error: 'Publicação já foi importada' });
       }
 
+      // Normalizar número do processo
+      const processNumber = normalizeProcessNumber(publication.numeroProcesso);
+
       // Verificar se já existe processo com este número
       const existingCase = await prisma.case.findFirst({
-        where: { companyId, processNumber: publication.numeroProcesso },
+        where: { companyId, processNumber },
       });
 
       if (existingCase) {
@@ -503,7 +507,7 @@ export class MonitoringController {
         });
       }
 
-      // Criar cliente se fornecido nome
+      // Criar cliente APENAS se o usuário forneceu dados manualmente
       let client = null;
       if (clientName && clientName.trim()) {
         // Verificar se cliente já existe por CPF ou email
@@ -520,7 +524,7 @@ export class MonitoringController {
         }
 
         if (!client) {
-          // Criar novo cliente com dados mínimos
+          // Criar novo cliente com dados fornecidos pelo usuário
           client = await prisma.client.create({
             data: {
               companyId,
@@ -528,7 +532,7 @@ export class MonitoringController {
               cpf: clientCpf || null,
               email: clientEmail?.toLowerCase() || null,
               phone: clientPhone || null,
-              notes: `Cliente criado automaticamente via importação de publicação. Tribunal: ${publication.siglaTribunal}`,
+              notes: `Cliente criado via importação de publicação. Tribunal: ${publication.siglaTribunal}`,
             },
           });
 
@@ -538,26 +542,17 @@ export class MonitoringController {
             publicationId: id,
           });
         }
-      } else {
-        // Criar cliente genérico
-        client = await prisma.client.create({
-          data: {
-            companyId,
-            name: `Parte - ${publication.numeroProcesso}`,
-            notes: `Cliente criado automaticamente via importação de publicação. Aguardando dados completos.`,
-          },
-        });
       }
+      // Se não forneceu dados de cliente, NÃO cria cliente genérico
+      // O usuário pode vincular um cliente depois manualmente
 
-      // Criar processo
+      // Criar processo apenas com número e andamento ADVAPI
+      // Demais dados (tribunal, assunto) serão preenchidos manualmente pelo usuário
       const newCase = await prisma.case.create({
         data: {
           companyId,
-          clientId: client.id,
-          processNumber: publication.numeroProcesso,
-          court: publication.siglaTribunal,
-          subject: publication.tipoComunicacao || 'Processo importado via monitoramento',
-          status: 'ACTIVE',
+          clientId: client?.id || null,
+          processNumber,
           ultimaPublicacaoAdvapi: publication.textoComunicacao,
         },
       });
@@ -568,7 +563,7 @@ export class MonitoringController {
         data: {
           imported: true,
           importedCaseId: newCase.id,
-          importedClientId: client.id,
+          importedClientId: client?.id || null,
           importedAt: new Date(),
         },
       });
@@ -577,14 +572,14 @@ export class MonitoringController {
         companyId,
         publicationId: id,
         caseId: newCase.id,
-        clientId: client.id,
+        clientId: client?.id || null,
       });
 
       return res.json({
         message: 'Publicação importada com sucesso',
         case: newCase,
-        client,
-        newClient: true,
+        client: client || null,
+        newClient: !!client,
       });
     } catch (error) {
       appLogger.error('Erro ao importar publicação', error as Error);

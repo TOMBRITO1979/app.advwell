@@ -57,6 +57,12 @@ model Company {
   // Backup automático por email
   backupEmail           String?                // Email para receber backup diário (12h e 18h)
 
+  // Chatwell Integration (embed Chatwell no AdvWell)
+  chatwellEnabled       Boolean   @default(false) @map("chatwell_enabled")  // Se Chatwell está habilitado
+  chatwellUrl           String?   @map("chatwell_url")                      // URL do painel Chatwell
+  chatwellEmail         String?   @map("chatwell_email")                    // Email de login (criptografado)
+  chatwellToken         String?   @db.Text @map("chatwell_token")           // Token de API (criptografado AES-256)
+
   users                 User[]
   clients               Client[]
   adverses              Adverse[]
@@ -425,8 +431,8 @@ model Case {
   companyId             String
   clientId              String?    // Opcional - usar CasePart para Demandante/Demandado
   processNumber         String     // Número do processo (único por empresa)
-  court                 String     // Tribunal
-  subject               String     // Assunto
+  court                 String?    // Tribunal (opcional - pode ser preenchido depois)
+  subject               String?    // Assunto (opcional - pode ser preenchido depois)
   value                 Decimal?   @db.Decimal(15, 2) // Valor da causa
   status                CaseStatus @default(ACTIVE)
   deadline              DateTime?  // Prazo do processo
@@ -448,6 +454,13 @@ model Case {
   nature                String?    // Natureza do processo (ex: Cível, Trabalhista, Criminal)
   rite                  String?    // Rito processual (ex: Ordinário, Sumário, Sumaríssimo)
   distributionDate      DateTime?  @map("distribution_date") // Data de distribuição do processo
+
+  // Campos MTD 1.2 - DataJud
+  numeroBoletimOcorrencia   String?   @map("numero_boletim_ocorrencia") // B.O. vinculados ao processo
+  numeroInqueritoPolicial   String?   @map("numero_inquerito_policial") // Inquéritos vinculados
+  prioridadeProcessual      String?   @map("prioridade_processual") // Tipo de prioridade (ID=Idoso, etc)
+  prioridadeDataConcessao   DateTime? @map("prioridade_data_concessao") // Data concessão da prioridade
+  prioridadeDataFim         DateTime? @map("prioridade_data_fim") // Data fim da prioridade
 
   company               Company               @relation(fields: [companyId], references: [id], onDelete: Cascade)
   client                Client?               @relation(fields: [clientId], references: [id], onDelete: SetNull)
@@ -2075,6 +2088,7 @@ model MonitoredOAB {
   // Última consulta
   lastConsultaAt DateTime?      @map("last_consulta_at")
   lastConsultaId String?        @map("last_consulta_id") // ID da última consulta na ADVAPI
+  lastSyncDate   DateTime?      @map("last_sync_date")   // Data da última publicação sincronizada (para sync incremental)
 
   // Metadados
   createdAt    DateTime         @default(now()) @map("created_at")

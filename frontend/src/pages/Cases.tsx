@@ -4,9 +4,10 @@ import Layout from '../components/Layout';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import { Plus, Search, RefreshCw, X, Calendar, User, FileText, Clock, Edit, Edit2, Trash2, Eye, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
-import { ExportButton } from '../components/ui';
+import { ExportButton, ActionsDropdown } from '../components/ui';
 import CaseTimeline from '../components/CaseTimeline';
 import { formatDateTime } from '../utils/dateFormatter';
+import { formatProcessNumber } from '../utils/processNumber';
 
 interface Case {
   id: string;
@@ -38,6 +39,12 @@ interface Case {
   nature?: string;
   rite?: string;
   distributionDate?: string;
+  // Campos MTD 1.2
+  numeroBoletimOcorrencia?: string;
+  numeroInqueritoPolicial?: string;
+  prioridadeProcessual?: string;
+  prioridadeDataConcessao?: string;
+  prioridadeDataFim?: string;
   client?: {
     id: string;
     name: string;
@@ -766,20 +773,38 @@ const Cases: React.FC = () => {
     }
   };
 
-  const handleSync = async (caseId: string) => {
+  // Sincronizar com DataJud
+  const handleSyncDataJud = async (caseId: string) => {
     try {
-      toast.loading('Sincronizando...', { id: 'sync' });
+      toast.loading('Sincronizando DataJud...', { id: 'sync-datajud' });
       await api.post(`/cases/${caseId}/sync`);
-      toast.success('Processo sincronizado com sucesso!', { id: 'sync' });
+      toast.success('DataJud sincronizado com sucesso!', { id: 'sync-datajud' });
+
       loadCases();
-      // Se o modal de detalhes está aberto, recarrega os detalhes
       if (showDetailsModal && selectedCase?.id === caseId) {
         loadCaseDetails(caseId);
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Erro ao sincronizar', { id: 'sync' });
+      toast.error(error.response?.data?.error || 'Erro ao sincronizar DataJud', { id: 'sync-datajud' });
     }
   };
+
+  // Sincronizar com ADVAPI
+  const handleSyncAdvapi = async (caseId: string) => {
+    try {
+      toast.loading('Sincronizando ADVAPI...', { id: 'sync-advapi' });
+      await api.post(`/cases/${caseId}/sync-advapi`);
+      toast.success('ADVAPI sincronizado com sucesso!', { id: 'sync-advapi' });
+
+      loadCases();
+      if (showDetailsModal && selectedCase?.id === caseId) {
+        loadCaseDetails(caseId);
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Erro ao sincronizar ADVAPI', { id: 'sync-advapi' });
+    }
+  };
+
 
   const handleGenerateSummary = async (caseId: string) => {
     setGeneratingSummary(true);
@@ -1154,7 +1179,7 @@ const Cases: React.FC = () => {
                             onClick={() => handleCaseClick(caseItem.id)}
                             className="mobile-card-title text-primary-600 hover:underline text-left"
                           >
-                            {caseItem.processNumber}
+                            {formatProcessNumber(caseItem.processNumber)}
                           </button>
                           <p className="mobile-card-subtitle truncate text-success-700">
                             {caseItem.demandanteNames || caseItem.client?.name || '-'}
@@ -1186,35 +1211,16 @@ const Cases: React.FC = () => {
                           </span>
                         </div>
                       </div>
-                      <div className="mobile-card-actions">
-                        <button
-                          onClick={() => handleSync(caseItem.id)}
-                          className="flex-1 action-btn bg-purple-100 text-purple-700 rounded-lg"
-                          title="Sincronizar"
-                        >
-                          <RefreshCw size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleCaseClick(caseItem.id)}
-                          className="flex-1 action-btn action-btn-info bg-info-50 rounded-lg"
-                          title="Ver"
-                        >
-                          <Eye size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleEdit(caseItem)}
-                          className="flex-1 action-btn action-btn-primary bg-primary-50 rounded-lg"
-                          title="Editar"
-                        >
-                          <Edit size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(caseItem)}
-                          className="flex-1 action-btn action-btn-danger bg-error-50 rounded-lg"
-                          title="Excluir"
-                        >
-                          <Trash2 size={16} />
-                        </button>
+                      <div className="mobile-card-actions justify-end">
+                        <ActionsDropdown
+                          actions={[
+                            { label: 'Sync DataJud', icon: <RefreshCw size={16} />, onClick: () => handleSyncDataJud(caseItem.id), variant: 'info' },
+                            { label: 'Sync ADVAPI', icon: <RefreshCw size={16} />, onClick: () => handleSyncAdvapi(caseItem.id), variant: 'success' },
+                            { label: 'Ver', icon: <Eye size={16} />, onClick: () => handleCaseClick(caseItem.id), variant: 'info' },
+                            { label: 'Editar', icon: <Edit size={16} />, onClick: () => handleEdit(caseItem), variant: 'primary' },
+                            { label: 'Excluir', icon: <Trash2 size={16} />, onClick: () => handleDelete(caseItem), variant: 'danger' },
+                          ]}
+                        />
                       </div>
                     </div>
                   );
@@ -1271,7 +1277,7 @@ const Cases: React.FC = () => {
                               className="text-primary-600 hover:text-primary-800 hover:underline font-medium"
                               title="Ver detalhes do processo"
                             >
-                              {caseItem.processNumber}
+                              {formatProcessNumber(caseItem.processNumber)}
                             </button>
                           </td>
                           <td className="px-4 py-3 text-sm text-neutral-600">
@@ -1290,35 +1296,16 @@ const Cases: React.FC = () => {
                             {caseItem.deadline ? formatDate(caseItem.deadline) : '-'}
                           </td>
                           <td className="px-4 py-3 text-sm">
-                            <div className="flex items-center justify-center gap-2">
-                              <button
-                                onClick={() => handleSync(caseItem.id)}
-                                className="action-btn text-purple-700 hover:text-purple-800 hover:bg-purple-100"
-                                title="Sincronizar com DataJud"
-                              >
-                                <RefreshCw size={18} />
-                              </button>
-                              <button
-                                onClick={() => handleViewAndamento(caseItem)}
-                                className="action-btn action-btn-info"
-                                title="Visualizar Andamento para Cliente"
-                              >
-                                <Eye size={18} />
-                              </button>
-                              <button
-                                onClick={() => handleEdit(caseItem)}
-                                className="action-btn action-btn-primary"
-                                title="Editar"
-                              >
-                                <Edit size={18} />
-                              </button>
-                              <button
-                                onClick={() => handleDelete(caseItem)}
-                                className="action-btn action-btn-danger"
-                                title="Excluir"
-                              >
-                                <Trash2 size={18} />
-                              </button>
+                            <div className="flex items-center justify-center">
+                              <ActionsDropdown
+                                actions={[
+                                  { label: 'Sync DataJud', icon: <RefreshCw size={16} />, onClick: () => handleSyncDataJud(caseItem.id), variant: 'info' },
+                                  { label: 'Sync ADVAPI', icon: <RefreshCw size={16} />, onClick: () => handleSyncAdvapi(caseItem.id), variant: 'success' },
+                                  { label: 'Ver Andamento', icon: <Eye size={16} />, onClick: () => handleViewAndamento(caseItem), variant: 'info' },
+                                  { label: 'Editar', icon: <Edit size={16} />, onClick: () => handleEdit(caseItem), variant: 'primary' },
+                                  { label: 'Excluir', icon: <Trash2 size={16} />, onClick: () => handleDelete(caseItem), variant: 'danger' },
+                                ]}
+                              />
                             </div>
                           </td>
                         </tr>
@@ -1527,10 +1514,9 @@ const Cases: React.FC = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700">Tribunal <span className="text-error-500">*</span></label>
+                  <label className="block text-sm font-medium text-neutral-700">Tribunal</label>
                   <input
                     type="text"
-                    required
                     value={formData.court}
                     onChange={(e) => setFormData({ ...formData, court: e.target.value })}
                     className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md min-h-[44px]"
@@ -1549,10 +1535,9 @@ const Cases: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-neutral-700">Assunto <span className="text-error-500">*</span></label>
+                <label className="block text-sm font-medium text-neutral-700">Assunto</label>
                 <input
                   type="text"
-                  required
                   value={formData.subject}
                   onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                   className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md min-h-[44px]"
@@ -2028,7 +2013,7 @@ const Cases: React.FC = () => {
                 <div className="sticky top-0 bg-white border-b border-neutral-200 px-6 py-4 flex justify-between items-center min-h-[44px]">
                   <div>
                     <h2 className="text-2xl font-bold text-neutral-900">
-                      {selectedCase.processNumber}
+                      {formatProcessNumber(selectedCase.processNumber)}
                     </h2>
                     <p className="text-sm text-neutral-500 mt-1">
                       {selectedCase.court} • Criado em {formatDate(selectedCase.createdAt)}
@@ -2170,18 +2155,28 @@ const Cases: React.FC = () => {
 
                       <div className="flex gap-3 flex-wrap">
                         <button
-                          onClick={() => handleSync(selectedCase.id)}
-                          className="flex items-center gap-2 px-4 py-2 bg-purple-100 text-purple-700 border border-purple-200 rounded-md hover:bg-purple-200 transition-colors min-h-[44px]"
+                          onClick={() => handleSyncDataJud(selectedCase.id)}
+                          className="flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 border border-blue-200 rounded-md hover:bg-blue-200 transition-colors min-h-[44px]"
+                          title="Buscar movimentações no DataJud/CNJ"
                         >
                           <RefreshCw size={16} />
-                          <span>Sincronizar Agora</span>
+                          <span>Atualizar DataJud</span>
+                        </button>
+
+                        <button
+                          onClick={() => handleSyncAdvapi(selectedCase.id)}
+                          className="flex items-center gap-2 px-4 py-2 bg-green-100 text-green-700 border border-green-200 rounded-md hover:bg-green-200 transition-colors min-h-[44px]"
+                          title="Buscar publicações do Diário Oficial (ADVAPI)"
+                        >
+                          <RefreshCw size={16} />
+                          <span>Atualizar ADVAPI</span>
                         </button>
 
                         <button
                           onClick={() => handleGenerateSummary(selectedCase.id)}
                           disabled={generatingSummary}
                           className="flex items-center gap-2 px-4 py-2 bg-purple-100 text-purple-700 border border-purple-200 rounded-md hover:bg-purple-200 disabled:bg-neutral-100 disabled:text-neutral-400 disabled:border-neutral-200 disabled:cursor-not-allowed transition-colors min-h-[44px]"
-                          title="Gerar resumo com Inteligência Artificial"
+                          title="Gerar resumo com Inteligencia Artificial"
                         >
                           {generatingSummary ? (
                             <>
@@ -2221,7 +2216,7 @@ const Cases: React.FC = () => {
                               <strong>Número do Processo:</strong>
                             </p>
                             <p className="text-lg font-mono font-semibold text-primary-800 select-all">
-                              {selectedCase.processNumber}
+                              {formatProcessNumber(selectedCase.processNumber)}
                             </p>
                             <p className="text-xs text-neutral-500 mt-1">
                               Clique no número acima para copiar
@@ -2260,7 +2255,7 @@ const Cases: React.FC = () => {
                             <strong>Número do Processo:</strong>
                           </p>
                           <p className="text-lg font-mono font-semibold text-info-700 select-all">
-                            {selectedCase.processNumber}
+                            {formatProcessNumber(selectedCase.processNumber)}
                           </p>
                           <p className="text-xs text-neutral-500 mt-1">
                             Clique no número acima para copiar
@@ -2541,7 +2536,7 @@ const Cases: React.FC = () => {
                           <FileText size={48} className="mx-auto text-neutral-300 mb-4" />
                           <p className="text-neutral-500">Nenhuma publicação encontrada para este processo</p>
                           <p className="text-sm text-neutral-400 mt-1">
-                            Número: {selectedCase.processNumber}
+                            Número: {formatProcessNumber(selectedCase.processNumber)}
                           </p>
                         </div>
                       </>
@@ -2799,7 +2794,7 @@ const Cases: React.FC = () => {
                 <div>
                   <h2 className="text-2xl font-bold text-neutral-900">Andamento para Cliente</h2>
                   <p className="text-sm text-neutral-500 mt-1">
-                    {selectedCase.processNumber} - {selectedCase.client?.name || 'Sem cliente'}
+                    {formatProcessNumber(selectedCase.processNumber)} - {selectedCase.client?.name || 'Sem cliente'}
                   </p>
                 </div>
                 <button
@@ -2838,6 +2833,48 @@ const Cases: React.FC = () => {
                     </p>
                   )}
                 </div>
+
+                {/* Campos MTD 1.2: B.O., Inquérito e Prioridade */}
+                {(selectedCase.numeroBoletimOcorrencia || selectedCase.numeroInqueritoPolicial || selectedCase.prioridadeProcessual) && (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <h3 className="text-sm font-medium text-red-700 mb-3 flex items-center gap-2">
+                      <FileText size={16} />
+                      Informações Adicionais (DataJud MTD 1.2)
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                      {selectedCase.numeroBoletimOcorrencia && (
+                        <div>
+                          <span className="font-medium text-red-700">B.O.:</span>
+                          <span className="ml-2 text-red-900">{selectedCase.numeroBoletimOcorrencia}</span>
+                        </div>
+                      )}
+                      {selectedCase.numeroInqueritoPolicial && (
+                        <div>
+                          <span className="font-medium text-red-700">Inquérito:</span>
+                          <span className="ml-2 text-red-900">{selectedCase.numeroInqueritoPolicial}</span>
+                        </div>
+                      )}
+                      {selectedCase.prioridadeProcessual && (
+                        <div>
+                          <span className="font-medium text-red-700">Prioridade:</span>
+                          <span className="ml-2 text-red-900">
+                            {selectedCase.prioridadeProcessual === 'ID' ? 'Idoso' :
+                             selectedCase.prioridadeProcessual === 'PD' ? 'Pessoa com Deficiência' :
+                             selectedCase.prioridadeProcessual}
+                          </span>
+                        </div>
+                      )}
+                      {selectedCase.prioridadeDataConcessao && (
+                        <div>
+                          <span className="font-medium text-red-700">Prioridade desde:</span>
+                          <span className="ml-2 text-red-900">
+                            {new Date(selectedCase.prioridadeDataConcessao).toLocaleDateString('pt-BR')}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 {/* Caixa 3: Informar ao Cliente (editável) */}
                 <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">

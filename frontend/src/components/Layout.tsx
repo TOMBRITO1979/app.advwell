@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api';
@@ -38,7 +38,31 @@ import {
   Tag,
   BarChart3,
   Radar,
+  LucideProps,
 } from 'lucide-react';
+
+// WhatsApp icon component (outline style to match other icons)
+const WhatsAppIcon = forwardRef<SVGSVGElement, LucideProps>(
+  ({ size = 24, strokeWidth = 2, className, ...props }, ref) => (
+    <svg
+      ref={ref}
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      {...props}
+    >
+      <path d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9L3 21" />
+      <path d="M9 10a.5.5 0 0 0 1 0V9a.5.5 0 0 0-1 0v1a5 5 0 0 0 5 5h1a.5.5 0 0 0 0-1h-1a.5.5 0 0 0 0 1" />
+    </svg>
+  )
+);
+WhatsAppIcon.displayName = 'WhatsAppIcon';
 
 interface SubscriptionStatus {
   status: 'TRIAL' | 'ACTIVE' | 'EXPIRED' | 'CANCELLED' | null;
@@ -63,6 +87,11 @@ interface UnreadMessagesCount {
   count: number;
 }
 
+interface ChatwellStatus {
+  enabled: boolean;
+  hasAccess: boolean;
+}
+
 interface LayoutProps {
   children: React.ReactNode;
 }
@@ -80,6 +109,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [deadlinesDueToday, setDeadlinesDueToday] = React.useState<DeadlinesDueToday | null>(null);
   const [tasksDueToday, setTasksDueToday] = React.useState<TasksDueToday | null>(null);
   const [unreadMessagesCount, setUnreadMessagesCount] = React.useState<UnreadMessagesCount | null>(null);
+  const [chatwellStatus, setChatwellStatus] = React.useState<ChatwellStatus | null>(null);
 
   // Verificar se a sidebar deve ser escondida para este usuário
   const shouldHideSidebar = user?.hideSidebar === true;
@@ -90,6 +120,20 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     if (saved !== null) {
       setSidebarCollapsed(saved === 'true');
     }
+  }, []);
+
+  // Listener para evento de recolher sidebar (usado pela página Chatwell)
+  React.useEffect(() => {
+    const handleSidebarCollapse = (event: CustomEvent) => {
+      if (event.detail?.collapsed !== undefined) {
+        setSidebarCollapsed(event.detail.collapsed);
+      }
+    };
+
+    window.addEventListener('sidebarCollapse', handleSidebarCollapse as EventListener);
+    return () => {
+      window.removeEventListener('sidebarCollapse', handleSidebarCollapse as EventListener);
+    };
   }, []);
 
   // Verificar status da assinatura (apenas para ADMIN, não SUPER_ADMIN)
@@ -200,6 +244,32 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     }
   }, [user]);
 
+  // Verificar status do Chatwell
+  React.useEffect(() => {
+    const checkChatwellStatus = async () => {
+      try {
+        const response = await api.get('/companies/own/chatwell');
+        setChatwellStatus({
+          enabled: response.data.enabled || false,
+          hasAccess: true,
+        });
+      } catch (error: any) {
+        // 403 = sem permissão, outros erros = não configurado
+        setChatwellStatus({
+          enabled: false,
+          hasAccess: error.response?.status !== 403,
+        });
+      }
+    };
+
+    // SUPER_ADMIN sempre tem acesso
+    if (user?.role === 'SUPER_ADMIN') {
+      setChatwellStatus({ enabled: true, hasAccess: true });
+    } else if (user) {
+      checkChatwellStatus();
+    }
+  }, [user]);
+
   // Salvar estado do sidebar no localStorage
   const toggleSidebarCollapse = () => {
     const newState = !sidebarCollapsed;
@@ -257,8 +327,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   // Campanhas e Portal do Cliente vem após Leads (apenas para Admin)
   if (user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') {
     menuItems.push({ path: '/campaigns', label: 'Campanhas', icon: Mail });
-    menuItems.push({ path: '/whatsapp-campaigns', label: 'Campanhas WhatsApp', icon: MessageCircle });
+    menuItems.push({ path: '/whatsapp-campaigns', label: 'Campanhas WhatsApp', icon: WhatsAppIcon });
     menuItems.push({ path: '/announcements', label: 'Portal do Cliente', icon: Megaphone });
+  }
+
+  // Chatwell - mostrar apenas se habilitado e com acesso
+  if (chatwellStatus?.enabled && chatwellStatus?.hasAccess) {
+    menuItems.push({ path: '/chatwell', label: 'Chatwell', icon: MessageCircle });
   }
 
   // Financeiro e Contas a Pagar

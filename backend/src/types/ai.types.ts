@@ -77,8 +77,8 @@ export interface IAIProvider {
 // Additional case information for context
 export interface CaseInfo {
   processNumber: string;
-  subject: string;
-  court: string;
+  subject?: string | null;
+  court?: string | null;
   clientName?: string;
 }
 

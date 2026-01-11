@@ -98,6 +98,9 @@ router.put('/own/subdomain', requireAdmin, companyController.updateSubdomain);
 router.get('/own/api-key', requireAdmin, companyController.getApiKey);
 router.post('/own/api-key/regenerate', requireAdmin, companyController.regenerateApiKey);
 
+// Chatwell Integration (acesso para todos os usuários autenticados, verificação de permissão no controller)
+router.get('/own/chatwell', companyController.getChatwellConfig);
+
 // Rotas do Super Admin
 router.get('/subscription-alerts', requireSuperAdmin, companyController.getSubscriptionAlerts);
 router.get('/', requireSuperAdmin, companyController.list);
@@ -108,5 +111,9 @@ router.put('/:id/subscription', requireSuperAdmin, subscriptionValidation, valid
 router.get('/:id/last-payment', requireSuperAdmin, idParamValidation, validate, companyController.getCompanyLastPayment);
 router.put('/:id', requireSuperAdmin, idParamValidation, updateCompanyValidation, validate, companyController.update);
 router.delete('/:id', requireSuperAdmin, idParamValidation, validate, companyController.delete);
+
+// Chatwell Configuration (Super Admin only)
+router.get('/:id/chatwell', requireSuperAdmin, idParamValidation, validate, companyController.getChatwellConfigForCompany);
+router.put('/:id/chatwell', requireSuperAdmin, idParamValidation, validate, companyController.updateChatwellConfig);
 
 export default router;

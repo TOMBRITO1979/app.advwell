@@ -22,7 +22,9 @@ import {
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
+import { ActionsDropdown } from '../components/ui';
 import { formatDate, formatDateTime } from '../utils/dateFormatter';
+import { formatProcessNumber } from '../utils/processNumber';
 
 // Types
 type MonitoringStatus = 'ACTIVE' | 'PAUSED' | 'INACTIVE';
@@ -734,36 +736,14 @@ const Monitoring: React.FC = () => {
                               {oab.lastConsultaAt ? formatDateTime(oab.lastConsultaAt) : '-'}
                             </td>
                             <td className="px-4 py-3 text-right">
-                              <div className="flex justify-end gap-2">
-                                <button
-                                  onClick={() => handleOpenConsultaModal(oab)}
-                                  className="p-2 text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
-                                  title="Iniciar Consulta"
-                                >
-                                  <RefreshCw size={16} />
-                                </button>
-                                <button
-                                  onClick={() => handleToggleStatus(oab)}
-                                  className="p-2 text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors"
-                                  title={oab.status === 'ACTIVE' ? 'Pausar' : 'Ativar'}
-                                >
-                                  {oab.status === 'ACTIVE' ? <Pause size={16} /> : <Play size={16} />}
-                                </button>
-                                <button
-                                  onClick={() => handleOpenEditModal(oab)}
-                                  className="p-2 text-neutral-600 hover:bg-neutral-100 rounded-lg transition-colors"
-                                  title="Editar"
-                                >
-                                  <Edit size={16} />
-                                </button>
-                                <button
-                                  onClick={() => handleDeleteOab(oab)}
-                                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                  title="Remover"
-                                >
-                                  <Trash2 size={16} />
-                                </button>
-                              </div>
+                              <ActionsDropdown
+                                actions={[
+                                  { label: 'Consultar', icon: <RefreshCw size={16} />, onClick: () => handleOpenConsultaModal(oab), variant: 'primary' },
+                                  { label: oab.status === 'ACTIVE' ? 'Pausar' : 'Ativar', icon: oab.status === 'ACTIVE' ? <Pause size={16} /> : <Play size={16} />, onClick: () => handleToggleStatus(oab), variant: 'warning' },
+                                  { label: 'Editar', icon: <Edit size={16} />, onClick: () => handleOpenEditModal(oab) },
+                                  { label: 'Remover', icon: <Trash2 size={16} />, onClick: () => handleDeleteOab(oab), variant: 'danger' },
+                                ]}
+                              />
                             </td>
                           </tr>
                         ))}
@@ -849,7 +829,7 @@ const Monitoring: React.FC = () => {
                           {publications.map((pub) => (
                             <tr key={pub.id} className="hover:bg-neutral-50">
                               <td className="px-4 py-3 text-sm text-neutral-900 font-mono">
-                                {pub.numeroProcesso}
+                                {formatProcessNumber(pub.numeroProcesso)}
                               </td>
                               <td className="px-4 py-3 text-sm text-neutral-600">{pub.siglaTribunal}</td>
                               <td className="px-4 py-3 text-sm text-neutral-600">
@@ -875,24 +855,12 @@ const Monitoring: React.FC = () => {
                                 )}
                               </td>
                               <td className="px-4 py-3 text-right">
-                                <div className="flex justify-end gap-2">
-                                  <button
-                                    onClick={() => handleViewPublication(pub)}
-                                    className="p-2 text-neutral-600 hover:bg-neutral-100 rounded-lg transition-colors"
-                                    title="Visualizar"
-                                  >
-                                    <Eye size={16} />
-                                  </button>
-                                  {!pub.imported && (
-                                    <button
-                                      onClick={() => handleImportToCase(pub)}
-                                      className="p-2 text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
-                                      title="Importar como Processo"
-                                    >
-                                      <Download size={16} />
-                                    </button>
-                                  )}
-                                </div>
+                                <ActionsDropdown
+                                  actions={[
+                                    { label: 'Visualizar', icon: <Eye size={16} />, onClick: () => handleViewPublication(pub), variant: 'info' },
+                                    { label: 'Importar', icon: <Download size={16} />, onClick: () => handleImportToCase(pub), variant: 'primary', hidden: pub.imported },
+                                  ]}
+                                />
                               </td>
                             </tr>
                           ))}
@@ -1171,7 +1139,7 @@ const Monitoring: React.FC = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-neutral-500">Numero do Processo</label>
-                  <div className="font-mono text-neutral-900">{selectedPublication.numeroProcesso}</div>
+                  <div className="font-mono text-neutral-900">{formatProcessNumber(selectedPublication.numeroProcesso)}</div>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-neutral-500">Tribunal</label>

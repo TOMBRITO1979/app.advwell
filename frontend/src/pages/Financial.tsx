@@ -3,7 +3,7 @@ import Layout from '../components/Layout';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import { Plus, Search, Edit, Trash2, DollarSign, TrendingUp, TrendingDown, X, Filter, List, FileText, ChevronLeft, ChevronRight } from 'lucide-react';
-import { ExportButton } from '../components/ui';
+import { ExportButton, ActionsDropdown } from '../components/ui';
 import InstallmentsModal from '../components/InstallmentsModal';
 import { formatDate } from '../utils/dateFormatter';
 import MobileCardList, { MobileCardItem } from '../components/MobileCardList';
@@ -897,38 +897,14 @@ const Financial: React.FC = () => {
                           </span>
                         </td>
                         <td className="px-4 py-3 text-sm text-center">
-                          <div className="flex items-center justify-center gap-2">
-                            {transaction.isInstallment && (
-                              <button
-                                onClick={() => handleViewInstallments(transaction)}
-                                className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-info-600 hover:text-info-700 hover:bg-info-50 rounded-md transition-all duration-200"
-                                title="Ver Parcelas"
-                              >
-                                <List size={18} />
-                              </button>
-                            )}
-                            <button
-                              onClick={() => handleGenerateReceipt(transaction)}
-                              className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-amber-600 hover:text-amber-700 hover:bg-amber-50 rounded-md transition-all duration-200"
-                              title={transaction.type === 'INCOME' ? 'Gerar Recibo' : 'Gerar Comprovante'}
-                            >
-                              <FileText size={18} />
-                            </button>
-                            <button
-                              onClick={() => handleEdit(transaction)}
-                              className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-md transition-all duration-200"
-                              title="Editar"
-                            >
-                              <Edit size={18} />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(transaction)}
-                              className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-error-600 hover:text-error-700 hover:bg-error-50 rounded-md transition-all duration-200"
-                              title="Excluir"
-                            >
-                              <Trash2 size={18} />
-                            </button>
-                          </div>
+                          <ActionsDropdown
+                            actions={[
+                              { label: 'Ver Parcelas', icon: <List size={16} />, onClick: () => handleViewInstallments(transaction), variant: 'info', hidden: !transaction.isInstallment },
+                              { label: transaction.type === 'INCOME' ? 'Gerar Recibo' : 'Gerar Comprovante', icon: <FileText size={16} />, onClick: () => handleGenerateReceipt(transaction), variant: 'warning' },
+                              { label: 'Editar', icon: <Edit size={16} />, onClick: () => handleEdit(transaction), variant: 'primary' },
+                              { label: 'Excluir', icon: <Trash2 size={16} />, onClick: () => handleDelete(transaction), variant: 'danger' },
+                            ]}
+                          />
                         </td>
                       </tr>
                     ))}

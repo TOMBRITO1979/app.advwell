@@ -12,6 +12,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import Layout from '../components/Layout';
+import { ActionsDropdown } from '../components/ui';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import MobileCardList, { MobileCardItem } from '../components/MobileCardList';
@@ -464,29 +465,13 @@ export default function Lawyers() {
                           <div className="text-sm text-neutral-500">{lawyer.phone || '-'}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            <button
-                              onClick={() => handleViewDetails(lawyer)}
-                              className="p-2 text-neutral-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
-                              title="Ver detalhes"
-                            >
-                              <Eye size={18} />
-                            </button>
-                            <button
-                              onClick={() => handleEdit(lawyer)}
-                              className="p-2 text-neutral-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
-                              title="Editar"
-                            >
-                              <Edit size={18} />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(lawyer)}
-                              className="p-2 text-neutral-400 hover:text-error-600 hover:bg-error-50 rounded-lg transition-colors"
-                              title="Excluir"
-                            >
-                              <Trash2 size={18} />
-                            </button>
-                          </div>
+                          <ActionsDropdown
+                            actions={[
+                              { label: 'Ver Detalhes', icon: <Eye size={16} />, onClick: () => handleViewDetails(lawyer), variant: 'info' },
+                              { label: 'Editar', icon: <Edit size={16} />, onClick: () => handleEdit(lawyer), variant: 'primary' },
+                              { label: 'Excluir', icon: <Trash2 size={16} />, onClick: () => handleDelete(lawyer), variant: 'danger' },
+                            ]}
+                          />
                         </td>
                       </tr>
                     ))}

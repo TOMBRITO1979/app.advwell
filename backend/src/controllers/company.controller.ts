@@ -5,6 +5,7 @@ import prisma from '../utils/prisma';
 import bcrypt from 'bcryptjs';
 import { getLastPayment } from '../services/stripe.service';
 import { appLogger } from '../utils/logger';
+import { encrypt, decrypt } from '../utils/encryption';
 
 export class CompanyController {
   // Super Admin - Listar todas as empresas
@@ -867,6 +868,203 @@ export class CompanyController {
     } catch (error) {
       appLogger.error('Erro ao buscar alertas de assinatura', error as Error);
       res.status(500).json({ error: 'Erro ao buscar alertas de assinatura' });
+    }
+  }
+
+  // ============================================
+  // CHATWELL INTEGRATION (Embed Chatwell no AdvWell)
+  // ============================================
+
+  /**
+   * Admin/User - Obter configuração do Chatwell da própria empresa
+   * GET /api/companies/own/chatwell
+   * Retorna URL e status de habilitação (nunca retorna credenciais)
+   */
+  async getChatwellConfig(req: AuthRequest, res: Response) {
+    try {
+      const companyId = req.user!.companyId;
+      const userRole = req.user!.role;
+
+      if (!companyId) {
+        return res.status(404).json({ error: 'Empresa não encontrada' });
+      }
+
+      const company = await prisma.company.findUnique({
+        where: { id: companyId },
+        select: {
+          id: true,
+          name: true,
+          chatwellEnabled: true,
+          chatwellUrl: true,
+          chatwellEmail: true,
+          chatwellToken: true,
+        },
+      });
+
+      if (!company) {
+        return res.status(404).json({ error: 'Empresa não encontrada' });
+      }
+
+      // Verificar permissão de acesso ao Chatwell
+      // SUPER_ADMIN e ADMIN sempre têm acesso se habilitado
+      // USER precisa de permissão específica
+      if (userRole === 'USER') {
+        const permission = await prisma.permission.findFirst({
+          where: {
+            userId: req.user!.userId,
+            companyId: companyId,
+            resource: 'chatwell',
+            canView: true,
+          },
+        });
+
+        if (!permission) {
+          return res.status(403).json({ error: 'Sem permissão para acessar o Chatwell' });
+        }
+      }
+
+      // Montar URL com autenticação se configurado
+      let embedUrl = null;
+      if (company.chatwellEnabled && company.chatwellUrl && company.chatwellToken) {
+        try {
+          const decryptedToken = decrypt(company.chatwellToken);
+          // Montar URL com token para auto-login
+          const baseUrl = company.chatwellUrl.replace(/\/$/, ''); // Remove trailing slash
+          embedUrl = `${baseUrl}/app?token=${encodeURIComponent(decryptedToken)}`;
+        } catch (err) {
+          appLogger.error('Erro ao descriptografar token Chatwell', err as Error);
+          embedUrl = company.chatwellUrl; // Fallback para URL sem token
+        }
+      }
+
+      res.json({
+        enabled: company.chatwellEnabled,
+        url: company.chatwellUrl,
+        embedUrl: embedUrl,
+        hasCredentials: !!(company.chatwellEmail && company.chatwellToken),
+      });
+    } catch (error) {
+      appLogger.error('Erro ao buscar config Chatwell', error as Error);
+      res.status(500).json({ error: 'Erro ao buscar configuração do Chatwell' });
+    }
+  }
+
+  /**
+   * Super Admin - Obter configuração do Chatwell de uma empresa específica
+   * GET /api/companies/:id/chatwell
+   */
+  async getChatwellConfigForCompany(req: AuthRequest, res: Response) {
+    try {
+      const { id } = req.params;
+
+      const company = await prisma.company.findUnique({
+        where: { id },
+        select: {
+          id: true,
+          name: true,
+          chatwellEnabled: true,
+          chatwellUrl: true,
+          chatwellEmail: true,
+          chatwellToken: true,
+        },
+      });
+
+      if (!company) {
+        return res.status(404).json({ error: 'Empresa não encontrada' });
+      }
+
+      // Para SUPER_ADMIN, mostrar email (mas não o token descriptografado)
+      res.json({
+        companyId: company.id,
+        companyName: company.name,
+        enabled: company.chatwellEnabled,
+        url: company.chatwellUrl,
+        email: company.chatwellEmail,
+        hasToken: !!company.chatwellToken,
+      });
+    } catch (error) {
+      appLogger.error('Erro ao buscar config Chatwell', error as Error);
+      res.status(500).json({ error: 'Erro ao buscar configuração do Chatwell' });
+    }
+  }
+
+  /**
+   * Super Admin - Configurar Chatwell de uma empresa
+   * PUT /api/companies/:id/chatwell
+   */
+  async updateChatwellConfig(req: AuthRequest, res: Response) {
+    try {
+      const { id } = req.params;
+      const { enabled, url, email, token } = req.body;
+
+      // Verificar se a empresa existe
+      const company = await prisma.company.findUnique({
+        where: { id },
+      });
+
+      if (!company) {
+        return res.status(404).json({ error: 'Empresa não encontrada' });
+      }
+
+      // Preparar dados para atualização
+      const updateData: any = {};
+
+      if (enabled !== undefined) {
+        updateData.chatwellEnabled = enabled;
+      }
+
+      if (url !== undefined) {
+        // Validar URL se fornecida
+        if (url && url.trim()) {
+          try {
+            new URL(url);
+            updateData.chatwellUrl = url.trim();
+          } catch {
+            return res.status(400).json({ error: 'URL do Chatwell inválida' });
+          }
+        } else {
+          updateData.chatwellUrl = null;
+        }
+      }
+
+      if (email !== undefined) {
+        updateData.chatwellEmail = email?.trim() || null;
+      }
+
+      if (token !== undefined) {
+        // Criptografar o token antes de salvar
+        if (token && token.trim()) {
+          updateData.chatwellToken = encrypt(token.trim());
+        } else {
+          updateData.chatwellToken = null;
+        }
+      }
+
+      const updatedCompany = await prisma.company.update({
+        where: { id },
+        data: updateData,
+        select: {
+          id: true,
+          name: true,
+          chatwellEnabled: true,
+          chatwellUrl: true,
+          chatwellEmail: true,
+          chatwellToken: true,
+        },
+      });
+
+      res.json({
+        message: 'Configuração do Chatwell atualizada com sucesso',
+        companyId: updatedCompany.id,
+        companyName: updatedCompany.name,
+        enabled: updatedCompany.chatwellEnabled,
+        url: updatedCompany.chatwellUrl,
+        email: updatedCompany.chatwellEmail,
+        hasToken: !!updatedCompany.chatwellToken,
+      });
+    } catch (error) {
+      appLogger.error('Erro ao atualizar config Chatwell', error as Error);
+      res.status(500).json({ error: 'Erro ao atualizar configuração do Chatwell' });
     }
   }
 }

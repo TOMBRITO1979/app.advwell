@@ -3,6 +3,7 @@ import Layout from '../components/Layout';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import { Plus, Search, Edit, Trash2, X, Shield, Eye, Edit as EditIcon, Trash, EyeOff, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ActionsDropdown } from '../components/ui';
 import MobileCardList, { MobileCardItem } from '../components/MobileCardList';
 import { formatDate } from '../utils/dateFormatter';
 
@@ -51,6 +52,7 @@ const AVAILABLE_RESOURCES = [
   { value: 'client-subscriptions', label: 'Planos de Clientes' },
   // Integrações
   { value: 'google-calendar', label: 'Google Calendar' },
+  { value: 'chatwell', label: 'Chatwell' },
   // Administração
   { value: 'users', label: 'Usuários' },
   // Configurações
@@ -338,25 +340,13 @@ const Users: React.FC = () => {
                             {user.active ? 'Ativo' : 'Inativo'}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-sm">
-                          <div className="flex items-center justify-center gap-2">
-                            <button
-                              onClick={() => handleEdit(user)}
-                              className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                              title="Editar"
-                              disabled={user.role === 'ADMIN' || user.role === 'SUPER_ADMIN'}
-                            >
-                              <Edit size={18} />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(user)}
-                              className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-error-600 hover:text-error-700 hover:bg-error-50 rounded-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                              title="Desativar"
-                              disabled={user.role === 'ADMIN' || user.role === 'SUPER_ADMIN'}
-                            >
-                              <Trash2 size={18} />
-                            </button>
-                          </div>
+                        <td className="px-4 py-3 text-sm text-center">
+                          <ActionsDropdown
+                            actions={[
+                              { label: 'Editar', icon: <Edit size={16} />, onClick: () => handleEdit(user), variant: 'primary', disabled: user.role === 'ADMIN' || user.role === 'SUPER_ADMIN' },
+                              { label: 'Desativar', icon: <Trash2 size={16} />, onClick: () => handleDelete(user), variant: 'danger', disabled: user.role === 'ADMIN' || user.role === 'SUPER_ADMIN' },
+                            ]}
+                          />
                         </td>
                       </tr>
                     ))}
