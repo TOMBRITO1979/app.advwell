@@ -568,8 +568,8 @@ if (!CRON_ENABLED) {
 }
 
 // Cron job para sincronizar processos - agora usa filas
-// Executa às 2h da manhã (São Paulo), mas apenas no líder
-CRON_ENABLED && cron.schedule('0 2 * * *', async () => {
+// Executa às 00:10 (São Paulo), mas apenas no líder
+CRON_ENABLED && cron.schedule('10 0 * * *', async () => {
   const { isLeader, fencingToken } = await tryBecomeLeader();
 
   if (!isLeader) {
