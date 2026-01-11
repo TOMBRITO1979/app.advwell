@@ -19,7 +19,6 @@ import {
   UserCog,
   ChevronLeft,
   ChevronRight,
-  ChevronDown,
   Bell,
   CreditCard,
   Mail,
@@ -106,6 +105,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [agendaOpen, setAgendaOpen] = React.useState(false);
   const [pessoasOpen, setPessoasOpen] = React.useState(false);
   const [processosOpen, setProcessosOpen] = React.useState(false);
+  const [marketingOpen, setMarketingOpen] = React.useState(false);
+  const [financeiroOpen, setFinanceiroOpen] = React.useState(false);
   const [subscriptionStatus, setSubscriptionStatus] = React.useState<SubscriptionStatus | null>(null);
   const [showSubscriptionBanner, setShowSubscriptionBanner] = React.useState(true);
   const [accountsDueToday, setAccountsDueToday] = React.useState<AccountsDueToday | null>(null);
@@ -303,6 +304,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const agendaItems = [
     { path: '/schedule', label: 'Agendamentos', icon: Calendar },
     { path: '/todos', label: 'Tarefas', icon: CheckSquare },
+    { path: '/hearings', label: 'Audiências', icon: Gavel },
     { path: '/google-calendar', label: 'Google Calendar', icon: Calendar },
   ];
 
@@ -323,31 +325,38 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { path: '/deadlines', label: 'Prazos', icon: Clock },
     { path: '/monitoring', label: 'Monitoramento', icon: Radar },
     { path: '/updates', label: 'Atualizações', icon: Bell },
-    { path: '/hearings', label: 'Audiências', icon: Gavel },
+  ];
+
+  // Submenu Marketing (dropdown) - itens condicionais por permissão/role
+  const marketingItems = [
+    ...(hasPermission('tags') ? [{ path: '/tags', label: 'Tags', icon: Tag }] : []),
+    { path: '/leads', label: 'Leads', icon: UserPlus },
+    ...(hasPermission('lead-analytics') ? [{ path: '/lead-analytics', label: 'Analytics Leads', icon: BarChart3 }] : []),
+    ...((user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') ? [
+      { path: '/campaigns', label: 'Campanhas', icon: Mail },
+      { path: '/whatsapp-campaigns', label: 'Campanhas WhatsApp', icon: WhatsAppIcon },
+    ] : []),
+  ];
+
+  // Submenu Financeiro (dropdown) - Assinatura só para ADMIN/SUPER_ADMIN
+  const financeiroItems = [
+    { path: '/financial', label: 'Fluxo de Caixa', icon: DollarSign },
+    { path: '/accounts-payable', label: 'Contas a Pagar', icon: CreditCard },
+    { path: '/client-subscriptions', label: 'Planos', icon: CreditCard },
+    ...((user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN')
+      ? [{ path: '/subscription', label: 'Assinatura', icon: Crown }]
+      : []),
   ];
 
   const menuItems = [
     { path: '/dashboard', label: 'Dashboard', icon: Home },
-    // Agenda, Pessoas e Processos serão renderizados como dropdowns separadamente
+    // Agenda, Pessoas, Processos, Marketing e Financeiro serão renderizados como dropdowns separadamente
     { path: '/legal-documents', label: 'Documentos', icon: Scale },
     { path: '/documents', label: 'Uploads', icon: FolderOpen },
-    { path: '/leads', label: 'Leads', icon: UserPlus },
   ];
 
-  // Lead Analytics - requires permission for USER role
-  if (hasPermission('lead-analytics')) {
-    menuItems.push({ path: '/lead-analytics', label: 'Analytics Leads', icon: BarChart3 });
-  }
-
-  // Tags - requires permission for USER role
-  if (hasPermission('tags')) {
-    menuItems.push({ path: '/tags', label: 'Tags', icon: Tag });
-  }
-
-  // Campanhas e Portal do Cliente vem após Leads (apenas para Admin)
+  // Portal do Cliente (apenas para Admin) - não vai para Marketing
   if (user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') {
-    menuItems.push({ path: '/campaigns', label: 'Campanhas', icon: Mail });
-    menuItems.push({ path: '/whatsapp-campaigns', label: 'Campanhas WhatsApp', icon: WhatsAppIcon });
     menuItems.push({ path: '/announcements', label: 'Portal do Cliente', icon: Megaphone });
   }
 
@@ -355,13 +364,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   if (chatwellStatus?.enabled && chatwellStatus?.hasAccess) {
     menuItems.push({ path: '/chatwell', label: 'Chatwell', icon: MessageCircle });
   }
-
-  // Financeiro e Contas a Pagar
-  menuItems.push({ path: '/financial', label: 'Financeiro', icon: DollarSign });
-  menuItems.push({ path: '/accounts-payable', label: 'Contas a Pagar', icon: CreditCard });
-
-  // Itens restantes na ordem original
-  menuItems.push({ path: '/client-subscriptions', label: 'Planos', icon: CreditCard });
 
   // Itens administrativos (Google Calendar e Usuários movidos para dropdowns)
 
@@ -386,7 +388,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   if (user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') {
     afterCredentialsItems.push({ path: '/lgpd-requests', label: 'LGPD Requests', icon: Shield });
     afterCredentialsItems.push({ path: '/audit-logs', label: 'Logs de Auditoria', icon: History });
-    afterCredentialsItems.push({ path: '/subscription', label: 'Assinatura', icon: Crown });
   }
 
   if (user?.role === 'SUPER_ADMIN') {
@@ -587,15 +588,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 title={sidebarCollapsed ? 'Agenda' : ''}
               >
                 <Calendar size={20} />
-                {!sidebarCollapsed && (
-                  <div className="flex items-center justify-between flex-1">
-                    <span className="text-sm">Agenda</span>
-                    <ChevronDown
-                      size={16}
-                      className={`transition-transform duration-200 ${agendaOpen ? 'rotate-180' : ''}`}
-                    />
-                  </div>
-                )}
+                {!sidebarCollapsed && <span className="text-sm">Agenda</span>}
               </button>
               {(agendaOpen || sidebarCollapsed) && (
                 <div className={sidebarCollapsed ? '' : 'bg-neutral-50'}>
@@ -654,15 +647,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 title={sidebarCollapsed ? 'Pessoas' : ''}
               >
                 <Users size={20} />
-                {!sidebarCollapsed && (
-                  <div className="flex items-center justify-between flex-1">
-                    <span className="text-sm">Pessoas</span>
-                    <ChevronDown
-                      size={16}
-                      className={`transition-transform duration-200 ${pessoasOpen ? 'rotate-180' : ''}`}
-                    />
-                  </div>
-                )}
+                {!sidebarCollapsed && <span className="text-sm">Pessoas</span>}
               </button>
               {(pessoasOpen || sidebarCollapsed) && (
                 <div className={sidebarCollapsed ? '' : 'bg-neutral-50'}>
@@ -704,15 +689,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 title={sidebarCollapsed ? 'Processos' : ''}
               >
                 <FileText size={20} />
-                {!sidebarCollapsed && (
-                  <div className="flex items-center justify-between flex-1">
-                    <span className="text-sm">Processos</span>
-                    <ChevronDown
-                      size={16}
-                      className={`transition-transform duration-200 ${processosOpen ? 'rotate-180' : ''}`}
-                    />
-                  </div>
-                )}
+                {!sidebarCollapsed && <span className="text-sm">Processos</span>}
               </button>
               {(processosOpen || sidebarCollapsed) && (
                 <div className={sidebarCollapsed ? '' : 'bg-neutral-50'}>
@@ -758,25 +735,125 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 </div>
               )}
 
+              {/* Dropdown Marketing */}
+              {marketingItems.length > 0 && (
+                <>
+                  <button
+                    onClick={() => setMarketingOpen(!marketingOpen)}
+                    className={`w-full flex items-center ${
+                      sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-6'
+                    } py-3 transition-all duration-200 font-medium ${
+                      marketingItems.some(item => location.pathname.startsWith(item.path))
+                        ? 'bg-primary-50 text-primary-600'
+                        : 'text-neutral-700 hover:bg-neutral-50 hover:text-primary-600'
+                    }`}
+                    title={sidebarCollapsed ? 'Marketing' : ''}
+                  >
+                    <Megaphone size={20} />
+                    {!sidebarCollapsed && <span className="text-sm">Marketing</span>}
+                  </button>
+                  {(marketingOpen || sidebarCollapsed) && (
+                    <div className={sidebarCollapsed ? '' : 'bg-neutral-50'}>
+                      {marketingItems.map((item) => {
+                        const Icon = item.icon;
+                        const isActive = location.pathname === item.path;
+                        return (
+                          <Link
+                            key={item.path}
+                            to={item.path}
+                            className={`flex items-center ${
+                              sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-6 pl-10'
+                            } py-2.5 transition-all duration-200 font-medium ${
+                              isActive
+                                ? 'bg-primary-50 text-primary-600 border-r-4 border-primary-500'
+                                : 'text-neutral-600 hover:bg-neutral-100 hover:text-primary-600'
+                            }`}
+                            onClick={() => setSidebarOpen(false)}
+                            title={sidebarCollapsed ? item.label : ''}
+                          >
+                            <Icon size={18} />
+                            {!sidebarCollapsed && <span className="text-sm">{item.label}</span>}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* Dropdown Financeiro */}
+              <button
+                onClick={() => setFinanceiroOpen(!financeiroOpen)}
+                className={`w-full flex items-center ${
+                  sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-6'
+                } py-3 transition-all duration-200 font-medium ${
+                  financeiroItems.some(item => location.pathname.startsWith(item.path))
+                    ? 'bg-primary-50 text-primary-600'
+                    : 'text-neutral-700 hover:bg-neutral-50 hover:text-primary-600'
+                }`}
+                title={sidebarCollapsed ? 'Financeiro' : ''}
+              >
+                <DollarSign size={20} />
+                {!sidebarCollapsed && <span className="text-sm">Financeiro</span>}
+              </button>
+              {(financeiroOpen || sidebarCollapsed) && (
+                <div className={sidebarCollapsed ? '' : 'bg-neutral-50'}>
+                  {financeiroItems.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = location.pathname === item.path;
+                    const showAccountsBadge = item.path === '/accounts-payable' && accountsDueToday && accountsDueToday.count > 0;
+                    return (
+                      <Link
+                        key={item.path}
+                        to={item.path}
+                        className={`flex items-center ${
+                          sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-6 pl-10'
+                        } py-2.5 transition-all duration-200 font-medium ${
+                          isActive
+                            ? 'bg-primary-50 text-primary-600 border-r-4 border-primary-500'
+                            : 'text-neutral-600 hover:bg-neutral-100 hover:text-primary-600'
+                        }`}
+                        onClick={() => setSidebarOpen(false)}
+                        title={sidebarCollapsed ? item.label : ''}
+                      >
+                        <div className="relative">
+                          <Icon size={18} />
+                          {showAccountsBadge && sidebarCollapsed && (
+                            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                              {accountsDueToday && accountsDueToday.count > 9 ? '9+' : accountsDueToday?.count}
+                            </span>
+                          )}
+                        </div>
+                        {!sidebarCollapsed && (
+                          <div className="flex items-center justify-between flex-1">
+                            <span className="text-sm">{item.label}</span>
+                            {showAccountsBadge && (
+                              <span
+                                className="bg-red-500 text-white text-xs font-bold rounded-full px-2 py-0.5 ml-2"
+                                title={`R$ ${accountsDueToday?.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} vencendo hoje`}
+                              >
+                                {accountsDueToday?.count}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+
               {/* Demais itens do menu (exceto Dashboard que já foi renderizado) */}
               {menuItems.filter(item => item.path !== '/dashboard').map((item) => {
                 const Icon = item.icon;
                 const isActive = location.pathname.startsWith(item.path);
 
-                // Badge para Contas a Pagar
-                const showAccountsBadge = item.path === '/accounts-payable' && accountsDueToday && accountsDueToday.count > 0;
                 // Badge para Portal do Cliente (mensagens não lidas)
                 const showMessagesBadge = item.path === '/announcements' && unreadMessagesCount && unreadMessagesCount.count > 0;
-                // Badge genérico
-                const showBadge = showAccountsBadge || showMessagesBadge;
-                const badgeCount = showAccountsBadge
-                  ? accountsDueToday?.count
-                  : (showMessagesBadge ? unreadMessagesCount?.count : 0);
-                const badgeTitle = showAccountsBadge
-                  ? `${item.label} (${accountsDueToday?.count} vencendo hoje)`
-                  : (showMessagesBadge
-                    ? `${item.label} (${unreadMessagesCount?.count} mensagem(ns) não lida(s))`
-                    : item.label);
+                const badgeCount = showMessagesBadge ? unreadMessagesCount?.count : 0;
+                const badgeTitle = showMessagesBadge
+                  ? `${item.label} (${unreadMessagesCount?.count} mensagem(ns) não lida(s))`
+                  : item.label;
 
                 return (
                   <Link
@@ -794,7 +871,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   >
                     <div className="relative">
                       <Icon size={20} />
-                      {showBadge && sidebarCollapsed && (
+                      {showMessagesBadge && sidebarCollapsed && (
                         <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center">
                           {badgeCount && badgeCount > 9 ? '9+' : badgeCount}
                         </span>
@@ -803,12 +880,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                     {!sidebarCollapsed && (
                       <div className="flex items-center justify-between flex-1">
                         <span className="text-sm">{item.label}</span>
-                        {showBadge && (
+                        {showMessagesBadge && (
                           <span
                             className="bg-red-500 text-white text-xs font-bold rounded-full px-2 py-0.5 ml-2"
-                            title={showAccountsBadge
-                              ? `R$ ${accountsDueToday?.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} vencendo hoje`
-                              : `${unreadMessagesCount?.count} mensagem(ns) não lida(s)`}
+                            title={`${unreadMessagesCount?.count} mensagem(ns) não lida(s)`}
                           >
                             {badgeCount}
                           </span>
@@ -830,15 +905,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                     title={sidebarCollapsed ? 'Credenciais' : ''}
                   >
                     <Key size={20} />
-                    {!sidebarCollapsed && (
-                      <div className="flex items-center justify-between flex-1">
-                        <span className="text-sm">Credenciais</span>
-                        <ChevronDown
-                          size={16}
-                          className={`transition-transform duration-200 ${credentialsOpen ? 'rotate-180' : ''}`}
-                        />
-                      </div>
-                    )}
+                    {!sidebarCollapsed && <span className="text-sm">Credenciais</span>}
                   </button>
                   {(credentialsOpen || sidebarCollapsed) && (
                     <div className={sidebarCollapsed ? '' : 'bg-neutral-50'}>
