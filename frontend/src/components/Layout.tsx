@@ -103,6 +103,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false);
   const [credentialsOpen, setCredentialsOpen] = React.useState(false);
+  const [agendaOpen, setAgendaOpen] = React.useState(false);
+  const [pessoasOpen, setPessoasOpen] = React.useState(false);
   const [subscriptionStatus, setSubscriptionStatus] = React.useState<SubscriptionStatus | null>(null);
   const [showSubscriptionBanner, setShowSubscriptionBanner] = React.useState(true);
   const [accountsDueToday, setAccountsDueToday] = React.useState<AccountsDueToday | null>(null);
@@ -296,12 +298,26 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     return false;
   };
 
+  // Submenu Agenda (dropdown)
+  const agendaItems = [
+    { path: '/schedule', label: 'Agendamentos', icon: Calendar },
+    { path: '/todos', label: 'Tarefas', icon: CheckSquare },
+    { path: '/google-calendar', label: 'Google Calendar', icon: Calendar },
+  ];
+
+  // Submenu Pessoas (dropdown) - Usuários só para ADMIN/SUPER_ADMIN
+  const pessoasItems = [
+    { path: '/clients', label: 'Clientes', icon: Users },
+    { path: '/adverses', label: 'Adversos', icon: UserPlus },
+    { path: '/lawyers', label: 'Advogados', icon: Scale },
+    ...((user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN')
+      ? [{ path: '/users', label: 'Usuários', icon: UserCog }]
+      : []),
+  ];
+
   const menuItems = [
     { path: '/dashboard', label: 'Dashboard', icon: Home },
-    { path: '/schedule', label: 'Agenda', icon: Calendar },
-    { path: '/clients', label: 'Clientes', icon: Users },
-    { path: '/adverses', label: 'Adversos', icon: Users },
-    { path: '/lawyers', label: 'Advogados', icon: Scale },
+    // Agenda e Pessoas serão renderizados como dropdowns separadamente
     { path: '/cases', label: 'Processos', icon: FileText },
     { path: '/pnj', label: 'PNJ', icon: FileText },
     { path: '/monitoring', label: 'Monitoramento', icon: Radar },
@@ -310,7 +326,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { path: '/updates', label: 'Atualizações', icon: Bell },
     { path: '/legal-documents', label: 'Documentos', icon: Scale },
     { path: '/documents', label: 'Uploads', icon: FolderOpen },
-    { path: '/todos', label: 'Tarefas', icon: CheckSquare },
     { path: '/leads', label: 'Leads', icon: UserPlus },
   ];
 
@@ -343,11 +358,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   // Itens restantes na ordem original
   menuItems.push({ path: '/client-subscriptions', label: 'Planos', icon: CreditCard });
 
-  // Itens administrativos
-  if (user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') {
-    menuItems.push({ path: '/google-calendar', label: 'Google Calendar', icon: Calendar });
-    menuItems.push({ path: '/users', label: 'Usuários', icon: UserCog });
-  }
+  // Itens administrativos (Google Calendar e Usuários movidos para dropdowns)
 
   // Submenu de Credenciais (apenas para ADMIN e SUPER_ADMIN)
   const credentialsItems = (user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') ? [
@@ -541,7 +552,142 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </div>
 
             <nav className={`${sidebarCollapsed ? 'mt-2' : 'mt-8'} flex-1 overflow-y-auto pb-4`}>
-              {menuItems.map((item) => {
+              {/* Dashboard (primeiro item fixo) */}
+              <Link
+                to="/dashboard"
+                className={`flex items-center ${
+                  sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-6'
+                } py-3 transition-all duration-200 font-medium ${
+                  location.pathname === '/dashboard'
+                    ? 'bg-primary-50 text-primary-600 border-r-4 border-primary-500'
+                    : 'text-neutral-700 hover:bg-neutral-50 hover:text-primary-600'
+                }`}
+                onClick={() => setSidebarOpen(false)}
+                title={sidebarCollapsed ? 'Dashboard' : ''}
+              >
+                <Home size={20} />
+                {!sidebarCollapsed && <span className="text-sm">Dashboard</span>}
+              </Link>
+
+              {/* Dropdown Agenda */}
+              <button
+                onClick={() => setAgendaOpen(!agendaOpen)}
+                className={`w-full flex items-center ${
+                  sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-6'
+                } py-3 transition-all duration-200 font-medium ${
+                  agendaItems.some(item => location.pathname.startsWith(item.path))
+                    ? 'bg-primary-50 text-primary-600'
+                    : 'text-neutral-700 hover:bg-neutral-50 hover:text-primary-600'
+                }`}
+                title={sidebarCollapsed ? 'Agenda' : ''}
+              >
+                <Calendar size={20} />
+                {!sidebarCollapsed && (
+                  <div className="flex items-center justify-between flex-1">
+                    <span className="text-sm">Agenda</span>
+                    <ChevronDown
+                      size={16}
+                      className={`transition-transform duration-200 ${agendaOpen ? 'rotate-180' : ''}`}
+                    />
+                  </div>
+                )}
+              </button>
+              {(agendaOpen || sidebarCollapsed) && (
+                <div className={sidebarCollapsed ? '' : 'bg-neutral-50'}>
+                  {agendaItems.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = location.pathname === item.path;
+                    const showTasksBadge = item.path === '/todos' && tasksDueToday && tasksDueToday.count > 0;
+                    return (
+                      <Link
+                        key={item.path}
+                        to={item.path}
+                        className={`flex items-center ${
+                          sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-6 pl-10'
+                        } py-2.5 transition-all duration-200 font-medium ${
+                          isActive
+                            ? 'bg-primary-50 text-primary-600 border-r-4 border-primary-500'
+                            : 'text-neutral-600 hover:bg-neutral-100 hover:text-primary-600'
+                        }`}
+                        onClick={() => setSidebarOpen(false)}
+                        title={sidebarCollapsed ? item.label : ''}
+                      >
+                        <div className="relative">
+                          <Icon size={18} />
+                          {showTasksBadge && sidebarCollapsed && (
+                            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                              {tasksDueToday && tasksDueToday.count > 9 ? '9+' : tasksDueToday?.count}
+                            </span>
+                          )}
+                        </div>
+                        {!sidebarCollapsed && (
+                          <div className="flex items-center justify-between flex-1">
+                            <span className="text-sm">{item.label}</span>
+                            {showTasksBadge && (
+                              <span className="bg-red-500 text-white text-xs font-bold rounded-full px-2 py-0.5 ml-2">
+                                {tasksDueToday?.count}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Dropdown Pessoas */}
+              <button
+                onClick={() => setPessoasOpen(!pessoasOpen)}
+                className={`w-full flex items-center ${
+                  sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-6'
+                } py-3 transition-all duration-200 font-medium ${
+                  pessoasItems.some(item => location.pathname.startsWith(item.path))
+                    ? 'bg-primary-50 text-primary-600'
+                    : 'text-neutral-700 hover:bg-neutral-50 hover:text-primary-600'
+                }`}
+                title={sidebarCollapsed ? 'Pessoas' : ''}
+              >
+                <Users size={20} />
+                {!sidebarCollapsed && (
+                  <div className="flex items-center justify-between flex-1">
+                    <span className="text-sm">Pessoas</span>
+                    <ChevronDown
+                      size={16}
+                      className={`transition-transform duration-200 ${pessoasOpen ? 'rotate-180' : ''}`}
+                    />
+                  </div>
+                )}
+              </button>
+              {(pessoasOpen || sidebarCollapsed) && (
+                <div className={sidebarCollapsed ? '' : 'bg-neutral-50'}>
+                  {pessoasItems.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = location.pathname === item.path;
+                    return (
+                      <Link
+                        key={item.path}
+                        to={item.path}
+                        className={`flex items-center ${
+                          sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-6 pl-10'
+                        } py-2.5 transition-all duration-200 font-medium ${
+                          isActive
+                            ? 'bg-primary-50 text-primary-600 border-r-4 border-primary-500'
+                            : 'text-neutral-600 hover:bg-neutral-100 hover:text-primary-600'
+                        }`}
+                        onClick={() => setSidebarOpen(false)}
+                        title={sidebarCollapsed ? item.label : ''}
+                      >
+                        <Icon size={18} />
+                        {!sidebarCollapsed && <span className="text-sm">{item.label}</span>}
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Demais itens do menu (exceto Dashboard que já foi renderizado) */}
+              {menuItems.filter(item => item.path !== '/dashboard').map((item) => {
                 const Icon = item.icon;
                 const isActive = location.pathname.startsWith(item.path);
 
@@ -549,28 +695,22 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 const showAccountsBadge = item.path === '/accounts-payable' && accountsDueToday && accountsDueToday.count > 0;
                 // Badge para Prazos
                 const showDeadlinesBadge = item.path === '/deadlines' && deadlinesDueToday && deadlinesDueToday.count > 0;
-                // Badge para Tarefas
-                const showTasksBadge = item.path === '/todos' && tasksDueToday && tasksDueToday.count > 0;
                 // Badge para Portal do Cliente (mensagens não lidas)
                 const showMessagesBadge = item.path === '/announcements' && unreadMessagesCount && unreadMessagesCount.count > 0;
                 // Badge genérico
-                const showBadge = showAccountsBadge || showDeadlinesBadge || showTasksBadge || showMessagesBadge;
+                const showBadge = showAccountsBadge || showDeadlinesBadge || showMessagesBadge;
                 const badgeCount = showAccountsBadge
                   ? accountsDueToday?.count
                   : (showDeadlinesBadge
                     ? deadlinesDueToday?.count
-                    : (showTasksBadge
-                      ? tasksDueToday?.count
-                      : (showMessagesBadge ? unreadMessagesCount?.count : 0)));
+                    : (showMessagesBadge ? unreadMessagesCount?.count : 0));
                 const badgeTitle = showAccountsBadge
                   ? `${item.label} (${accountsDueToday?.count} vencendo hoje)`
                   : (showDeadlinesBadge
                     ? `${item.label} (${deadlinesDueToday?.count} vencendo hoje)`
-                    : (showTasksBadge
-                      ? `${item.label} (${tasksDueToday?.count} vencendo hoje)`
-                      : (showMessagesBadge
-                        ? `${item.label} (${unreadMessagesCount?.count} mensagem(ns) não lida(s))`
-                        : item.label)));
+                    : (showMessagesBadge
+                      ? `${item.label} (${unreadMessagesCount?.count} mensagem(ns) não lida(s))`
+                      : item.label));
 
                 return (
                   <Link
@@ -604,9 +744,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                               ? `R$ ${accountsDueToday?.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} vencendo hoje`
                               : (showDeadlinesBadge
                                 ? `${deadlinesDueToday?.count} prazo(s) vencendo hoje`
-                                : (showTasksBadge
-                                  ? `${tasksDueToday?.count} tarefa(s) vencendo hoje`
-                                  : `${unreadMessagesCount?.count} mensagem(ns) não lida(s)`))}
+                                : `${unreadMessagesCount?.count} mensagem(ns) não lida(s)`)}
                           >
                             {badgeCount}
                           </span>
