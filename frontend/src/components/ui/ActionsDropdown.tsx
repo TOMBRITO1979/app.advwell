@@ -99,7 +99,7 @@ const ActionsDropdown: React.FC<ActionsDropdownProps> = ({
 
       {isOpen && (
         <div
-          className={`absolute z-50 mt-1 min-w-[180px] bg-white border border-neutral-200 rounded-lg shadow-lg py-1 ${
+          className={`absolute z-50 bottom-full mb-1 min-w-[180px] bg-white border border-neutral-200 rounded-lg shadow-lg py-1 ${
             align === 'right' ? 'right-0' : 'left-0'
           }`}
         >
