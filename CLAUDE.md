@@ -104,6 +104,20 @@ Jobs processed by dedicated worker (not API replicas):
 | Auth middleware | `backend/src/middleware/auth.ts` |
 | Tenant middleware | `backend/src/middleware/tenant.ts` |
 | Docker config | `docker-compose.yml` |
+| Landing page | `landing-page/index.html` |
+
+## Landing Page (Vendas)
+
+Pagina de apresentacao para campanhas de vendas em `landing-page/`.
+
+- **Arquivo:** `landing-page/index.html` (HTML standalone com CSS/JS embutido)
+- **Cores:** Verde do app (#4CAF50)
+- **Preview local:** `python3 -m http.server 8080` na pasta
+- **Deploy:** Cloudflare Pages (Direct Upload ou GitHub)
+
+**Secoes:** Hero, Features, Screenshots (5 abas), Video demo, Modulos (20), Integracoes, Precos, Depoimentos, CTA, Footer
+
+**Para personalizar:** Ver `landing-page/README.md`
 
 ## Environment Variables
 
