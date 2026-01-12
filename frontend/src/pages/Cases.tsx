@@ -122,10 +122,12 @@ const Cases: React.FC = () => {
   const [loadingDetails, setLoadingDetails] = useState(false);
   const [generatingSummary, setGeneratingSummary] = useState(false);
   const [editMode, setEditMode] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
 
   // Parts management
   const [parts, setParts] = useState<CasePart[]>([]);
+  const [deletedPartIds, setDeletedPartIds] = useState<string[]>([]); // Track parts to delete
   const [showAddPartForm, setShowAddPartForm] = useState(false);
   const [partFormData, setPartFormData] = useState<{
     type: 'DEMANDANTE' | 'DEMANDADO' | 'ADVOGADO' | 'ADVOGADO_ADVERSO';
@@ -509,6 +511,7 @@ const Cases: React.FC = () => {
       distributionDate: '',
     });
     setParts([]);
+    setDeletedPartIds([]); // Reset deleted parts tracking
     setPartFormData({
       type: 'DEMANDANTE',
       entityId: '',
@@ -595,6 +598,11 @@ const Cases: React.FC = () => {
   };
 
   const handleRemovePart = (index: number) => {
+    const partToRemove = parts[index];
+    // If the part has an ID (exists in database), track it for deletion
+    if (partToRemove.id) {
+      setDeletedPartIds(prev => [...prev, partToRemove.id!]);
+    }
     setParts(parts.filter((_, i) => i !== index));
   };
 
@@ -671,6 +679,11 @@ const Cases: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Prevenir múltiplos cliques
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+
     try {
       // Remover demandante e demandado do payload (serão criados como CaseParts)
       const { demandante, demandado, ...restFormData } = formData;
@@ -729,6 +742,17 @@ const Cases: React.FC = () => {
         }
       }
 
+      // Delete parts that were removed by the user
+      if (deletedPartIds.length > 0) {
+        for (const partId of deletedPartIds) {
+          try {
+            await api.delete(`/cases/${caseId}/parts/${partId}`);
+          } catch (error) {
+            console.error('Erro ao deletar parte:', error);
+          }
+        }
+      }
+
       // Create or update parts if any were added (via modal de partes)
       if (parts.length > 0) {
         for (const part of parts) {
@@ -770,6 +794,8 @@ const Cases: React.FC = () => {
       loadCases();
     } catch (error: any) {
       toast.error(error.response?.data?.error || 'Erro ao salvar processo');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -1434,7 +1460,43 @@ const Cases: React.FC = () => {
                           key={`${item.type}-${item.id}`}
                           className="px-3 py-2 hover:bg-primary-50 cursor-pointer border-b border-neutral-100 last:border-b-0"
                           onMouseDown={() => {
-                            setFormData({ ...formData, demandante: item.name });
+                            // Se for cliente, também atualiza o clientId
+                            const updates: any = { demandante: item.name };
+                            if (item.type === 'cliente') {
+                              updates.clientId = item.id;
+                            }
+                            setFormData({ ...formData, ...updates });
+
+                            // Em modo edição, atualiza ou adiciona a parte do demandante
+                            if (editMode && item.type === 'cliente') {
+                              // Encontra parte existente do tipo DEMANDANTE com clientId
+                              const existingDemandanteIndex = parts.findIndex(
+                                p => p.type === 'DEMANDANTE' && p.clientId
+                              );
+                              if (existingDemandanteIndex >= 0) {
+                                // Marca a parte antiga para deleção se tem ID
+                                const oldPart = parts[existingDemandanteIndex];
+                                if (oldPart.id) {
+                                  setDeletedPartIds(prev => [...prev, oldPart.id!]);
+                                }
+                                // Remove a parte antiga do array
+                                const newParts = parts.filter((_, i) => i !== existingDemandanteIndex);
+                                // Adiciona nova parte com o cliente selecionado
+                                newParts.push({
+                                  type: 'DEMANDANTE',
+                                  clientId: item.id,
+                                  client: { id: item.id, name: item.name },
+                                });
+                                setParts(newParts);
+                              } else {
+                                // Adiciona nova parte
+                                setParts([...parts, {
+                                  type: 'DEMANDANTE',
+                                  clientId: item.id,
+                                  client: { id: item.id, name: item.name },
+                                }]);
+                              }
+                            }
                             setShowDemandanteDropdown(false);
                           }}
                         >
@@ -1988,9 +2050,10 @@ const Cases: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-primary-100 text-primary-700 border border-primary-200 rounded-md hover:bg-primary-200 transition-colors min-h-[44px]"
+                  disabled={isSubmitting}
+                  className="px-6 py-2 bg-primary-100 text-primary-700 border border-primary-200 rounded-md hover:bg-primary-200 transition-colors min-h-[44px] disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {editMode ? 'Atualizar' : 'Salvar'}
+                  {isSubmitting ? 'Salvando...' : (editMode ? 'Atualizar' : 'Salvar')}
                 </button>
               </div>
             </form>
