@@ -10,8 +10,9 @@ AdvWell is a multitenant SaaS for Brazilian law firms with DataJud CNJ integrati
 - Frontend: https://app.advwell.pro
 - Backend API: https://api.advwell.pro
 - Grafana: https://grafana.advwell.pro
+- Landing Page: https://advwell.pro
 
-**Current Version:** v1.8.105 (Backend) | v1.8.110 (Frontend)
+**Current Version:** v1.8.106 (Backend) | v1.8.118 (Frontend)
 
 ## Technology Stack
 
@@ -76,23 +77,12 @@ Jobs processed by dedicated worker (not API replicas):
 
 | Module | Description |
 |--------|-------------|
-| Cases | Process management with DataJud sync, parts (demandante/demandado), witnesses |
+| Cases | Process management with DataJud sync |
 | Clients | Client management with portal access |
-| Adverses | Adverse parties management |
-| Lawyers | Internal lawyers management |
-| Financial | Accounts payable/receivable, installments |
-| Monitoring | OAB publication monitoring via ADVAPI |
-| Documents | Legal document generation |
-| Schedule | Calendar events, hearings, deadlines (bidirectional sync with Cases.deadline) |
-
-## Important Fields (Cases)
-
-| Field | Source | Description |
-|-------|--------|-------------|
-| `ultimoAndamento` | DataJud | Last movement from CNJ DataJud API |
-| `ultimaPublicacaoAdvapi` | ADVAPI | Last publication from Diario Oficial via ADVAPI |
-| `informarCliente` | Manual | User-written text to inform client |
-| `notes` | Manual | Internal observations |
+| Financial | Accounts payable/receivable |
+| Monitoring | OAB publication monitoring via ADVAPI (auto-enqueue 5 years on OAB creation) |
+| Schedule | Calendar events, hearings, deadlines |
+| Manual/FAQ | Documentation system for users |
 
 ## Key Files
 
@@ -102,22 +92,7 @@ Jobs processed by dedicated worker (not API replicas):
 | Prisma schema | `backend/prisma/schema.prisma` |
 | Queue config | `backend/src/queues/*.ts` |
 | Auth middleware | `backend/src/middleware/auth.ts` |
-| Tenant middleware | `backend/src/middleware/tenant.ts` |
 | Docker config | `docker-compose.yml` |
-| Landing page | `landing-page/index.html` |
-
-## Landing Page (Vendas)
-
-Pagina de apresentacao para campanhas de vendas em `landing-page/`.
-
-- **Arquivo:** `landing-page/index.html` (HTML standalone com CSS/JS embutido)
-- **Cores:** Verde do app (#4CAF50)
-- **Preview local:** `python3 -m http.server 8080` na pasta
-- **Deploy:** Cloudflare Pages (Direct Upload ou GitHub)
-
-**Secoes:** Hero, Features, Screenshots (5 abas), Video demo, Modulos (20), Integracoes, Precos, Depoimentos, CTA, Footer
-
-**Para personalizar:** Ver `landing-page/README.md`
 
 ## Environment Variables
 
@@ -131,7 +106,6 @@ Pagina de apresentacao para campanhas de vendas em `landing-page/`.
 **Worker-specific:**
 - `ENABLE_QUEUE_PROCESSORS=true`
 - `ENABLE_CRON=true`
-- `SYNC_CONCURRENCY=10`
 
 ## Adding Features
 
@@ -141,12 +115,7 @@ Pagina de apresentacao para campanhas de vendas em `landing-page/`.
 3. Register in `backend/src/routes/index.ts`
 
 ### New Database Table
-1. Update `backend/prisma/schema.prisma` (use `@map` for snake_case columns)
+1. Update `backend/prisma/schema.prisma`
 2. Create migration SQL: `backend/migrations_manual/`
 3. Apply: `cat migration.sql | ssh root@5.78.137.1 "docker exec -i advwell-postgres psql -U postgres -d advtom"`
-4. Run `npx prisma generate` to update client
-
-## Monitoring
-
-- **Grafana**: https://grafana.advwell.pro
-- **Prometheus**: Internal (prometheus:9090)
+4. Run `npx prisma generate`
