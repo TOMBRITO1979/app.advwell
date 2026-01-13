@@ -25,6 +25,9 @@ router.put('/oabs/:id', (req, res) => monitoringController.updateMonitoredOab(re
 // Deletar OAB monitorada
 router.delete('/oabs/:id', (req, res) => monitoringController.deleteMonitoredOab(req, res));
 
+// Buscar manualmente publicações de uma OAB (enfileira consulta dos últimos 5 anos)
+router.post('/oabs/:id/refresh', (req, res) => monitoringController.refreshOab(req, res));
+
 // ========================================
 // CONSULTAS
 // ========================================

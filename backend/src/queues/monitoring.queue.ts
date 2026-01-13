@@ -6,7 +6,7 @@ import { getAdvApiService, AdvApiPublicacao } from '../services/advapi.service';
 import { normalizeProcessNumber } from '../utils/processNumber';
 
 // ESCALABILIDADE: Configuração via ambiente
-const MONITORING_CONCURRENCY = parseInt(process.env.MONITORING_CONCURRENCY || '3');
+const MONITORING_CONCURRENCY = parseInt(process.env.MONITORING_CONCURRENCY || '2');
 const ENABLE_QUEUE_PROCESSORS = process.env.ENABLE_QUEUE_PROCESSORS !== 'false';
 
 // Configuração de lotes

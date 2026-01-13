@@ -119,6 +119,48 @@ export class MonitoringController {
         oab: monitoredOab.oab,
       });
 
+      // Auto-enfileirar consulta inicial (últimos 5 anos)
+      try {
+        const dataFim = new Date();
+        const dataInicio = new Date();
+        dataInicio.setFullYear(dataInicio.getFullYear() - 5);
+
+        // Criar registro da consulta
+        const consulta = await prisma.oABConsulta.create({
+          data: {
+            companyId,
+            monitoredOabId: monitoredOab.id,
+            dataInicio,
+            dataFim,
+            tribunais: monitoredOab.tribunais,
+            status: 'PENDING',
+          },
+        });
+
+        // Enfileirar para processamento assíncrono
+        await enqueueOabConsulta(
+          consulta.id,
+          monitoredOab.id,
+          companyId,
+          monitoredOab.name,
+          monitoredOab.oab,
+          monitoredOab.oabState,
+          dataInicio.toISOString().split('T')[0],
+          dataFim.toISOString().split('T')[0],
+          monitoredOab.tribunais,
+          monitoredOab.autoImport
+        );
+
+        appLogger.info('Consulta inicial enfileirada automaticamente', {
+          monitoredOabId: monitoredOab.id,
+          consultaId: consulta.id,
+          periodo: '5 anos',
+        });
+      } catch (enqueueError) {
+        appLogger.error('Erro ao enfileirar consulta inicial', enqueueError as Error);
+        // Não impede a criação da OAB, apenas loga o erro
+      }
+
       return res.status(201).json(monitoredOab);
     } catch (error) {
       appLogger.error('Erro ao criar OAB monitorada', error as Error);
@@ -210,6 +252,75 @@ export class MonitoringController {
     } catch (error) {
       appLogger.error('Erro ao deletar OAB monitorada', error as Error);
       return res.status(500).json({ error: 'Erro ao deletar OAB monitorada' });
+    }
+  }
+
+  /**
+   * Buscar manualmente publicações de uma OAB (enfileira consulta dos últimos 5 anos)
+   */
+  async refreshOab(req: AuthRequest, res: Response) {
+    try {
+      const companyId = req.user!.companyId;
+      const { id } = req.params;
+
+      if (!companyId) {
+        return res.status(403).json({ error: 'Usuário não possui empresa associada' });
+      }
+
+      // Verificar se existe e pertence à empresa
+      const monitoredOab = await prisma.monitoredOAB.findFirst({
+        where: { id, companyId },
+      });
+
+      if (!monitoredOab) {
+        return res.status(404).json({ error: 'OAB monitorada não encontrada' });
+      }
+
+      // Período: últimos 5 anos
+      const dataFim = new Date();
+      const dataInicio = new Date();
+      dataInicio.setFullYear(dataInicio.getFullYear() - 5);
+
+      // Criar registro da consulta
+      const consulta = await prisma.oABConsulta.create({
+        data: {
+          companyId,
+          monitoredOabId: monitoredOab.id,
+          dataInicio,
+          dataFim,
+          tribunais: monitoredOab.tribunais,
+          status: 'PENDING',
+        },
+      });
+
+      // Enfileirar para processamento assíncrono
+      const jobId = await enqueueOabConsulta(
+        consulta.id,
+        monitoredOab.id,
+        companyId,
+        monitoredOab.name,
+        monitoredOab.oab,
+        monitoredOab.oabState,
+        dataInicio.toISOString().split('T')[0],
+        dataFim.toISOString().split('T')[0],
+        monitoredOab.tribunais,
+        monitoredOab.autoImport
+      );
+
+      appLogger.info('Busca manual enfileirada', {
+        monitoredOabId: monitoredOab.id,
+        consultaId: consulta.id,
+        jobId,
+      });
+
+      return res.status(201).json({
+        ...consulta,
+        jobId,
+        message: 'Busca enfileirada! Acompanhe o progresso na aba Consultas.',
+      });
+    } catch (error) {
+      appLogger.error('Erro ao enfileirar busca manual', error as Error);
+      return res.status(500).json({ error: 'Erro ao enfileirar busca manual' });
     }
   }
 

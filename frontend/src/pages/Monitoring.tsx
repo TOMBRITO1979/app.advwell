@@ -497,6 +497,19 @@ const Monitoring: React.FC = () => {
     }
   };
 
+  // Busca manual rápida (últimos 5 anos, enfileira direto)
+  const handleRefreshOab = async (oab: MonitoredOAB) => {
+    try {
+      toast.loading('Enfileirando busca...', { id: 'refresh-oab' });
+      await api.post(`/monitoring/oabs/${oab.id}/refresh`);
+      toast.success('Busca enfileirada! Acompanhe na aba Consultas.', { id: 'refresh-oab' });
+      loadConsultas();
+      setActiveTab('consultas');
+    } catch (error) {
+      toast.error('Erro ao enfileirar busca', { id: 'refresh-oab' });
+    }
+  };
+
   // Publication handlers
   const handleViewPublication = (pub: Publication) => {
     setSelectedPublication(pub);
@@ -527,11 +540,12 @@ const Monitoring: React.FC = () => {
     } else {
       setConsultaOabId('');
     }
-    // Default: last 30 days
+    // Default: últimos 5 anos
     const today = new Date();
-    const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const fiveYearsAgo = new Date();
+    fiveYearsAgo.setFullYear(fiveYearsAgo.getFullYear() - 5);
     setConsultaDataFim(today);
-    setConsultaDataInicio(thirtyDaysAgo);
+    setConsultaDataInicio(fiveYearsAgo);
     setShowConsultaModal(true);
   };
 
@@ -750,7 +764,8 @@ const Monitoring: React.FC = () => {
                             <td className="px-4 py-3 text-right">
                               <ActionsDropdown
                                 actions={[
-                                  { label: 'Consultar', icon: <RefreshCw size={16} />, onClick: () => handleOpenConsultaModal(oab), variant: 'primary' },
+                                  { label: 'Buscar Agora', icon: <Search size={16} />, onClick: () => handleRefreshOab(oab), variant: 'primary' },
+                                  { label: 'Consulta Personalizada', icon: <RefreshCw size={16} />, onClick: () => handleOpenConsultaModal(oab) },
                                   { label: oab.status === 'ACTIVE' ? 'Pausar' : 'Ativar', icon: oab.status === 'ACTIVE' ? <Pause size={16} /> : <Play size={16} />, onClick: () => handleToggleStatus(oab), variant: 'warning' },
                                   { label: 'Editar', icon: <Edit size={16} />, onClick: () => handleOpenEditModal(oab) },
                                   { label: 'Remover', icon: <Trash2 size={16} />, onClick: () => handleDeleteOab(oab), variant: 'danger' },
