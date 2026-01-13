@@ -23,6 +23,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { ActionsDropdown } from '../components/ui';
+import { DateOnlyPicker } from '../components/DateTimePicker';
 import { formatDate, formatDateTime } from '../utils/dateFormatter';
 import { formatProcessNumber } from '../utils/processNumber';
 
@@ -262,8 +263,8 @@ const Monitoring: React.FC = () => {
 
   // Consulta form
   const [consultaOabId, setConsultaOabId] = useState('');
-  const [consultaDataInicio, setConsultaDataInicio] = useState('');
-  const [consultaDataFim, setConsultaDataFim] = useState('');
+  const [consultaDataInicio, setConsultaDataInicio] = useState<Date | null>(null);
+  const [consultaDataFim, setConsultaDataFim] = useState<Date | null>(null);
   const [startingConsulta, setStartingConsulta] = useState(false);
 
   // Load data
@@ -529,9 +530,15 @@ const Monitoring: React.FC = () => {
     // Default: last 30 days
     const today = new Date();
     const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
-    setConsultaDataFim(today.toISOString().split('T')[0]);
-    setConsultaDataInicio(thirtyDaysAgo.toISOString().split('T')[0]);
+    setConsultaDataFim(today);
+    setConsultaDataInicio(thirtyDaysAgo);
     setShowConsultaModal(true);
+  };
+
+  // Formata Date para string YYYY-MM-DD
+  const formatDateToISO = (date: Date | null): string => {
+    if (!date) return '';
+    return date.toISOString().split('T')[0];
   };
 
   const handleStartConsulta = async () => {
@@ -540,12 +547,17 @@ const Monitoring: React.FC = () => {
       return;
     }
 
+    if (!consultaDataInicio || !consultaDataFim) {
+      toast.error('Selecione o período');
+      return;
+    }
+
     try {
       setStartingConsulta(true);
       await api.post('/monitoring/consultas', {
         monitoredOabId: consultaOabId,
-        dataInicio: consultaDataInicio,
-        dataFim: consultaDataFim,
+        dataInicio: formatDateToISO(consultaDataInicio),
+        dataFim: formatDateToISO(consultaDataFim),
       });
       toast.success('Consulta enfileirada! Acompanhe o progresso na aba Consultas.');
       setShowConsultaModal(false);
@@ -1232,22 +1244,22 @@ const Monitoring: React.FC = () => {
                   <label className="block text-sm font-medium text-neutral-700 mb-1">
                     Data Inicio <span className="text-red-500">*</span>
                   </label>
-                  <input
-                    type="date"
-                    value={consultaDataInicio}
-                    onChange={(e) => setConsultaDataInicio(e.target.value)}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  <DateOnlyPicker
+                    selected={consultaDataInicio}
+                    onChange={(date) => setConsultaDataInicio(date)}
+                    placeholderText="Selecione a data"
+                    maxDate={consultaDataFim || undefined}
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-neutral-700 mb-1">
                     Data Fim <span className="text-red-500">*</span>
                   </label>
-                  <input
-                    type="date"
-                    value={consultaDataFim}
-                    onChange={(e) => setConsultaDataFim(e.target.value)}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  <DateOnlyPicker
+                    selected={consultaDataFim}
+                    onChange={(date) => setConsultaDataFim(date)}
+                    placeholderText="Selecione a data"
+                    minDate={consultaDataInicio || undefined}
                   />
                 </div>
               </div>

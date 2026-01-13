@@ -8,6 +8,7 @@ import { ExportButton, ActionsDropdown } from '../components/ui';
 import CaseTimeline from '../components/CaseTimeline';
 import { formatDateTime } from '../utils/dateFormatter';
 import { formatProcessNumber } from '../utils/processNumber';
+import { DateOnlyPicker } from '../components/DateTimePicker';
 
 interface Case {
   id: string;
@@ -718,9 +719,13 @@ const Cases: React.FC = () => {
       }
 
       // Criar/atualizar partes de demandante e demandado do formulário principal
-      if (!editMode) {
-        // Apenas na criação, adiciona as partes principais
-        if (demandante && demandante.trim()) {
+      // Verifica se o nome já existe nas partes existentes para evitar duplicação
+      const existingPartNames = parts.map(p => (p.client?.name || p.adverse?.name || p.name || '').toLowerCase().trim());
+
+      if (demandante && demandante.trim()) {
+        const demandanteNormalized = demandante.trim().toLowerCase();
+        // Só cria se o nome não existir nas partes já cadastradas
+        if (!existingPartNames.includes(demandanteNormalized)) {
           try {
             await api.post(`/cases/${caseId}/parts`, {
               type: 'DEMANDANTE',
@@ -730,7 +735,11 @@ const Cases: React.FC = () => {
             console.error('Erro ao criar demandante:', error);
           }
         }
-        if (demandado && demandado.trim()) {
+      }
+      if (demandado && demandado.trim()) {
+        const demandadoNormalized = demandado.trim().toLowerCase();
+        // Só cria se o nome não existir nas partes já cadastradas
+        if (!existingPartNames.includes(demandadoNormalized)) {
           try {
             await api.post(`/cases/${caseId}/parts`, {
               type: 'DEMANDADO',
@@ -1674,21 +1683,21 @@ const Cases: React.FC = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-neutral-700 mb-1">Data de Distribuição</label>
-                  <input
-                    type="date"
-                    value={formData.distributionDate}
-                    onChange={(e) => setFormData({ ...formData, distributionDate: e.target.value })}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                  <DateOnlyPicker
+                    selected={formData.distributionDate ? new Date(formData.distributionDate + 'T00:00:00') : null}
+                    onChange={(date) => setFormData({ ...formData, distributionDate: date ? date.toISOString().split('T')[0] : '' })}
+                    placeholderText="Selecione a data"
+                    isClearable
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-neutral-700 mb-1">Prazo</label>
-                  <input
-                    type="date"
-                    value={formData.deadline}
-                    onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                  <DateOnlyPicker
+                    selected={formData.deadline ? new Date(formData.deadline + 'T00:00:00') : null}
+                    onChange={(date) => setFormData({ ...formData, deadline: date ? date.toISOString().split('T')[0] : '' })}
+                    placeholderText="Selecione a data"
+                    isClearable
                   />
                 </div>
 

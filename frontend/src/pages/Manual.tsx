@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import Layout from '../components/Layout';
 import {
   Book,
   Search,
@@ -437,6 +438,7 @@ export default function Manual() {
   }
 
   return (
+    <Layout>
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -614,5 +616,6 @@ export default function Manual() {
         </div>
       ) : null}
     </div>
+    </Layout>
   );
 }

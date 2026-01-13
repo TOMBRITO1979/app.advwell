@@ -137,7 +137,7 @@ const Updates: React.FC = () => {
                 <div className="flex justify-between items-start mb-2">
                   <div>
                     <h3 className="font-semibold text-neutral-900">{formatProcessNumber(update.processNumber)}</h3>
-                    <p className="text-sm text-neutral-600">{update.client.name}</p>
+                    <p className="text-sm text-neutral-600">{update.client?.name || 'Sem cliente'}</p>
                   </div>
                 </div>
                 <div className="space-y-1 text-sm">
@@ -222,8 +222,8 @@ const Updates: React.FC = () => {
                       <div className="text-xs text-neutral-500">{update.court}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-neutral-900">{update.client.name}</div>
-                      {update.client.cpf && (
+                      <div className="text-sm text-neutral-900">{update.client?.name || 'Sem cliente'}</div>
+                      {update.client?.cpf && (
                         <div className="text-xs text-neutral-500">
                           CPF: {update.client.cpf}
                         </div>

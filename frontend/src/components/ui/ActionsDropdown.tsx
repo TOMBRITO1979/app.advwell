@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { MoreVertical, ChevronDown } from 'lucide-react';
 
 export interface ActionItem {
@@ -18,6 +19,13 @@ interface ActionsDropdownProps {
   disabled?: boolean;
 }
 
+interface DropdownPosition {
+  top?: number;
+  bottom?: number;
+  left?: number;
+  right?: number;
+}
+
 const variantStyles: Record<string, string> = {
   default: 'text-neutral-700 hover:bg-neutral-100',
   primary: 'text-primary-700 hover:bg-primary-50',
@@ -35,7 +43,11 @@ const ActionsDropdown: React.FC<ActionsDropdownProps> = ({
   disabled = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [position, setPosition] = useState<DropdownPosition>({});
+  const [openDirection, setOpenDirection] = useState<'up' | 'down'>('up');
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   // Filter out hidden actions
   const visibleActions = actions.filter(action => !action.hidden);
@@ -43,7 +55,11 @@ const ActionsDropdown: React.FC<ActionsDropdownProps> = ({
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      const isOutsideButton = dropdownRef.current && !dropdownRef.current.contains(target);
+      const isOutsideMenu = menuRef.current && !menuRef.current.contains(target);
+
+      if (isOutsideButton && isOutsideMenu) {
         setIsOpen(false);
       }
     };
@@ -74,6 +90,36 @@ const ActionsDropdown: React.FC<ActionsDropdownProps> = ({
     };
   }, [isOpen]);
 
+  // Calculate position when opening
+  useEffect(() => {
+    if (isOpen && buttonRef.current) {
+      const buttonRect = buttonRef.current.getBoundingClientRect();
+      const menuHeight = 200; // Estimated max height for the dropdown
+      const spaceAbove = buttonRect.top;
+      const spaceBelow = window.innerHeight - buttonRect.bottom;
+
+      // Decide direction based on available space
+      const shouldOpenDown = spaceAbove < menuHeight && spaceBelow > spaceAbove;
+      setOpenDirection(shouldOpenDown ? 'down' : 'up');
+
+      const newPosition: DropdownPosition = {};
+
+      if (shouldOpenDown) {
+        newPosition.top = buttonRect.bottom + 4;
+      } else {
+        newPosition.bottom = window.innerHeight - buttonRect.top + 4;
+      }
+
+      if (align === 'right') {
+        newPosition.right = window.innerWidth - buttonRect.right;
+      } else {
+        newPosition.left = buttonRect.left;
+      }
+
+      setPosition(newPosition);
+    }
+  }, [isOpen, align]);
+
   if (visibleActions.length === 0) {
     return null;
   }
@@ -84,9 +130,43 @@ const ActionsDropdown: React.FC<ActionsDropdownProps> = ({
 
   const iconSize = size === 'sm' ? 16 : 18;
 
+  const dropdownMenu = isOpen && createPortal(
+    <div
+      ref={menuRef}
+      style={{
+        position: 'fixed',
+        zIndex: 9999,
+        ...position,
+      }}
+      className="min-w-[180px] bg-white border border-neutral-200 rounded-lg shadow-lg py-1"
+    >
+      {visibleActions.map((action, index) => (
+        <button
+          key={index}
+          type="button"
+          onClick={() => {
+            if (!action.disabled) {
+              action.onClick();
+              setIsOpen(false);
+            }
+          }}
+          disabled={action.disabled}
+          className={`w-full flex items-center gap-2 px-4 py-2 text-sm text-left transition-colors ${
+            variantStyles[action.variant || 'default']
+          } ${action.disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+        >
+          {action.icon && <span className="flex-shrink-0">{action.icon}</span>}
+          <span>{action.label}</span>
+        </button>
+      ))}
+    </div>,
+    document.body
+  );
+
   return (
     <div className="relative inline-block" ref={dropdownRef}>
       <button
+        ref={buttonRef}
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         disabled={disabled}
@@ -94,36 +174,9 @@ const ActionsDropdown: React.FC<ActionsDropdownProps> = ({
       >
         <MoreVertical size={iconSize} />
         <span className="hidden sm:inline">{label}</span>
-        <ChevronDown size={14} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown size={14} className={`transition-transform ${isOpen ? (openDirection === 'up' ? 'rotate-180' : '') : ''}`} />
       </button>
-
-      {isOpen && (
-        <div
-          className={`absolute z-50 bottom-full mb-1 min-w-[180px] bg-white border border-neutral-200 rounded-lg shadow-lg py-1 ${
-            align === 'right' ? 'right-0' : 'left-0'
-          }`}
-        >
-          {visibleActions.map((action, index) => (
-            <button
-              key={index}
-              type="button"
-              onClick={() => {
-                if (!action.disabled) {
-                  action.onClick();
-                  setIsOpen(false);
-                }
-              }}
-              disabled={action.disabled}
-              className={`w-full flex items-center gap-2 px-4 py-2 text-sm text-left transition-colors ${
-                variantStyles[action.variant || 'default']
-              } ${action.disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-            >
-              {action.icon && <span className="flex-shrink-0">{action.icon}</span>}
-              <span>{action.label}</span>
-            </button>
-          ))}
-        </div>
-      )}
+      {dropdownMenu}
     </div>
   );
 };

@@ -230,7 +230,7 @@ const Deadlines: React.FC = () => {
                     return {
                       id: caseItem.id,
                       title: caseItem.processNumber,
-                      subtitle: caseItem.client.name,
+                      subtitle: caseItem.client?.name || 'Sem cliente',
                       badge: {
                         text: getBadgeText(),
                         color: getBadgeColor(),
@@ -305,7 +305,7 @@ const Deadlines: React.FC = () => {
                             </button>
                           </td>
                           <td className="px-4 py-3 text-sm text-neutral-600">
-                            {caseItem.client.name}
+                            {caseItem.client?.name || 'Sem cliente'}
                           </td>
                           <td className="px-4 py-3 text-sm text-neutral-600">
                             <div className="max-w-xs truncate" title={caseItem.subject}>
@@ -447,8 +447,8 @@ const Deadlines: React.FC = () => {
                       <span className="mr-2">👤</span>
                       <span>Cliente</span>
                     </div>
-                    <p className="text-neutral-900 font-medium">{selectedCase.client.name}</p>
-                    {selectedCase.client.cpf && (
+                    <p className="text-neutral-900 font-medium">{selectedCase.client?.name || 'Sem cliente'}</p>
+                    {selectedCase.client?.cpf && (
                       <p className="text-sm text-neutral-500">CPF: {selectedCase.client.cpf}</p>
                     )}
                   </div>
@@ -592,7 +592,7 @@ const Deadlines: React.FC = () => {
                 <label className="block text-sm font-medium text-neutral-700 mb-1">
                   Cliente
                 </label>
-                <p className="text-neutral-600">{selectedCase.client.name}</p>
+                <p className="text-neutral-600">{selectedCase.client?.name || 'Sem cliente'}</p>
               </div>
 
               <div>

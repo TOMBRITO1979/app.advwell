@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import Layout from '../components/Layout';
 import {
   Book,
   Plus,
@@ -871,6 +872,7 @@ export default function ManualAdmin() {
   }
 
   return (
+    <Layout>
     <div className="space-y-6">
       {/* Header */}
       <div>
@@ -936,5 +938,6 @@ export default function ManualAdmin() {
       {/* Modal */}
       {renderModal()}
     </div>
+    </Layout>
   );
 }

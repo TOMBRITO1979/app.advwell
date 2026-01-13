@@ -10,6 +10,7 @@ import { sendCaseUpdateNotification } from '../utils/email';
 import AuditService from '../services/audit.service';
 import { auditLogService } from '../services/audit-log.service';
 import { enqueueCsvImport, getImportStatus } from '../queues/csv-import.queue';
+import { enqueueCaseSync } from '../queues/sync.queue';
 import { Decimal } from '@prisma/client/runtime/library';
 import { appLogger } from '../utils/logger';
 
@@ -170,37 +171,24 @@ export class CaseController {
         return res.status(400).json({ error: 'Número de processo já cadastrado nesta empresa' });
       }
 
-      // Tenta buscar dados do processo no DataJud
-      let datajudData = null;
-      try {
-        datajudData = await datajudService.searchCaseAllTribunals(processNumber);
-      } catch (error) {
-        appLogger.error('Erro ao buscar no DataJud', error as Error);
-      }
-
-      // Formata o último andamento se houver dados do DataJud
-      const ultimoAndamento = datajudData?.movimentos
-        ? getUltimoAndamento(datajudData.movimentos)
-        : null;
-
-      // Cria o processo
+      // Cria o processo (sem buscar DataJud - será feito em background)
       const caseData = await prisma.case.create({
         data: {
           companyId,
           clientId: clientId || null,
           processNumber,
-          court: court || datajudData?.tribunal || '',
-          subject: sanitizeString(subject || datajudData?.assuntos?.[0]?.nome) || '',
+          court: court || '',
+          subject: sanitizeString(subject) || '',
           status: cleanStatus,
           deadline: cleanDeadline,
           ...(deadlineResponsibleId && { deadlineResponsibleId }),
           ...(lawyerId && { lawyerId }),
           value: cleanValue,
           notes: sanitizeString(notes),
-          ultimoAndamento,
+          ultimoAndamento: null,
           informarCliente: sanitizeString(informarCliente) || null,
           linkProcesso: cleanLinkProcesso,
-          lastSyncedAt: datajudData ? new Date() : null,
+          lastSyncedAt: null,
           phase: phase || null,
           nature: nature || null,
           rite: rite || null,
@@ -208,52 +196,16 @@ export class CaseController {
         },
       });
 
-      // Se encontrou dados no DataJud, cria as movimentações
-      if (datajudData?.movimentos && datajudData.movimentos.length > 0) {
-        await prisma.caseMovement.createMany({
-          data: datajudData.movimentos.map((mov) => ({
-            caseId: caseData.id,
-            companyId, // TAREFA 4.3: Isolamento de tenant direto
-            movementCode: mov.codigo,
-            movementName: mov.nome,
-            movementDate: new Date(mov.dataHora),
-            description: mov.complementosTabelados
-              ?.map((c) => `${c.nome}: ${c.descricao}`)
-              .join('; '),
-          })),
+      // Enfileira sincronização com DataJud em background (não bloqueia resposta)
+      try {
+        await enqueueCaseSync(caseData.id, processNumber, companyId);
+        appLogger.info('Sync com DataJud enfileirado para novo processo', {
+          caseId: caseData.id,
+          processNumber,
         });
-
-        // Hook: Gerar resumo automático se configurado
-        try {
-          const aiConfig = await prisma.aIConfig.findUnique({
-            where: { companyId },
-          });
-
-          if (aiConfig && aiConfig.enabled && aiConfig.autoSummarize) {
-            // Gera resumo em background (não bloqueia resposta)
-            AIService.generateCaseSummary(caseData.id, companyId)
-              .then(async (result) => {
-                if (result.success && result.summary) {
-                  await prisma.case.update({
-                    where: { id: caseData.id },
-                    data: { informarCliente: result.summary },
-                  });
-                  appLogger.info('Resumo gerado automaticamente para novo processo', {
-                    caseId: caseData.id,
-                    provider: result.provider,
-                    model: result.model
-                  });
-                }
-              })
-              .catch((error) => {
-                appLogger.error('Erro ao gerar resumo automático', error as Error);
-                // Não impede a criação, apenas loga o erro
-              });
-          }
-        } catch (error) {
-          appLogger.error('Erro ao verificar configuração de IA', error as Error);
-          // Não impede a criação, apenas loga o erro
-        }
+      } catch (error) {
+        appLogger.error('Erro ao enfileirar sync com DataJud', error as Error);
+        // Não impede a criação, apenas loga o erro
       }
 
       // Log de auditoria: processo criado (CaseAuditLog)
