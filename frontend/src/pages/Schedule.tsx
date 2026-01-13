@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Calendar, Plus, Search, CheckCircle, Circle, Edit2, Trash2, Eye, List, Grid3X3, ChevronLeft, ChevronRight, Download, FileText, FileSpreadsheet, MessageCircle } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Calendar, Plus, Search, CheckCircle, Circle, Edit2, Trash2, Eye, List, Grid3X3, ChevronLeft, ChevronRight, Download, FileText, FileSpreadsheet, MessageCircle, Upload } from 'lucide-react';
 import ActionsDropdown from '../components/ui/ActionsDropdown';
 import api from '../services/api';
 import toast from 'react-hot-toast';
@@ -110,6 +110,12 @@ const Schedule: React.FC = () => {
   // Export states
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [exporting, setExporting] = useState(false);
+
+  // Import states
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Pagination state (only for table view)
   const [page, setPage] = useState(1);
@@ -582,6 +588,37 @@ const Schedule: React.FC = () => {
     }
   };
 
+  const handleImport = async () => {
+    if (!importFile) {
+      toast.error('Selecione um arquivo CSV');
+      return;
+    }
+
+    try {
+      setImporting(true);
+      const formData = new FormData();
+      formData.append('file', importFile);
+
+      const response = await api.post('/schedule/import/csv', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+
+      toast.success(response.data.message || 'Importação concluída!');
+
+      if (response.data.errors && response.data.errors.length > 0) {
+        toast.error(`${response.data.errors.length} linhas com erro`);
+      }
+
+      setShowImportModal(false);
+      setImportFile(null);
+      fetchEvents();
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Erro ao importar CSV');
+    } finally {
+      setImporting(false);
+    }
+  };
+
   const handleNewEventForDay = (day: Date) => {
     resetForm();
     // Pré-preenche com a data do dia clicado às 09:00
@@ -637,6 +674,14 @@ const Schedule: React.FC = () => {
               <span className="hidden sm:inline text-sm">Calendário</span>
             </button>
           </div>
+          {/* Import Button */}
+          <button
+            onClick={() => setShowImportModal(true)}
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-white text-neutral-700 border border-neutral-200 hover:bg-neutral-50 font-medium rounded-lg transition-all duration-200"
+          >
+            <Upload size={20} />
+            <span>Importar</span>
+          </button>
           {/* Export Button */}
           <div className="relative">
             <button
@@ -1551,6 +1596,68 @@ const Schedule: React.FC = () => {
                   Fechar
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Import Modal */}
+      {showImportModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-lg">
+            <div className="p-6 border-b border-neutral-200">
+              <h2 className="text-xl font-semibold text-neutral-800">Importar Eventos de CSV</h2>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="bg-info-50 border border-info-200 rounded-lg p-4">
+                <h4 className="font-medium text-info-800 mb-2">Formato do CSV:</h4>
+                <p className="text-sm text-info-700 mb-2">O arquivo deve conter as seguintes colunas (na ordem):</p>
+                <code className="text-xs bg-info-100 px-2 py-1 rounded block">
+                  Data,Horário,Título,Tipo,Prioridade,Descrição
+                </code>
+                <p className="text-xs text-info-600 mt-2">
+                  • Data: DD/MM/AAAA ou AAAA-MM-DD<br />
+                  • Horário: HH:MM (opcional)<br />
+                  • Tipo: Compromisso, Tarefa, Prazo, Audiência, Perícia<br />
+                  • Prioridade: Baixa, Média, Alta, Urgente
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-2">Arquivo CSV</label>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".csv"
+                  onChange={(e) => setImportFile(e.target.files?.[0] || null)}
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+                {importFile && (
+                  <p className="mt-2 text-sm text-neutral-600">
+                    Arquivo selecionado: {importFile.name}
+                  </p>
+                )}
+              </div>
+            </div>
+            <div className="p-6 border-t border-neutral-200 flex gap-3">
+              <button
+                onClick={handleImport}
+                disabled={!importFile || importing}
+                className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-primary-600 text-white hover:bg-primary-700 disabled:bg-neutral-300 font-medium rounded-lg transition-all duration-200"
+              >
+                <Upload size={18} />
+                {importing ? 'Importando...' : 'Importar'}
+              </button>
+              <button
+                onClick={() => {
+                  setShowImportModal(false);
+                  setImportFile(null);
+                }}
+                disabled={importing}
+                className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 text-neutral-700 bg-white hover:bg-neutral-50 font-medium rounded-lg transition-all duration-200"
+              >
+                Cancelar
+              </button>
             </div>
           </div>
         </div>

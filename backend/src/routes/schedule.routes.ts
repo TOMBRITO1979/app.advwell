@@ -1,11 +1,25 @@
 import { Router } from 'express';
 import { body, param } from 'express-validator';
+import multer from 'multer';
 import scheduleController from '../controllers/schedule.controller';
 import { authenticate } from '../middleware/auth';
 import { validateTenant } from '../middleware/tenant';
 import { validatePagination } from '../middleware/validation';
 import { validate } from '../middleware/validation';
 import { companyRateLimit } from '../middleware/company-rate-limit';
+
+// Configurar multer para upload de CSV em memória
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB max
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === 'text/csv' || file.originalname.endsWith('.csv')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Apenas arquivos CSV são permitidos'));
+    }
+  },
+});
 
 const router = Router();
 
@@ -45,6 +59,9 @@ router.get('/tasks-today', scheduleController.getTasksDueToday); // Tarefas venc
 // Export routes - must be before /:id routes
 router.get('/export/pdf', scheduleController.exportPDF);
 router.get('/export/csv', scheduleController.exportCSV);
+
+// Import CSV route
+router.post('/import/csv', upload.single('file'), scheduleController.importCSV);
 router.get('/:id', idValidation, scheduleController.get);
 router.post('/', createValidation, scheduleController.create);
 router.put('/:id', updateValidation, scheduleController.update);
