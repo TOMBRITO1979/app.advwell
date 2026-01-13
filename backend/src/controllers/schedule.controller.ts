@@ -1309,8 +1309,18 @@ export class ScheduleController {
             continue;
           }
 
-          // Campos esperados: Data, Horário, Título, Tipo, Prioridade, Descrição
-          const [dateStr, timeStr, title, typeStr, priorityStr, description] = fields;
+          // Suporta dois formatos:
+          // Formato exportado: Data,Horário,Título,Tipo,Prioridade,Cliente,Processo,Responsável,Status,Descrição
+          // Formato simples: Data,Horário,Título,Tipo,Prioridade,Descrição
+          let dateStr: string, timeStr: string, title: string, typeStr: string, priorityStr: string, description: string;
+
+          if (fields.length >= 10) {
+            // Formato exportado (10 colunas)
+            [dateStr, timeStr, title, typeStr, priorityStr, , , , , description] = fields;
+          } else {
+            // Formato simples (6 colunas)
+            [dateStr, timeStr, title, typeStr, priorityStr, description] = fields;
+          }
 
           if (!dateStr || !title) {
             results.errors.push({ line: lineNumber, error: 'Data e Título são obrigatórios' });
