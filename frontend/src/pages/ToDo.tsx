@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, Plus, Search, CheckCircle, Circle, Edit2, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
+import ActionsDropdown from '../components/ui/ActionsDropdown';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import Layout from '../components/Layout';
@@ -361,21 +362,23 @@ const ToDo: React.FC = () => {
                           {todo.dueDate ? formatDate(todo.dueDate) : '-'}
                         </td>
                         <td className="px-6 py-4">
-                          <div className="flex items-center gap-2">
-                            <button
-                              onClick={() => handleEdit(todo)}
-                              className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-md transition-all duration-200"
-                              title="Editar"
-                            >
-                              <Edit2 size={18} />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(todo.id)}
-                              className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-error-600 hover:text-error-700 hover:bg-error-50 rounded-md transition-all duration-200"
-                              title="Excluir"
-                            >
-                              <Trash2 size={18} />
-                            </button>
+                          <div className="flex items-center justify-end">
+                            <ActionsDropdown
+                              actions={[
+                                {
+                                  label: 'Editar',
+                                  icon: <Edit2 size={16} />,
+                                  onClick: () => handleEdit(todo),
+                                  variant: 'primary',
+                                },
+                                {
+                                  label: 'Excluir',
+                                  icon: <Trash2 size={16} />,
+                                  onClick: () => handleDelete(todo.id),
+                                  variant: 'danger',
+                                },
+                              ]}
+                            />
                           </div>
                         </td>
                       </tr>

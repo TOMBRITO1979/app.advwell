@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, Check, Circle, Repeat, FileText, Download, ChevronLeft, ChevronRight } from 'lucide-react';
+import ActionsDropdown from '../components/ui/ActionsDropdown';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import Layout from '../components/Layout';
@@ -558,39 +559,37 @@ const AccountsPayable: React.FC = () => {
                         </span>
                       </td>
                       <td className="px-4 py-3">
-                        <div className="flex justify-end gap-2">
-                          {account.status === 'PENDING' && (
-                            <button
-                              onClick={() => handleMarkAsPaid(account.id)}
-                              className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-success-600 hover:text-success-700 hover:bg-success-50 rounded-md transition-all duration-200"
-                              title="Marcar como pago"
-                            >
-                              <Check size={18} />
-                            </button>
-                          )}
-                          {account.status === 'PAID' && (
-                            <button
-                              onClick={() => handleMarkAsPending(account.id)}
-                              className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50 rounded-md transition-all duration-200"
-                              title="Voltar para pendente"
-                            >
-                              <Circle size={18} />
-                            </button>
-                          )}
-                          <button
-                            onClick={() => handleEdit(account)}
-                            className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-md transition-all duration-200"
-                            title="Editar"
-                          >
-                            <Edit2 size={18} />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(account.id)}
-                            className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-error-600 hover:text-error-700 hover:bg-error-50 rounded-md transition-all duration-200"
-                            title="Excluir"
-                          >
-                            <Trash2 size={18} />
-                          </button>
+                        <div className="flex justify-end">
+                          <ActionsDropdown
+                            actions={[
+                              {
+                                label: 'Marcar como Pago',
+                                icon: <Check size={16} />,
+                                onClick: () => handleMarkAsPaid(account.id),
+                                variant: 'success',
+                                hidden: account.status !== 'PENDING',
+                              },
+                              {
+                                label: 'Voltar para Pendente',
+                                icon: <Circle size={16} />,
+                                onClick: () => handleMarkAsPending(account.id),
+                                variant: 'warning',
+                                hidden: account.status !== 'PAID',
+                              },
+                              {
+                                label: 'Editar',
+                                icon: <Edit2 size={16} />,
+                                onClick: () => handleEdit(account),
+                                variant: 'primary',
+                              },
+                              {
+                                label: 'Excluir',
+                                icon: <Trash2 size={16} />,
+                                onClick: () => handleDelete(account.id),
+                                variant: 'danger',
+                              },
+                            ]}
+                          />
                         </div>
                       </td>
                     </tr>
