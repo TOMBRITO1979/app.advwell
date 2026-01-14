@@ -3,6 +3,7 @@ import { AuthRequest } from '../middleware/auth';
 import prisma from '../utils/prisma';
 import { sanitizeString } from '../utils/sanitize';
 import { appLogger } from '../utils/logger';
+import { enqueueCsvImport, getImportStatus } from '../queues/csv-import.queue';
 
 export class AdverseController {
   async create(req: AuthRequest, res: Response) {
@@ -265,6 +266,142 @@ export class AdverseController {
     } catch (error) {
       appLogger.error('Erro ao buscar adversos', error as Error);
       res.status(500).json({ error: 'Erro ao buscar adversos' });
+    }
+  }
+
+  // Exportar adversos para CSV
+  async exportCSV(req: AuthRequest, res: Response) {
+    try {
+      const companyId = req.user!.companyId;
+
+      if (!companyId) {
+        return res.status(403).json({ error: 'Usuário não possui empresa associada' });
+      }
+
+      const adverses = await prisma.adverse.findMany({
+        where: { companyId, active: true },
+        orderBy: { name: 'asc' },
+      });
+
+      // Cabeçalho CSV
+      const headers = [
+        'Tipo Pessoa', 'Nome', 'CPF/CNPJ', 'RG', 'PIS', 'CTPS', 'CTPS Série',
+        'Nome da Mãe', 'Email', 'Telefone', 'Telefone 2', 'Instagram', 'Facebook',
+        'Campo Personalizado 1', 'Campo Personalizado 2', 'Endereço', 'Bairro',
+        'Cidade', 'Estado', 'CEP', 'Profissão', 'Nacionalidade', 'Estado Civil',
+        'Data de Nascimento', 'Nome do Representante', 'CPF do Representante', 'Observações'
+      ];
+
+      // Gerar linhas CSV
+      const rows = adverses.map(adverse => [
+        adverse.personType || 'FISICA',
+        adverse.name || '',
+        adverse.cpf || '',
+        adverse.rg || '',
+        adverse.pis || '',
+        adverse.ctps || '',
+        adverse.ctpsSerie || '',
+        adverse.motherName || '',
+        adverse.email || '',
+        adverse.phone || '',
+        adverse.phone2 || '',
+        adverse.instagram || '',
+        adverse.facebook || '',
+        adverse.customField1 || '',
+        adverse.customField2 || '',
+        adverse.address || '',
+        adverse.neighborhood || '',
+        adverse.city || '',
+        adverse.state || '',
+        adverse.zipCode || '',
+        adverse.profession || '',
+        adverse.nationality || '',
+        adverse.maritalStatus || '',
+        adverse.birthDate ? new Date(adverse.birthDate).toLocaleDateString('pt-BR') : '',
+        adverse.representativeName || '',
+        adverse.representativeCpf || '',
+        adverse.notes || '',
+      ]);
+
+      // Escape CSV fields
+      const escapeCSV = (field: string) => {
+        if (field.includes(';') || field.includes('"') || field.includes('\n')) {
+          return `"${field.replace(/"/g, '""')}"`;
+        }
+        return field;
+      };
+
+      const csvContent = [
+        headers.join(';'),
+        ...rows.map(row => row.map(field => escapeCSV(String(field))).join(';'))
+      ].join('\n');
+
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader('Content-Disposition', 'attachment; filename=adversos.csv');
+      res.send('\uFEFF' + csvContent); // BOM para Excel
+    } catch (error) {
+      appLogger.error('Erro ao exportar adversos CSV', error as Error);
+      res.status(500).json({ error: 'Erro ao exportar adversos' });
+    }
+  }
+
+  // Importar adversos via CSV (processamento em background)
+  async importCSV(req: AuthRequest, res: Response) {
+    try {
+      const companyId = req.user!.companyId;
+      const userId = req.user!.userId;
+
+      if (!companyId) {
+        return res.status(403).json({ error: 'Usuário não possui empresa associada' });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({ error: 'Arquivo CSV é obrigatório' });
+      }
+
+      const csvContent = req.file.buffer.toString('utf-8');
+      const lines = csvContent.split('\n').filter(line => line.trim());
+
+      if (lines.length < 2) {
+        return res.status(400).json({ error: 'Arquivo CSV vazio ou sem dados' });
+      }
+
+      const totalRows = lines.length - 1; // Descontar header
+
+      // Enfileirar job de importação
+      const jobId = await enqueueCsvImport('import-adverse', companyId, userId, csvContent, totalRows);
+
+      res.status(202).json({
+        message: 'Importação iniciada em background',
+        jobId,
+        totalRows,
+        statusUrl: `/adverse/import/status/${jobId}`,
+      });
+    } catch (error) {
+      appLogger.error('Erro ao iniciar importação de adversos', error as Error);
+      res.status(500).json({ error: 'Erro ao iniciar importação' });
+    }
+  }
+
+  // Consultar status da importação
+  async getImportStatusEndpoint(req: AuthRequest, res: Response) {
+    try {
+      const { jobId } = req.params;
+
+      if (!jobId) {
+        return res.status(400).json({ error: 'jobId é obrigatório' });
+      }
+
+      const status = await getImportStatus(jobId);
+
+      if (!status) {
+        return res.status(404).json({ error: 'Job não encontrado ou expirado' });
+      }
+
+      res.json(status);
+    } catch (error) {
+      appLogger.error('Erro ao consultar status de importação', error as Error);
+      res.status(500).json({ error: 'Erro ao consultar status' });
     }
   }
 }

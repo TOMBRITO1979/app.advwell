@@ -1163,6 +1163,351 @@ if (ENABLE_QUEUE_PROCESSORS) {
     return { success: true, successCount, errorCount };
   });
 
+  // Processador de Adversos
+  csvImportQueue.process('import-adverse', 1, async (job) => {
+    const { jobId, companyId, csvKey, totalRows } = job.data;
+
+    await updateStatus(jobId, { status: 'processing', startedAt: new Date().toISOString() });
+
+    const csvContent = await redis.get(csvKey);
+    if (!csvContent) {
+      await updateStatus(jobId, { status: 'failed', errors: [{ line: 0, identifier: '', error: 'CSV expirado ou nao encontrado' }] });
+      return { success: false, error: 'CSV expired' };
+    }
+
+    // Detectar delimitador (vírgula ou ponto e vírgula)
+    const firstLine = csvContent.split('\n')[0] || '';
+    const delimiter = firstLine.includes(';') ? ';' : ',';
+
+    const records = parse(csvContent, { columns: true, skip_empty_lines: true, trim: true, bom: true, delimiter });
+
+    let successCount = 0;
+    let errorCount = 0;
+    const errors: Array<{ line: number; identifier: string; error: string }> = [];
+
+    for (let i = 0; i < records.length; i++) {
+      const record = records[i] as any;
+      const lineNumber = i + 2;
+
+      try {
+        if (!record.Nome || record.Nome.trim() === '') {
+          errors.push({ line: lineNumber, identifier: '(vazio)', error: 'Nome e obrigatorio' });
+          errorCount++;
+          continue;
+        }
+
+        const importCpf = record['CPF/CNPJ']?.trim() || record.CPF?.trim() || null;
+        const importEmail = record.Email?.trim()?.toLowerCase() || null;
+        const importPhone = record.Telefone?.trim() || record['Telefone 1']?.trim() || record.Tel?.trim() || record.Celular?.trim() || null;
+
+        // Buscar adverso existente por CPF ou Nome
+        let existingAdverse = null;
+        if (importCpf) {
+          existingAdverse = await prisma.adverse.findFirst({
+            where: { companyId, cpf: importCpf, active: true },
+          });
+        }
+        if (!existingAdverse) {
+          // Fallback: buscar por nome exato
+          existingAdverse = await prisma.adverse.findFirst({
+            where: { companyId, name: record.Nome.trim(), active: true },
+          });
+        }
+
+        // Parse date
+        let birthDate = null;
+        const dateStr = record['Data de Nascimento']?.trim();
+        if (dateStr) {
+          if (dateStr.includes('/')) {
+            const [day, month, year] = dateStr.split('/');
+            birthDate = new Date(`${year}-${month}-${day}`);
+          } else {
+            birthDate = new Date(dateStr);
+          }
+          if (isNaN(birthDate.getTime())) {
+            birthDate = null;
+          }
+        }
+
+        const adverseData = {
+          personType: record['Tipo Pessoa']?.trim() === 'JURIDICA' ? 'JURIDICA' : 'FISICA',
+          name: record.Nome.trim(),
+          cpf: importCpf,
+          rg: record.RG?.trim() || null,
+          pis: record.PIS?.trim() || null,
+          ctps: record.CTPS?.trim() || null,
+          ctpsSerie: record['CTPS Série']?.trim() || record['CTPS Serie']?.trim() || null,
+          motherName: record['Nome da Mãe']?.trim() || record['Nome da Mae']?.trim() || null,
+          email: importEmail,
+          phone: importPhone,
+          phone2: record['Telefone 2']?.trim() || null,
+          instagram: record.Instagram?.trim() || null,
+          facebook: record.Facebook?.trim() || null,
+          customField1: record['Campo Personalizado 1']?.trim() || null,
+          customField2: record['Campo Personalizado 2']?.trim() || null,
+          address: record['Endereço']?.trim() || record.Endereco?.trim() || null,
+          neighborhood: record.Bairro?.trim() || null,
+          city: record.Cidade?.trim() || null,
+          state: record.Estado?.trim() || null,
+          zipCode: record.CEP?.trim() || null,
+          profession: record['Profissão']?.trim() || record.Profissao?.trim() || null,
+          nationality: record.Nacionalidade?.trim() || null,
+          maritalStatus: record['Estado Civil']?.trim() || null,
+          birthDate,
+          representativeName: record['Nome do Representante']?.trim() || null,
+          representativeCpf: record['CPF do Representante']?.trim() || null,
+          notes: record['Observações']?.trim() || record.Observacoes?.trim() || null,
+        };
+
+        if (existingAdverse) {
+          // Atualizar adverso existente (manter valores existentes se novos forem nulos)
+          await prisma.adverse.update({
+            where: { id: existingAdverse.id },
+            data: {
+              personType: adverseData.personType as any,
+              name: adverseData.name,
+              cpf: adverseData.cpf || existingAdverse.cpf,
+              rg: adverseData.rg || existingAdverse.rg,
+              pis: adverseData.pis || existingAdverse.pis,
+              ctps: adverseData.ctps || existingAdverse.ctps,
+              ctpsSerie: adverseData.ctpsSerie || existingAdverse.ctpsSerie,
+              motherName: adverseData.motherName || existingAdverse.motherName,
+              email: adverseData.email || existingAdverse.email,
+              phone: adverseData.phone || existingAdverse.phone,
+              phone2: adverseData.phone2 || existingAdverse.phone2,
+              instagram: adverseData.instagram || existingAdverse.instagram,
+              facebook: adverseData.facebook || existingAdverse.facebook,
+              customField1: adverseData.customField1 || existingAdverse.customField1,
+              customField2: adverseData.customField2 || existingAdverse.customField2,
+              address: adverseData.address || existingAdverse.address,
+              neighborhood: adverseData.neighborhood || existingAdverse.neighborhood,
+              city: adverseData.city || existingAdverse.city,
+              state: adverseData.state || existingAdverse.state,
+              zipCode: adverseData.zipCode || existingAdverse.zipCode,
+              profession: adverseData.profession || existingAdverse.profession,
+              nationality: adverseData.nationality || existingAdverse.nationality,
+              maritalStatus: adverseData.maritalStatus || existingAdverse.maritalStatus,
+              birthDate: adverseData.birthDate || existingAdverse.birthDate,
+              representativeName: adverseData.representativeName || existingAdverse.representativeName,
+              representativeCpf: adverseData.representativeCpf || existingAdverse.representativeCpf,
+              notes: adverseData.notes || existingAdverse.notes,
+            },
+          });
+        } else {
+          // Criar novo adverso
+          await prisma.adverse.create({
+            data: {
+              companyId,
+              ...adverseData,
+              personType: adverseData.personType as any,
+            },
+          });
+        }
+
+        successCount++;
+      } catch (err) {
+        errors.push({ line: lineNumber, identifier: record.Nome || '(vazio)', error: 'Erro ao processar linha' });
+        errorCount++;
+      }
+
+      if (i % 10 === 0 || i === records.length - 1) {
+        await updateStatus(jobId, {
+          progress: Math.round(((i + 1) / totalRows) * 100),
+          processedRows: i + 1,
+          successCount,
+          errorCount,
+        });
+      }
+    }
+
+    await redis.del(csvKey);
+
+    await updateStatus(jobId, {
+      status: 'completed',
+      progress: 100,
+      processedRows: totalRows,
+      successCount,
+      errorCount,
+      errors: errors.slice(0, 50),
+      completedAt: new Date().toISOString(),
+    });
+
+    appLogger.info('CSV adverse import completed', { jobId, successCount, errorCount });
+    return { success: true, successCount, errorCount };
+  });
+
+  // Processador de Advogados
+  csvImportQueue.process('import-lawyer', 1, async (job) => {
+    const { jobId, companyId, csvKey, totalRows } = job.data;
+
+    await updateStatus(jobId, { status: 'processing', startedAt: new Date().toISOString() });
+
+    const csvContent = await redis.get(csvKey);
+    if (!csvContent) {
+      await updateStatus(jobId, { status: 'failed', errors: [{ line: 0, identifier: '', error: 'CSV expirado ou nao encontrado' }] });
+      return { success: false, error: 'CSV expired' };
+    }
+
+    // Detectar delimitador (vírgula ou ponto e vírgula)
+    const firstLine = csvContent.split('\n')[0] || '';
+    const delimiter = firstLine.includes(';') ? ';' : ',';
+
+    const records = parse(csvContent, { columns: true, skip_empty_lines: true, trim: true, bom: true, delimiter });
+
+    // Mapeamentos de tipo e vínculo
+    const lawyerTypeMap: Record<string, string> = {
+      'socio': 'SOCIO',
+      'sócio': 'SOCIO',
+      'associado': 'ASSOCIADO',
+      'correspondente': 'CORRESPONDENTE',
+      'estagiario': 'ESTAGIARIO',
+      'estagiário': 'ESTAGIARIO',
+    };
+
+    const affiliationMap: Record<string, string> = {
+      'escritorio': 'ESCRITORIO',
+      'escritório': 'ESCRITORIO',
+      'externo': 'EXTERNO',
+    };
+
+    let successCount = 0;
+    let errorCount = 0;
+    const errors: Array<{ line: number; identifier: string; error: string }> = [];
+
+    for (let i = 0; i < records.length; i++) {
+      const record = records[i] as any;
+      const lineNumber = i + 2;
+
+      try {
+        if (!record.Nome || record.Nome.trim() === '') {
+          errors.push({ line: lineNumber, identifier: '(vazio)', error: 'Nome e obrigatorio' });
+          errorCount++;
+          continue;
+        }
+
+        const importOab = record.OAB?.trim() || null;
+        const importCpf = record.CPF?.trim() || null;
+        const importEmail = record.Email?.trim()?.toLowerCase() || null;
+        const importPhone = record.Telefone?.trim() || record['Telefone 1']?.trim() || record.Tel?.trim() || record.Celular?.trim() || null;
+
+        // Buscar advogado existente por OAB, CPF ou Nome
+        let existingLawyer = null;
+        if (importOab) {
+          existingLawyer = await prisma.lawyer.findFirst({
+            where: { companyId, oab: importOab, active: true },
+          });
+        }
+        if (!existingLawyer && importCpf) {
+          existingLawyer = await prisma.lawyer.findFirst({
+            where: { companyId, cpf: importCpf, active: true },
+          });
+        }
+        if (!existingLawyer) {
+          // Fallback: buscar por nome exato
+          existingLawyer = await prisma.lawyer.findFirst({
+            where: { companyId, name: record.Nome.trim(), active: true },
+          });
+        }
+
+        // Mapear tipo e vínculo
+        const typeRaw = (record.Tipo?.trim() || 'associado').toLowerCase();
+        const lawyerType = lawyerTypeMap[typeRaw] || 'ASSOCIADO';
+
+        const affiliationRaw = (record['Vínculo']?.trim() || record.Vinculo?.trim() || 'escritorio').toLowerCase();
+        const affiliation = affiliationMap[affiliationRaw] || 'ESCRITORIO';
+
+        const lawyerData = {
+          name: record.Nome.trim(),
+          cpf: importCpf,
+          oab: importOab,
+          oabState: record['UF OAB']?.trim() || null,
+          lawyerType: lawyerType as any,
+          affiliation: affiliation as any,
+          team: record.Equipe?.trim() || null,
+          email: importEmail,
+          phone: importPhone,
+          phone2: record['Telefone 2']?.trim() || null,
+          instagram: record.Instagram?.trim() || null,
+          facebook: record.Facebook?.trim() || null,
+          customField1: record['Campo Personalizado 1']?.trim() || null,
+          customField2: record['Campo Personalizado 2']?.trim() || null,
+          address: record['Endereço']?.trim() || record.Endereco?.trim() || null,
+          neighborhood: record.Bairro?.trim() || null,
+          city: record.Cidade?.trim() || null,
+          state: record.Estado?.trim() || null,
+          zipCode: record.CEP?.trim() || null,
+          notes: record['Observações']?.trim() || record.Observacoes?.trim() || null,
+        };
+
+        if (existingLawyer) {
+          // Atualizar advogado existente (manter valores existentes se novos forem nulos)
+          await prisma.lawyer.update({
+            where: { id: existingLawyer.id },
+            data: {
+              name: lawyerData.name,
+              cpf: lawyerData.cpf || existingLawyer.cpf,
+              oab: lawyerData.oab || existingLawyer.oab,
+              oabState: lawyerData.oabState || existingLawyer.oabState,
+              lawyerType: lawyerData.lawyerType,
+              affiliation: lawyerData.affiliation,
+              team: lawyerData.team || existingLawyer.team,
+              email: lawyerData.email || existingLawyer.email,
+              phone: lawyerData.phone || existingLawyer.phone,
+              phone2: lawyerData.phone2 || existingLawyer.phone2,
+              instagram: lawyerData.instagram || existingLawyer.instagram,
+              facebook: lawyerData.facebook || existingLawyer.facebook,
+              customField1: lawyerData.customField1 || existingLawyer.customField1,
+              customField2: lawyerData.customField2 || existingLawyer.customField2,
+              address: lawyerData.address || existingLawyer.address,
+              neighborhood: lawyerData.neighborhood || existingLawyer.neighborhood,
+              city: lawyerData.city || existingLawyer.city,
+              state: lawyerData.state || existingLawyer.state,
+              zipCode: lawyerData.zipCode || existingLawyer.zipCode,
+              notes: lawyerData.notes || existingLawyer.notes,
+            },
+          });
+        } else {
+          // Criar novo advogado
+          await prisma.lawyer.create({
+            data: {
+              companyId,
+              ...lawyerData,
+            },
+          });
+        }
+
+        successCount++;
+      } catch (err) {
+        errors.push({ line: lineNumber, identifier: record.Nome || '(vazio)', error: 'Erro ao processar linha' });
+        errorCount++;
+      }
+
+      if (i % 10 === 0 || i === records.length - 1) {
+        await updateStatus(jobId, {
+          progress: Math.round(((i + 1) / totalRows) * 100),
+          processedRows: i + 1,
+          successCount,
+          errorCount,
+        });
+      }
+    }
+
+    await redis.del(csvKey);
+
+    await updateStatus(jobId, {
+      status: 'completed',
+      progress: 100,
+      processedRows: totalRows,
+      successCount,
+      errorCount,
+      errors: errors.slice(0, 50),
+      completedAt: new Date().toISOString(),
+    });
+
+    appLogger.info('CSV lawyer import completed', { jobId, successCount, errorCount });
+    return { success: true, successCount, errorCount };
+  });
+
   // Event handlers
   csvImportQueue.on('completed', (job, result) => {
     appLogger.info('CSV import job completed', { jobName: job.name, jobId: job.data.jobId, result });
