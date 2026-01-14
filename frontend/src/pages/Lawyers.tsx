@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import {
   Scale,
   Plus,
@@ -10,6 +10,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Loader2,
+  Upload,
+  Download,
 } from 'lucide-react';
 import Layout from '../components/Layout';
 import { ActionsDropdown } from '../components/ui';
@@ -131,6 +133,13 @@ export default function Lawyers() {
   const [limit] = useState(50);
   const [total, setTotal] = useState(0);
   const totalPages = Math.ceil(total / limit);
+
+  // Export/Import states
+  const [exporting, setExporting] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState<LawyerFormData>({
     name: '',
@@ -268,6 +277,64 @@ export default function Lawyers() {
     setShowDetailsModal(true);
   };
 
+  const handleExport = async () => {
+    try {
+      setExporting(true);
+
+      const params: Record<string, string> = {};
+      if (search) params.search = search;
+
+      const response = await api.get('/lawyers/export/csv', {
+        params,
+        responseType: 'blob',
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      const dateStr = new Date().toISOString().split('T')[0];
+      link.setAttribute('download', `advogados_${dateStr}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+
+      toast.success('Advogados exportados com sucesso!');
+    } catch (error) {
+      console.error('Erro ao exportar:', error);
+      toast.error('Erro ao exportar advogados');
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const handleImport = async () => {
+    if (!importFile) {
+      toast.error('Selecione um arquivo CSV');
+      return;
+    }
+
+    try {
+      setImporting(true);
+      const formData = new FormData();
+      formData.append('file', importFile);
+
+      const response = await api.post('/lawyers/import/csv', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+
+      toast.success(response.data.message || 'Importação iniciada!');
+
+      setShowImportModal(false);
+      setImportFile(null);
+      loadLawyers();
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Erro ao importar CSV');
+    } finally {
+      setImporting(false);
+    }
+  };
+
   // Mobile card items
   const mobileCardItems: MobileCardItem[] = filteredLawyers.map((lawyer) => ({
     id: lawyer.id,
@@ -306,18 +373,37 @@ export default function Lawyers() {
               Gerencie os advogados do seu escritório
             </p>
           </div>
-          <button
-            onClick={() => {
-              resetForm();
-              setEditMode(false);
-              setSelectedLawyer(null);
-              setShowModal(true);
-            }}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-primary-100 text-primary-700 border border-primary-200 hover:bg-primary-200 rounded-lg font-medium text-sm transition-all duration-200 min-h-[44px]"
-          >
-            <Plus size={20} />
-            <span>Novo Advogado</span>
-          </button>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setShowImportModal(true)}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-white text-neutral-700 border border-neutral-200 hover:bg-neutral-50 font-medium rounded-lg transition-all duration-200 min-h-[44px] text-sm"
+            >
+              <Upload size={18} />
+              <span className="hidden sm:inline">Importar</span>
+            </button>
+
+            <button
+              onClick={handleExport}
+              disabled={exporting}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-white text-neutral-700 border border-neutral-200 hover:bg-neutral-50 font-medium rounded-lg transition-all duration-200 min-h-[44px] text-sm disabled:opacity-50"
+            >
+              <Download size={18} />
+              <span className="hidden sm:inline">{exporting ? 'Exportando...' : 'Exportar'}</span>
+            </button>
+
+            <button
+              onClick={() => {
+                resetForm();
+                setEditMode(false);
+                setSelectedLawyer(null);
+                setShowModal(true);
+              }}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-primary-100 text-primary-700 border border-primary-200 hover:bg-primary-200 rounded-lg font-medium text-sm transition-all duration-200 min-h-[44px]"
+            >
+              <Plus size={20} />
+              <span>Novo Advogado</span>
+            </button>
+          </div>
         </div>
 
         {/* Busca e Filtros */}
@@ -539,6 +625,74 @@ export default function Lawyers() {
           )}
         </div>
       </div>
+
+      {/* Import Modal */}
+      {showImportModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-lg">
+            <div className="p-6 border-b border-neutral-200 flex items-center justify-between">
+              <h2 className="text-xl font-semibold text-neutral-800">Importar Advogados de CSV</h2>
+              <button
+                onClick={() => {
+                  setShowImportModal(false);
+                  setImportFile(null);
+                }}
+                className="p-2 text-neutral-400 hover:text-neutral-600 rounded-lg hover:bg-neutral-100"
+              >
+                <X size={24} />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="bg-info-50 border border-info-200 rounded-lg p-4">
+                <h4 className="font-medium text-info-800 mb-2">Formato do CSV:</h4>
+                <p className="text-sm text-info-700 mb-2">O arquivo deve conter as seguintes colunas:</p>
+                <code className="text-xs bg-info-100 px-2 py-1 rounded block overflow-x-auto">
+                  Nome;CPF;OAB;UF OAB;Tipo;Vínculo;Equipe;Email;Telefone
+                </code>
+                <p className="text-xs text-info-600 mt-2">
+                  Dica: Exporte primeiro para ver o formato completo
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-2">Arquivo CSV</label>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".csv"
+                  onChange={(e) => setImportFile(e.target.files?.[0] || null)}
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+                {importFile && (
+                  <p className="mt-2 text-sm text-neutral-600">
+                    Arquivo selecionado: {importFile.name}
+                  </p>
+                )}
+              </div>
+            </div>
+            <div className="p-6 border-t border-neutral-200 flex gap-3">
+              <button
+                onClick={handleImport}
+                disabled={!importFile || importing}
+                className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-primary-600 text-white hover:bg-primary-700 disabled:bg-neutral-300 font-medium rounded-lg transition-all duration-200"
+              >
+                <Upload size={18} />
+                {importing ? 'Importando...' : 'Importar'}
+              </button>
+              <button
+                onClick={() => {
+                  setShowImportModal(false);
+                  setImportFile(null);
+                }}
+                disabled={importing}
+                className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 text-neutral-700 bg-white hover:bg-neutral-50 font-medium rounded-lg transition-all duration-200"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal Criar/Editar */}
       {showModal && (
