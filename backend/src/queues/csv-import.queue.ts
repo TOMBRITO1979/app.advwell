@@ -416,33 +416,37 @@ if (ENABLE_QUEUE_PROCESSORS) {
       const lineNumber = i + 2;
 
       try {
+        // Suportar ambas as variantes: com e sem acento
+        const descricao = record['Descrição']?.trim() || record['Descricao']?.trim() || record.Descricao?.trim();
+        const clienteNome = record.Cliente?.trim();
+
         const tipoValido = record.Tipo?.trim();
         if (!tipoValido || !['Receita', 'Despesa', 'INCOME', 'EXPENSE'].includes(tipoValido)) {
-          errors.push({ line: lineNumber, identifier: record['Descricao'] || '(vazio)', error: 'Tipo deve ser Receita, Despesa, INCOME ou EXPENSE' });
+          errors.push({ line: lineNumber, identifier: descricao || '(vazio)', error: 'Tipo deve ser Receita, Despesa, INCOME ou EXPENSE' });
           errorCount++;
           continue;
         }
 
-        if (!record.Cliente?.trim()) {
-          errors.push({ line: lineNumber, identifier: record['Descricao'] || '(vazio)', error: 'Cliente e obrigatorio' });
+        if (!clienteNome) {
+          errors.push({ line: lineNumber, identifier: descricao || '(vazio)', error: 'Cliente e obrigatorio' });
           errorCount++;
           continue;
         }
 
-        if (!record['Descricao']?.trim()) {
-          errors.push({ line: lineNumber, identifier: record.Cliente || '(vazio)', error: 'Descricao e obrigatoria' });
+        if (!descricao) {
+          errors.push({ line: lineNumber, identifier: clienteNome || '(vazio)', error: 'Descricao e obrigatoria' });
           errorCount++;
           continue;
         }
 
         if (!record.Valor || isNaN(parseFloat(record.Valor.replace(',', '.')))) {
-          errors.push({ line: lineNumber, identifier: record['Descricao'] || '(vazio)', error: 'Valor invalido' });
+          errors.push({ line: lineNumber, identifier: descricao || '(vazio)', error: 'Valor invalido' });
           errorCount++;
           continue;
         }
 
         if (!record.Data) {
-          errors.push({ line: lineNumber, identifier: record['Descricao'] || '(vazio)', error: 'Data e obrigatoria' });
+          errors.push({ line: lineNumber, identifier: descricao || '(vazio)', error: 'Data e obrigatoria' });
           errorCount++;
           continue;
         }
@@ -452,15 +456,16 @@ if (ENABLE_QUEUE_PROCESSORS) {
         const client = await prisma.client.findFirst({
           where: {
             companyId,
+            active: true,
             OR: [
-              { name: { contains: record.Cliente.trim(), mode: 'insensitive' } },
-              { cpf: record.Cliente.trim() },
+              { name: { contains: clienteNome, mode: 'insensitive' } },
+              { cpf: clienteNome },
             ],
           },
         });
 
         if (!client) {
-          errors.push({ line: lineNumber, identifier: record['Descricao'] || '(vazio)', error: `Cliente "${record.Cliente}" nao encontrado` });
+          errors.push({ line: lineNumber, identifier: descricao || '(vazio)', error: `Cliente "${clienteNome}" nao encontrado` });
           errorCount++;
           continue;
         }
@@ -485,12 +490,12 @@ if (ENABLE_QUEUE_PROCESSORS) {
         }
 
         if (isNaN(date.getTime())) {
-          errors.push({ line: lineNumber, identifier: record['Descricao'] || '(vazio)', error: 'Data invalida' });
+          errors.push({ line: lineNumber, identifier: descricao || '(vazio)', error: 'Data invalida' });
           errorCount++;
           continue;
         }
 
-        const descriptionNormalized = sanitizeString(record['Descricao'].trim()) || record['Descricao'].trim();
+        const descriptionNormalized = sanitizeString(descricao) || descricao;
 
         // Verificar se já existe transação com mesmos dados
         const existingTransaction = await prisma.financialTransaction.findFirst({
