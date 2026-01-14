@@ -7,6 +7,7 @@ import googleCalendarService from '../services/google-calendar.service';
 import whatsappService from '../services/whatsapp.service';
 import { appLogger } from '../utils/logger';
 import * as pdfStyles from '../utils/pdfStyles';
+import { enqueueCsvImport, getImportStatus } from '../queues/csv-import.queue';
 
 export class ScheduleController {
   async create(req: AuthRequest, res: Response) {
@@ -1245,11 +1246,11 @@ export class ScheduleController {
     }
   }
 
-  // Importar eventos de CSV
+  // Importar eventos de CSV (via fila em background)
   async importCSV(req: AuthRequest, res: Response) {
     try {
       const companyId = req.user!.companyId;
-      const createdBy = req.user!.userId;
+      const userId = req.user!.userId;
 
       if (!companyId) {
         return res.status(403).json({ error: 'Usuário não possui empresa associada' });
@@ -1259,7 +1260,7 @@ export class ScheduleController {
         return res.status(400).json({ error: 'Arquivo CSV é obrigatório' });
       }
 
-      // Parse CSV
+      // Parse CSV para contar linhas
       const csvContent = req.file.buffer.toString('utf-8');
       const lines = csvContent.split('\n').filter(line => line.trim());
 
@@ -1267,131 +1268,54 @@ export class ScheduleController {
         return res.status(400).json({ error: 'CSV deve conter cabeçalho e pelo menos uma linha de dados' });
       }
 
-      // Skip header, process data lines
-      const dataLines = lines.slice(1);
-      const results = {
-        success: 0,
-        errors: [] as { line: number; error: string }[],
-      };
+      const totalRows = lines.length - 1; // -1 para excluir header
 
-      // Mapeamento de tipos
-      const typeMap: Record<string, string> = {
-        'compromisso': 'COMPROMISSO',
-        'tarefa': 'TAREFA',
-        'prazo': 'PRAZO',
-        'audiencia': 'AUDIENCIA',
-        'audiência': 'AUDIENCIA',
-        'pericia': 'PERICIA',
-        'perícia': 'PERICIA',
-        'google meet': 'GOOGLE_MEET',
-        'googlemeet': 'GOOGLE_MEET',
-      };
+      // Enfileirar job de importação
+      const jobId = await enqueueCsvImport('import-schedule', companyId, userId, csvContent, totalRows);
 
-      // Mapeamento de prioridades
-      const priorityMap: Record<string, string> = {
-        'baixa': 'BAIXA',
-        'media': 'MEDIA',
-        'média': 'MEDIA',
-        'alta': 'ALTA',
-        'urgente': 'URGENTE',
-      };
+      appLogger.info('Schedule CSV import job enqueued', { jobId, companyId, totalRows });
 
-      for (let i = 0; i < dataLines.length; i++) {
-        const lineNumber = i + 2; // +2 porque começa do 1 e pulou header
-        const line = dataLines[i];
-
-        try {
-          // Parse CSV line (handle quoted fields)
-          const fields = this.parseCSVLine(line);
-
-          if (fields.length < 3) {
-            results.errors.push({ line: lineNumber, error: 'Linha com campos insuficientes' });
-            continue;
-          }
-
-          // Suporta dois formatos:
-          // Formato exportado: Data,Horário,Título,Tipo,Prioridade,Cliente,Processo,Responsável,Status,Descrição
-          // Formato simples: Data,Horário,Título,Tipo,Prioridade,Descrição
-          let dateStr: string, timeStr: string, title: string, typeStr: string, priorityStr: string, description: string;
-
-          if (fields.length >= 10) {
-            // Formato exportado (10 colunas)
-            [dateStr, timeStr, title, typeStr, priorityStr, , , , , description] = fields;
-          } else {
-            // Formato simples (6 colunas)
-            [dateStr, timeStr, title, typeStr, priorityStr, description] = fields;
-          }
-
-          if (!dateStr || !title) {
-            results.errors.push({ line: lineNumber, error: 'Data e Título são obrigatórios' });
-            continue;
-          }
-
-          // Parse date (DD/MM/YYYY or YYYY-MM-DD)
-          let eventDate: Date;
-          if (dateStr.includes('/')) {
-            const [day, month, year] = dateStr.split('/');
-            eventDate = new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`);
-          } else {
-            eventDate = new Date(dateStr);
-          }
-
-          if (isNaN(eventDate.getTime())) {
-            results.errors.push({ line: lineNumber, error: `Data inválida: ${dateStr}` });
-            continue;
-          }
-
-          // Parse time (HH:MM)
-          if (timeStr) {
-            const [hours, minutes] = timeStr.split(':').map(Number);
-            if (!isNaN(hours) && !isNaN(minutes)) {
-              eventDate.setHours(hours, minutes, 0, 0);
-            }
-          }
-
-          // Map type
-          const type = typeMap[(typeStr || 'compromisso').toLowerCase().trim()] || 'COMPROMISSO';
-
-          // Map priority
-          const priority = priorityMap[(priorityStr || 'media').toLowerCase().trim()] || 'MEDIA';
-
-          // Create event
-          await prisma.scheduleEvent.create({
-            data: {
-              companyId,
-              title: title.trim(),
-              description: description?.trim() || null,
-              type: type as 'COMPROMISSO' | 'TAREFA' | 'PRAZO' | 'AUDIENCIA' | 'PERICIA' | 'GOOGLE_MEET',
-              priority: priority as 'BAIXA' | 'MEDIA' | 'ALTA' | 'URGENTE',
-              date: eventDate,
-              createdBy,
-            },
-          });
-
-          results.success++;
-        } catch (lineError) {
-          results.errors.push({ line: lineNumber, error: 'Erro ao processar linha' });
-        }
-      }
-
-      appLogger.info('Importação CSV de eventos concluída', {
-        companyId,
-        success: results.success,
-        errors: results.errors.length,
-      });
-
-      res.json({
-        message: `Importação concluída: ${results.success} eventos criados`,
-        success: results.success,
-        errors: results.errors,
+      res.status(202).json({
+        message: 'Importação iniciada em background',
+        jobId,
+        totalRows,
+        statusUrl: `/schedule/import/status/${jobId}`,
       });
     } catch (error) {
-      appLogger.error('Erro ao importar CSV de eventos', error as Error);
-      res.status(500).json({ error: 'Erro ao importar CSV' });
+      appLogger.error('Erro ao enfileirar importação CSV de eventos', error as Error);
+      res.status(500).json({ error: 'Erro ao iniciar importação CSV' });
     }
   }
 
-  // Helper para parse de linha CSV (lida com campos entre aspas)
+  // Verificar status da importação
+  async getImportStatusEndpoint(req: AuthRequest, res: Response) {
+    try {
+      const { jobId } = req.params;
+      const companyId = req.user!.companyId;
+
+      if (!companyId) {
+        return res.status(403).json({ error: 'Usuário não possui empresa associada' });
+      }
+
+      // Verificar se o jobId pertence à empresa do usuário
+      if (!jobId.includes(companyId)) {
+        return res.status(403).json({ error: 'Acesso negado a este job' });
+      }
+
+      const status = await getImportStatus(jobId);
+
+      if (!status) {
+        return res.status(404).json({ error: 'Job não encontrado ou expirado' });
+      }
+
+      res.json(status);
+    } catch (error) {
+      appLogger.error('Erro ao buscar status de importação', error as Error);
+      res.status(500).json({ error: 'Erro ao buscar status' });
+    }
+  }
+
+  // Helper para parse de linha CSV (lida com campos entre aspas) - mantido para compatibilidade
   private parseCSVLine(line: string): string[] {
     const result: string[] = [];
     let current = '';

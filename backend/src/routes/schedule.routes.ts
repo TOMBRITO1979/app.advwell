@@ -60,8 +60,9 @@ router.get('/tasks-today', scheduleController.getTasksDueToday); // Tarefas venc
 router.get('/export/pdf', scheduleController.exportPDF);
 router.get('/export/csv', scheduleController.exportCSV);
 
-// Import CSV route
-router.post('/import/csv', upload.single('file'), scheduleController.importCSV);
+// Import CSV route (background processing)
+router.post('/import/csv', upload.single('file'), scheduleController.importCSV.bind(scheduleController));
+router.get('/import/status/:jobId', scheduleController.getImportStatusEndpoint.bind(scheduleController));
 router.get('/:id', idValidation, scheduleController.get);
 router.post('/', createValidation, scheduleController.create);
 router.put('/:id', updateValidation, scheduleController.update);
