@@ -271,7 +271,7 @@ export const csvImportRateLimit = async (
       return next();
     }
 
-    const CSV_LIMIT = 3; // 3 imports por janela
+    const CSV_LIMIT = 20; // 20 imports por janela
     const CSV_WINDOW = 300; // 5 minutos em segundos
     const identifier = req.user.companyId || `superadmin:${req.user.userId}`;
     const key = `${RATE_LIMIT_PREFIX}csv-import:${identifier}`;
