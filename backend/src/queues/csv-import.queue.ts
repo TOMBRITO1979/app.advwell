@@ -416,9 +416,14 @@ if (ENABLE_QUEUE_PROCESSORS) {
       const lineNumber = i + 2;
 
       try {
-        // Suportar ambas as variantes: com e sem acento
-        const descricao = record['Descrição']?.trim() || record['Descricao']?.trim() || record.Descricao?.trim();
-        const clienteNome = record.Cliente?.trim();
+        // Suportar múltiplas variantes de nomes de colunas (encoding, acentos, etc.)
+        const descricao = record['Descrição']?.trim() || record['Descricao']?.trim() || record.Descricao?.trim() || record['Descriçao']?.trim() || record['Description']?.trim();
+        const clienteNome = record.Cliente?.trim() || record.Client?.trim();
+
+        // Debug: log das colunas disponíveis na primeira linha
+        if (i === 0) {
+          appLogger.info('CSV Financial columns detected', { columns: Object.keys(record), firstRecord: record });
+        }
 
         const tipoValido = record.Tipo?.trim();
         if (!tipoValido || !['Receita', 'Despesa', 'INCOME', 'EXPENSE'].includes(tipoValido)) {
