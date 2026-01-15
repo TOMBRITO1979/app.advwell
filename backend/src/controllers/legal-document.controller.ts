@@ -1,9 +1,17 @@
 import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import prisma from '../utils/prisma';
-import { sanitizeString } from '../utils/sanitize';
+import { sanitizeString, sanitizeHtml } from '../utils/sanitize';
 import { appLogger } from '../utils/logger';
 import * as pdfStyles from '../utils/pdfStyles';
+
+// Função para corrigir timezone de datas (evita que dia 15 vire dia 14)
+// new Date("2026-01-15") interpreta como UTC meia-noite, que no Brasil (UTC-3) é dia anterior
+// Solução: extrair ano/mês/dia e criar Date ao meio-dia para evitar edge cases
+function fixDateTimezone(dateString: string): Date {
+  const [year, month, day] = dateString.split('T')[0].split('-').map(Number);
+  return new Date(year, month - 1, day, 12, 0, 0, 0);
+}
 
 // Listar documentos jurídicos
 export const listLegalDocuments = async (req: AuthRequest, res: Response) => {
@@ -188,8 +196,8 @@ export const createLegalDocument = async (req: AuthRequest, res: Response) => {
       data: {
         companyId,
         title: sanitizeString(title) || title,
-        content: sanitizeString(content) || content,
-        documentDate: documentDate ? new Date(documentDate) : new Date(),
+        content: sanitizeHtml(content) || content,
+        documentDate: documentDate ? fixDateTimezone(documentDate) : new Date(),
         clientId: clientId || null,
         signerId: signerId || null,
         createdBy: userId,
@@ -257,8 +265,8 @@ export const updateLegalDocument = async (req: AuthRequest, res: Response) => {
       where: { id },
       data: {
         ...(title && { title: sanitizeString(title) || title }),
-        ...(content && { content: sanitizeString(content) || content }),
-        ...(documentDate && { documentDate: new Date(documentDate) }),
+        ...(content && { content: sanitizeHtml(content) || content }),
+        ...(documentDate && { documentDate: fixDateTimezone(documentDate) }),
         ...(clientId !== undefined && { clientId: clientId || null }),
         ...(signerId !== undefined && { signerId: signerId || null }),
       },
@@ -311,6 +319,86 @@ export const deleteLegalDocument = async (req: AuthRequest, res: Response) => {
   }
 };
 
+// Helper para converter HTML do editor Quill para texto formatado
+const convertHtmlToFormattedText = (html: string): string => {
+  if (!html) return '';
+
+  let text = html;
+
+  // Tratar parágrafos com alinhamento do Quill (class="ql-align-*")
+  text = text.replace(/<p[^>]*class="[^"]*ql-align-center[^"]*"[^>]*>([\s\S]*?)<\/p>/gi, '\n[[CENTER]]$1[[/CENTER]]\n');
+  text = text.replace(/<p[^>]*class="[^"]*ql-align-right[^"]*"[^>]*>([\s\S]*?)<\/p>/gi, '\n[[RIGHT]]$1[[/RIGHT]]\n');
+
+  // Tratar parágrafos com style inline (fallback)
+  text = text.replace(/<p[^>]*style="[^"]*text-align:\s*center[^"]*"[^>]*>([\s\S]*?)<\/p>/gi, '\n[[CENTER]]$1[[/CENTER]]\n');
+  text = text.replace(/<p[^>]*style="[^"]*text-align:\s*right[^"]*"[^>]*>([\s\S]*?)<\/p>/gi, '\n[[RIGHT]]$1[[/RIGHT]]\n');
+
+  // Tratar headers (h1-h6) - converter para negrito
+  text = text.replace(/<h[1-6][^>]*>([\s\S]*?)<\/h[1-6]>/gi, '\n**$1**\n');
+
+  // Tratar listas
+  text = text.replace(/<ul[^>]*>/gi, '\n');
+  text = text.replace(/<\/ul>/gi, '\n');
+  text = text.replace(/<ol[^>]*>/gi, '\n');
+  text = text.replace(/<\/ol>/gi, '\n');
+  text = text.replace(/<li[^>]*>([\s\S]*?)<\/li>/gi, '• $1\n');
+
+  // Tratar blockquote
+  text = text.replace(/<blockquote[^>]*>([\s\S]*?)<\/blockquote>/gi, '\n"$1"\n');
+
+  // Parágrafos normais
+  text = text.replace(/<p[^>]*>/gi, '');
+  text = text.replace(/<\/p>/gi, '\n');
+
+  // Tratar quebras de linha
+  text = text.replace(/<br\s*\/?>/gi, '\n');
+
+  // Tratar negrito - <strong> ou <b>
+  text = text.replace(/<(strong|b)>/gi, '**');
+  text = text.replace(/<\/(strong|b)>/gi, '**');
+
+  // Tratar sublinhado - <u>
+  text = text.replace(/<u>/gi, '__');
+  text = text.replace(/<\/u>/gi, '__');
+
+  // Tratar tachado - <s> ou <strike>
+  text = text.replace(/<(s|strike)>/gi, '~~');
+  text = text.replace(/<\/(s|strike)>/gi, '~~');
+
+  // Tratar itálico - <em> ou <i> (manter como marcador para possível uso futuro)
+  text = text.replace(/<(em|i)>/gi, '_');
+  text = text.replace(/<\/(em|i)>/gi, '_');
+
+  // Tratar subscrito e sobrescrito (remover tags, manter texto)
+  text = text.replace(/<su[bp][^>]*>/gi, '');
+  text = text.replace(/<\/su[bp]>/gi, '');
+
+  // Tratar spans com estilos (remover tags, manter texto)
+  text = text.replace(/<span[^>]*>/gi, '');
+  text = text.replace(/<\/span>/gi, '');
+
+  // Remover outras tags HTML
+  text = text.replace(/<[^>]+>/g, '');
+
+  // Decodificar entidades HTML comuns
+  text = text.replace(/&nbsp;/g, ' ');
+  text = text.replace(/&amp;/g, '&');
+  text = text.replace(/&lt;/g, '<');
+  text = text.replace(/&gt;/g, '>');
+  text = text.replace(/&quot;/g, '"');
+  text = text.replace(/&#39;/g, "'");
+  text = text.replace(/&ndash;/g, '–');
+  text = text.replace(/&mdash;/g, '—');
+
+  // Limpar múltiplas quebras de linha consecutivas (máximo 2)
+  text = text.replace(/\n{3,}/g, '\n\n');
+
+  // Remover espaços em branco no início e fim
+  text = text.trim();
+
+  return text;
+};
+
 // Helper para renderizar texto com formatação markdown no PDF
 const renderFormattedText = (doc: any, text: string, options: any = {}) => {
   const { align = 'justify', lineGap = 3 } = options;
@@ -332,13 +420,28 @@ const renderFormattedText = (doc: any, text: string, options: any = {}) => {
       doc.moveDown(0.8);
     }
 
+    // Verificar alinhamento especial do parágrafo
+    let paragraphAlign = align;
+    let processedParagraph = paragraph;
+
+    if (paragraph.includes('[[CENTER]]')) {
+      paragraphAlign = 'center';
+      processedParagraph = paragraph.replace(/\[\[CENTER\]\]/g, '').replace(/\[\[\/CENTER\]\]/g, '');
+    } else if (paragraph.includes('[[RIGHT]]')) {
+      paragraphAlign = 'right';
+      processedParagraph = paragraph.replace(/\[\[RIGHT\]\]/g, '').replace(/\[\[\/RIGHT\]\]/g, '');
+    }
+
     // Dividir parágrafo em linhas para melhor controle
-    const lines = paragraph.split(/\n/);
+    const lines = processedParagraph.split(/\n/);
 
     lines.forEach((line, lineIndex) => {
       if (lineIndex > 0) {
         doc.moveDown(0.3);
       }
+
+      // Usar alinhamento do parágrafo
+      const lineAlign = paragraphAlign;
 
       // Encontrar todos os segmentos formatados e não formatados
       const segments: { text: string; bold: boolean; underline: boolean }[] = [];
@@ -415,7 +518,7 @@ const renderFormattedText = (doc: any, text: string, options: any = {}) => {
         if (sIndex === 0) {
           doc.text(segment.text, margin, doc.y, {
             continued: segments.length > 1,
-            align: segments.length === 1 ? align : 'left',
+            align: segments.length === 1 ? lineAlign : 'left',
             lineGap,
             width: contentWidth,
           });
@@ -549,17 +652,19 @@ export const generatePDF = async (req: AuthRequest, res: Response) => {
     // ==================== CONTEÚDO DO DOCUMENTO ====================
     doc.fillColor(pdfStyles.colors.black);
 
-    // Usar função de renderização com suporte a markdown (negrito, sublinhado)
+    // Converter HTML do editor para texto formatado e renderizar
     if (document.content) {
-      renderFormattedText(doc, document.content, { align: 'justify', lineGap: 3 });
+      const formattedContent = convertHtmlToFormattedText(document.content);
+      renderFormattedText(doc, formattedContent, { align: 'justify', lineGap: 3 });
     }
 
     // ==================== DATA E ASSINATURA (só se tiver assinante) ====================
     if (document.signer) {
       doc.moveDown(2);
 
-      // Data
+      // Data (sempre no timezone de São Paulo)
       const documentDate = new Date(document.documentDate).toLocaleDateString('pt-BR', {
+        timeZone: 'America/Sao_Paulo',
         day: '2-digit',
         month: 'long',
         year: 'numeric',

@@ -100,9 +100,9 @@ const Schedule: React.FC = () => {
     return new Date(today.setDate(diff));
   });
 
-  // Estado para seleção única de usuário responsável
+  // Estado para seleção múltipla de usuários responsáveis
   const [companyUsers, setCompanyUsers] = useState<User[]>([]);
-  const [selectedUserId, setSelectedUserId] = useState<string>('');
+  const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
 
   // Estado para feriados nacionais
   const [holidays, setHolidays] = useState<Holiday[]>([]);
@@ -374,7 +374,7 @@ const Schedule: React.FC = () => {
         endDate: formData.endDate ? fromSaoPauloToISO(formData.endDate) : null,
         clientId: selectedClient?.id || null,
         caseId: selectedCase?.id || null,
-        assignedUserIds: selectedUserId ? [selectedUserId] : undefined,
+        assignedUserIds: selectedUserIds.length > 0 ? selectedUserIds : undefined,
       };
 
       if (editingEvent) {
@@ -425,9 +425,9 @@ const Schedule: React.FC = () => {
       setSelectedCase(event.case);
       setCaseSearchTerm(event.case.processNumber);
     }
-    // Set selected user (pega apenas o primeiro se houver múltiplos)
+    // Set selected users (carrega todos os usuários atribuídos)
     if (event.assignedUsers && event.assignedUsers.length > 0) {
-      setSelectedUserId(event.assignedUsers[0].user.id);
+      setSelectedUserIds(event.assignedUsers.map(assignment => assignment.user.id));
     }
     setShowModal(true);
   };
@@ -505,7 +505,7 @@ const Schedule: React.FC = () => {
     setCaseSuggestions([]);
     setShowClientSuggestions(false);
     setShowCaseSuggestions(false);
-    setSelectedUserId('');
+    setSelectedUserIds([]);
   };
 
 
@@ -1403,23 +1403,67 @@ const Schedule: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Assigned User - Select único */}
+                {/* Assigned Users - Seleção múltipla com checkboxes */}
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">
-                    Responsável (opcional)
-                  </label>
-                  <select
-                    value={selectedUserId}
-                    onChange={(e) => setSelectedUserId(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
-                  >
-                    <option value="">Selecione um responsável...</option>
-                    {companyUsers.map((user) => (
-                      <option key={user.id} value={user.id}>
-                        {user.name} ({user.email})
-                      </option>
-                    ))}
-                  </select>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-sm font-medium text-neutral-700">
+                      Responsáveis (opcional)
+                    </label>
+                    <div className="flex gap-2">
+                      {selectedUserIds.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => setSelectedUserIds([])}
+                          className="text-xs text-red-600 hover:text-red-800 transition-colors"
+                        >
+                          Limpar
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => setSelectedUserIds(companyUsers.map(u => u.id))}
+                        className="text-xs text-primary-600 hover:text-primary-800 transition-colors font-medium"
+                      >
+                        Adicionar Todos
+                      </button>
+                    </div>
+                  </div>
+                  <div className="border border-gray-300 rounded-md p-3 max-h-48 overflow-y-auto space-y-2 bg-white">
+                    {companyUsers.length === 0 ? (
+                      <p className="text-sm text-neutral-500 text-center py-2">Nenhum usuário disponível</p>
+                    ) : (
+                      companyUsers.map((user) => (
+                        <label
+                          key={user.id}
+                          className="flex items-center gap-3 p-2 hover:bg-neutral-50 rounded-md cursor-pointer transition-colors"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={selectedUserIds.includes(user.id)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedUserIds([...selectedUserIds, user.id]);
+                              } else {
+                                setSelectedUserIds(selectedUserIds.filter(id => id !== user.id));
+                              }
+                            }}
+                            className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                          />
+                          <div className="flex-1">
+                            <span className="text-sm font-medium text-neutral-900">{user.name}</span>
+                            {user.email && (
+                              <span className="text-xs text-neutral-500 ml-2">({user.email})</span>
+                            )}
+                          </div>
+                        </label>
+                      ))
+                    )}
+                  </div>
+                  {selectedUserIds.length > 0 && (
+                    <p className="mt-2 text-xs text-success-600">
+                      {selectedUserIds.length} responsável{selectedUserIds.length > 1 ? 'eis' : ''} selecionado{selectedUserIds.length > 1 ? 's' : ''}
+                    </p>
+                  )}
                 </div>
 
                 {/* Description */}

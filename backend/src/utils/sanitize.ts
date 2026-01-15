@@ -31,6 +31,50 @@ export const sanitizeString = (input: string | undefined | null): string | undef
 };
 
 /**
+ * Sanitiza HTML preservando tags de formatação seguras
+ *
+ * Útil para campos de texto rico que precisam manter formatação
+ * mas remover scripts e tags perigosas.
+ *
+ * @param input - String HTML a ser sanitizada
+ * @returns String HTML sanitizada preservando formatação, ou undefined se input for null/undefined
+ *
+ * @example
+ * sanitizeHtml('<p>Texto <strong>importante</strong></p><script>alert(1)</script>')
+ * // Retorna: '<p>Texto <strong>importante</strong></p>'
+ */
+export const sanitizeHtml = (input: string | undefined | null): string | undefined => {
+  if (!input) return input as undefined;
+
+  return DOMPurify.sanitize(input, {
+    ALLOWED_TAGS: [
+      // Estrutura
+      'p', 'br', 'hr', 'div', 'span',
+      // Cabeçalhos
+      'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+      // Formatação de texto
+      'strong', 'b', 'em', 'i', 'u', 's', 'strike', 'sub', 'sup',
+      // Listas
+      'ul', 'ol', 'li',
+      // Citações e código
+      'blockquote', 'pre', 'code',
+      // Links e imagens
+      'a', 'img',
+      // Tabelas
+      'table', 'thead', 'tbody', 'tr', 'th', 'td',
+    ],
+    ALLOWED_ATTR: [
+      'href', 'src', 'alt', 'title', 'target', 'rel',
+      'class', 'style',
+      'colspan', 'rowspan',
+    ],
+    ALLOW_DATA_ATTR: false,
+    ADD_ATTR: ['target'],
+    FORCE_BODY: true,
+  });
+};
+
+/**
  * Sanitiza um objeto recursivamente
  *
  * Percorre todas as propriedades do objeto e sanitiza strings,

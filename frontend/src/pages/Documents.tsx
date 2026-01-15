@@ -45,6 +45,10 @@ const Documents: React.FC = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
 
+  // Edit states
+  const [editMode, setEditMode] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
+
   // Search states
   const [searchType, setSearchType] = useState<'client' | 'case'>('client');
   const [searchText, setSearchText] = useState('');
@@ -159,6 +163,22 @@ const Documents: React.FC = () => {
       toast.error('Selecione um cliente ou processo primeiro');
       return;
     }
+    setEditMode(false);
+    setSelectedDocument(null);
+    resetForm();
+    setShowAddModal(true);
+  };
+
+  const handleEditDocument = (doc: Document) => {
+    setSelectedDocument(doc);
+    setEditMode(true);
+    setFormData({
+      name: doc.name,
+      description: doc.description || '',
+      storageType: doc.storageType,
+      externalUrl: doc.externalUrl || '',
+      externalType: doc.externalType || 'google_drive',
+    });
     setShowAddModal(true);
   };
 
@@ -170,7 +190,8 @@ const Documents: React.FC = () => {
       return;
     }
 
-    if (formData.storageType === 'upload' && !selectedFile) {
+    // Validação de upload só para novos documentos
+    if (!editMode && formData.storageType === 'upload' && !selectedFile) {
       toast.error('Selecione um arquivo para upload');
       return;
     }
@@ -183,7 +204,18 @@ const Documents: React.FC = () => {
     setLoading(true);
 
     try {
-      if (formData.storageType === 'upload' && selectedFile) {
+      if (editMode && selectedDocument) {
+        // Atualização de documento existente
+        const payload = {
+          name: formData.name,
+          description: formData.description,
+          externalUrl: formData.externalUrl || undefined,
+          externalType: formData.externalType || undefined,
+        };
+
+        await api.put(`/documents/${selectedDocument.id}`, payload);
+        toast.success('Documento atualizado com sucesso!');
+      } else if (formData.storageType === 'upload' && selectedFile) {
         // Upload de arquivo para S3
         const uploadFormData = new FormData();
         uploadFormData.append('file', selectedFile);
@@ -216,6 +248,8 @@ const Documents: React.FC = () => {
       }
 
       setShowAddModal(false);
+      setEditMode(false);
+      setSelectedDocument(null);
       resetForm();
 
       // Reload documents if viewing
@@ -223,7 +257,7 @@ const Documents: React.FC = () => {
         handleSearch();
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Erro ao adicionar documento');
+      toast.error(error.response?.data?.error || 'Erro ao salvar documento');
     } finally {
       setLoading(false);
     }
@@ -550,6 +584,16 @@ const Documents: React.FC = () => {
                           <span className="hidden md:inline">Download</span>
                         </button>
                         <button
+                          onClick={() => handleEditDocument(doc)}
+                          className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 md:px-3 md:py-1.5 bg-amber-100 text-amber-700 border border-amber-200 hover:bg-amber-200 font-medium rounded-md text-xs transition-all duration-200"
+                          title="Editar"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 md:h-3.5 md:w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                          </svg>
+                          <span className="hidden md:inline">Editar</span>
+                        </button>
+                        <button
                           onClick={() => handleDeleteDocument(doc.id)}
                           className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 md:px-3 md:py-1.5 bg-red-100 text-red-700 border border-red-200 hover:bg-red-200 font-medium rounded-md text-xs transition-all duration-200"
                           title="Excluir"
@@ -583,22 +627,35 @@ const Documents: React.FC = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
           <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
             <div className="p-6 border-b border-neutral-200">
-              <h2 className="text-xl font-bold text-neutral-800">Adicionar Documento</h2>
+              <h2 className="text-xl font-bold text-neutral-800">
+                {editMode ? 'Editar Documento' : 'Adicionar Documento'}
+              </h2>
             </div>
 
             <form onSubmit={handleSaveDocument} className="p-6 overflow-y-auto flex-1">
               <div className="space-y-4">
                 {/* Selected Entity */}
-                <div className="p-3 bg-success-50 border border-primary-200 rounded-md">
-                  <span className="font-medium text-primary-800">
-                    {selectedClient ? 'Cliente: ' : 'Processo: '}
-                  </span>
-                  <span className="text-primary-700">
-                    {selectedClient
-                      ? selectedClient.name
-                      : selectedCase?.processNumber}
-                  </span>
-                </div>
+                {!editMode && (
+                  <div className="p-3 bg-success-50 border border-primary-200 rounded-md">
+                    <span className="font-medium text-primary-800">
+                      {selectedClient ? 'Cliente: ' : 'Processo: '}
+                    </span>
+                    <span className="text-primary-700">
+                      {selectedClient
+                        ? selectedClient.name
+                        : selectedCase?.processNumber}
+                    </span>
+                  </div>
+                )}
+                {editMode && selectedDocument && (
+                  <div className="p-3 bg-amber-50 border border-amber-200 rounded-md">
+                    <span className="font-medium text-amber-800">Editando: </span>
+                    <span className="text-amber-700">{selectedDocument.name}</span>
+                    <span className="text-amber-600 text-sm ml-2">
+                      ({selectedDocument.storageType === 'upload' ? 'Arquivo' : 'Link Externo'})
+                    </span>
+                  </div>
+                )}
 
                 {/* Document Name */}
                 <div>
@@ -627,38 +684,40 @@ const Documents: React.FC = () => {
                   />
                 </div>
 
-                {/* Storage Type */}
-                <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-2">
-                    Tipo de Armazenamento *
-                  </label>
-                  <div className="space-y-2">
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        value="upload"
-                        checked={formData.storageType === 'upload'}
-                        onChange={(e) =>
-                          setFormData({ ...formData, storageType: e.target.value as 'upload' })
-                        }
-                        className="mr-2"
-                      />
-                      Carregar Arquivo
+                {/* Storage Type - only show when adding new document */}
+                {!editMode && (
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-2">
+                      Tipo de Armazenamento *
                     </label>
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        value="link"
-                        checked={formData.storageType === 'link'}
-                        onChange={(e) =>
-                          setFormData({ ...formData, storageType: e.target.value as 'link' })
-                        }
-                        className="mr-2"
-                      />
-                      Link Externo
-                    </label>
+                    <div className="space-y-2">
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          value="upload"
+                          checked={formData.storageType === 'upload'}
+                          onChange={(e) =>
+                            setFormData({ ...formData, storageType: e.target.value as 'upload' })
+                          }
+                          className="mr-2"
+                        />
+                        Carregar Arquivo
+                      </label>
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          value="link"
+                          checked={formData.storageType === 'link'}
+                          onChange={(e) =>
+                            setFormData({ ...formData, storageType: e.target.value as 'link' })
+                          }
+                          className="mr-2"
+                        />
+                        Link Externo
+                      </label>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Link External Fields */}
                 {formData.storageType === 'link' && (
@@ -702,8 +761,8 @@ const Documents: React.FC = () => {
                   </>
                 )}
 
-                {/* Upload Fields */}
-                {formData.storageType === 'upload' && (
+                {/* Upload Fields - only show when adding new document */}
+                {!editMode && formData.storageType === 'upload' && (
                   <div>
                     <label className="block text-sm font-medium text-neutral-700 mb-2">
                       Selecionar Arquivo *
@@ -734,6 +793,15 @@ const Documents: React.FC = () => {
                     </p>
                   </div>
                 )}
+
+                {/* Info message for upload documents in edit mode */}
+                {editMode && formData.storageType === 'upload' && (
+                  <div className="p-3 bg-neutral-50 border border-neutral-200 rounded-md">
+                    <p className="text-sm text-neutral-600">
+                      O arquivo não pode ser alterado. Para substituir o arquivo, exclua este documento e adicione um novo.
+                    </p>
+                  </div>
+                )}
               </div>
             </form>
 
@@ -742,6 +810,8 @@ const Documents: React.FC = () => {
                 type="button"
                 onClick={() => {
                   setShowAddModal(false);
+                  setEditMode(false);
+                  setSelectedDocument(null);
                   resetForm();
                 }}
                 className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 bg-white hover:bg-neutral-50 text-neutral-700 font-medium rounded-lg transition-all duration-200"
@@ -753,7 +823,7 @@ const Documents: React.FC = () => {
                 disabled={loading}
                 className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-primary-100 text-primary-700 border border-primary-200 hover:bg-primary-200 font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? 'Enviando...' : 'Salvar Documento'}
+                {loading ? 'Salvando...' : (editMode ? 'Salvar Alterações' : 'Salvar Documento')}
               </button>
             </div>
           </div>

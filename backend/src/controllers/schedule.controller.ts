@@ -8,6 +8,7 @@ import whatsappService from '../services/whatsapp.service';
 import { appLogger } from '../utils/logger';
 import * as pdfStyles from '../utils/pdfStyles';
 import { enqueueCsvImport, getImportStatus } from '../queues/csv-import.queue';
+import { sendEventAssignmentNotification } from '../utils/email';
 
 export class ScheduleController {
   async create(req: AuthRequest, res: Response) {
@@ -185,6 +186,39 @@ export class ScheduleController {
 
       // Log de auditoria
       await auditLogService.logScheduleEventCreate(event, req);
+
+      // Enviar email de notificação para usuários atribuídos (exceto o criador)
+      if (event.assignedUsers && event.assignedUsers.length > 0) {
+        // Buscar nome do criador e nome da empresa
+        const creator = await prisma.user.findUnique({
+          where: { id: createdBy },
+          select: { name: true, company: { select: { name: true } } }
+        });
+        const creatorName = creator?.name || 'Sistema';
+        const companyName = creator?.company?.name;
+
+        for (const assignment of event.assignedUsers) {
+          // Não enviar email para o próprio criador
+          if (assignment.user.id === createdBy) continue;
+
+          // Enviar email de forma assíncrona (não bloqueia a resposta)
+          sendEventAssignmentNotification(
+            assignment.user.email!,
+            assignment.user.name,
+            event.title,
+            event.date,
+            event.type,
+            event.description,
+            creatorName,
+            companyName
+          ).catch(err => {
+            appLogger.error('Erro ao enviar email de atribuição de evento', err as Error, {
+              eventId: event.id,
+              userId: assignment.user.id
+            });
+          });
+        }
+      }
 
       // SINCRONIZAÇÃO PRAZO → CASE: Se criou um evento tipo PRAZO vinculado a um processo, atualizar Case.deadline
       if (type === 'PRAZO' && caseId) {
@@ -597,8 +631,15 @@ export class ScheduleController {
         googleMeetLink = null;
       }
 
-      // Atualizar usuários atribuídos se fornecido
+      // Capturar IDs dos usuários atribuídos antes da atualização (para notificar apenas novos)
+      let oldAssignedUserIds: string[] = [];
       if (assignedUserIds !== undefined && Array.isArray(assignedUserIds)) {
+        const oldAssignments = await prisma.eventAssignment.findMany({
+          where: { eventId: id },
+          select: { userId: true }
+        });
+        oldAssignedUserIds = oldAssignments.map(a => a.userId);
+
         // Deletar atribuições antigas
         await prisma.eventAssignment.deleteMany({
           where: { eventId: id }
@@ -671,6 +712,44 @@ export class ScheduleController {
           appLogger.info('Sincronização PRAZO→Case: deadline atualizado via update', { eventId: updatedEvent.id, caseId: updatedCaseId });
         } catch (syncError) {
           appLogger.error('Erro ao sincronizar prazo com Case', syncError as Error, { eventId: updatedEvent.id, caseId: updatedCaseId });
+        }
+      }
+
+      // Enviar email de notificação para NOVOS usuários atribuídos
+      if (assignedUserIds !== undefined && Array.isArray(assignedUserIds) && updatedEvent.assignedUsers && updatedEvent.assignedUsers.length > 0) {
+        // Identificar usuários novos (que não estavam atribuídos antes)
+        const newUserIds = assignedUserIds.filter((uid: string) => !oldAssignedUserIds.includes(uid));
+
+        if (newUserIds.length > 0) {
+          // Buscar nome do usuário que fez a atribuição e nome da empresa
+          const updater = await prisma.user.findUnique({
+            where: { id: req.user!.userId },
+            select: { name: true, company: { select: { name: true } } }
+          });
+          const updaterName = updater?.name || 'Sistema';
+          const companyName = updater?.company?.name;
+
+          for (const assignment of updatedEvent.assignedUsers) {
+            // Enviar email apenas para usuários novos
+            if (!newUserIds.includes(assignment.user.id)) continue;
+
+            // Enviar email de forma assíncrona (não bloqueia a resposta)
+            sendEventAssignmentNotification(
+              assignment.user.email!,
+              assignment.user.name,
+              updatedEvent.title,
+              updatedEvent.date,
+              updatedEvent.type,
+              updatedEvent.description,
+              updaterName,
+              companyName
+            ).catch(err => {
+              appLogger.error('Erro ao enviar email de atribuição de evento', err as Error, {
+                eventId: updatedEvent.id,
+                userId: assignment.user.id
+              });
+            });
+          }
         }
       }
 

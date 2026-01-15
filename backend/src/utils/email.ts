@@ -679,3 +679,120 @@ export const sendPortalWelcomeEmail = async (
 
   await transporter.sendMail(mailOptions);
 };
+
+/**
+ * Envia email de notificação quando um usuário é atribuído a um evento
+ */
+export const sendEventAssignmentNotification = async (
+  userEmail: string,
+  userName: string,
+  eventTitle: string,
+  eventDate: Date,
+  eventType: string,
+  eventDescription: string | null,
+  assignedByName: string,
+  companyName?: string
+) => {
+  const safeName = sanitizeForEmail(userName);
+  const safeEventTitle = sanitizeForEmail(eventTitle);
+  const safeDescription = sanitizeForEmail(eventDescription || '');
+  const safeAssignedByName = sanitizeForEmail(assignedByName);
+  const safeCompanyName = sanitizeForEmail(companyName);
+
+  // Formatar data em português
+  const formattedDate = eventDate.toLocaleDateString('pt-BR', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'America/Sao_Paulo'
+  });
+
+  // Mapear tipos de evento para labels em português
+  const typeLabels: Record<string, string> = {
+    'COMPROMISSO': 'Compromisso',
+    'TAREFA': 'Tarefa',
+    'PRAZO': 'Prazo',
+    'AUDIENCIA': 'Audiência',
+    'PERICIA': 'Perícia',
+    'GOOGLE_MEET': 'Google Meet',
+  };
+  const eventTypeLabel = typeLabels[eventType] || eventType;
+
+  // Cores por tipo de evento
+  const typeColors: Record<string, string> = {
+    'COMPROMISSO': '#3B82F6',
+    'TAREFA': '#10B981',
+    'PRAZO': '#EF4444',
+    'AUDIENCIA': '#8B5CF6',
+    'PERICIA': '#F59E0B',
+    'GOOGLE_MEET': '#F97316',
+  };
+  const typeColor = typeColors[eventType] || '#43A047';
+
+  const mailOptions = {
+    from: config.smtp.from,
+    to: userEmail,
+    subject: `Você foi atribuído a: ${safeEventTitle} - ${safeCompanyName || 'AdvWell'}`,
+    html: `
+      <!DOCTYPE html>
+      <html lang="pt-BR">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Nova Atribuição de Evento - ${safeCompanyName || 'AdvWell'}</title>
+      </head>
+      <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f3f4f6;">
+        <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #f3f4f6;">
+          <tr>
+            <td style="padding: 40px 20px;">
+              <table role="presentation" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); overflow: hidden;">
+                <tr>
+                  <td style="background-color: #43A047; background: linear-gradient(135deg, #43A047 0%, #2E7D32 100%); padding: 40px 30px; text-align: center;">
+                    <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 700;">${safeCompanyName || 'AdvWell'}</h1>
+                    <p style="margin: 8px 0 0 0; color: #ffffff; font-size: 14px;">Nova Atribuição de Evento</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 40px 30px;">
+                    <div style="text-align: center; margin-bottom: 24px;">
+                      <div style="display: inline-block; width: 64px; height: 64px; background-color: #C8E6C9; border-radius: 50%; line-height: 64px; font-size: 32px;">📅</div>
+                    </div>
+                    <h2 style="margin: 0 0 16px 0; color: #111827; font-size: 24px; font-weight: 600; text-align: center;">Você foi atribuído a um evento!</h2>
+                    <p style="margin: 0 0 24px 0; color: #4b5563; font-size: 16px; text-align: center;">Olá <strong>${safeName}</strong>,</p>
+                    <p style="margin: 0 0 24px 0; color: #6b7280; font-size: 15px; text-align: center;"><strong>${safeAssignedByName}</strong> adicionou você como responsável no seguinte evento:</p>
+                    <div style="background-color: #f9fafb; border-radius: 8px; padding: 24px; margin-bottom: 24px; border-left: 4px solid ${typeColor};">
+                      <div style="margin-bottom: 16px;">
+                        <span style="display: inline-block; padding: 4px 12px; background-color: ${typeColor}; color: #ffffff; font-size: 12px; font-weight: 600; border-radius: 4px;">${eventTypeLabel}</span>
+                      </div>
+                      <p style="margin: 0 0 16px 0; color: #111827; font-size: 20px; font-weight: 700;">${safeEventTitle}</p>
+                      <div style="margin-bottom: 12px;">
+                        <span style="color: #6b7280; font-size: 14px;">🗓️ <strong>Data:</strong> ${formattedDate}</span>
+                      </div>
+                      ${safeDescription ? `<div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #e5e7eb;"><p style="margin: 0 0 8px 0; color: #374151; font-size: 13px; font-weight: 600;">Descrição:</p><p style="margin: 0; color: #6b7280; font-size: 14px;">${safeDescription}</p></div>` : ''}
+                    </div>
+                    <div style="text-align: center; margin: 32px 0;">
+                      <a href="${config.urls.frontend}/agenda" style="display: inline-block; padding: 16px 48px; background-color: #43A047; background: linear-gradient(135deg, #43A047 0%, #2E7D32 100%); color: #ffffff !important; text-decoration: none; border-radius: 8px; font-size: 16px; font-weight: 600;">Ver na Agenda</a>
+                    </div>
+                    <p style="margin: 32px 0 0 0; color: #6b7280; font-size: 14px; text-align: center;">Atenciosamente,<br><strong style="color: #43A047;">${safeCompanyName || 'AdvWell'}</strong></p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 30px; background-color: #f9fafb; border-top: 1px solid #e5e7eb;">
+                    <p style="margin: 0 0 8px 0; color: #6b7280; font-size: 13px; text-align: center;">Este é um email automático, por favor não responda.</p>
+                    <p style="margin: 0; color: #9ca3af; font-size: 12px; text-align: center;">© 2025 ${safeCompanyName || 'AdvWell'}. Todos os direitos reservados.</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+      </html>
+    `,
+  };
+
+  await transporter.sendMail(mailOptions);
+};
