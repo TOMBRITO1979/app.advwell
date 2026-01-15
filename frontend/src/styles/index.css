@@ -26,6 +26,24 @@
   --transition-normal: 250ms ease;
 }
 
+/* Dark Mode Variables */
+.dark {
+  /* Fundos - Tons escuros suaves */
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-card: #1e293b;
+  --bg-hover: #334155;
+
+  /* Textos - Tons claros */
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+
+  /* Bordas */
+  --border-light: #334155;
+  --border: #475569;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -44,6 +62,16 @@ body {
 
   /* Fundo cremoso suave */
   background-color: var(--bg-primary);
+
+  /* Transição suave para mudança de tema */
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Dark mode body */
+.dark body,
+body.dark {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
 }
 
 /* Melhorias de responsividade para mobile */
@@ -83,7 +111,7 @@ body {
 
   /* Mobile Cards */
   .mobile-card {
-    @apply bg-white rounded-lg shadow-sm border border-neutral-200 p-4 mb-3;
+    @apply bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-neutral-200 dark:border-slate-700 p-4 mb-3;
   }
 
   .mobile-card-header {
@@ -91,27 +119,27 @@ body {
   }
 
   .mobile-card-title {
-    @apply font-semibold text-neutral-900 text-base;
+    @apply font-semibold text-neutral-900 dark:text-slate-100 text-base;
   }
 
   .mobile-card-subtitle {
-    @apply text-sm text-neutral-500 mt-1;
+    @apply text-sm text-neutral-500 dark:text-slate-400 mt-1;
   }
 
   .mobile-card-row {
-    @apply flex justify-between items-center py-2 border-b border-neutral-100 last:border-0;
+    @apply flex justify-between items-center py-2 border-b border-neutral-100 dark:border-slate-700 last:border-0;
   }
 
   .mobile-card-label {
-    @apply text-sm font-semibold text-neutral-900 uppercase;
+    @apply text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase;
   }
 
   .mobile-card-value {
-    @apply text-sm text-neutral-900 text-right;
+    @apply text-sm text-neutral-900 dark:text-slate-200 text-right;
   }
 
   .mobile-card-actions {
-    @apply flex gap-2 mt-3 pt-3 border-t border-neutral-100;
+    @apply flex gap-2 mt-3 pt-3 border-t border-neutral-100 dark:border-slate-700;
   }
 
   /* Page Header Mobile */
@@ -120,7 +148,7 @@ body {
   }
 
   .page-title {
-    @apply text-xl sm:text-2xl font-bold text-neutral-900;
+    @apply text-xl sm:text-2xl font-bold text-neutral-900 dark:text-slate-100;
   }
 
   .page-actions {
@@ -155,24 +183,24 @@ body {
 
   /* Charts Mobile */
   .chart-container {
-    @apply bg-white rounded-lg shadow-md p-4 sm:p-6;
+    @apply bg-white dark:bg-slate-800 rounded-lg shadow-md p-4 sm:p-6;
   }
 
   .chart-title {
-    @apply text-base sm:text-lg font-semibold text-neutral-800 mb-2 sm:mb-4 flex items-center gap-2;
+    @apply text-base sm:text-lg font-semibold text-neutral-800 dark:text-slate-100 mb-2 sm:mb-4 flex items-center gap-2;
   }
 
   /* Modal Mobile */
   .modal-overlay {
-    @apply fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center p-0 sm:p-4 z-50;
+    @apply fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-end sm:items-center justify-center p-0 sm:p-4 z-50;
   }
 
   .modal-container {
-    @apply bg-white w-full sm:rounded-lg sm:max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto rounded-t-2xl sm:rounded-lg;
+    @apply bg-white dark:bg-slate-800 w-full sm:rounded-lg sm:max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto rounded-t-2xl sm:rounded-lg;
   }
 
   .modal-header {
-    @apply sticky top-0 bg-white border-b border-neutral-200 px-4 sm:px-6 py-4 flex justify-between items-center z-10;
+    @apply sticky top-0 bg-white dark:bg-slate-800 border-b border-neutral-200 dark:border-slate-700 px-4 sm:px-6 py-4 flex justify-between items-center z-10;
   }
 
   .modal-body {
@@ -180,7 +208,7 @@ body {
   }
 
   .modal-footer {
-    @apply sticky bottom-0 bg-white border-t border-neutral-200 px-4 sm:px-6 py-4 flex flex-col-reverse sm:flex-row justify-end gap-3;
+    @apply sticky bottom-0 bg-white dark:bg-slate-800 border-t border-neutral-200 dark:border-slate-700 px-4 sm:px-6 py-4 flex flex-col-reverse sm:flex-row justify-end gap-3;
   }
 
   /* Form Grid Mobile */

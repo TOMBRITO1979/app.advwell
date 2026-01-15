@@ -1,6 +1,7 @@
 import React, { forwardRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import api from '../services/api';
 import {
   Home,
@@ -38,6 +39,9 @@ import {
   BarChart3,
   Radar,
   Book,
+  Sun,
+  Moon,
+  LayoutGrid,
   LucideProps,
 } from 'lucide-react';
 
@@ -100,6 +104,7 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
@@ -321,6 +326,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const agendaItems = [
     { path: '/schedule', label: 'Agendamentos', icon: Calendar },
     { path: '/todos', label: 'Tarefas', icon: CheckSquare },
+    { path: '/kanban', label: 'Kanban', icon: LayoutGrid },
     { path: '/hearings', label: 'Audiências', icon: Gavel },
     { path: '/google-calendar', label: 'Google Calendar', icon: Calendar },
   ];
@@ -359,6 +365,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const financeiroItems = [
     { path: '/financial', label: 'Fluxo de Caixa', icon: DollarSign },
     { path: '/accounts-payable', label: 'Contas a Pagar', icon: CreditCard },
+    { path: '/cost-centers', label: 'Centros de Custo', icon: Building2 },
     { path: '/client-subscriptions', label: 'Planos', icon: CreditCard },
     ...((user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN')
       ? [{ path: '/subscription', label: 'Assinatura', icon: Crown }]
@@ -370,6 +377,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     // Agenda, Pessoas, Processos, Marketing e Financeiro serão renderizados como dropdowns separadamente
     { path: '/legal-documents', label: 'Documentos', icon: Scale },
     { path: '/documents', label: 'Uploads', icon: FolderOpen },
+    { path: '/reports', label: 'Relatórios', icon: BarChart3 },
   ];
 
   // Portal do Cliente (apenas para Admin) - não vai para Marketing
@@ -476,7 +484,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const bannerContent = getSubscriptionBannerContent();
 
   return (
-    <div className="min-h-screen bg-neutral-50">
+    <div className="min-h-screen bg-neutral-50 dark:bg-slate-900 transition-colors duration-300">
       {/* Banner de Assinatura */}
       {shouldShowSubscriptionBanner && bannerContent && (
         <div className={`${
@@ -521,36 +529,49 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       )}
 
       {/* Header */}
-      <header className="bg-white shadow-sm sticky top-0 z-30 border-b border-neutral-200">
+      <header className="bg-white dark:bg-slate-800 shadow-sm sticky top-0 z-30 border-b border-neutral-200 dark:border-slate-700 transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
           <div className="flex justify-between items-center py-3 sm:py-4">
             <div className="flex items-center gap-2 sm:gap-4">
               {!shouldHideSidebar && (
                 <button
                   onClick={() => setSidebarOpen(!sidebarOpen)}
-                  className="p-2 rounded-lg hover:bg-neutral-100 transition-colors lg:hidden"
+                  className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-slate-700 transition-colors lg:hidden"
                   aria-label="Menu"
                 >
-                  {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
+                  {sidebarOpen ? <X size={20} className="dark:text-slate-200" /> : <Menu size={20} className="dark:text-slate-200" />}
                 </button>
               )}
               <div className="flex items-center gap-2">
-                <Scale className="text-primary-600" size={28} />
-                <h1 className="text-lg sm:text-2xl font-bold text-primary-600">{user?.companyName || 'AdvWell'}</h1>
+                <Scale className="text-primary-600 dark:text-primary-400" size={28} />
+                <h1 className="text-lg sm:text-2xl font-bold text-primary-600 dark:text-primary-400">{user?.companyName || 'AdvWell'}</h1>
               </div>
             </div>
             <div className="flex items-center gap-2 sm:gap-4">
+              {/* Theme Toggle Button */}
+              <button
+                onClick={toggleTheme}
+                className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-slate-700 text-neutral-700 dark:text-slate-200 transition-colors"
+                title={theme === 'light' ? 'Ativar modo escuro' : 'Ativar modo claro'}
+                aria-label={theme === 'light' ? 'Ativar modo escuro' : 'Ativar modo claro'}
+              >
+                {theme === 'light' ? (
+                  <Moon size={18} className="sm:w-5 sm:h-5" />
+                ) : (
+                  <Sun size={18} className="sm:w-5 sm:h-5" />
+                )}
+              </button>
               <Link
                 to="/profile"
-                className="text-right hidden sm:block hover:bg-neutral-100 rounded-lg p-2 transition-colors"
+                className="text-right hidden sm:block hover:bg-neutral-100 dark:hover:bg-slate-700 rounded-lg p-2 transition-colors"
                 title="Meu Perfil"
               >
-                <p className="text-sm font-medium text-neutral-900 truncate max-w-[150px]">{user?.name}</p>
-                <p className="text-xs text-neutral-500 truncate max-w-[150px]">{user?.companyName}</p>
+                <p className="text-sm font-medium text-neutral-900 dark:text-slate-100 truncate max-w-[150px]">{user?.name}</p>
+                <p className="text-xs text-neutral-500 dark:text-slate-400 truncate max-w-[150px]">{user?.companyName}</p>
               </Link>
               <button
                 onClick={handleLogout}
-                className="p-2 rounded-lg hover:bg-neutral-100 text-neutral-700 hover:text-neutral-900 transition-colors"
+                className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-slate-700 text-neutral-700 dark:text-slate-200 hover:text-neutral-900 dark:hover:text-white transition-colors"
                 title="Sair"
                 aria-label="Sair"
               >
@@ -569,13 +590,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               sidebarOpen ? 'translate-x-0' : '-translate-x-full'
             } lg:translate-x-0 ${
               sidebarCollapsed ? 'lg:w-16' : 'lg:w-64'
-            } w-64 bg-white shadow-lg h-screen fixed lg:sticky top-0 lg:top-0 z-30 lg:z-10 transition-all duration-300 ease-in-out border-r border-neutral-200 flex flex-col`}
+            } w-64 bg-white dark:bg-slate-800 shadow-lg h-screen fixed lg:sticky top-0 lg:top-0 z-30 lg:z-10 transition-all duration-300 ease-in-out border-r border-neutral-200 dark:border-slate-700 flex flex-col`}
           >
             {/* Botão de recolher (apenas desktop) */}
             <div className="hidden lg:flex justify-end p-2">
               <button
                 onClick={toggleSidebarCollapse}
-                className="p-2 rounded-lg hover:bg-neutral-100 text-neutral-600 transition-colors"
+                className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-slate-700 text-neutral-600 dark:text-slate-300 transition-colors"
                 title={sidebarCollapsed ? 'Expandir' : 'Recolher'}
               >
                 {sidebarCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
@@ -590,8 +611,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-6'
                 } py-3 transition-all duration-200 font-medium ${
                   location.pathname === '/dashboard'
-                    ? 'bg-primary-50 text-primary-600 border-r-4 border-primary-500'
-                    : 'text-neutral-700 hover:bg-neutral-50 hover:text-primary-600'
+                    ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 border-r-4 border-primary-500'
+                    : 'text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-700 hover:text-primary-600 dark:hover:text-primary-400'
                 }`}
                 onClick={() => setSidebarOpen(false)}
                 title={sidebarCollapsed ? 'Dashboard' : ''}
@@ -607,8 +628,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-6'
                 } py-3 transition-all duration-200 font-medium ${
                   agendaItems.some(item => location.pathname.startsWith(item.path))
-                    ? 'bg-primary-50 text-primary-600'
-                    : 'text-neutral-700 hover:bg-neutral-50 hover:text-primary-600'
+                    ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400'
+                    : 'text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-700 hover:text-primary-600 dark:hover:text-primary-400'
                 }`}
                 title={sidebarCollapsed ? 'Agenda' : ''}
               >
@@ -616,7 +637,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 {!sidebarCollapsed && <span className="text-sm">Agenda</span>}
               </button>
               {(agendaOpen || sidebarCollapsed) && (
-                <div className={sidebarCollapsed ? '' : 'bg-neutral-50'}>
+                <div className={sidebarCollapsed ? '' : 'bg-neutral-50 dark:bg-slate-700/50'}>
                   {agendaItems.map((item) => {
                     const Icon = item.icon;
                     const isActive = location.pathname === item.path;
@@ -629,8 +650,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                           sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-6 pl-10'
                         } py-2.5 transition-all duration-200 font-medium ${
                           isActive
-                            ? 'bg-primary-50 text-primary-600 border-r-4 border-primary-500'
-                            : 'text-neutral-600 hover:bg-neutral-100 hover:text-primary-600'
+                            ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 border-r-4 border-primary-500'
+                            : 'text-neutral-600 dark:text-slate-400 hover:bg-neutral-100 dark:hover:bg-slate-700 hover:text-primary-600 dark:hover:text-primary-400'
                         }`}
                         onClick={() => setSidebarOpen(false)}
                         title={sidebarCollapsed ? item.label : ''}
@@ -666,8 +687,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-6'
                 } py-3 transition-all duration-200 font-medium ${
                   pessoasItems.some(item => location.pathname.startsWith(item.path))
-                    ? 'bg-primary-50 text-primary-600'
-                    : 'text-neutral-700 hover:bg-neutral-50 hover:text-primary-600'
+                    ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400'
+                    : 'text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-700 hover:text-primary-600 dark:hover:text-primary-400'
                 }`}
                 title={sidebarCollapsed ? 'Pessoas' : ''}
               >
@@ -675,7 +696,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 {!sidebarCollapsed && <span className="text-sm">Pessoas</span>}
               </button>
               {(pessoasOpen || sidebarCollapsed) && (
-                <div className={sidebarCollapsed ? '' : 'bg-neutral-50'}>
+                <div className={sidebarCollapsed ? '' : 'bg-neutral-50 dark:bg-slate-700/50'}>
                   {pessoasItems.map((item) => {
                     const Icon = item.icon;
                     const isActive = location.pathname === item.path;
@@ -687,8 +708,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                           sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-6 pl-10'
                         } py-2.5 transition-all duration-200 font-medium ${
                           isActive
-                            ? 'bg-primary-50 text-primary-600 border-r-4 border-primary-500'
-                            : 'text-neutral-600 hover:bg-neutral-100 hover:text-primary-600'
+                            ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 border-r-4 border-primary-500'
+                            : 'text-neutral-600 dark:text-slate-400 hover:bg-neutral-100 dark:hover:bg-slate-700 hover:text-primary-600 dark:hover:text-primary-400'
                         }`}
                         onClick={() => setSidebarOpen(false)}
                         title={sidebarCollapsed ? item.label : ''}
@@ -708,8 +729,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-6'
                 } py-3 transition-all duration-200 font-medium ${
                   processosItems.some(item => location.pathname.startsWith(item.path))
-                    ? 'bg-primary-50 text-primary-600'
-                    : 'text-neutral-700 hover:bg-neutral-50 hover:text-primary-600'
+                    ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400'
+                    : 'text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-700 hover:text-primary-600 dark:hover:text-primary-400'
                 }`}
                 title={sidebarCollapsed ? 'Processos' : ''}
               >
@@ -717,7 +738,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 {!sidebarCollapsed && <span className="text-sm">Processos</span>}
               </button>
               {(processosOpen || sidebarCollapsed) && (
-                <div className={sidebarCollapsed ? '' : 'bg-neutral-50'}>
+                <div className={sidebarCollapsed ? '' : 'bg-neutral-50 dark:bg-slate-700/50'}>
                   {processosItems.map((item) => {
                     const Icon = item.icon;
                     const isActive = location.pathname === item.path;
@@ -730,8 +751,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                           sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-6 pl-10'
                         } py-2.5 transition-all duration-200 font-medium ${
                           isActive
-                            ? 'bg-primary-50 text-primary-600 border-r-4 border-primary-500'
-                            : 'text-neutral-600 hover:bg-neutral-100 hover:text-primary-600'
+                            ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 border-r-4 border-primary-500'
+                            : 'text-neutral-600 dark:text-slate-400 hover:bg-neutral-100 dark:hover:bg-slate-700 hover:text-primary-600 dark:hover:text-primary-400'
                         }`}
                         onClick={() => setSidebarOpen(false)}
                         title={sidebarCollapsed ? item.label : ''}
@@ -769,8 +790,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                       sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-6'
                     } py-3 transition-all duration-200 font-medium ${
                       marketingItems.some(item => location.pathname.startsWith(item.path))
-                        ? 'bg-primary-50 text-primary-600'
-                        : 'text-neutral-700 hover:bg-neutral-50 hover:text-primary-600'
+                        ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400'
+                        : 'text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-700 hover:text-primary-600 dark:hover:text-primary-400'
                     }`}
                     title={sidebarCollapsed ? 'Marketing' : ''}
                   >
@@ -778,7 +799,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                     {!sidebarCollapsed && <span className="text-sm">Marketing</span>}
                   </button>
                   {(marketingOpen || sidebarCollapsed) && (
-                    <div className={sidebarCollapsed ? '' : 'bg-neutral-50'}>
+                    <div className={sidebarCollapsed ? '' : 'bg-neutral-50 dark:bg-slate-700/50'}>
                       {marketingItems.map((item) => {
                         const Icon = item.icon;
                         const isActive = location.pathname === item.path;
@@ -790,8 +811,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                               sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-6 pl-10'
                             } py-2.5 transition-all duration-200 font-medium ${
                               isActive
-                                ? 'bg-primary-50 text-primary-600 border-r-4 border-primary-500'
-                                : 'text-neutral-600 hover:bg-neutral-100 hover:text-primary-600'
+                                ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 border-r-4 border-primary-500'
+                                : 'text-neutral-600 dark:text-slate-400 hover:bg-neutral-100 dark:hover:bg-slate-700 hover:text-primary-600 dark:hover:text-primary-400'
                             }`}
                             onClick={() => setSidebarOpen(false)}
                             title={sidebarCollapsed ? item.label : ''}
@@ -813,8 +834,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-6'
                 } py-3 transition-all duration-200 font-medium ${
                   financeiroItems.some(item => location.pathname.startsWith(item.path))
-                    ? 'bg-primary-50 text-primary-600'
-                    : 'text-neutral-700 hover:bg-neutral-50 hover:text-primary-600'
+                    ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400'
+                    : 'text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-700 hover:text-primary-600 dark:hover:text-primary-400'
                 }`}
                 title={sidebarCollapsed ? 'Financeiro' : ''}
               >
@@ -822,7 +843,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 {!sidebarCollapsed && <span className="text-sm">Financeiro</span>}
               </button>
               {(financeiroOpen || sidebarCollapsed) && (
-                <div className={sidebarCollapsed ? '' : 'bg-neutral-50'}>
+                <div className={sidebarCollapsed ? '' : 'bg-neutral-50 dark:bg-slate-700/50'}>
                   {financeiroItems.map((item) => {
                     const Icon = item.icon;
                     const isActive = location.pathname === item.path;
@@ -835,8 +856,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                           sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-6 pl-10'
                         } py-2.5 transition-all duration-200 font-medium ${
                           isActive
-                            ? 'bg-primary-50 text-primary-600 border-r-4 border-primary-500'
-                            : 'text-neutral-600 hover:bg-neutral-100 hover:text-primary-600'
+                            ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 border-r-4 border-primary-500'
+                            : 'text-neutral-600 dark:text-slate-400 hover:bg-neutral-100 dark:hover:bg-slate-700 hover:text-primary-600 dark:hover:text-primary-400'
                         }`}
                         onClick={() => setSidebarOpen(false)}
                         title={sidebarCollapsed ? item.label : ''}
@@ -897,8 +918,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                       sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-6'
                     } py-3 transition-all duration-200 font-medium ${
                       isActive
-                        ? 'bg-primary-50 text-primary-600 border-r-4 border-primary-500'
-                        : 'text-neutral-700 hover:bg-neutral-50 hover:text-primary-600'
+                        ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 border-r-4 border-primary-500'
+                        : 'text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-700 hover:text-primary-600 dark:hover:text-primary-400'
                     }`}
                     onClick={() => setSidebarOpen(false)}
                     title={sidebarCollapsed ? badgeTitle : ''}
@@ -942,7 +963,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                     {!sidebarCollapsed && <span className="text-sm">Credenciais</span>}
                   </button>
                   {(credentialsOpen || sidebarCollapsed) && (
-                    <div className={sidebarCollapsed ? '' : 'bg-neutral-50'}>
+                    <div className={sidebarCollapsed ? '' : 'bg-neutral-50 dark:bg-slate-700/50'}>
                       {credentialsItems.map((item) => {
                         const Icon = item.icon;
                         const isActive = location.pathname === item.path;
@@ -954,8 +975,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                               sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-6 pl-10'
                             } py-2.5 transition-all duration-200 font-medium ${
                               isActive
-                                ? 'bg-primary-50 text-primary-600 border-r-4 border-primary-500'
-                                : 'text-neutral-600 hover:bg-neutral-100 hover:text-primary-600'
+                                ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 border-r-4 border-primary-500'
+                                : 'text-neutral-600 dark:text-slate-400 hover:bg-neutral-100 dark:hover:bg-slate-700 hover:text-primary-600 dark:hover:text-primary-400'
                             }`}
                             onClick={() => setSidebarOpen(false)}
                             title={sidebarCollapsed ? item.label : ''}
@@ -983,8 +1004,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                       sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-6'
                     } py-3 transition-all duration-200 font-medium ${
                       isActive
-                        ? 'bg-primary-50 text-primary-600 border-r-4 border-primary-500'
-                        : 'text-neutral-700 hover:bg-neutral-50 hover:text-primary-600'
+                        ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 border-r-4 border-primary-500'
+                        : 'text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-700 hover:text-primary-600 dark:hover:text-primary-400'
                     }`}
                     onClick={() => setSidebarOpen(false)}
                     title={sidebarCollapsed ? item.label : ''}

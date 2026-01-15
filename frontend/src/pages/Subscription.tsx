@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Check, AlertTriangle, CreditCard, Crown, Star, Zap } from 'lucide-react';
+import { Check, AlertTriangle, CreditCard, Crown, Star, Zap, HardDrive } from 'lucide-react';
 import api from '../services/api';
 import { toast } from 'react-hot-toast';
 import Layout from '../components/Layout';
@@ -8,11 +8,14 @@ import { formatDateTime } from '../utils/dateFormatter';
 
 interface SubscriptionInfo {
   status: 'TRIAL' | 'ACTIVE' | 'EXPIRED' | 'CANCELLED' | null;
-  plan: 'BRONZE' | 'PRATA' | 'OURO' | null;
+  plan: 'GRATUITO' | 'BASICO' | 'BRONZE' | 'PRATA' | 'OURO' | null;
   planDetails: {
     name: string;
     priceUsd: number;
+    priceBrl?: number;
     casesLimit: number;
+    storageLimit: number;
+    storageLimitFormatted: string;
     features: string[];
   } | null;
   trialEndsAt: string | null;
@@ -20,12 +23,25 @@ interface SubscriptionInfo {
   casesLimit: number;
   casesUsed: number;
   casesRemaining: number;
+  // Storage
+  storageLimit: string;
+  storageLimitFormatted: string;
+  storageUsed: string;
+  storageUsedFormatted: string;
+  storageRemaining: string;
+  storageRemainingFormatted: string;
+  storageUsedPercent: number;
+  isStorageOverLimit: boolean;
+  fileCount: number;
+  // General
   isValid: boolean;
   daysRemaining?: number;
   availablePlans: {
-    BRONZE: { name: string; priceUsd: number; casesLimit: number; features: string[] };
-    PRATA: { name: string; priceUsd: number; casesLimit: number; features: string[] };
-    OURO: { name: string; priceUsd: number; casesLimit: number; features: string[] };
+    GRATUITO: { name: string; priceUsd: number; priceBrl: number; casesLimit: number; storageLimit: number; storageLimitFormatted: string; features: string[] };
+    BASICO: { name: string; priceUsd: number; priceBrl: number; casesLimit: number; storageLimit: number; storageLimitFormatted: string; features: string[] };
+    BRONZE: { name: string; priceUsd: number; priceBrl: number; casesLimit: number; storageLimit: number; storageLimitFormatted: string; features: string[] };
+    PRATA: { name: string; priceUsd: number; priceBrl: number; casesLimit: number; storageLimit: number; storageLimitFormatted: string; features: string[] };
+    OURO: { name: string; priceUsd: number; priceBrl: number; casesLimit: number; storageLimit: number; storageLimitFormatted: string; features: string[] };
   };
   hasStripeCustomer: boolean;
   hasStripeSubscription: boolean;
@@ -222,6 +238,44 @@ export default function Subscription() {
                 ? `${info.daysRemaining} dia(s)`
                 : formatDate(info.subscriptionEndsAt || info.trialEndsAt)}
             </p>
+          </div>
+        </div>
+
+        {/* Storage Usage */}
+        <div className="mt-6 p-4 bg-purple-50 border border-purple-200 rounded-lg">
+          <div className="flex items-center gap-2 mb-3">
+            <HardDrive className="h-5 w-5 text-purple-600" />
+            <h3 className="font-medium text-purple-900">Armazenamento</h3>
+          </div>
+          <div className="space-y-3">
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-purple-700">Usado</span>
+              <span className="font-medium text-purple-900">
+                {info.storageUsedFormatted} de {info.storageLimitFormatted}
+              </span>
+            </div>
+            <div className="w-full bg-purple-200 rounded-full h-3">
+              <div
+                className={`h-3 rounded-full transition-all ${
+                  info.storageUsedPercent > 90
+                    ? 'bg-red-500'
+                    : info.storageUsedPercent > 70
+                    ? 'bg-yellow-500'
+                    : 'bg-purple-600'
+                }`}
+                style={{ width: `${Math.min(info.storageUsedPercent, 100)}%` }}
+              />
+            </div>
+            <div className="flex justify-between items-center text-xs text-purple-600">
+              <span>{info.storageUsedPercent?.toFixed(1) || 0}% usado</span>
+              <span>{info.fileCount} arquivo(s)</span>
+            </div>
+            {info.isStorageOverLimit && (
+              <div className="flex items-center gap-2 p-2 bg-red-100 border border-red-200 rounded text-sm text-red-700">
+                <AlertTriangle className="h-4 w-4" />
+                Limite de armazenamento excedido! Faça upgrade do seu plano.
+              </div>
+            )}
           </div>
         </div>
       </div>

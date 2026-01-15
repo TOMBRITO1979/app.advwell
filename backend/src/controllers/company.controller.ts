@@ -3,9 +3,14 @@ import crypto from 'crypto';
 import { AuthRequest } from '../middleware/auth';
 import prisma from '../utils/prisma';
 import bcrypt from 'bcryptjs';
-import { getLastPayment } from '../services/stripe.service';
+import { getLastPayment, SUBSCRIPTION_PLANS } from '../services/stripe.service';
 import { appLogger } from '../utils/logger';
 import { encrypt, decrypt } from '../utils/encryption';
+import {
+  getCompanyStorageMetrics,
+  getAllCompaniesStorageMetrics,
+  formatBytes,
+} from '../services/storage.service';
 
 export class CompanyController {
   // Super Admin - Listar todas as empresas
@@ -47,6 +52,7 @@ export class CompanyController {
             trialEndsAt: true,
             subscriptionEndsAt: true,
             casesLimit: true,
+            storageLimit: true,
             stripeCustomerId: true,
             stripeSubscriptionId: true,
             _count: {
@@ -59,7 +65,14 @@ export class CompanyController {
           },
         });
 
-      res.json({ data: companies });
+      // Convert BigInt to string for JSON serialization
+      const companiesWithStorage = companies.map(c => ({
+        ...c,
+        storageLimit: c.storageLimit.toString(),
+        storageLimitFormatted: formatBytes(c.storageLimit),
+      }));
+
+      res.json({ data: companiesWithStorage });
     } catch (error) {
       appLogger.error('Erro ao listar empresas', error as Error);
       res.status(500).json({ error: 'Erro ao listar empresas' });
@@ -168,7 +181,11 @@ export class CompanyController {
         },
       });
 
-      res.json(company);
+      // Convert BigInt to string for JSON serialization
+      res.json({
+        ...company,
+        storageLimit: company.storageLimit.toString(),
+      });
     } catch (error) {
       appLogger.error('Erro ao atualizar empresa', error as Error);
       res.status(500).json({ error: 'Erro ao atualizar empresa' });
@@ -197,7 +214,16 @@ export class CompanyController {
         },
       });
 
-      res.json(company);
+      if (!company) {
+        return res.status(404).json({ error: 'Empresa não encontrada' });
+      }
+
+      // Convert BigInt to string for JSON serialization
+      res.json({
+        ...company,
+        storageLimit: company.storageLimit.toString(),
+        storageLimitFormatted: formatBytes(company.storageLimit),
+      });
     } catch (error) {
       appLogger.error('Erro ao buscar empresa', error as Error);
       res.status(500).json({ error: 'Erro ao buscar empresa' });
@@ -230,7 +256,11 @@ export class CompanyController {
         },
       });
 
-      res.json(company);
+      // Convert BigInt to string for JSON serialization
+      res.json({
+        ...company,
+        storageLimit: company.storageLimit.toString(),
+      });
     } catch (error) {
       appLogger.error('Erro ao atualizar empresa', error as Error);
       res.status(500).json({ error: 'Erro ao atualizar empresa' });
@@ -437,7 +467,7 @@ export class CompanyController {
   async updateSubscription(req: AuthRequest, res: Response) {
     try {
       const { id } = req.params;
-      const { subscriptionStatus, subscriptionPlan, casesLimit, monitoringLimit, trialEndsAt } = req.body;
+      const { subscriptionStatus, subscriptionPlan, casesLimit, monitoringLimit, storageLimit, trialEndsAt } = req.body;
 
       // Verifica se a empresa existe
       const company = await prisma.company.findUnique({
@@ -457,14 +487,26 @@ export class CompanyController {
 
       if (subscriptionPlan !== undefined) {
         updateData.subscriptionPlan = subscriptionPlan;
+        // Auto-update limits based on plan
+        const planConfig = SUBSCRIPTION_PLANS[subscriptionPlan as keyof typeof SUBSCRIPTION_PLANS];
+        if (planConfig) {
+          updateData.casesLimit = planConfig.casesLimit;
+          updateData.storageLimit = BigInt(planConfig.storageLimit);
+        }
       }
 
+      // Manual override of limits (takes precedence over plan defaults)
       if (casesLimit !== undefined) {
         updateData.casesLimit = casesLimit;
       }
 
       if (monitoringLimit !== undefined) {
         updateData.monitoringLimit = monitoringLimit;
+      }
+
+      if (storageLimit !== undefined) {
+        // Accept bytes as string or number
+        updateData.storageLimit = BigInt(storageLimit);
       }
 
       if (trialEndsAt !== undefined) {
@@ -481,7 +523,8 @@ export class CompanyController {
       // Se mudando para ACTIVE sem plano, define Bronze como padrão
       if (subscriptionStatus === 'ACTIVE' && !subscriptionPlan && !company.subscriptionPlan) {
         updateData.subscriptionPlan = 'BRONZE';
-        updateData.casesLimit = 1000;
+        updateData.casesLimit = SUBSCRIPTION_PLANS.BRONZE.casesLimit;
+        updateData.storageLimit = BigInt(SUBSCRIPTION_PLANS.BRONZE.storageLimit);
       }
 
       const updatedCompany = await prisma.company.update({
@@ -493,12 +536,17 @@ export class CompanyController {
           subscriptionStatus: true,
           subscriptionPlan: true,
           casesLimit: true,
+          storageLimit: true,
           trialEndsAt: true,
           subscriptionEndsAt: true,
         },
       });
 
-      res.json(updatedCompany);
+      res.json({
+        ...updatedCompany,
+        storageLimit: updatedCompany.storageLimit.toString(),
+        storageLimitFormatted: formatBytes(updatedCompany.storageLimit),
+      });
     } catch (error) {
       appLogger.error('Erro ao atualizar assinatura', error as Error);
       res.status(500).json({ error: 'Erro ao atualizar assinatura' });
@@ -1065,6 +1113,115 @@ export class CompanyController {
     } catch (error) {
       appLogger.error('Erro ao atualizar config Chatwell', error as Error);
       res.status(500).json({ error: 'Erro ao atualizar configuração do Chatwell' });
+    }
+  }
+
+  // ============================================
+  // STORAGE METRICS (Super Admin)
+  // ============================================
+
+  /**
+   * Super Admin - Obter métricas de armazenamento de uma empresa
+   * GET /api/companies/:id/storage-metrics
+   */
+  async getStorageMetrics(req: AuthRequest, res: Response) {
+    try {
+      const { id } = req.params;
+
+      const metrics = await getCompanyStorageMetrics(id);
+
+      if (!metrics) {
+        return res.status(404).json({ error: 'Empresa não encontrada' });
+      }
+
+      // Convert BigInt to string for JSON serialization
+      res.json({
+        companyId: metrics.companyId,
+        companyName: metrics.companyName,
+        storageUsedBytes: metrics.storageUsedBytes.toString(),
+        storageUsedFormatted: metrics.storageUsedFormatted,
+        storageLimitBytes: metrics.storageLimitBytes.toString(),
+        storageLimitFormatted: metrics.storageLimitFormatted,
+        storageUsedPercent: metrics.storageUsedPercent,
+        isOverLimit: metrics.isOverLimit,
+        fileCount: metrics.fileCount,
+        storageByType: {
+          documents: metrics.storageByType.documents.toString(),
+          caseDocuments: metrics.storageByType.caseDocuments.toString(),
+          sharedDocuments: metrics.storageByType.sharedDocuments.toString(),
+          pnjDocuments: metrics.storageByType.pnjDocuments.toString(),
+        },
+        storageByTypeFormatted: {
+          documents: formatBytes(metrics.storageByType.documents),
+          caseDocuments: formatBytes(metrics.storageByType.caseDocuments),
+          sharedDocuments: formatBytes(metrics.storageByType.sharedDocuments),
+          pnjDocuments: formatBytes(metrics.storageByType.pnjDocuments),
+        },
+      });
+    } catch (error) {
+      appLogger.error('Erro ao buscar métricas de storage', error as Error);
+      res.status(500).json({ error: 'Erro ao buscar métricas de armazenamento' });
+    }
+  }
+
+  /**
+   * Super Admin - Obter métricas de armazenamento de todas as empresas
+   * GET /api/companies/storage-metrics/all
+   */
+  async getAllStorageMetrics(req: AuthRequest, res: Response) {
+    try {
+      const metrics = await getAllCompaniesStorageMetrics();
+
+      res.json(metrics);
+    } catch (error) {
+      appLogger.error('Erro ao buscar métricas de storage de todas empresas', error as Error);
+      res.status(500).json({ error: 'Erro ao buscar métricas de armazenamento' });
+    }
+  }
+
+  /**
+   * Admin/User - Obter métricas de armazenamento da própria empresa
+   * GET /api/companies/own/storage-metrics
+   */
+  async getOwnStorageMetrics(req: AuthRequest, res: Response) {
+    try {
+      const companyId = req.user!.companyId;
+
+      if (!companyId) {
+        return res.status(404).json({ error: 'Empresa não encontrada' });
+      }
+
+      const metrics = await getCompanyStorageMetrics(companyId);
+
+      if (!metrics) {
+        return res.status(404).json({ error: 'Empresa não encontrada' });
+      }
+
+      // Convert BigInt to string for JSON serialization
+      res.json({
+        storageUsedBytes: metrics.storageUsedBytes.toString(),
+        storageUsedFormatted: metrics.storageUsedFormatted,
+        storageLimitBytes: metrics.storageLimitBytes.toString(),
+        storageLimitFormatted: metrics.storageLimitFormatted,
+        storageUsedPercent: metrics.storageUsedPercent,
+        isOverLimit: metrics.isOverLimit,
+        fileCount: metrics.fileCount,
+        storageByType: {
+          documents: metrics.storageByType.documents.toString(),
+          caseDocuments: metrics.storageByType.caseDocuments.toString(),
+          sharedDocuments: metrics.storageByType.sharedDocuments.toString(),
+          pnjDocuments: metrics.storageByType.pnjDocuments.toString(),
+        },
+        storageByTypeFormatted: {
+          documents: formatBytes(metrics.storageByType.documents),
+          caseDocuments: formatBytes(metrics.storageByType.caseDocuments),
+          sharedDocuments: formatBytes(metrics.storageByType.sharedDocuments),
+          pnjDocuments: formatBytes(metrics.storageByType.pnjDocuments),
+        },
+      });
+    } catch (error) {
+      appLogger.error('Erro ao buscar métricas de storage própria', error as Error);
+      res.status(500).json({ error: 'Erro ao buscar métricas de armazenamento' });
     }
   }
 }

@@ -403,3 +403,17 @@ export function fromSaoPauloToISO(datetimeLocal: string): string {
     return '';
   }
 }
+
+/**
+ * Formata valor monetário no padrão brasileiro (R$ X.XXX,XX)
+ * @param value - Valor numérico
+ * @returns Valor formatado como moeda brasileira
+ */
+export function formatCurrency(value: number | null | undefined): string {
+  if (value === null || value === undefined) return 'R$ 0,00';
+
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+  }).format(value);
+}

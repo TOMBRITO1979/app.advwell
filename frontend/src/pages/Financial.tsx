@@ -21,6 +21,13 @@ interface Case {
   type?: 'CASE' | 'PNJ';
 }
 
+interface CostCenter {
+  id: string;
+  name: string;
+  code: string | null;
+  color: string | null;
+}
+
 interface Transaction {
   id: string;
   type: 'INCOME' | 'EXPENSE';
@@ -30,6 +37,7 @@ interface Transaction {
   date: string;
   client: Client;
   case?: Case;
+  costCenter?: CostCenter;
   createdAt: string;
   isInstallment?: boolean;
   installmentCount?: number;
@@ -39,6 +47,7 @@ interface Transaction {
 interface FormData {
   clientId: string;
   caseId: string;
+  costCenterId: string;
   type: 'INCOME' | 'EXPENSE';
   status: 'PAID' | 'PENDING' | 'CANCELLED' | 'PARTIAL';
   description: string;
@@ -59,6 +68,7 @@ const Financial: React.FC = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
   const [cases, setCases] = useState<Case[]>([]);
+  const [costCenters, setCostCenters] = useState<CostCenter[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [filterType, setFilterType] = useState<string>('');
@@ -70,6 +80,7 @@ const Financial: React.FC = () => {
   const [filterValueMin, setFilterValueMin] = useState<string>('');
   const [filterValueMax, setFilterValueMax] = useState<string>('');
   const [filterDescription, setFilterDescription] = useState<string>('');
+  const [filterCostCenterId, setFilterCostCenterId] = useState<string>('');
   const [showModal, setShowModal] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [editMode, setEditMode] = useState(false);
@@ -95,6 +106,7 @@ const Financial: React.FC = () => {
   const [formData, setFormData] = useState<FormData>({
     clientId: '',
     caseId: '',
+    costCenterId: '',
     type: 'INCOME',
     status: 'PENDING',
     description: '',
@@ -119,12 +131,13 @@ const Financial: React.FC = () => {
     loadTransactions();
     loadClients();
     loadCases();
-  }, [search, filterType, filterClientId, filterStartDate, filterEndDate, filterStatus, filterCaseNumber, filterValueMin, filterValueMax, filterDescription, page, limit]);
+    loadCostCenters();
+  }, [search, filterType, filterClientId, filterStartDate, filterEndDate, filterStatus, filterCaseNumber, filterValueMin, filterValueMax, filterDescription, filterCostCenterId, page, limit]);
 
   // Reset page when filters change
   useEffect(() => {
     setPage(1);
-  }, [search, filterType, filterClientId, filterStartDate, filterEndDate, filterStatus, filterCaseNumber, filterValueMin, filterValueMax, filterDescription]);
+  }, [search, filterType, filterClientId, filterStartDate, filterEndDate, filterStatus, filterCaseNumber, filterValueMin, filterValueMax, filterDescription, filterCostCenterId]);
 
   // Filter clients based on search text
   useEffect(() => {
@@ -165,6 +178,7 @@ const Financial: React.FC = () => {
       if (filterValueMin) params.valueMin = filterValueMin;
       if (filterValueMax) params.valueMax = filterValueMax;
       if (filterDescription) params.description = filterDescription;
+      if (filterCostCenterId) params.costCenterId = filterCostCenterId;
 
       const response = await api.get('/financial', { params });
       setTransactions(response.data.data);
@@ -221,10 +235,20 @@ const Financial: React.FC = () => {
     }
   };
 
+  const loadCostCenters = async () => {
+    try {
+      const response = await api.get('/cost-centers', { params: { active: 'true' } });
+      setCostCenters(response.data);
+    } catch (error) {
+      console.error('Erro ao carregar centros de custo');
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       clientId: '',
       caseId: '',
+      costCenterId: '',
       type: 'INCOME',
       status: 'PENDING',
       description: '',
@@ -245,6 +269,7 @@ const Financial: React.FC = () => {
         ...formData,
         amount: parseFloat(formData.amount),
         caseId: formData.caseId || undefined,
+        costCenterId: formData.costCenterId || undefined,
       };
 
       // Include installment data if enabled
@@ -276,6 +301,7 @@ const Financial: React.FC = () => {
     setFormData({
       clientId: transaction.client.id,
       caseId: transaction.case?.id || '',
+      costCenterId: transaction.costCenter?.id || '',
       type: transaction.type,
       status: transaction.status || 'PENDING',
       description: transaction.description,
@@ -349,6 +375,7 @@ const Financial: React.FC = () => {
     setFilterValueMin('');
     setFilterValueMax('');
     setFilterDescription('');
+    setFilterCostCenterId('');
   };
 
   const handleClientSelect = (client: Client) => {
@@ -695,8 +722,8 @@ const Financial: React.FC = () => {
                 </div>
               </div>
 
-              {/* Linha 3: Cliente e PNJ */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Linha 3: Cliente, PNJ e Centro de Custo */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-neutral-700 mb-1">Cliente</label>
                   <select
@@ -721,6 +748,21 @@ const Financial: React.FC = () => {
                     onChange={(e) => setFilterCaseNumber(e.target.value)}
                     className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">Centro de Custo</label>
+                  <select
+                    value={filterCostCenterId}
+                    onChange={(e) => setFilterCostCenterId(e.target.value)}
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                  >
+                    <option value="">Todos</option>
+                    {costCenters.map((cc) => (
+                      <option key={cc.id} value={cc.id}>
+                        {cc.name} {cc.code && `(${cc.code})`}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
@@ -844,6 +886,9 @@ const Financial: React.FC = () => {
                         Descrição
                       </th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
+                        Centro de Custo
+                      </th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
                         Processo
                       </th>
                       <th className="px-4 py-3 text-right text-sm font-semibold text-neutral-900 uppercase tracking-wider">
@@ -883,6 +928,21 @@ const Financial: React.FC = () => {
                         </td>
                         <td className="px-4 py-3 text-sm text-neutral-600">
                           {transaction.description}
+                        </td>
+                        <td className="px-4 py-3 text-sm">
+                          {transaction.costCenter ? (
+                            <span
+                              className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
+                              style={{
+                                backgroundColor: transaction.costCenter.color ? `${transaction.costCenter.color}20` : '#e5e7eb',
+                                color: transaction.costCenter.color || '#374151',
+                              }}
+                            >
+                              {transaction.costCenter.name}
+                            </span>
+                          ) : (
+                            <span className="text-xs text-neutral-400">-</span>
+                          )}
                         </td>
                         <td className="px-4 py-3 text-sm text-neutral-600">
                           {transaction.case ? (
@@ -1134,6 +1194,31 @@ const Financial: React.FC = () => {
                       <X size={20} />
                     </button>
                   )}
+                </div>
+
+                {/* Centro de Custo */}
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    Centro de Custo
+                  </label>
+                  <select
+                    value={formData.costCenterId}
+                    onChange={(e) => setFormData({ ...formData, costCenterId: e.target.value })}
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                  >
+                    <option value="">Selecione um centro de custo</option>
+                    {costCenters
+                      .filter((cc) => {
+                        if (formData.type === 'INCOME') return cc.color !== null; // All centers (type filtering in future)
+                        if (formData.type === 'EXPENSE') return cc.color !== null;
+                        return true;
+                      })
+                      .map((cc) => (
+                        <option key={cc.id} value={cc.id}>
+                          {cc.name} {cc.code && `(${cc.code})`}
+                        </option>
+                      ))}
+                  </select>
                 </div>
 
                 {/* Descrição */}

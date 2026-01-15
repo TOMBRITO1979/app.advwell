@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
 import api from '../services/api';
 import toast from 'react-hot-toast';
-import { Plus, Search, Edit, X, Building2, Users, FileText, ToggleLeft, ToggleRight, Trash2, UserCog, Crown, Clock, DollarSign, Brain, RefreshCw, MessageCircle } from 'lucide-react';
+import { Plus, Search, Edit, X, Building2, Users, FileText, ToggleLeft, ToggleRight, Trash2, UserCog, Crown, Clock, DollarSign, Brain, RefreshCw, MessageCircle, HardDrive } from 'lucide-react';
 import MobileCardList, { MobileCardItem } from '../components/MobileCardList';
 import { formatDate, formatDateTime } from '../utils/dateFormatter';
 
@@ -20,17 +20,37 @@ interface Company {
   active: boolean;
   createdAt: string;
   subscriptionStatus: 'TRIAL' | 'ACTIVE' | 'EXPIRED' | 'CANCELLED' | null;
-  subscriptionPlan: 'BRONZE' | 'PRATA' | 'OURO' | null;
+  subscriptionPlan: 'GRATUITO' | 'BASICO' | 'BRONZE' | 'PRATA' | 'OURO' | null;
   trialEndsAt: string | null;
   subscriptionEndsAt: string | null;
   casesLimit: number | null;
   monitoringLimit: number | null;
+  storageLimit: string | null;
+  storageLimitFormatted: string | null;
   stripeCustomerId: string | null;
   stripeSubscriptionId: string | null;
   _count: {
     users: number;
     clients: number;
     cases: number;
+  };
+}
+
+interface StorageMetrics {
+  companyId: string;
+  companyName: string;
+  storageUsedBytes: string;
+  storageUsedFormatted: string;
+  storageLimitBytes: string;
+  storageLimitFormatted: string;
+  storageUsedPercent: number;
+  isOverLimit: boolean;
+  fileCount: {
+    documents: number;
+    caseDocuments: number;
+    sharedDocuments: number;
+    pnjDocuments: number;
+    total: number;
   };
 }
 
@@ -110,10 +130,15 @@ const Companies: React.FC = () => {
   const [loadingLastPayment, setLoadingLastPayment] = useState(false);
   const [subscriptionForm, setSubscriptionForm] = useState({
     subscriptionStatus: '' as 'TRIAL' | 'ACTIVE' | 'EXPIRED' | 'CANCELLED' | '',
-    subscriptionPlan: '' as 'BRONZE' | 'PRATA' | 'OURO' | '',
+    subscriptionPlan: '' as 'GRATUITO' | 'BASICO' | 'BRONZE' | 'PRATA' | 'OURO' | '',
     casesLimit: 1000,
     monitoringLimit: 500,
+    storageLimit: '104857600', // 100MB default
   });
+
+  // Storage Metrics states
+  const [storageMetrics, setStorageMetrics] = useState<StorageMetrics | null>(null);
+  const [loadingStorage, setLoadingStorage] = useState(false);
 
   // AI Token Share states
   const [showAIShareModal, setShowAIShareModal] = useState(false);
@@ -362,14 +387,23 @@ const Companies: React.FC = () => {
 
   const getPlanBadge = (plan: string | null) => {
     const badges: Record<string, string> = {
+      GRATUITO: 'bg-slate-100 text-slate-700',
+      BASICO: 'bg-blue-100 text-blue-800',
       BRONZE: 'bg-amber-100 text-amber-800',
       PRATA: 'bg-gray-200 text-gray-800',
       OURO: 'bg-yellow-100 text-yellow-800',
     };
+    const labels: Record<string, string> = {
+      GRATUITO: 'Gratuito',
+      BASICO: 'Basico',
+      BRONZE: 'Bronze',
+      PRATA: 'Prata',
+      OURO: 'Ouro',
+    };
     if (!plan) return <span className="text-xs text-gray-400">-</span>;
     return (
       <span className={`px-2 py-1 rounded-full text-xs font-medium ${badges[plan] || 'bg-gray-100'}`}>
-        {plan}
+        {labels[plan] || plan}
       </span>
     );
   };
@@ -379,24 +413,37 @@ const Companies: React.FC = () => {
     setSubscriptionForm({
       subscriptionStatus: company.subscriptionStatus || '',
       subscriptionPlan: company.subscriptionPlan || '',
-      casesLimit: company.casesLimit || 1000,
+      casesLimit: company.casesLimit || 50,
       monitoringLimit: company.monitoringLimit || 500,
+      storageLimit: company.storageLimit || '104857600',
     });
     setLastPaymentData(null);
+    setStorageMetrics(null);
     setShowSubscriptionModal(true);
 
-    // Buscar último pagamento do Stripe
+    // Buscar último pagamento do Stripe e storage metrics em paralelo
+    const promises: Promise<void>[] = [];
+
     if (company.stripeCustomerId) {
       setLoadingLastPayment(true);
-      try {
-        const response = await api.get(`/companies/${company.id}/last-payment`);
-        setLastPaymentData(response.data);
-      } catch (error) {
-        console.error('Error fetching last payment:', error);
-      } finally {
-        setLoadingLastPayment(false);
-      }
+      promises.push(
+        api.get(`/companies/${company.id}/last-payment`)
+          .then(response => setLastPaymentData(response.data))
+          .catch(error => console.error('Error fetching last payment:', error))
+          .finally(() => setLoadingLastPayment(false))
+      );
     }
+
+    // Buscar storage metrics
+    setLoadingStorage(true);
+    promises.push(
+      api.get(`/companies/${company.id}/storage-metrics`)
+        .then(response => setStorageMetrics(response.data))
+        .catch(error => console.error('Error fetching storage metrics:', error))
+        .finally(() => setLoadingStorage(false))
+    );
+
+    await Promise.all(promises);
   };
 
   const handleUpdateSubscription = async (e: React.FormEvent) => {
@@ -409,10 +456,12 @@ const Companies: React.FC = () => {
         subscriptionPlan: subscriptionForm.subscriptionPlan || null,
         casesLimit: subscriptionForm.casesLimit,
         monitoringLimit: subscriptionForm.monitoringLimit,
+        storageLimit: subscriptionForm.storageLimit,
       });
       toast.success('Assinatura atualizada com sucesso!');
       setShowSubscriptionModal(false);
       setSelectedCompany(null);
+      setStorageMetrics(null);
       loadCompanies();
     } catch (error: any) {
       toast.error(error.response?.data?.error || 'Erro ao atualizar assinatura');
@@ -1184,6 +1233,7 @@ const Companies: React.FC = () => {
                   setShowSubscriptionModal(false);
                   setSelectedCompany(null);
                   setLastPaymentData(null);
+                  setStorageMetrics(null);
                 }}
                 className="text-neutral-400 hover:text-neutral-600 transition-colors"
               >
@@ -1261,20 +1311,30 @@ const Companies: React.FC = () => {
                 <select
                   value={subscriptionForm.subscriptionPlan}
                   onChange={(e) => {
-                    const plan = e.target.value as 'BRONZE' | 'PRATA' | 'OURO' | '';
-                    const limits: Record<string, number> = { BRONZE: 1000, PRATA: 2500, OURO: 5000 };
+                    const plan = e.target.value as 'GRATUITO' | 'BASICO' | 'BRONZE' | 'PRATA' | 'OURO' | '';
+                    const casesLimits: Record<string, number> = { GRATUITO: 50, BASICO: 150, BRONZE: 1000, PRATA: 2500, OURO: 5000 };
+                    const storageLimits: Record<string, string> = {
+                      GRATUITO: '104857600',    // 100MB
+                      BASICO: '314572800',      // 300MB
+                      BRONZE: '1073741824',     // 1GB
+                      PRATA: '5368709120',      // 5GB
+                      OURO: '32212254720'       // 30GB
+                    };
                     setSubscriptionForm({
                       ...subscriptionForm,
                       subscriptionPlan: plan,
-                      casesLimit: limits[plan] || subscriptionForm.casesLimit,
+                      casesLimit: casesLimits[plan] || subscriptionForm.casesLimit,
+                      storageLimit: storageLimits[plan] || subscriptionForm.storageLimit,
                     });
                   }}
                   className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md min-h-[44px]"
                 >
                   <option value="">Sem plano</option>
-                  <option value="BRONZE">Bronze ($99/mês - 1.000 processos)</option>
-                  <option value="PRATA">Prata ($159/mês - 2.500 processos)</option>
-                  <option value="OURO">Ouro ($219/mês - 5.000 processos)</option>
+                  <option value="GRATUITO">Gratuito (R$0 - 50 processos, 100MB)</option>
+                  <option value="BASICO">Basico (R$69/mes - 150 processos, 300MB)</option>
+                  <option value="BRONZE">Bronze ($99/mes - 1.000 processos, 1GB)</option>
+                  <option value="PRATA">Prata ($159/mes - 2.500 processos, 5GB)</option>
+                  <option value="OURO">Ouro ($219/mes - 5.000 processos, 30GB)</option>
                 </select>
               </div>
 
@@ -1302,6 +1362,55 @@ const Companies: React.FC = () => {
                 <p className="text-xs text-neutral-500 mt-1">Quantidade de publicações que podem ser importadas por mês via monitoramento OAB. Deixe 0 para ilimitado.</p>
               </div>
 
+              <div>
+                <label className="block text-sm font-medium text-neutral-700">Limite de Armazenamento</label>
+                <select
+                  value={subscriptionForm.storageLimit}
+                  onChange={(e) => setSubscriptionForm({ ...subscriptionForm, storageLimit: e.target.value })}
+                  className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md min-h-[44px]"
+                >
+                  <option value="104857600">100 MB (Gratuito)</option>
+                  <option value="314572800">300 MB (Basico)</option>
+                  <option value="1073741824">1 GB (Bronze)</option>
+                  <option value="5368709120">5 GB (Prata)</option>
+                  <option value="32212254720">30 GB (Ouro)</option>
+                  <option value="107374182400">100 GB (Personalizado)</option>
+                </select>
+              </div>
+
+              {/* Storage Metrics */}
+              <div className="bg-purple-50 border border-purple-200 p-4 rounded-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <HardDrive size={18} className="text-purple-600" />
+                  <span className="font-semibold text-purple-800">Armazenamento Usado</span>
+                </div>
+                {loadingStorage ? (
+                  <p className="text-sm text-purple-600">Carregando...</p>
+                ) : storageMetrics ? (
+                  <div className="text-sm text-purple-700 space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span>Usado:</span>
+                      <span className="font-medium">{storageMetrics.storageUsedFormatted} de {storageMetrics.storageLimitFormatted}</span>
+                    </div>
+                    <div className="w-full bg-purple-200 rounded-full h-2">
+                      <div
+                        className={`h-2 rounded-full ${storageMetrics.storageUsedPercent > 90 ? 'bg-red-500' : storageMetrics.storageUsedPercent > 70 ? 'bg-yellow-500' : 'bg-purple-500'}`}
+                        style={{ width: `${Math.min(storageMetrics.storageUsedPercent, 100)}%` }}
+                      />
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span>{storageMetrics.storageUsedPercent.toFixed(1)}% usado</span>
+                      <span>{storageMetrics.fileCount.total} arquivos</span>
+                    </div>
+                    {storageMetrics.isOverLimit && (
+                      <p className="text-red-600 font-medium mt-2">Limite de armazenamento excedido!</p>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-sm text-purple-600">Nenhum dado de armazenamento disponível</p>
+                )}
+              </div>
+
               <div className="flex justify-end gap-3 pt-4 border-t border-neutral-200">
                 <button
                   type="button"
@@ -1309,6 +1418,7 @@ const Companies: React.FC = () => {
                     setShowSubscriptionModal(false);
                     setSelectedCompany(null);
                     setLastPaymentData(null);
+                    setStorageMetrics(null);
                   }}
                   className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 bg-white hover:bg-neutral-50 text-neutral-700 font-medium rounded-lg transition-all duration-200"
                 >

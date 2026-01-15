@@ -92,6 +92,12 @@ export const listTransactions = async (req: AuthRequest, res: Response) => {
       where.status = String(status);
     }
 
+    // Filtro por centro de custo
+    const { costCenterId } = req.query;
+    if (costCenterId) {
+      where.costCenterId = String(costCenterId);
+    }
+
     const [transactions, total] = await Promise.all([
       prisma.financialTransaction.findMany({
         where,
@@ -108,6 +114,14 @@ export const listTransactions = async (req: AuthRequest, res: Response) => {
               id: true,
               processNumber: true,
               subject: true,
+            },
+          },
+          costCenter: {
+            select: {
+              id: true,
+              name: true,
+              code: true,
+              color: true,
             },
           },
         },
@@ -195,7 +209,7 @@ export const getTransaction = async (req: AuthRequest, res: Response) => {
 // Criar nova transação
 export const createTransaction = async (req: AuthRequest, res: Response) => {
   try {
-    const { clientId, caseId, type, status, description, amount, date, isInstallment, installmentCount, installmentInterval } = req.body;
+    const { clientId, caseId, costCenterId, type, status, description, amount, date, isInstallment, installmentCount, installmentInterval } = req.body;
     const companyId = req.user!.companyId;
 
     if (!companyId) {
@@ -254,6 +268,7 @@ export const createTransaction = async (req: AuthRequest, res: Response) => {
         companyId,
         clientId,
         caseId: caseId || null,
+        costCenterId: costCenterId || null,
         type,
         status: transactionStatus,
         description: sanitizeString(description) || '',
@@ -276,6 +291,14 @@ export const createTransaction = async (req: AuthRequest, res: Response) => {
             id: true,
             processNumber: true,
             subject: true,
+          },
+        },
+        costCenter: {
+          select: {
+            id: true,
+            name: true,
+            code: true,
+            color: true,
           },
         },
       },
@@ -321,7 +344,7 @@ export const createTransaction = async (req: AuthRequest, res: Response) => {
 export const updateTransaction = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const { clientId, caseId, type, status, description, amount, date } = req.body;
+    const { clientId, caseId, costCenterId, type, status, description, amount, date } = req.body;
     const companyId = req.user!.companyId;
 
     // Verificar se a transação existe e pertence à empresa
@@ -374,6 +397,7 @@ export const updateTransaction = async (req: AuthRequest, res: Response) => {
       data: {
         ...(clientId && { clientId }),
         ...(caseId !== undefined && { caseId: caseId || null }),
+        ...(costCenterId !== undefined && { costCenterId: costCenterId || null }),
         ...(type && { type }),
         ...(status && validStatuses.includes(status) && { status }),
         ...(description && { description: sanitizeString(description) }),
@@ -393,6 +417,14 @@ export const updateTransaction = async (req: AuthRequest, res: Response) => {
             id: true,
             processNumber: true,
             subject: true,
+          },
+        },
+        costCenter: {
+          select: {
+            id: true,
+            name: true,
+            code: true,
+            color: true,
           },
         },
       },

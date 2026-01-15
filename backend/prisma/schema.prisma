@@ -17,9 +17,11 @@ enum SubscriptionStatus {
 
 // Enum para planos de assinatura
 enum SubscriptionPlan {
-  BRONZE    // $99/mês - até 1000 processos
-  PRATA     // $159/mês - até 2500 processos
-  OURO      // $219/mês - até 5000 processos
+  GRATUITO  // R$0/mês - até 50 processos, 100MB storage
+  BASICO    // R$69/mês - até 150 processos, 300MB storage
+  BRONZE    // $99/mês - até 1000 processos, 1GB storage
+  PRATA     // $159/mês - até 2500 processos, 5GB storage
+  OURO      // $219/mês - até 5000 processos, 30GB storage
 }
 
 // Tabela de empresas (tenants)
@@ -47,8 +49,9 @@ model Company {
   stripeCustomerId      String?            // ID do cliente no Stripe
   stripeSubscriptionId  String?            // ID da assinatura no Stripe
   subscriptionEndsAt    DateTime?          // Data de expiração da assinatura atual
-  casesLimit            Int                @default(1000) // Limite de processos do plano
+  casesLimit            Int                @default(50) // Limite de processos do plano (default: Gratuito)
   monitoringLimit       Int                @default(500)  @map("monitoring_limit") // Limite de publicações monitoradas por mês
+  storageLimit          BigInt             @default(104857600) @map("storage_limit") // Limite de armazenamento em bytes (default: 100MB - Gratuito)
 
   // LGPD - Dados do DPO (Encarregado de Dados)
   dpoName               String?                // Nome do DPO/Encarregado
@@ -82,6 +85,7 @@ model Company {
   servicePlans          ServicePlan[]
   clientSubscriptions   ClientSubscription[]
   leads                 Lead[]
+  costCenters           CostCenter[]
   dataRequests          DataRequest[]
   auditLogs             AuditLog[]
 
@@ -647,6 +651,7 @@ model FinancialTransaction {
   companyId   String
   clientId    String
   caseId      String?         // Opcional - pode não estar vinculado a um processo
+  costCenterId String?        // Centro de custo (opcional)
   type        TransactionType
   status      TransactionStatus @default(PENDING) // Status da transação
   description String
@@ -664,11 +669,13 @@ model FinancialTransaction {
   company      Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
   client       Client          @relation(fields: [clientId], references: [id], onDelete: Cascade)
   case         Case?           @relation(fields: [caseId], references: [id], onDelete: SetNull)
+  costCenter   CostCenter?     @relation(fields: [costCenterId], references: [id], onDelete: SetNull)
   installments InstallmentPayment[]  // Relação com parcelas
 
   @@index([companyId])
   @@index([clientId])
   @@index([caseId])
+  @@index([costCenterId])
   @@index([type])
   @@index([status])
   @@index([date])
@@ -886,6 +893,7 @@ enum RecurrencePeriod {
 model AccountPayable {
   id          String               @id @default(uuid())
   companyId   String
+  costCenterId String?             // Centro de custo (opcional)
 
   // Dados da conta
   supplier    String               // Fornecedor/Credor
@@ -909,9 +917,11 @@ model AccountPayable {
 
   // Relations
   company     Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  costCenter  CostCenter?          @relation(fields: [costCenterId], references: [id], onDelete: SetNull)
   user        User?                @relation(fields: [createdBy], references: [id], onDelete: SetNull)
 
   @@index([companyId])
+  @@index([costCenterId])
   @@index([dueDate])
   @@index([status])
   @@index([companyId, dueDate])
@@ -2245,4 +2255,34 @@ model ManualFAQ {
   @@index([order])
   @@index([active])
   @@map("ManualFAQ")
+}
+
+// Centro de Custos - para categorizar despesas e receitas
+model CostCenter {
+  id          String    @id @default(uuid())
+  companyId   String
+  name        String    // Nome do centro de custo (ex: "Administrativo", "Marketing", "Operacional")
+  code        String?   // Código opcional (ex: "ADM-001")
+  description String?   // Descrição
+  type        CostCenterType @default(BOTH) // Se é para despesas, receitas ou ambos
+  color       String?   // Cor para identificação visual (hex)
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  company             Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  financialTransactions FinancialTransaction[]
+  accountsPayable     AccountPayable[]
+
+  @@unique([companyId, name])
+  @@unique([companyId, code])
+  @@index([companyId])
+  @@index([active])
+  @@map("cost_centers")
+}
+
+enum CostCenterType {
+  EXPENSE   // Apenas despesas
+  INCOME    // Apenas receitas
+  BOTH      // Ambos
 }

@@ -4,6 +4,7 @@ import prisma from '../utils/prisma';
 import { uploadToS3 } from '../utils/s3';
 import AuditService from '../services/audit.service';
 import { appLogger } from '../utils/logger';
+import { canUploadFile, invalidateStorageCache } from '../services/storage.service';
 
 // Listar documentos com filtros e paginação
 export const listDocuments = async (req: AuthRequest, res: Response) => {
@@ -537,6 +538,24 @@ export const uploadDocument = async (req: AuthRequest, res: Response) => {
       }
     }
 
+    // Verificar limite de armazenamento antes do upload
+    const storageCheck = await canUploadFile(companyId, file.size);
+    if (!storageCheck.allowed) {
+      appLogger.warn('Upload bloqueado - limite de armazenamento excedido', {
+        companyId,
+        fileSize: file.size,
+        currentUsage: storageCheck.currentUsage.toString(),
+        limit: storageCheck.limit.toString(),
+      });
+      return res.status(413).json({
+        error: 'Limite de armazenamento excedido',
+        message: storageCheck.message,
+        currentUsage: storageCheck.currentUsage.toString(),
+        limit: storageCheck.limit.toString(),
+        remainingBytes: storageCheck.remainingBytes.toString(),
+      });
+    }
+
     // Upload para S3 usando companyId como pasta
     appLogger.info('Fazendo upload de arquivo', {
       fileName: file.originalname,
@@ -589,6 +608,9 @@ export const uploadDocument = async (req: AuthRequest, res: Response) => {
     });
 
     appLogger.info('Documento criado no banco', { documentId: document.id });
+
+    // Invalidar cache de storage da empresa
+    await invalidateStorageCache(companyId);
 
     res.status(201).json(document);
   } catch (error: any) {

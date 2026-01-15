@@ -1,6 +1,7 @@
 import Stripe from 'stripe';
 import prisma from '../utils/prisma';
 import { appLogger } from '../utils/logger';
+import { calculateCompanyStorageUsed, formatBytes } from './storage.service';
 
 // Lazy initialize Stripe - only create when needed and API key is available
 let stripeInstance: Stripe | null = null;
@@ -21,25 +22,61 @@ export function isStripeConfigured(): boolean {
   return !!process.env.STRIPE_SECRET_KEY;
 }
 
+// Storage limits in bytes
+export const STORAGE_LIMITS = {
+  MB_100: 104857600,      // 100 MB
+  MB_300: 314572800,      // 300 MB
+  GB_1: 1073741824,       // 1 GB
+  GB_5: 5368709120,       // 5 GB
+  GB_30: 32212254720,     // 30 GB
+};
+
 // Plan configuration
 export const SUBSCRIPTION_PLANS = {
+  GRATUITO: {
+    name: 'Gratuito',
+    priceBrl: 0,
+    priceUsd: 0,
+    casesLimit: 50,
+    storageLimit: STORAGE_LIMITS.MB_100,
+    storageLimitFormatted: '100 MB',
+    features: ['Até 50 processos', '100 MB de armazenamento', 'Suporte por email'],
+  },
+  BASICO: {
+    name: 'Básico',
+    priceBrl: 69,
+    priceUsd: 14, // ~R$69 converted
+    casesLimit: 150,
+    storageLimit: STORAGE_LIMITS.MB_300,
+    storageLimitFormatted: '300 MB',
+    features: ['Até 150 processos', '300 MB de armazenamento', 'Suporte por email', 'Integração DataJud'],
+  },
   BRONZE: {
     name: 'Bronze',
+    priceBrl: 499,
     priceUsd: 99,
     casesLimit: 1000,
-    features: ['Até 1.000 processos', 'Suporte por email', 'Integração DataJud'],
+    storageLimit: STORAGE_LIMITS.GB_1,
+    storageLimitFormatted: '1 GB',
+    features: ['Até 1.000 processos', '1 GB de armazenamento', 'Suporte por email', 'Integração DataJud'],
   },
   PRATA: {
     name: 'Prata',
+    priceBrl: 799,
     priceUsd: 159,
     casesLimit: 2500,
-    features: ['Até 2.500 processos', 'Suporte prioritário', 'Integração DataJud', 'IA para resumos'],
+    storageLimit: STORAGE_LIMITS.GB_5,
+    storageLimitFormatted: '5 GB',
+    features: ['Até 2.500 processos', '5 GB de armazenamento', 'Suporte prioritário', 'Integração DataJud', 'IA para resumos'],
   },
   OURO: {
     name: 'Ouro',
+    priceBrl: 1099,
     priceUsd: 219,
     casesLimit: 5000,
-    features: ['Até 5.000 processos', 'Suporte 24/7', 'Integração DataJud', 'IA para resumos', 'API exclusiva'],
+    storageLimit: STORAGE_LIMITS.GB_30,
+    storageLimitFormatted: '30 GB',
+    features: ['Até 5.000 processos', '30 GB de armazenamento', 'Suporte 24/7', 'Integração DataJud', 'IA para resumos', 'API exclusiva'],
   },
 };
 
@@ -93,7 +130,7 @@ export async function getOrCreateStripeCustomer(companyId: string): Promise<stri
  */
 export async function createCheckoutSession(
   companyId: string,
-  plan: 'BRONZE' | 'PRATA' | 'OURO',
+  plan: 'BASICO' | 'BRONZE' | 'PRATA' | 'OURO',
   successUrl: string,
   cancelUrl: string
 ): Promise<string> {
@@ -220,7 +257,7 @@ export async function handleWebhook(
  */
 async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
   const companyId = session.metadata?.companyId;
-  const plan = session.metadata?.plan as 'BRONZE' | 'PRATA' | 'OURO';
+  const plan = session.metadata?.plan as 'BASICO' | 'BRONZE' | 'PRATA' | 'OURO';
 
   if (!companyId || !plan) {
     appLogger.error('Missing metadata in checkout session', new Error('Missing metadata'));
@@ -237,6 +274,7 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
       subscriptionPlan: plan,
       stripeSubscriptionId: session.subscription as string,
       casesLimit: planConfig.casesLimit,
+      storageLimit: BigInt(planConfig.storageLimit),
       trialEndsAt: null, // Clear trial
     },
   });
@@ -367,12 +405,16 @@ export async function initializeTrial(companyId: string): Promise<void> {
   const trialEndsAt = new Date();
   trialEndsAt.setDate(trialEndsAt.getDate() + TRIAL_DURATION_DAYS);
 
+  // Trial gets Bronze limit (generous for testing)
+  const bronzePlan = SUBSCRIPTION_PLANS.BRONZE;
+
   await prisma.company.update({
     where: { id: companyId },
     data: {
       subscriptionStatus: 'TRIAL',
       trialEndsAt,
-      casesLimit: 1000, // Trial gets Bronze limit
+      casesLimit: bronzePlan.casesLimit,
+      storageLimit: BigInt(bronzePlan.storageLimit),
     },
   });
 }
@@ -491,15 +533,35 @@ export async function getSubscriptionInfo(companyId: string) {
 
   const status = await checkSubscriptionStatus(companyId);
 
+  // Get storage usage
+  const { totalBytes: storageUsed, fileCount } = await calculateCompanyStorageUsed(companyId);
+  const storageLimit = company.storageLimit;
+  const storageRemaining = storageLimit > storageUsed ? storageLimit - storageUsed : 0n;
+  const storageUsedPercent = storageLimit > 0n
+    ? Number((storageUsed * 100n) / storageLimit)
+    : 0;
+
   return {
     status: company.subscriptionStatus,
     plan: company.subscriptionPlan,
     planDetails: company.subscriptionPlan ? SUBSCRIPTION_PLANS[company.subscriptionPlan] : null,
     trialEndsAt: company.trialEndsAt,
     subscriptionEndsAt: company.subscriptionEndsAt,
+    // Cases
     casesLimit: company.casesLimit,
     casesUsed: company._count.cases,
-    casesRemaining: (company.casesLimit || 1000) - company._count.cases,
+    casesRemaining: (company.casesLimit || 50) - company._count.cases,
+    // Storage
+    storageLimit: storageLimit.toString(),
+    storageLimitFormatted: formatBytes(storageLimit),
+    storageUsed: storageUsed.toString(),
+    storageUsedFormatted: formatBytes(storageUsed),
+    storageRemaining: storageRemaining.toString(),
+    storageRemainingFormatted: formatBytes(storageRemaining),
+    storageUsedPercent,
+    isStorageOverLimit: storageUsed >= storageLimit,
+    fileCount: fileCount.total,
+    // General
     isValid: status.valid,
     daysRemaining: status.daysRemaining,
     availablePlans: SUBSCRIPTION_PLANS,

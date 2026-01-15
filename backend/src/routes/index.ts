@@ -41,6 +41,7 @@ import monitoringRoutes from './monitoring.routes';
 import advapiWebhookRoutes from './advapi-webhook.routes';
 import deadLetterRoutes from './dead-letter.routes';
 import manualRoutes from './manual.routes';
+import costCenterRoutes from './costCenter.routes';
 
 const router = Router();
 
@@ -95,5 +96,6 @@ router.use('/client-messages', clientMessageRoutes); // Mensagens bidirecionais 
 router.use('/monitoring', monitoringRoutes); // Monitoramento de OABs e publicações (ADVAPI v2)
 router.use('/admin/dead-letter', deadLetterRoutes); // Dead Letter Queue (jobs falhados) - ADMIN/SUPER_ADMIN
 router.use('/manual', manualRoutes); // Manual do usuário e FAQ (público + admin SUPER_ADMIN)
+router.use('/cost-centers', costCenterRoutes); // Centros de custo (categorização de despesas/receitas)
 
 export default router;

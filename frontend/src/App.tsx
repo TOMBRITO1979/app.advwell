@@ -23,7 +23,10 @@ const Financial = lazy(() => import('./pages/Financial'));
 const Documents = lazy(() => import('./pages/Documents'));
 const Schedule = lazy(() => import('./pages/Schedule'));
 const ToDo = lazy(() => import('./pages/ToDo'));
+const TaskKanban = lazy(() => import('./pages/TaskKanban'));
+const Reports = lazy(() => import('./pages/Reports'));
 const AccountsPayable = lazy(() => import('./pages/AccountsPayable'));
+const CostCenters = lazy(() => import('./pages/CostCenters'));
 const Settings = lazy(() => import('./pages/Settings'));
 const Profile = lazy(() => import('./pages/Profile'));
 const SMTPSettings = lazy(() => import('./pages/SMTPSettings'));
@@ -72,10 +75,10 @@ const PortalMessages = lazy(() => import('./portal/pages/PortalMessages'));
 
 // Loading spinner component
 const LoadingSpinner = () => (
-  <div className="min-h-screen flex items-center justify-center bg-neutral-50">
+  <div className="min-h-screen flex items-center justify-center bg-neutral-50 dark:bg-slate-900">
     <div className="text-center">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
-      <p className="mt-4 text-neutral-600">Carregando...</p>
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 dark:border-primary-400 mx-auto"></div>
+      <p className="mt-4 text-neutral-600 dark:text-slate-400">Carregando...</p>
     </div>
   </div>
 );
@@ -322,10 +325,34 @@ function App() {
             }
           />
           <Route
+            path="/kanban"
+            element={
+              <PrivateRoute>
+                <TaskKanban />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/reports"
+            element={
+              <PrivateRoute>
+                <Reports />
+              </PrivateRoute>
+            }
+          />
+          <Route
             path="/accounts-payable"
             element={
               <PrivateRoute>
                 <AccountsPayable />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/cost-centers"
+            element={
+              <PrivateRoute>
+                <CostCenters />
               </PrivateRoute>
             }
           />

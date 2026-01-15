@@ -4,6 +4,7 @@ import prisma from '../utils/prisma';
 import { uploadBufferToS3, getSignedS3Url, deleteFromS3 } from '../utils/s3';
 import { appLogger } from '../utils/logger';
 import * as pdfStyles from '../utils/pdfStyles';
+import { canUploadFile, invalidateStorageCache } from '../services/storage.service';
 
 /**
  * Controller para documentos compartilhados entre escritório e cliente
@@ -95,6 +96,19 @@ export class SharedDocumentController {
 
       if (!client) {
         return res.status(404).json({ error: 'Cliente não encontrado' });
+      }
+
+      // Verificar limite de armazenamento antes do upload
+      const storageCheck = await canUploadFile(companyId, req.file.size);
+      if (!storageCheck.allowed) {
+        appLogger.warn('Upload bloqueado - limite de armazenamento excedido', {
+          companyId,
+          fileSize: req.file.size,
+        });
+        return res.status(413).json({
+          error: 'Limite de armazenamento excedido',
+          message: storageCheck.message,
+        });
       }
 
       // Upload para S3

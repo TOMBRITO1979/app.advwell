@@ -77,12 +77,16 @@ const subscriptionValidation = [
     .withMessage('ID inválido'),
   body('subscriptionPlan')
     .optional({ checkFalsy: true })
-    .isIn(['FREE', 'BRONZE', 'PRATA', 'OURO'])
+    .isIn(['GRATUITO', 'BASICO', 'BRONZE', 'PRATA', 'OURO'])
     .withMessage('Plano inválido'),
   body('subscriptionStatus')
     .optional({ checkFalsy: true })
-    .isIn(['TRIAL', 'ACTIVE', 'INACTIVE', 'CANCELLED', 'PAST_DUE'])
+    .isIn(['TRIAL', 'ACTIVE', 'EXPIRED', 'CANCELLED'])
     .withMessage('Status inválido'),
+  body('storageLimit')
+    .optional({ checkFalsy: true })
+    .isNumeric()
+    .withMessage('Limite de armazenamento deve ser numérico (bytes)'),
 ];
 
 // Rotas do Admin (sua própria empresa) - DEVEM VIR ANTES DAS ROTAS COM :id
@@ -98,14 +102,19 @@ router.put('/own/subdomain', requireAdmin, companyController.updateSubdomain);
 router.get('/own/api-key', requireAdmin, companyController.getApiKey);
 router.post('/own/api-key/regenerate', requireAdmin, companyController.regenerateApiKey);
 
+// Storage Metrics (própria empresa - qualquer usuário autenticado)
+router.get('/own/storage-metrics', companyController.getOwnStorageMetrics);
+
 // Chatwell Integration (acesso para todos os usuários autenticados, verificação de permissão no controller)
 router.get('/own/chatwell', companyController.getChatwellConfig);
 
 // Rotas do Super Admin
 router.get('/subscription-alerts', requireSuperAdmin, companyController.getSubscriptionAlerts);
+router.get('/storage-metrics/all', requireSuperAdmin, companyController.getAllStorageMetrics);
 router.get('/', requireSuperAdmin, companyController.list);
 router.post('/', requireSuperAdmin, createCompanyValidation, validate, companyController.create);
 router.get('/:id/users', requireSuperAdmin, idParamValidation, validate, companyController.getUsers);
+router.get('/:id/storage-metrics', requireSuperAdmin, idParamValidation, validate, companyController.getStorageMetrics);
 router.put('/:companyId/users/:userId/toggle-active', requireSuperAdmin, companyController.toggleUserActive);
 router.put('/:id/subscription', requireSuperAdmin, subscriptionValidation, validate, companyController.updateSubscription);
 router.get('/:id/last-payment', requireSuperAdmin, idParamValidation, validate, companyController.getCompanyLastPayment);
