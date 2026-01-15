@@ -12,7 +12,7 @@ AdvWell is a multitenant SaaS for Brazilian law firms with DataJud CNJ integrati
 - Grafana: https://grafana.advwell.pro
 - Landing Page: https://advwell.pro
 
-**Current Version:** v1.8.116 (Backend) | v1.8.124 (Frontend)
+**Current Version:** v1.8.117 (Backend) | v1.8.125 (Frontend)
 
 ## Technology Stack
 
@@ -79,9 +79,13 @@ Jobs processed by dedicated worker (not API replicas):
 |--------|-------------|
 | Cases | Process management with DataJud sync |
 | Clients | Client management with portal access |
-| Financial | Accounts payable/receivable |
-| Monitoring | OAB publication monitoring via ADVAPI (auto-enqueue 5 years on OAB creation) |
+| Financial | Cash flow with cost center integration |
+| Accounts Payable | Expense management with cost centers |
+| Cost Centers | Expense/income categorization |
+| Monitoring | OAB publication monitoring via ADVAPI |
 | Schedule | Calendar events, hearings, deadlines |
+| Kanban | Visual task management board |
+| Reports | Filtered reports with CSV export |
 | Manual/FAQ | Documentation system for users |
 
 ## Key Files
