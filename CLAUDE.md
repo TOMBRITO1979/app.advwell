@@ -12,7 +12,7 @@ AdvWell is a multitenant SaaS for Brazilian law firms with DataJud CNJ integrati
 - Grafana: https://grafana.advwell.pro
 - Landing Page: https://advwell.pro
 
-**Current Version:** v1.8.110 (Backend) | v1.8.120 (Frontend)
+**Current Version:** v1.8.114 (Backend) | v1.8.121 (Frontend)
 
 ## Technology Stack
 
