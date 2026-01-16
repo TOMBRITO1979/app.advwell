@@ -17,7 +17,10 @@ set +a
 
 # Deploy the stack
 echo "🔧 Deploying Docker stack..."
-docker stack deploy -c docker-compose.yml advtom
+# Use docker compose config to properly interpolate env vars, then deploy
+docker compose config > /tmp/docker-compose-resolved.yml
+docker stack deploy -c /tmp/docker-compose-resolved.yml advtom
+rm -f /tmp/docker-compose-resolved.yml
 
 echo "⏳ Waiting for services to start..."
 sleep 10
