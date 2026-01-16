@@ -24,6 +24,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import MobileCardList, { MobileCardItem } from '../components/MobileCardList';
+import ActionsDropdown from '../components/ui/ActionsDropdown';
 import { formatDate } from '../utils/dateFormatter';
 
 type PNJStatus = 'ACTIVE' | 'ARCHIVED' | 'CLOSED';
@@ -868,7 +869,7 @@ const PNJPage: React.FC = () => {
                   <thead className="bg-neutral-50 dark:bg-slate-700">
                     <tr>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
-                        Numero
+                        Número
                       </th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                         Protocolo
@@ -886,7 +887,7 @@ const PNJPage: React.FC = () => {
                         Data
                       </th>
                       <th className="px-4 py-3 text-center text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
-                        Acoes
+                        Ações
                       </th>
                     </tr>
                   </thead>
@@ -921,28 +922,29 @@ const PNJPage: React.FC = () => {
                           {formatDateDisplay(pnj.openDate)}
                         </td>
                         <td className="px-4 py-3 text-sm text-center">
-                          <div className="flex items-center justify-center gap-2">
-                            <button
-                              onClick={() => handleViewDetails(pnj)}
-                              className="action-btn action-btn-info"
-                              title="Ver detalhes"
-                            >
-                              <Eye size={18} />
-                            </button>
-                            <button
-                              onClick={() => handleEdit(pnj)}
-                              className="action-btn action-btn-primary"
-                              title="Editar"
-                            >
-                              <Edit size={18} />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(pnj)}
-                              className="action-btn action-btn-danger"
-                              title="Excluir"
-                            >
-                              <Trash2 size={18} />
-                            </button>
+                          <div className="flex items-center justify-center">
+                            <ActionsDropdown
+                              actions={[
+                                {
+                                  label: 'Ver detalhes',
+                                  icon: <Eye size={16} />,
+                                  onClick: () => handleViewDetails(pnj),
+                                  variant: 'info',
+                                },
+                                {
+                                  label: 'Editar',
+                                  icon: <Edit size={16} />,
+                                  onClick: () => handleEdit(pnj),
+                                  variant: 'primary',
+                                },
+                                {
+                                  label: 'Excluir',
+                                  icon: <Trash2 size={16} />,
+                                  onClick: () => handleDelete(pnj),
+                                  variant: 'danger',
+                                },
+                              ]}
+                            />
                           </div>
                         </td>
                       </tr>

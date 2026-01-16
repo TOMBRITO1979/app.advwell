@@ -5,6 +5,7 @@ import api from '../services/api';
 import toast from 'react-hot-toast';
 import Layout from '../components/Layout';
 import MobileCardList, { MobileCardItem } from '../components/MobileCardList';
+import ActionsDropdown from '../components/ui/ActionsDropdown';
 import { formatDateTime } from '../utils/dateFormatter';
 
 interface Campaign {
@@ -88,11 +89,11 @@ const Campaigns: React.FC = () => {
   };
 
   const statusColors = {
-    draft: 'bg-neutral-100 text-neutral-800',
-    sending: 'bg-info-100 text-info-700',
-    completed: 'bg-success-100 text-success-800',
-    failed: 'bg-red-100 text-red-800',
-    cancelled: 'bg-yellow-100 text-yellow-800',
+    draft: 'bg-neutral-100 dark:bg-neutral-700 text-neutral-800 dark:text-neutral-200',
+    sending: 'bg-info-100 dark:bg-info-700/30 text-info-700 dark:text-info-400',
+    completed: 'bg-success-100 dark:bg-success-700/30 text-success-800 dark:text-success-400',
+    failed: 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400',
+    cancelled: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400',
   };
 
   useEffect(() => {
@@ -459,7 +460,7 @@ const Campaigns: React.FC = () => {
                 </thead>
                 <tbody className="bg-white dark:bg-slate-800 divide-y divide-neutral-200 dark:divide-slate-700">
                   {campaigns.map((campaign) => (
-                    <tr key={campaign.id} className="odd:bg-white dark:bg-slate-800 even:bg-neutral-50 dark:bg-slate-700 hover:bg-success-100 transition-colors">
+                    <tr key={campaign.id} className="odd:bg-white dark:odd:bg-slate-800 even:bg-neutral-50 dark:even:bg-slate-700 hover:bg-success-100 dark:hover:bg-slate-600 transition-colors">
                       <td className="px-6 py-4 text-sm font-medium text-neutral-900 dark:text-slate-100">
                         {campaign.name}
                       </td>
@@ -488,32 +489,31 @@ const Campaigns: React.FC = () => {
                         {formatDate(campaign.createdAt)}
                       </td>
                       <td className="px-6 py-4 text-sm text-right">
-                        <div className="flex justify-end gap-2">
-                          <button
-                            onClick={() => handleView(campaign)}
-                            className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-info-600 hover:text-info-700 hover:bg-info-50 rounded-md transition-all duration-200"
-                            title="Visualizar"
-                          >
-                            <Eye size={18} />
-                          </button>
-                          {campaign.status === 'draft' && (
-                            <button
-                              onClick={() => handleSend(campaign.id)}
-                              className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-success-600 hover:text-success-700 hover:bg-success-50 rounded-md transition-all duration-200"
-                              title="Enviar"
-                            >
-                              <Send size={18} />
-                            </button>
-                          )}
-                          {campaign.status !== 'sending' && (
-                            <button
-                              onClick={() => handleDelete(campaign.id)}
-                              className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-error-600 hover:text-error-700 hover:bg-error-50 rounded-md transition-all duration-200"
-                              title="Excluir"
-                            >
-                              <Trash2 size={18} />
-                            </button>
-                          )}
+                        <div className="flex justify-end">
+                          <ActionsDropdown
+                            actions={[
+                              {
+                                label: 'Visualizar',
+                                icon: <Eye size={16} />,
+                                onClick: () => handleView(campaign),
+                                variant: 'info',
+                              },
+                              {
+                                label: 'Enviar',
+                                icon: <Send size={16} />,
+                                onClick: () => handleSend(campaign.id),
+                                variant: 'success',
+                                hidden: campaign.status !== 'draft',
+                              },
+                              {
+                                label: 'Excluir',
+                                icon: <Trash2 size={16} />,
+                                onClick: () => handleDelete(campaign.id),
+                                variant: 'danger',
+                                hidden: campaign.status === 'sending',
+                              },
+                            ]}
+                          />
                         </div>
                       </td>
                     </tr>
@@ -537,7 +537,7 @@ const Campaigns: React.FC = () => {
                   setLimit(Number(e.target.value));
                   setPage(1);
                 }}
-                className="px-2 py-1 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="px-2 py-1 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 text-neutral-900 dark:text-slate-100 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 <option value={25}>25</option>
                 <option value={50}>50</option>
@@ -550,7 +550,7 @@ const Campaigns: React.FC = () => {
               <button
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 text-neutral-700 dark:text-slate-300 rounded-md hover:bg-neutral-50 dark:hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <ChevronLeft size={20} />
               </button>
@@ -560,7 +560,7 @@ const Campaigns: React.FC = () => {
               <button
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
-                className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 text-neutral-700 dark:text-slate-300 rounded-md hover:bg-neutral-50 dark:hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <ChevronRight size={20} />
               </button>
@@ -578,14 +578,14 @@ const Campaigns: React.FC = () => {
                 </h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
                   {/* Template Selector */}
-                  <div className="bg-success-50 border border-success-200 rounded-lg p-4">
-                    <label className="block text-sm font-medium text-primary-800 mb-2">
+                  <div className="bg-success-50 dark:bg-success-700/20 border border-success-200 dark:border-success-600 rounded-lg p-4">
+                    <label className="block text-sm font-medium text-primary-800 dark:text-primary-300 mb-2">
                       📝 Usar Template Pronto (Opcional)
                     </label>
                     <select
                       value={selectedTemplate}
                       onChange={(e) => handleTemplateSelect(e.target.value)}
-                      className="w-full px-3 py-2 border border-success-300 rounded-md min-h-[44px]"
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-success-300 dark:border-success-600 text-neutral-900 dark:text-slate-100 rounded-md min-h-[44px]"
                     >
                       <option value="">Selecione um template ou crie do zero</option>
                       {templates.map((template) => (
@@ -594,7 +594,7 @@ const Campaigns: React.FC = () => {
                         </option>
                       ))}
                     </select>
-                    <p className="text-xs text-success-700 mt-2">
+                    <p className="text-xs text-success-700 dark:text-success-400 mt-2">
                       💡 Os templates incluem variáveis que serão substituídas automaticamente: {'{nome_cliente}'}, {'{nome_empresa}'}, {'{data}'}
                     </p>
                   </div>
@@ -609,7 +609,7 @@ const Campaigns: React.FC = () => {
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       placeholder="Ex: Promoção Black Friday"
-                      className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-md min-h-[44px]"
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-neutral-900 dark:text-slate-100 rounded-md min-h-[44px]"
                     />
                   </div>
 
@@ -623,7 +623,7 @@ const Campaigns: React.FC = () => {
                       value={formData.subject}
                       onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                       placeholder="Ex: Desconto de 50% para você!"
-                      className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-md min-h-[44px]"
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-neutral-900 dark:text-slate-100 rounded-md min-h-[44px]"
                     />
                   </div>
 
@@ -637,7 +637,7 @@ const Campaigns: React.FC = () => {
                       onChange={(e) => setFormData({ ...formData, body: e.target.value })}
                       rows={10}
                       placeholder="<h1>Olá!</h1><p>Sua mensagem aqui...</p>"
-                      className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-md font-mono text-sm min-h-[44px]"
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-neutral-900 dark:text-slate-100 rounded-md font-mono text-sm min-h-[44px]"
                     />
                     <p className="text-xs text-neutral-500 dark:text-slate-400 mt-1">
                       Você pode usar HTML para formatar o email
@@ -645,13 +645,13 @@ const Campaigns: React.FC = () => {
                   </div>
 
                   {/* Filtro de Destinatários */}
-                  <div className="bg-info-50 border border-info-200 rounded-lg p-4">
-                    <label className="block text-sm font-medium text-info-700 mb-2">
+                  <div className="bg-info-50 dark:bg-info-700/20 border border-info-200 dark:border-info-600 rounded-lg p-4">
+                    <label className="block text-sm font-medium text-info-700 dark:text-info-400 mb-2">
                       📧 Selecionar Destinatários
                     </label>
 
                     {/* Tipo de destinatário: Clientes ou Leads */}
-                    <div className="flex gap-4 mb-4 p-3 bg-white dark:bg-slate-800 rounded-md border border-info-200">
+                    <div className="flex gap-4 mb-4 p-3 bg-white dark:bg-slate-700 rounded-md border border-info-200 dark:border-info-600">
                       <label className="flex items-center gap-2 cursor-pointer">
                         <input
                           type="radio"
@@ -660,7 +660,7 @@ const Campaigns: React.FC = () => {
                           onChange={() => { setRecipientType('clients'); setSelectedTag(''); }}
                           className="text-info-600"
                         />
-                        <span className="text-sm font-medium text-info-700">
+                        <span className="text-sm font-medium text-info-700 dark:text-info-400">
                           Clientes ({clients.filter(c => c.email).length})
                         </span>
                       </label>
@@ -672,7 +672,7 @@ const Campaigns: React.FC = () => {
                           onChange={() => { setRecipientType('leads'); setSelectedTag(''); }}
                           className="text-info-600"
                         />
-                        <span className="text-sm font-medium text-info-700">
+                        <span className="text-sm font-medium text-info-700 dark:text-info-400">
                           Leads ({leads.filter(l => l.email).length})
                         </span>
                       </label>
@@ -690,10 +690,10 @@ const Campaigns: React.FC = () => {
                           className="mt-0.5 mr-2"
                         />
                         <label htmlFor="filter-all" className="flex-1 cursor-pointer">
-                          <span className="text-sm font-medium text-info-700">
+                          <span className="text-sm font-medium text-info-700 dark:text-info-400">
                             Todos os {recipientType === 'clients' ? 'clientes' : 'leads'} com email
                           </span>
-                          <p className="text-xs text-info-700 mt-0.5">
+                          <p className="text-xs text-info-700 dark:text-info-400 mt-0.5">
                             {recipientType === 'clients'
                               ? clients.filter((c) => c.email).length
                               : leads.filter((l) => l.email).length} destinatários
@@ -712,14 +712,14 @@ const Campaigns: React.FC = () => {
                           className="mt-0.5 mr-2"
                         />
                         <label htmlFor="filter-tag" className="flex-1 cursor-pointer">
-                          <span className="text-sm font-medium text-info-700">
+                          <span className="text-sm font-medium text-info-700 dark:text-info-400">
                             Apenas {recipientType === 'clients' ? 'clientes' : 'leads'} com tag específica
                           </span>
                           {recipientFilter === 'tag' && (
                             <select
                               value={selectedTag}
                               onChange={(e) => setSelectedTag(e.target.value)}
-                              className="w-full mt-2 px-3 py-2 border border-info-300 rounded-md text-sm min-h-[44px]"
+                              className="w-full mt-2 px-3 py-2 bg-white dark:bg-slate-700 border border-info-300 dark:border-info-600 text-neutral-900 dark:text-slate-100 rounded-md text-sm min-h-[44px]"
                             >
                               <option value="">Selecione uma tag</option>
                               {tags.map((tag) => {
@@ -734,7 +734,7 @@ const Campaigns: React.FC = () => {
                             </select>
                           )}
                           {recipientFilter === 'tag' && selectedTag && (
-                            <p className="text-xs text-info-700 mt-1">
+                            <p className="text-xs text-info-700 dark:text-info-400 mt-1">
                               {getRecipientCount()} destinatários
                             </p>
                           )}
@@ -742,25 +742,25 @@ const Campaigns: React.FC = () => {
                       </div>
                     </div>
 
-                    <p className="text-xs text-info-700 mt-3 pt-3 border-t border-info-200">
+                    <p className="text-xs text-info-700 dark:text-info-400 mt-3 pt-3 border-t border-info-200 dark:border-info-600">
                       💡 Limite: 500 destinatários por campanha
                     </p>
                   </div>
 
-                  <div className="flex justify-end gap-2 pt-4 border-t border-gray-200">
+                  <div className="flex justify-end gap-2 pt-4 border-t border-gray-200 dark:border-slate-600">
                     <button
                       type="button"
                       onClick={() => {
                         setShowModal(false);
                         resetForm();
                       }}
-                      className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 text-neutral-700 dark:text-slate-300 font-medium rounded-lg transition-all duration-200"
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 dark:border-slate-600 bg-white dark:bg-slate-700 hover:bg-neutral-50 dark:hover:bg-slate-600 text-neutral-700 dark:text-slate-300 font-medium rounded-lg transition-all duration-200"
                     >
                       Cancelar
                     </button>
                     <button
                       type="submit"
-                      className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-primary-100 text-primary-700 border border-primary-200 hover:bg-primary-200 font-medium rounded-lg transition-all duration-200"
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-primary-100 dark:bg-primary-700/30 text-primary-700 dark:text-primary-300 border border-primary-200 dark:border-primary-600 hover:bg-primary-200 dark:hover:bg-primary-700/50 font-medium rounded-lg transition-all duration-200"
                     >
                       Criar Campanha
                     </button>
@@ -825,12 +825,12 @@ const Campaigns: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="border-t border-gray-200 pt-4">
+                  <div className="border-t border-gray-200 dark:border-slate-600 pt-4">
                     <p className="text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2">
                       Prévia do Email:
                     </p>
                     <div
-                      className="bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded p-4 bg-neutral-50 dark:bg-slate-700"
+                      className="bg-neutral-50 dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded p-4"
                       dangerouslySetInnerHTML={{
                         __html: DOMPurify.sanitize(selectedCampaign.body, {
                           ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'p', 'br', 'a', 'img', 'h1', 'h2', 'h3', 'h4', 'ul', 'ol', 'li', 'div', 'span', 'table', 'tr', 'td', 'th', 'thead', 'tbody', 'hr'],
@@ -841,10 +841,10 @@ const Campaigns: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-gray-200">
+                <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-gray-200 dark:border-slate-600">
                   <button
                     onClick={() => setShowViewModal(false)}
-                    className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 text-neutral-700 dark:text-slate-300 font-medium rounded-lg transition-all duration-200"
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 dark:border-slate-600 bg-white dark:bg-slate-700 hover:bg-neutral-50 dark:hover:bg-slate-600 text-neutral-700 dark:text-slate-300 font-medium rounded-lg transition-all duration-200"
                   >
                     Fechar
                   </button>

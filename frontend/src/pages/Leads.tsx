@@ -23,6 +23,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import MobileCardList, { MobileCardItem } from '../components/MobileCardList';
+import ActionsDropdown from '../components/ui/ActionsDropdown';
 import { ExportButton } from '../components/ui';
 import { formatDate, formatDateTime } from '../utils/dateFormatter';
 import TagSelector from '../components/TagSelector';
@@ -817,39 +818,37 @@ const Leads: React.FC = () => {
                           {formatDateDisplay(lead.createdAt)}
                         </td>
                         <td className="px-4 py-3 text-sm text-center">
-                          <div className="flex items-center justify-center gap-2">
-                            <button
-                              onClick={() => handleViewDetails(lead)}
-                              className="action-btn action-btn-info"
-                              title="Ver detalhes"
-                            >
-                              <Eye size={18} />
-                            </button>
-                            {lead.status !== 'CONVERTIDO' && (
-                              <>
-                                <button
-                                  onClick={() => handleEdit(lead)}
-                                  className="action-btn action-btn-primary"
-                                  title="Editar"
-                                >
-                                  <Edit size={18} />
-                                </button>
-                                <button
-                                  onClick={() => handleConvert(lead)}
-                                  className="action-btn action-btn-success"
-                                  title="Converter para Cliente"
-                                >
-                                  <UserPlus size={18} />
-                                </button>
-                              </>
-                            )}
-                            <button
-                              onClick={() => handleDelete(lead)}
-                              className="action-btn action-btn-danger"
-                              title="Excluir"
-                            >
-                              <Trash2 size={18} />
-                            </button>
+                          <div className="flex items-center justify-center">
+                            <ActionsDropdown
+                              actions={[
+                                {
+                                  label: 'Ver detalhes',
+                                  icon: <Eye size={16} />,
+                                  onClick: () => handleViewDetails(lead),
+                                  variant: 'info',
+                                },
+                                {
+                                  label: 'Editar',
+                                  icon: <Edit size={16} />,
+                                  onClick: () => handleEdit(lead),
+                                  variant: 'primary',
+                                  hidden: lead.status === 'CONVERTIDO',
+                                },
+                                {
+                                  label: 'Converter para Cliente',
+                                  icon: <UserPlus size={16} />,
+                                  onClick: () => handleConvert(lead),
+                                  variant: 'success',
+                                  hidden: lead.status === 'CONVERTIDO',
+                                },
+                                {
+                                  label: 'Excluir',
+                                  icon: <Trash2 size={16} />,
+                                  onClick: () => handleDelete(lead),
+                                  variant: 'danger',
+                                },
+                              ]}
+                            />
                           </div>
                         </td>
                       </tr>

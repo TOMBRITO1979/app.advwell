@@ -4,6 +4,7 @@ import api from '../services/api';
 import toast from 'react-hot-toast';
 import { Search, Clock, Calendar, Eye, AlertCircle, Edit, CheckCircle, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import MobileCardList, { MobileCardItem } from '../components/MobileCardList';
+import ActionsDropdown from '../components/ui/ActionsDropdown';
 import { formatDate } from '../utils/dateFormatter';
 
 interface Case {
@@ -332,32 +333,29 @@ const Deadlines: React.FC = () => {
                             </span>
                           </td>
                           <td className="px-4 py-3 text-sm">
-                            <div className="flex items-center justify-center gap-1">
-                              <button
-                                onClick={() => handleCaseClick(caseItem.id)}
-                                className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-info-600 hover:text-info-700 hover:bg-info-50 rounded-md transition-all duration-200"
-                                title="Ver detalhes"
-                              >
-                                <Eye size={18} />
-                              </button>
-                              <button
-                                onClick={() => handleEditClick(caseItem)}
-                                className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-md transition-all duration-200"
-                                title="Editar prazo"
-                              >
-                                <Edit size={18} />
-                              </button>
-                              <button
-                                onClick={() => handleToggleCompleted(caseItem)}
-                                className={`inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] rounded-md transition-all duration-200 ${
-                                  caseItem.deadlineCompleted
-                                    ? 'text-orange-600 hover:text-orange-700 hover:bg-orange-50'
-                                    : 'text-success-600 hover:text-success-700 hover:bg-success-50'
-                                }`}
-                                title={caseItem.deadlineCompleted ? 'Reabrir prazo' : 'Marcar como cumprido'}
-                              >
-                                <CheckCircle size={18} />
-                              </button>
+                            <div className="flex items-center justify-center">
+                              <ActionsDropdown
+                                actions={[
+                                  {
+                                    label: 'Ver detalhes',
+                                    icon: <Eye size={16} />,
+                                    onClick: () => handleCaseClick(caseItem.id),
+                                    variant: 'info',
+                                  },
+                                  {
+                                    label: 'Editar prazo',
+                                    icon: <Edit size={16} />,
+                                    onClick: () => handleEditClick(caseItem),
+                                    variant: 'primary',
+                                  },
+                                  {
+                                    label: caseItem.deadlineCompleted ? 'Reabrir prazo' : 'Marcar como cumprido',
+                                    icon: <CheckCircle size={16} />,
+                                    onClick: () => handleToggleCompleted(caseItem),
+                                    variant: caseItem.deadlineCompleted ? 'warning' : 'success',
+                                  },
+                                ]}
+                              />
                             </div>
                           </td>
                         </tr>
