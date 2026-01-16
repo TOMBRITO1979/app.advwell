@@ -10,14 +10,12 @@ CONTAINER_IP=$(hostname -i | awk '{print $1}')
 echo "Container IP detected: $CONTAINER_IP"
 echo "Starting Redis replica with announce-ip: $CONTAINER_IP"
 
-# Start Redis with dynamic announce-ip
+# Start Redis with dynamic announce-ip (no password for internal network)
 exec redis-server \
   --appendonly yes \
   --maxmemory 2gb \
   --maxmemory-policy allkeys-lru \
   --tcp-keepalive 300 \
-  --requirepass "${REDIS_PASSWORD}" \
-  --masterauth "${REDIS_PASSWORD}" \
   --replicaof redis 6379 \
   --tcp-backlog 511 \
   --replica-announce-ip "$CONTAINER_IP" \

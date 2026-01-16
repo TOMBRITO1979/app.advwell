@@ -108,7 +108,7 @@ const Updates: React.FC = () => {
           </div>
         </div>
         {total > 0 && (
-          <div className="bg-success-100 text-success-800 px-4 py-2 rounded-lg md:rounded-full font-semibold text-center">
+          <div className="bg-success-100 dark:bg-success-900/30 text-success-800 dark:text-success-400 px-4 py-2 rounded-lg md:rounded-full font-semibold text-center">
             {total} {total === 1 ? 'atualização' : 'atualizações'}
           </div>
         )}

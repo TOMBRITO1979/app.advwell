@@ -116,11 +116,11 @@ const SMTPSettings: React.FC = () => {
         </div>
 
         {/* Info Box */}
-        <div className="bg-info-50 border border-info-200 rounded-lg p-4">
-          <h3 className="font-semibold text-info-700 mb-2">
+        <div className="bg-info-50 dark:bg-slate-700 border border-info-200 dark:border-slate-600 rounded-lg p-4">
+          <h3 className="font-semibold text-info-700 dark:text-info-300 mb-2">
             ℹ️ Informações Importantes
           </h3>
-          <ul className="text-sm text-info-600 space-y-1">
+          <ul className="text-sm text-info-600 dark:text-slate-300 space-y-1">
             <li>• Esta configuração será usada apenas para campanhas de email em massa</li>
             <li>• Emails do sistema (redefinição de senha) continuam usando o SMTP global</li>
             <li>• A senha é criptografada com AES-256 e nunca é exposta</li>

@@ -215,11 +215,11 @@ const WhatsAppSettings: React.FC = () => {
         </div>
 
         {/* Info Box */}
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-          <h3 className="font-semibold text-green-700 mb-2">
+        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+          <h3 className="font-semibold text-green-700 dark:text-green-300 mb-2">
             Como obter as credenciais
           </h3>
-          <ol className="text-sm text-green-600 space-y-1 list-decimal list-inside">
+          <ol className="text-sm text-green-600 dark:text-green-400 space-y-1 list-decimal list-inside">
             <li>Acesse <a href="https://developers.facebook.com" target="_blank" rel="noopener noreferrer" className="underline">developers.facebook.com</a></li>
             <li>Crie ou selecione seu aplicativo</li>
             <li>Adicione o produto "WhatsApp"</li>
@@ -244,7 +244,7 @@ const WhatsAppSettings: React.FC = () => {
                   value={formData.phoneNumberId}
                   onChange={(e) => setFormData({ ...formData, phoneNumberId: e.target.value })}
                   placeholder="123456789012345"
-                  className="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-green-500 min-h-[44px]"
+                  className="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-neutral-900 dark:text-slate-100 rounded-md focus:ring-2 focus:ring-green-500 min-h-[44px]"
                 />
                 <p className="text-xs text-neutral-500 dark:text-slate-400 mt-1">
                   ID do número de telefone no Meta Business
@@ -261,7 +261,7 @@ const WhatsAppSettings: React.FC = () => {
                   value={formData.businessAccountId}
                   onChange={(e) => setFormData({ ...formData, businessAccountId: e.target.value })}
                   placeholder="987654321098765"
-                  className="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-green-500 min-h-[44px]"
+                  className="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-neutral-900 dark:text-slate-100 rounded-md focus:ring-2 focus:ring-green-500 min-h-[44px]"
                 />
                 <p className="text-xs text-neutral-500 dark:text-slate-400 mt-1">
                   ID da conta WhatsApp Business (WABA)
@@ -281,7 +281,7 @@ const WhatsAppSettings: React.FC = () => {
                 onChange={(e) => setFormData({ ...formData, accessToken: e.target.value })}
                 placeholder={hasConfig ? 'Deixe em branco para manter o atual' : 'Token de acesso permanente da Meta'}
                 rows={3}
-                className="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-green-500 font-mono text-sm"
+                className="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-neutral-900 dark:text-slate-100 rounded-md focus:ring-2 focus:ring-green-500 font-mono text-sm"
               />
               <p className="text-xs text-neutral-500 dark:text-slate-400 mt-1">
                 Token criptografado com AES-256. Nunca é exposto após salvo.
@@ -300,7 +300,7 @@ const WhatsAppSettings: React.FC = () => {
                   value={formData.webhookVerifyToken}
                   onChange={(e) => setFormData({ ...formData, webhookVerifyToken: e.target.value })}
                   placeholder="Token para verificação do webhook"
-                  className="flex-1 px-4 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-green-500 min-h-[44px]"
+                  className="flex-1 px-4 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-neutral-900 dark:text-slate-100 rounded-md focus:ring-2 focus:ring-green-500 min-h-[44px]"
                 />
                 <button
                   type="button"
@@ -320,20 +320,20 @@ const WhatsAppSettings: React.FC = () => {
 
             {/* Informações do Telefone */}
             {phoneInfo && (
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <h4 className="font-semibold text-green-700 mb-2">Informações do Número</h4>
+              <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+                <h4 className="font-semibold text-green-700 dark:text-green-300 mb-2">Informações do Número</h4>
                 <div className="grid grid-cols-3 gap-4 text-sm">
                   <div>
-                    <span className="text-green-600">Nome Verificado:</span>
-                    <div className="font-medium text-green-900">{phoneInfo.verifiedName || '-'}</div>
+                    <span className="text-green-600 dark:text-green-400">Nome Verificado:</span>
+                    <div className="font-medium text-green-900 dark:text-green-200">{phoneInfo.verifiedName || '-'}</div>
                   </div>
                   <div>
-                    <span className="text-green-600">Número:</span>
-                    <div className="font-medium text-green-900">{phoneInfo.displayPhoneNumber || '-'}</div>
+                    <span className="text-green-600 dark:text-green-400">Número:</span>
+                    <div className="font-medium text-green-900 dark:text-green-200">{phoneInfo.displayPhoneNumber || '-'}</div>
                   </div>
                   <div>
-                    <span className="text-green-600">Qualidade:</span>
-                    <div className="font-medium text-green-900">{phoneInfo.qualityRating || '-'}</div>
+                    <span className="text-green-600 dark:text-green-400">Qualidade:</span>
+                    <div className="font-medium text-green-900 dark:text-green-200">{phoneInfo.qualityRating || '-'}</div>
                   </div>
                 </div>
               </div>
@@ -364,15 +364,15 @@ const WhatsAppSettings: React.FC = () => {
 
         {/* Webhook Info */}
         {hasConfig && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <h3 className="font-semibold text-blue-900 mb-3">
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+            <h3 className="font-semibold text-blue-900 dark:text-blue-200 mb-3">
               Configuração do Webhook no Meta Business
             </h3>
             <div className="text-sm space-y-3">
               <div>
-                <span className="text-blue-700 font-medium">1. URL de Callback:</span>
+                <span className="text-blue-700 dark:text-blue-300 font-medium">1. URL de Callback:</span>
                 <div className="flex items-center gap-2 mt-1">
-                  <code className="bg-white dark:bg-slate-800 px-3 py-2 rounded border text-xs flex-1 font-mono">
+                  <code className="bg-white dark:bg-slate-700 px-3 py-2 rounded border dark:border-slate-600 text-xs flex-1 font-mono text-blue-900 dark:text-blue-200">
                     https://api.advwell.pro/api/whatsapp-webhook
                   </code>
                   <button
@@ -381,16 +381,16 @@ const WhatsAppSettings: React.FC = () => {
                       navigator.clipboard.writeText('https://api.advwell.pro/api/whatsapp-webhook');
                       toast.success('URL copiada!');
                     }}
-                    className="px-3 py-2 bg-blue-100 text-blue-700 hover:bg-blue-200 rounded text-xs font-medium"
+                    className="px-3 py-2 bg-blue-100 dark:bg-blue-800/30 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800/50 rounded text-xs font-medium"
                   >
                     Copiar
                   </button>
                 </div>
               </div>
               <div>
-                <span className="text-blue-700 font-medium">2. Token de Verificação:</span>
+                <span className="text-blue-700 dark:text-blue-300 font-medium">2. Token de Verificação:</span>
                 <div className="flex items-center gap-2 mt-1">
-                  <code className="bg-white dark:bg-slate-800 px-3 py-2 rounded border text-xs flex-1 font-mono">
+                  <code className="bg-white dark:bg-slate-700 px-3 py-2 rounded border dark:border-slate-600 text-xs flex-1 font-mono text-blue-900 dark:text-blue-200">
                     {formData.webhookVerifyToken || '(configure acima e salve)'}
                   </code>
                   {formData.webhookVerifyToken && (
@@ -400,7 +400,7 @@ const WhatsAppSettings: React.FC = () => {
                         navigator.clipboard.writeText(formData.webhookVerifyToken);
                         toast.success('Token copiado!');
                       }}
-                      className="px-3 py-2 bg-blue-100 text-blue-700 hover:bg-blue-200 rounded text-xs font-medium"
+                      className="px-3 py-2 bg-blue-100 dark:bg-blue-800/30 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800/50 rounded text-xs font-medium"
                     >
                       Copiar
                     </button>
@@ -408,12 +408,12 @@ const WhatsAppSettings: React.FC = () => {
                 </div>
               </div>
               <div>
-                <span className="text-blue-700 font-medium">3. Campos para assinar:</span>
-                <div className="mt-1 text-blue-600">
+                <span className="text-blue-700 dark:text-blue-300 font-medium">3. Campos para assinar:</span>
+                <div className="mt-1 text-blue-600 dark:text-blue-400">
                   messages, message_status_updates
                 </div>
               </div>
-              <div className="pt-2 border-t border-blue-200 text-blue-600">
+              <div className="pt-2 border-t border-blue-200 dark:border-blue-700 text-blue-600 dark:text-blue-400">
                 <strong>Nota:</strong> Configure o webhook no Meta Business Suite para receber confirmações de entrega e leitura das mensagens.
               </div>
             </div>
@@ -458,9 +458,9 @@ const WhatsAppSettings: React.FC = () => {
                   </thead>
                   <tbody className="divide-y divide-neutral-200 dark:divide-slate-700">
                     {templates.map((template) => (
-                      <tr key={template.id} className="odd:bg-white dark:bg-slate-800 even:bg-neutral-50 dark:bg-slate-700 hover:bg-success-100 transition-colors">
+                      <tr key={template.id} className="odd:bg-white even:bg-neutral-50 dark:odd:bg-slate-800 dark:even:bg-slate-700/50 hover:bg-success-100 dark:hover:bg-success-900/30 transition-colors">
                         <td className="px-4 py-3">
-                          <code className="text-sm bg-neutral-100 px-2 py-1 rounded">
+                          <code className="text-sm bg-neutral-100 dark:bg-slate-600 dark:text-slate-200 px-2 py-1 rounded">
                             {template.name}
                           </code>
                         </td>

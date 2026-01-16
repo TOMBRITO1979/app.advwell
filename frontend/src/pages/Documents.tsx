@@ -430,7 +430,7 @@ const Documents: React.FC = () => {
                         onClick={() => handleSelectClient(client)}
                         className="px-4 py-2 hover:bg-neutral-100 dark:hover:bg-slate-600 cursor-pointer min-h-[44px]"
                       >
-                        <div className="font-medium">{client.name}</div>
+                        <div className="font-medium text-neutral-800 dark:text-slate-200">{client.name}</div>
                         {client.cpf && (
                           <div className="text-sm text-neutral-600 dark:text-slate-400">{client.cpf}</div>
                         )}
@@ -446,7 +446,7 @@ const Documents: React.FC = () => {
                       onClick={() => handleSelectCase(caseItem)}
                       className="px-4 py-2 hover:bg-neutral-100 dark:hover:bg-slate-600 cursor-pointer min-h-[44px]"
                     >
-                      <div className="font-medium">{caseItem.processNumber}</div>
+                      <div className="font-medium text-neutral-800 dark:text-slate-200">{caseItem.processNumber}</div>
                       <div className="text-sm text-neutral-600 dark:text-slate-400">{caseItem.subject}</div>
                     </div>
                   ))
@@ -469,7 +469,7 @@ const Documents: React.FC = () => {
             <button
               onClick={handleAddDocument}
               disabled={!selectedClient && !selectedCase}
-              className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-success-100 text-success-700 border border-success-200 hover:bg-success-200 font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base whitespace-nowrap"
+              className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-success-100 dark:bg-success-900/30 text-success-700 dark:text-success-400 border border-success-200 dark:border-success-800 hover:bg-success-200 dark:hover:bg-success-900/50 font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base whitespace-nowrap"
             >
               + Adicionar Documento
             </button>
@@ -478,9 +478,9 @@ const Documents: React.FC = () => {
 
         {/* Selected Entity Display */}
         {(selectedClient || selectedCase) && (
-          <div className="mt-4 p-3 bg-success-50 border border-primary-200 rounded-md">
-            <span className="font-medium text-primary-800">Selecionado: </span>
-            <span className="text-primary-700">
+          <div className="mt-4 p-3 bg-success-50 dark:bg-success-900/20 border border-primary-200 dark:border-primary-800 rounded-md">
+            <span className="font-medium text-primary-800 dark:text-primary-300">Selecionado: </span>
+            <span className="text-primary-700 dark:text-primary-400">
               {selectedClient
                 ? `${selectedClient.name} ${selectedClient.cpf ? `(${selectedClient.cpf})` : ''}`
                 : `Processo ${selectedCase?.processNumber}`}
@@ -524,8 +524,8 @@ const Documents: React.FC = () => {
                         <span
                           className={`px-3 py-1 rounded-full text-xs font-medium ${
                             doc.storageType === 'upload'
-                              ? 'bg-success-100 text-success-800'
-                              : 'bg-success-100 text-success-800'
+                              ? 'bg-success-100 dark:bg-success-900/30 text-success-800 dark:text-success-400'
+                              : 'bg-success-100 dark:bg-success-900/30 text-success-800 dark:text-success-400'
                           }`}
                         >
                           {getStorageTypeLabel(doc.storageType)}
@@ -575,7 +575,7 @@ const Documents: React.FC = () => {
                         </button>
                         <button
                           onClick={() => handleDownloadDocument(doc)}
-                          className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 md:px-3 md:py-1.5 bg-info-100 text-info-700 border border-info-200 hover:bg-info-200 font-medium rounded-md text-xs transition-all duration-200"
+                          className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 md:px-3 md:py-1.5 bg-info-100 dark:bg-info-900/30 text-info-700 dark:text-info-400 border border-info-200 dark:border-info-800 hover:bg-info-200 dark:hover:bg-info-900/50 font-medium rounded-md text-xs transition-all duration-200"
                           title="Download"
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 md:h-3.5 md:w-3.5" viewBox="0 0 20 20" fill="currentColor">
@@ -585,7 +585,7 @@ const Documents: React.FC = () => {
                         </button>
                         <button
                           onClick={() => handleEditDocument(doc)}
-                          className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 md:px-3 md:py-1.5 bg-amber-100 text-amber-700 border border-amber-200 hover:bg-amber-200 font-medium rounded-md text-xs transition-all duration-200"
+                          className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 md:px-3 md:py-1.5 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800 hover:bg-amber-200 dark:hover:bg-amber-900/50 font-medium rounded-md text-xs transition-all duration-200"
                           title="Editar"
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 md:h-3.5 md:w-3.5" viewBox="0 0 20 20" fill="currentColor">
@@ -595,7 +595,7 @@ const Documents: React.FC = () => {
                         </button>
                         <button
                           onClick={() => handleDeleteDocument(doc.id)}
-                          className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 md:px-3 md:py-1.5 bg-red-100 text-red-700 border border-red-200 hover:bg-red-200 font-medium rounded-md text-xs transition-all duration-200"
+                          className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 md:px-3 md:py-1.5 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800 hover:bg-red-200 dark:hover:bg-red-900/50 font-medium rounded-md text-xs transition-all duration-200"
                           title="Excluir"
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 md:h-3.5 md:w-3.5" viewBox="0 0 20 20" fill="currentColor">
@@ -613,7 +613,7 @@ const Documents: React.FC = () => {
             <div className="p-6 border-t border-neutral-200 dark:border-slate-700">
               <button
                 onClick={() => setShowViewModal(false)}
-                className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-700 dark:bg-slate-700 text-neutral-700 dark:text-slate-300 font-medium rounded-lg transition-all duration-200"
+                className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 dark:border-slate-600 bg-white dark:bg-slate-700 hover:bg-neutral-50 dark:hover:bg-slate-600 text-neutral-700 dark:text-slate-300 font-medium rounded-lg transition-all duration-200"
               >
                 Fechar
               </button>
@@ -636,11 +636,11 @@ const Documents: React.FC = () => {
               <div className="space-y-4">
                 {/* Selected Entity */}
                 {!editMode && (
-                  <div className="p-3 bg-success-50 border border-primary-200 rounded-md">
-                    <span className="font-medium text-primary-800">
+                  <div className="p-3 bg-success-50 dark:bg-success-900/20 border border-primary-200 dark:border-primary-800 rounded-md">
+                    <span className="font-medium text-primary-800 dark:text-primary-300">
                       {selectedClient ? 'Cliente: ' : 'Processo: '}
                     </span>
-                    <span className="text-primary-700">
+                    <span className="text-primary-700 dark:text-primary-400">
                       {selectedClient
                         ? selectedClient.name
                         : selectedCase?.processNumber}
@@ -648,10 +648,10 @@ const Documents: React.FC = () => {
                   </div>
                 )}
                 {editMode && selectedDocument && (
-                  <div className="p-3 bg-amber-50 border border-amber-200 rounded-md">
-                    <span className="font-medium text-amber-800">Editando: </span>
-                    <span className="text-amber-700">{selectedDocument.name}</span>
-                    <span className="text-amber-600 text-sm ml-2">
+                  <div className="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md">
+                    <span className="font-medium text-amber-800 dark:text-amber-300">Editando: </span>
+                    <span className="text-amber-700 dark:text-amber-400">{selectedDocument.name}</span>
+                    <span className="text-amber-600 dark:text-amber-500 text-sm ml-2">
                       ({selectedDocument.storageType === 'upload' ? 'Arquivo' : 'Link Externo'})
                     </span>
                   </div>
@@ -666,7 +666,7 @@ const Documents: React.FC = () => {
                     type="text"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 text-neutral-900 dark:text-slate-100 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                     required
                   />
                 </div>
@@ -680,7 +680,7 @@ const Documents: React.FC = () => {
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     rows={3}
-                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 text-neutral-900 dark:text-slate-100 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   />
                 </div>
 
@@ -691,7 +691,7 @@ const Documents: React.FC = () => {
                       Tipo de Armazenamento *
                     </label>
                     <div className="space-y-2">
-                      <label className="flex items-center">
+                      <label className="flex items-center text-neutral-700 dark:text-slate-300">
                         <input
                           type="radio"
                           value="upload"
@@ -703,7 +703,7 @@ const Documents: React.FC = () => {
                         />
                         Carregar Arquivo
                       </label>
-                      <label className="flex items-center">
+                      <label className="flex items-center text-neutral-700 dark:text-slate-300">
                         <input
                           type="radio"
                           value="link"
@@ -732,7 +732,7 @@ const Documents: React.FC = () => {
                         onChange={(e) =>
                           setFormData({ ...formData, externalUrl: e.target.value })
                         }
-                        className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 text-neutral-900 dark:text-slate-100 placeholder-neutral-400 dark:placeholder-slate-500 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                         placeholder="https://..."
                         required
                       />
@@ -750,7 +750,7 @@ const Documents: React.FC = () => {
                             externalType: e.target.value as any,
                           })
                         }
-                        className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 text-neutral-900 dark:text-slate-100 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       >
                         <option value="google_drive">Google Drive</option>
                         <option value="google_docs">Google Docs</option>
@@ -779,7 +779,7 @@ const Documents: React.FC = () => {
                           }
                         }
                       }}
-                      className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 text-neutral-900 dark:text-slate-100 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-primary-50 file:text-primary-700 dark:file:bg-slate-600 dark:file:text-slate-200 hover:file:bg-primary-100 dark:hover:file:bg-slate-500"
                       accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.jpg,.jpeg,.png,.gif,.webp,.zip,.rar"
                     />
                     {selectedFile && (
@@ -814,14 +814,14 @@ const Documents: React.FC = () => {
                   setSelectedDocument(null);
                   resetForm();
                 }}
-                className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-700 dark:bg-slate-700 text-neutral-700 dark:text-slate-300 font-medium rounded-lg transition-all duration-200"
+                className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 dark:border-slate-600 bg-white dark:bg-slate-700 hover:bg-neutral-50 dark:hover:bg-slate-600 text-neutral-700 dark:text-slate-300 font-medium rounded-lg transition-all duration-200"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleSaveDocument}
                 disabled={loading}
-                className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-primary-100 text-primary-700 border border-primary-200 hover:bg-primary-200 font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 border border-primary-200 dark:border-primary-800 hover:bg-primary-200 dark:hover:bg-primary-900/50 font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? 'Salvando...' : (editMode ? 'Salvar Alterações' : 'Salvar Documento')}
               </button>

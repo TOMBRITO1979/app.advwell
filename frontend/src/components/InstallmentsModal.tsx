@@ -199,13 +199,13 @@ const InstallmentsModal: React.FC<InstallmentsModalProps> = ({
   return (
     <>
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="bg-white dark:bg-slate-800 rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
           <div className="flex justify-between items-start mb-6">
             <div>
-              <h2 className="text-2xl font-bold text-neutral-800">
+              <h2 className="text-2xl font-bold text-neutral-800 dark:text-slate-100">
                 Parcelas {transactionType === 'INCOME' ? '(Receita)' : '(Despesa)'}
               </h2>
-              <p className="text-sm text-neutral-600 mt-1">{transactionDescription}</p>
+              <p className="text-sm text-neutral-600 dark:text-slate-400 mt-1">{transactionDescription}</p>
             </div>
             <div className="flex items-center gap-2">
               <button
@@ -217,7 +217,7 @@ const InstallmentsModal: React.FC<InstallmentsModalProps> = ({
               </button>
               <button
                 onClick={onClose}
-                className="text-neutral-400 hover:text-neutral-600 transition-colors"
+                className="text-neutral-400 dark:text-slate-500 hover:text-neutral-600 dark:hover:text-slate-300 transition-colors"
               >
                 <X size={24} />
               </button>
@@ -225,67 +225,67 @@ const InstallmentsModal: React.FC<InstallmentsModalProps> = ({
           </div>
 
           {/* Resumo Financeiro */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 p-4 bg-neutral-50 rounded-lg">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 p-4 bg-neutral-50 dark:bg-slate-700 rounded-lg">
             <div className="text-center">
-              <p className="text-xs text-neutral-500 uppercase font-medium">Valor Total</p>
-              <p className="text-lg font-bold text-neutral-800">{formatCurrency(transactionAmountNum)}</p>
+              <p className="text-xs text-neutral-500 dark:text-slate-400 uppercase font-medium">Valor Total</p>
+              <p className="text-lg font-bold text-neutral-800 dark:text-slate-100">{formatCurrency(transactionAmountNum)}</p>
             </div>
             <div className="text-center">
-              <p className="text-xs text-neutral-500 uppercase font-medium">Total Pago</p>
+              <p className="text-xs text-neutral-500 dark:text-slate-400 uppercase font-medium">Total Pago</p>
               <p className="text-lg font-bold text-success-600">{formatCurrency(totalPaid)}</p>
             </div>
             <div className="text-center">
-              <p className="text-xs text-neutral-500 uppercase font-medium">Saldo Devedor</p>
+              <p className="text-xs text-neutral-500 dark:text-slate-400 uppercase font-medium">Saldo Devedor</p>
               <p className={`text-lg font-bold ${saldoDevedor > 0 ? 'text-red-600' : 'text-success-600'}`}>
                 {formatCurrency(saldoDevedor)}
               </p>
             </div>
             <div className="text-center">
-              <p className="text-xs text-neutral-500 uppercase font-medium">Parcelas Pagas</p>
-              <p className="text-lg font-bold text-neutral-800">{paidCount}/{installments.length}</p>
+              <p className="text-xs text-neutral-500 dark:text-slate-400 uppercase font-medium">Parcelas Pagas</p>
+              <p className="text-lg font-bold text-neutral-800 dark:text-slate-100">{paidCount}/{installments.length}</p>
             </div>
           </div>
 
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-neutral-200">
-              <thead className="bg-neutral-50">
+            <table className="min-w-full divide-y divide-neutral-200 dark:divide-slate-700">
+              <thead className="bg-neutral-50 dark:bg-slate-700">
                 <tr>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                     Parcela
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                     Vencimento
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                     Valor
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                     Pago em
                   </th>
-                  <th className="px-4 py-3 text-right text-sm font-semibold text-neutral-900 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-right text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                     Ações
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-neutral-200">
+              <tbody className="bg-white dark:bg-slate-800 divide-y divide-neutral-200 dark:divide-slate-700">
                 {installments.map((installment) => (
-                  <tr key={installment.id} className="odd:bg-white even:bg-neutral-50 hover:bg-success-100 transition-colors">
-                    <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-neutral-900">
+                  <tr key={installment.id} className="odd:bg-white dark:odd:bg-slate-800 even:bg-neutral-50 dark:even:bg-slate-700 hover:bg-success-100 dark:hover:bg-slate-600 transition-colors">
+                    <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-neutral-900 dark:text-slate-100">
                       {installment.installmentNumber}
                     </td>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm text-neutral-600">
+                    <td className="px-4 py-4 whitespace-nowrap text-sm text-neutral-600 dark:text-slate-400">
                       {formatDate(installment.dueDate)}
                     </td>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm font-semibold text-neutral-900">
+                    <td className="px-4 py-4 whitespace-nowrap text-sm font-semibold text-neutral-900 dark:text-slate-100">
                       {formatCurrency(Number(installment.amount) || 0)}
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm">
                       {getStatusBadge(installment.status)}
                     </td>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm text-neutral-600">
+                    <td className="px-4 py-4 whitespace-nowrap text-sm text-neutral-600 dark:text-slate-400">
                       {installment.paidDate ? (
                         <div>
                           <div>{formatDate(installment.paidDate)}</div>
@@ -319,7 +319,7 @@ const InstallmentsModal: React.FC<InstallmentsModalProps> = ({
                         </button>
                         <button
                           onClick={() => handleDownloadReceipt(installment.id, installment.installmentNumber)}
-                          className="text-neutral-600 hover:text-neutral-800 p-1 rounded hover:bg-neutral-100 transition-colors"
+                          className="text-neutral-600 dark:text-slate-400 hover:text-neutral-800 dark:hover:text-slate-200 p-1 rounded hover:bg-neutral-100 dark:hover:bg-slate-600 transition-colors"
                           title="Baixar recibo"
                         >
                           <Download size={18} />
@@ -333,7 +333,7 @@ const InstallmentsModal: React.FC<InstallmentsModalProps> = ({
           </div>
 
           {installments.length === 0 && (
-            <p className="text-center text-neutral-500 py-8">Nenhuma parcela encontrada</p>
+            <p className="text-center text-neutral-500 dark:text-slate-400 py-8">Nenhuma parcela encontrada</p>
           )}
         </div>
       </div>
@@ -341,14 +341,14 @@ const InstallmentsModal: React.FC<InstallmentsModalProps> = ({
       {/* Modal de Edição */}
       {showEditModal && selectedInstallment && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+          <div className="bg-white dark:bg-slate-800 rounded-lg p-6 max-w-md w-full mx-4">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-bold text-neutral-800">
+              <h3 className="text-lg font-bold text-neutral-800 dark:text-slate-100">
                 Editar Parcela {selectedInstallment.installmentNumber}
               </h3>
               <button
                 onClick={() => setShowEditModal(false)}
-                className="text-neutral-400 hover:text-neutral-600"
+                className="text-neutral-400 dark:text-slate-500 hover:text-neutral-600 dark:hover:text-slate-300"
               >
                 <X size={20} />
               </button>
@@ -356,11 +356,11 @@ const InstallmentsModal: React.FC<InstallmentsModalProps> = ({
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">Status</label>
+                <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Status</label>
                 <select
                   value={editForm.status}
                   onChange={(e) => setEditForm({ ...editForm, status: e.target.value as any })}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 text-neutral-900 dark:text-slate-100 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
                   <option value="PENDING">Pendente</option>
                   <option value="PAID">Pago</option>
@@ -371,42 +371,42 @@ const InstallmentsModal: React.FC<InstallmentsModalProps> = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">Data de Pagamento</label>
+                <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Data de Pagamento</label>
                 <input
                   type="date"
                   value={editForm.paidDate}
                   onChange={(e) => setEditForm({ ...editForm, paidDate: e.target.value })}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 text-neutral-900 dark:text-slate-100 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">Valor Pago</label>
+                <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Valor Pago</label>
                 <input
                   type="number"
                   step="0.01"
                   value={editForm.paidAmount}
                   onChange={(e) => setEditForm({ ...editForm, paidAmount: e.target.value })}
                   placeholder="Digite o valor pago"
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 text-neutral-900 dark:text-slate-100 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">Observações</label>
+                <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Observações</label>
                 <textarea
                   value={editForm.notes}
                   onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
                   rows={3}
                   placeholder="Adicione observações sobre o pagamento..."
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 text-neutral-900 dark:text-slate-100 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
               </div>
 
               <div className="flex justify-end gap-3 mt-6">
                 <button
                   onClick={() => setShowEditModal(false)}
-                  className="px-4 py-2 border border-neutral-300 rounded-md text-neutral-700 hover:bg-neutral-50 transition-colors"
+                  className="px-4 py-2 border border-neutral-300 dark:border-slate-600 rounded-md text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-700 transition-colors"
                 >
                   Cancelar
                 </button>
@@ -425,14 +425,14 @@ const InstallmentsModal: React.FC<InstallmentsModalProps> = ({
       {/* Modal de Adicionar Parcela */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+          <div className="bg-white dark:bg-slate-800 rounded-lg p-6 max-w-md w-full mx-4">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-bold text-neutral-800">
+              <h3 className="text-lg font-bold text-neutral-800 dark:text-slate-100">
                 Adicionar Nova Parcela
               </h3>
               <button
                 onClick={() => setShowAddModal(false)}
-                className="text-neutral-400 hover:text-neutral-600"
+                className="text-neutral-400 dark:text-slate-500 hover:text-neutral-600 dark:hover:text-slate-300"
               >
                 <X size={20} />
               </button>
@@ -440,7 +440,7 @@ const InstallmentsModal: React.FC<InstallmentsModalProps> = ({
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                   Valor da Parcela <span className="text-error-500">*</span>
                 </label>
                 <input
@@ -450,24 +450,24 @@ const InstallmentsModal: React.FC<InstallmentsModalProps> = ({
                   value={addForm.amount}
                   onChange={(e) => setAddForm({ ...addForm, amount: e.target.value })}
                   placeholder="Digite o valor"
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 text-neutral-900 dark:text-slate-100 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                   Data de Vencimento <span className="text-error-500">*</span>
                 </label>
                 <input
                   type="date"
                   value={addForm.dueDate}
                   onChange={(e) => setAddForm({ ...addForm, dueDate: e.target.value })}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 text-neutral-900 dark:text-slate-100 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
               </div>
 
-              <div className="p-3 bg-info-50 rounded-md border border-info-200">
-                <p className="text-sm text-info-700">
+              <div className="p-3 bg-info-50 dark:bg-info-900/20 rounded-md border border-info-200 dark:border-info-800">
+                <p className="text-sm text-info-700 dark:text-info-400">
                   A nova parcela será adicionada ao plano de pagamento. O saldo devedor será ajustado automaticamente.
                 </p>
               </div>
@@ -475,7 +475,7 @@ const InstallmentsModal: React.FC<InstallmentsModalProps> = ({
               <div className="flex justify-end gap-3 mt-6">
                 <button
                   onClick={() => setShowAddModal(false)}
-                  className="px-4 py-2 border border-neutral-300 rounded-md text-neutral-700 hover:bg-neutral-50 transition-colors"
+                  className="px-4 py-2 border border-neutral-300 dark:border-slate-600 rounded-md text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-700 transition-colors"
                 >
                   Cancelar
                 </button>

@@ -350,8 +350,8 @@ const Settings: React.FC = () => {
                   />
                 </div>
               </div>
-              <div className="mt-3 bg-info-50 border border-info-200 rounded-lg p-3">
-                <p className="text-sm text-info-700">
+              <div className="mt-3 bg-info-50 dark:bg-info-700/20 border border-info-200 dark:border-info-700 rounded-lg p-3">
+                <p className="text-sm text-info-700 dark:text-info-200">
                   <strong>O que e o DPO?</strong> O Encarregado de Dados (DPO) e a pessoa responsavel por garantir a conformidade
                   com a LGPD na sua empresa. Ele e o ponto de contato entre a empresa, os titulares dos dados e a ANPD.
                 </p>
@@ -372,9 +372,9 @@ const Settings: React.FC = () => {
           </form>
 
           {/* Informações Adicionais */}
-          <div className="mt-6 bg-success-50 border border-primary-200 rounded-lg p-4">
-            <h3 className="font-semibold text-primary-800 mb-2">Informação</h3>
-            <p className="text-sm text-success-800">
+          <div className="mt-6 bg-success-50 dark:bg-success-700/20 border border-primary-200 dark:border-primary-700 rounded-lg p-4">
+            <h3 className="font-semibold text-primary-800 dark:text-primary-200 mb-2">Informação</h3>
+            <p className="text-sm text-success-800 dark:text-success-200">
               Os dados configurados aqui serão automaticamente incluídos no cabeçalho dos relatórios
               financeiros em PDF, dando um aspecto mais profissional aos seus documentos.
             </p>
@@ -446,13 +446,13 @@ const Settings: React.FC = () => {
               </div>
 
               {/* Usage Instructions */}
-              <div className="mt-4 bg-orange-50 border border-orange-200 rounded-lg p-4">
-                <h4 className="font-medium text-orange-900 mb-2">Como usar:</h4>
-                <ul className="text-sm text-orange-800 space-y-1">
-                  <li><strong>Header:</strong> <code className="bg-orange-100 px-1 rounded">X-API-Key: sua-api-key</code></li>
-                  <li><strong>Base URL:</strong> <code className="bg-orange-100 px-1 rounded">https://api.advwell.pro/api/integration</code></li>
+              <div className="mt-4 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4">
+                <h4 className="font-medium text-orange-900 dark:text-orange-200 mb-2">Como usar:</h4>
+                <ul className="text-sm text-orange-800 dark:text-orange-300 space-y-1">
+                  <li><strong>Header:</strong> <code className="bg-orange-100 dark:bg-orange-800/30 text-orange-900 dark:text-orange-200 px-1 rounded">X-API-Key: sua-api-key</code></li>
+                  <li><strong>Base URL:</strong> <code className="bg-orange-100 dark:bg-orange-800/30 text-orange-900 dark:text-orange-200 px-1 rounded">https://api.advwell.pro/api/integration</code></li>
                 </ul>
-                <div className="mt-3 text-sm text-orange-800">
+                <div className="mt-3 text-sm text-orange-800 dark:text-orange-300">
                   <strong>Endpoints disponíveis:</strong>
                   <ul className="mt-1 ml-4 list-disc">
                     <li><code>POST /validate-client</code> - Valida CPF + Data Nascimento</li>
@@ -461,7 +461,7 @@ const Settings: React.FC = () => {
                     <li><code>GET /client/:id/schedule</code> - Lista audiências e prazos</li>
                   </ul>
                   <p className="mt-2 text-xs italic">
-                    O campo <code className="bg-orange-100 px-1 rounded">informarCliente</code> contém a "Informação para o Cliente" de cada processo.
+                    O campo <code className="bg-orange-100 dark:bg-orange-800/30 text-orange-900 dark:text-orange-200 px-1 rounded">informarCliente</code> contém a "Informação para o Cliente" de cada processo.
                   </p>
                 </div>
               </div>
@@ -516,16 +516,16 @@ const Settings: React.FC = () => {
                 })}
               </div>
 
-              <div className="mt-4 bg-purple-50 border border-purple-200 rounded-lg p-4">
-                <h4 className="font-medium text-purple-900 mb-2">Como configurar no Chatwell:</h4>
-                <ol className="text-sm text-purple-800 space-y-1 list-decimal ml-4">
+              <div className="mt-4 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-4">
+                <h4 className="font-medium text-purple-900 dark:text-purple-200 mb-2">Como configurar no Chatwell:</h4>
+                <ol className="text-sm text-purple-800 dark:text-purple-300 space-y-1 list-decimal ml-4">
                   <li>Acesse <strong>Configurações &gt; Integrações &gt; Painel de Aplicativos</strong></li>
                   <li>Clique em <strong>Adicionar novo aplicativo</strong></li>
                   <li>Cole uma das URLs acima no campo de URL</li>
                   <li>Dê um nome (ex: "AdvWell - Dashboard")</li>
                   <li>Salve e teste!</li>
                 </ol>
-                <p className="mt-3 text-xs text-purple-700 italic">
+                <p className="mt-3 text-xs text-purple-700 dark:text-purple-300 italic">
                   A sidebar será automaticamente ocultada quando acessado via embed.
                 </p>
               </div>
@@ -571,9 +571,9 @@ const Settings: React.FC = () => {
               Voce esta prestes a excluir permanentemente a empresa <strong>{settings.name}</strong> e todos os seus dados.
             </p>
 
-            <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 mb-4">
-              <p className="text-sm text-yellow-800 font-medium mb-2">Esta acao e IRREVERSIVEL!</p>
-              <p className="text-xs text-yellow-700">
+            <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md p-3 mb-4">
+              <p className="text-sm text-yellow-800 dark:text-yellow-200 font-medium mb-2">Esta acao e IRREVERSIVEL!</p>
+              <p className="text-xs text-yellow-700 dark:text-yellow-300">
                 Todos os usuarios, clientes, processos, documentos, transacoes e demais dados serao permanentemente excluidos.
               </p>
             </div>

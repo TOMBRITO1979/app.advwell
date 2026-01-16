@@ -2214,10 +2214,10 @@ const Cases: React.FC = () => {
                         </div>
                         {(() => {
                           const statusColors = {
-                            PENDENTE: 'bg-yellow-100 text-yellow-800',
-                            ACTIVE: 'bg-success-100 text-success-800',
-                            ARCHIVED: 'bg-neutral-100 text-neutral-800',
-                            FINISHED: 'bg-info-100 text-info-700',
+                            PENDENTE: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300',
+                            ACTIVE: 'bg-success-100 dark:bg-success-900/30 text-success-800 dark:text-success-300',
+                            ARCHIVED: 'bg-neutral-100 dark:bg-slate-700 text-neutral-800 dark:text-slate-300',
+                            FINISHED: 'bg-info-100 dark:bg-info-900/30 text-info-700 dark:text-info-300',
                           };
 
                           const statusLabels = {
@@ -2258,7 +2258,7 @@ const Cases: React.FC = () => {
                       <div className="flex gap-3 flex-wrap">
                         <button
                           onClick={() => handleSyncDataJud(selectedCase.id)}
-                          className="flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 border border-blue-200 rounded-md hover:bg-blue-200 transition-colors min-h-[44px]"
+                          className="flex items-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800 rounded-md hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors min-h-[44px]"
                           title="Buscar movimentações no DataJud/CNJ"
                         >
                           <RefreshCw size={16} />
@@ -2267,7 +2267,7 @@ const Cases: React.FC = () => {
 
                         <button
                           onClick={() => handleSyncAdvapi(selectedCase.id)}
-                          className="flex items-center gap-2 px-4 py-2 bg-green-100 text-green-700 border border-green-200 rounded-md hover:bg-green-200 transition-colors min-h-[44px]"
+                          className="flex items-center gap-2 px-4 py-2 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800 rounded-md hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors min-h-[44px]"
                           title="Buscar publicações do Diário Oficial (ADVAPI)"
                         >
                           <RefreshCw size={16} />
@@ -2277,7 +2277,7 @@ const Cases: React.FC = () => {
                         <button
                           onClick={() => handleGenerateSummary(selectedCase.id)}
                           disabled={generatingSummary}
-                          className="flex items-center gap-2 px-4 py-2 bg-purple-100 text-purple-700 border border-purple-200 rounded-md hover:bg-purple-200 disabled:bg-neutral-100 disabled:text-neutral-400 dark:text-slate-500 disabled:border-neutral-200 dark:border-slate-700 disabled:cursor-not-allowed transition-colors min-h-[44px]"
+                          className="flex items-center gap-2 px-4 py-2 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-800 rounded-md hover:bg-purple-200 dark:hover:bg-purple-900/50 disabled:bg-neutral-100 dark:disabled:bg-slate-700 disabled:text-neutral-400 dark:disabled:text-slate-500 disabled:border-neutral-200 dark:disabled:border-slate-600 disabled:cursor-not-allowed transition-colors min-h-[44px]"
                           title="Gerar resumo com Inteligencia Artificial"
                         >
                           {generatingSummary ? (
@@ -2308,16 +2308,16 @@ const Cases: React.FC = () => {
                     // Prioridade 1: Usar linkProcesso se existir (mais confiável)
                     if (selectedCase.linkProcesso) {
                       return (
-                        <div className="bg-success-50 border-2 border-success-300 rounded-lg p-4">
-                          <h3 className="text-sm font-semibold text-primary-800 mb-2 flex items-center">
+                        <div className="bg-success-50 dark:bg-success-900/20 border-2 border-success-300 dark:border-success-800 rounded-lg p-4">
+                          <h3 className="text-sm font-semibold text-primary-800 dark:text-primary-400 mb-2 flex items-center">
                             <span className="mr-2">🔗</span>
                             Consultar Processo no Tribunal
                           </h3>
-                          <div className="bg-white dark:bg-slate-800 border border-success-300 rounded p-3 mb-3">
+                          <div className="bg-white dark:bg-slate-800 border border-success-300 dark:border-success-700 rounded p-3 mb-3">
                             <p className="text-sm text-neutral-700 dark:text-slate-300 mb-1">
                               <strong>Número do Processo:</strong>
                             </p>
-                            <p className="text-lg font-mono font-semibold text-primary-800 select-all">
+                            <p className="text-lg font-mono font-semibold text-primary-800 dark:text-primary-400 select-all">
                               {formatProcessNumber(selectedCase.processNumber)}
                             </p>
                             <p className="text-xs text-neutral-500 dark:text-slate-400 mt-1">
@@ -2328,7 +2328,7 @@ const Cases: React.FC = () => {
                             href={selectedCase.linkProcesso}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 px-4 py-2 bg-success-100 text-success-700 border border-success-200 rounded-md hover:bg-success-200 transition-colors font-medium"
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-success-100 dark:bg-success-900/30 text-success-700 dark:text-success-400 border border-success-200 dark:border-success-800 rounded-md hover:bg-success-200 dark:hover:bg-success-900/50 transition-colors font-medium"
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                               <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
@@ -2337,7 +2337,7 @@ const Cases: React.FC = () => {
                             </svg>
                             Abrir Processo no {selectedCase.court}
                           </a>
-                          <p className="text-xs text-success-700 mt-2">
+                          <p className="text-xs text-success-700 dark:text-success-400 mt-2">
                             ✅ Link direto para o processo no site do tribunal
                           </p>
                         </div>
@@ -2347,16 +2347,16 @@ const Cases: React.FC = () => {
                     // Prioridade 2: Tentar gerar automaticamente pelo código CNJ
                     const tribunalInfo = generateTribunalLink(selectedCase.court, selectedCase.processNumber);
                     return tribunalInfo ? (
-                      <div className="bg-info-50 border-2 border-info-200 rounded-lg p-4">
-                        <h3 className="text-sm font-semibold text-info-700 mb-2 flex items-center">
+                      <div className="bg-info-50 dark:bg-slate-700 border-2 border-info-200 dark:border-info-600 rounded-lg p-4">
+                        <h3 className="text-sm font-semibold text-info-700 dark:text-info-300 mb-2 flex items-center">
                           <span className="mr-2">🔗</span>
                           Consultar no Site do Tribunal ({tribunalInfo.tribunalName})
                         </h3>
-                        <div className="bg-white dark:bg-slate-800 border border-info-300 rounded p-3 mb-3">
+                        <div className="bg-white dark:bg-slate-800 border border-info-300 dark:border-slate-600 rounded p-3 mb-3">
                           <p className="text-sm text-neutral-700 dark:text-slate-300 mb-1">
                             <strong>Número do Processo:</strong>
                           </p>
-                          <p className="text-lg font-mono font-semibold text-info-700 select-all">
+                          <p className="text-lg font-mono font-semibold text-info-700 dark:text-info-400 select-all">
                             {formatProcessNumber(selectedCase.processNumber)}
                           </p>
                           <p className="text-xs text-neutral-500 dark:text-slate-400 mt-1">
@@ -2367,7 +2367,7 @@ const Cases: React.FC = () => {
                           href={tribunalInfo.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 px-4 py-2 bg-info-100 text-info-700 border border-info-200 rounded-md hover:bg-info-200 transition-colors font-medium"
+                          className="inline-flex items-center gap-2 px-4 py-2 bg-info-100 dark:bg-slate-600 text-info-700 dark:text-info-300 border border-info-200 dark:border-slate-500 rounded-md hover:bg-info-200 dark:hover:bg-slate-500 transition-colors font-medium"
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
@@ -2376,7 +2376,7 @@ const Cases: React.FC = () => {
                           </svg>
                           Consultar Processo no {tribunalInfo.tribunalName}
                         </a>
-                        <p className="text-xs text-info-700 mt-2">
+                        <p className="text-xs text-info-600 dark:text-slate-400 mt-2">
                           {tribunalInfo.url.includes('show.do')
                             ? '⚠️ Link gerado automaticamente. Para melhor confiabilidade, adicione o link oficial no campo "Link do Processo" ao editar.'
                             : 'Abre a página de consulta processual oficial. Cole o número do processo acima para buscar.'}
@@ -2389,8 +2389,8 @@ const Cases: React.FC = () => {
                   {selectedCase.informarCliente && (
                     <div>
                       <h3 className="text-sm font-medium text-neutral-500 dark:text-slate-400 mb-2">Informação para o Cliente</h3>
-                      <div className="bg-success-50 border border-primary-200 rounded-md p-4">
-                        <p className="text-primary-800 whitespace-pre-wrap">{selectedCase.informarCliente}</p>
+                      <div className="bg-success-50 dark:bg-success-900/20 border border-primary-200 dark:border-primary-800 rounded-md p-4">
+                        <p className="text-primary-800 dark:text-primary-300 whitespace-pre-wrap">{selectedCase.informarCliente}</p>
                       </div>
                       <p className="text-xs text-neutral-500 dark:text-slate-400 mt-1">Texto explicativo do andamento para informar ao cliente</p>
                     </div>
@@ -2439,17 +2439,17 @@ const Cases: React.FC = () => {
                               };
 
                               const typeBadgeColors: { [key: string]: string } = {
-                                DEMANDANTE: 'bg-success-100 text-success-800',
-                                DEMANDADO: 'bg-error-100 text-error-800',
-                                ADVOGADO: 'bg-info-100 text-info-800',
-                                ADVOGADO_ADVERSO: 'bg-warning-100 text-warning-800',
-                                AUTOR: 'bg-success-100 text-success-800',
-                                REU: 'bg-error-100 text-error-800',
-                                REPRESENTANTE_LEGAL: 'bg-success-100 text-success-800',
+                                DEMANDANTE: 'bg-success-100 dark:bg-success-900/30 text-success-800 dark:text-success-400',
+                                DEMANDADO: 'bg-error-100 dark:bg-error-900/30 text-error-800 dark:text-error-400',
+                                ADVOGADO: 'bg-info-100 dark:bg-info-900/30 text-info-800 dark:text-info-400',
+                                ADVOGADO_ADVERSO: 'bg-warning-100 dark:bg-warning-900/30 text-warning-800 dark:text-warning-400',
+                                AUTOR: 'bg-success-100 dark:bg-success-900/30 text-success-800 dark:text-success-400',
+                                REU: 'bg-error-100 dark:bg-error-900/30 text-error-800 dark:text-error-400',
+                                REPRESENTANTE_LEGAL: 'bg-success-100 dark:bg-success-900/30 text-success-800 dark:text-success-400',
                               };
 
                               return (
-                                <tr key={part.id} className="odd:bg-white dark:bg-slate-800 even:bg-neutral-50 dark:bg-slate-700 hover:bg-success-100 transition-colors">
+                                <tr key={part.id} className="odd:bg-white dark:odd:bg-slate-800 even:bg-neutral-50 dark:even:bg-slate-700 hover:bg-success-50 dark:hover:bg-slate-600 transition-colors">
                                   <td className="px-4 py-3 whitespace-nowrap">
                                     <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${typeBadgeColors[part.type]}`}>
                                       {typeLabels[part.type]}
@@ -2475,7 +2475,7 @@ const Cases: React.FC = () => {
                                   <td className="px-4 py-3 text-sm">
                                     <button
                                       onClick={() => handleEditPart(part)}
-                                      className="text-primary-600 hover:text-primary-800 font-medium"
+                                      className="text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 font-medium"
                                     >
                                       Editar
                                     </button>
@@ -2618,24 +2618,24 @@ const Cases: React.FC = () => {
                     </div>
 
                     {selectedCase.ultimaPublicacaoAdvapi ? (
-                      <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                        <h4 className="text-sm font-medium text-purple-700 mb-2">Última Publicação</h4>
-                        <p className="text-purple-900 whitespace-pre-wrap">{selectedCase.ultimaPublicacaoAdvapi}</p>
+                      <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-4">
+                        <h4 className="text-sm font-medium text-purple-700 dark:text-purple-400 mb-2">Última Publicação</h4>
+                        <p className="text-purple-900 dark:text-purple-200 whitespace-pre-wrap">{selectedCase.ultimaPublicacaoAdvapi}</p>
                       </div>
                     ) : (
                       <>
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                          <p className="text-sm text-blue-700">
+                        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                          <p className="text-sm text-blue-700 dark:text-blue-400">
                             As publicações relacionadas a este processo aparecerão aqui quando encontradas pelo monitoramento de OAB.
                           </p>
-                          <p className="text-sm text-blue-600 mt-2">
+                          <p className="text-sm text-blue-600 dark:text-blue-300 mt-2">
                             Configure o monitoramento na aba <strong>Monitoramento</strong> para acompanhar as publicações do Diário Oficial.
                           </p>
                         </div>
 
                         {/* Placeholder para publicacoes futuras */}
                         <div className="border border-neutral-200 dark:border-slate-700 rounded-lg p-6 text-center">
-                          <FileText size={48} className="mx-auto text-neutral-300 mb-4" />
+                          <FileText size={48} className="mx-auto text-neutral-300 dark:text-slate-600 mb-4" />
                           <p className="text-neutral-500 dark:text-slate-400">Nenhuma publicação encontrada para este processo</p>
                           <p className="text-sm text-neutral-400 dark:text-slate-500 mt-1">
                             Número: {formatProcessNumber(selectedCase.processNumber)}
@@ -2892,7 +2892,7 @@ const Cases: React.FC = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
           <div className="bg-white dark:bg-slate-800 rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
-              <div className="flex justify-between items-center mb-4 pb-4 border-b">
+              <div className="flex justify-between items-center mb-4 pb-4 border-b border-neutral-200 dark:border-slate-700">
                 <div>
                   <h2 className="text-2xl font-bold text-neutral-900 dark:text-slate-100">Andamento para Cliente</h2>
                   <p className="text-sm text-neutral-500 dark:text-slate-400 mt-1">
@@ -2909,28 +2909,28 @@ const Cases: React.FC = () => {
 
               <div className="space-y-4">
                 {/* Caixa 1: Último Andamento DataJud (readonly) */}
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <h3 className="text-sm font-medium text-blue-700 mb-2 flex items-center gap-2">
+                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                  <h3 className="text-sm font-medium text-blue-700 dark:text-blue-400 mb-2 flex items-center gap-2">
                     <FileText size={16} />
                     Último Andamento (DataJud)
                   </h3>
                   {selectedCase.ultimoAndamento ? (
-                    <p className="text-blue-900 whitespace-pre-wrap">{selectedCase.ultimoAndamento}</p>
+                    <p className="text-blue-900 dark:text-blue-200 whitespace-pre-wrap">{selectedCase.ultimoAndamento}</p>
                   ) : (
-                    <p className="text-blue-600 italic">Nenhum andamento disponível do DataJud</p>
+                    <p className="text-blue-600 dark:text-blue-400 italic">Nenhum andamento disponível do DataJud</p>
                   )}
                 </div>
 
                 {/* Caixa 2: Última Publicação ADVAPI (readonly) */}
-                <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                  <h3 className="text-sm font-medium text-purple-700 mb-2 flex items-center gap-2">
+                <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-4">
+                  <h3 className="text-sm font-medium text-purple-700 dark:text-purple-400 mb-2 flex items-center gap-2">
                     <FileText size={16} />
                     Última Publicação (ADVAPI)
                   </h3>
                   {selectedCase.ultimaPublicacaoAdvapi ? (
-                    <p className="text-purple-900 whitespace-pre-wrap">{selectedCase.ultimaPublicacaoAdvapi}</p>
+                    <p className="text-purple-900 dark:text-purple-200 whitespace-pre-wrap">{selectedCase.ultimaPublicacaoAdvapi}</p>
                   ) : (
-                    <p className="text-purple-600 italic">
+                    <p className="text-purple-600 dark:text-purple-400 italic">
                       Nenhuma publicação disponível. Configure o monitoramento de OAB para receber publicações do Diário Oficial.
                     </p>
                   )}
@@ -2938,28 +2938,28 @@ const Cases: React.FC = () => {
 
                 {/* Campos MTD 1.2: B.O., Inquérito e Prioridade */}
                 {(selectedCase.numeroBoletimOcorrencia || selectedCase.numeroInqueritoPolicial || selectedCase.prioridadeProcessual) && (
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                    <h3 className="text-sm font-medium text-red-700 mb-3 flex items-center gap-2">
+                  <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                    <h3 className="text-sm font-medium text-red-700 dark:text-red-400 mb-3 flex items-center gap-2">
                       <FileText size={16} />
                       Informações Adicionais (DataJud MTD 1.2)
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
                       {selectedCase.numeroBoletimOcorrencia && (
                         <div>
-                          <span className="font-medium text-red-700">B.O.:</span>
-                          <span className="ml-2 text-red-900">{selectedCase.numeroBoletimOcorrencia}</span>
+                          <span className="font-medium text-red-700 dark:text-red-400">B.O.:</span>
+                          <span className="ml-2 text-red-900 dark:text-red-200">{selectedCase.numeroBoletimOcorrencia}</span>
                         </div>
                       )}
                       {selectedCase.numeroInqueritoPolicial && (
                         <div>
-                          <span className="font-medium text-red-700">Inquérito:</span>
-                          <span className="ml-2 text-red-900">{selectedCase.numeroInqueritoPolicial}</span>
+                          <span className="font-medium text-red-700 dark:text-red-400">Inquérito:</span>
+                          <span className="ml-2 text-red-900 dark:text-red-200">{selectedCase.numeroInqueritoPolicial}</span>
                         </div>
                       )}
                       {selectedCase.prioridadeProcessual && (
                         <div>
-                          <span className="font-medium text-red-700">Prioridade:</span>
-                          <span className="ml-2 text-red-900">
+                          <span className="font-medium text-red-700 dark:text-red-400">Prioridade:</span>
+                          <span className="ml-2 text-red-900 dark:text-red-200">
                             {selectedCase.prioridadeProcessual === 'ID' ? 'Idoso' :
                              selectedCase.prioridadeProcessual === 'PD' ? 'Pessoa com Deficiência' :
                              selectedCase.prioridadeProcessual}
@@ -2968,8 +2968,8 @@ const Cases: React.FC = () => {
                       )}
                       {selectedCase.prioridadeDataConcessao && (
                         <div>
-                          <span className="font-medium text-red-700">Prioridade desde:</span>
-                          <span className="ml-2 text-red-900">
+                          <span className="font-medium text-red-700 dark:text-red-400">Prioridade desde:</span>
+                          <span className="ml-2 text-red-900 dark:text-red-200">
                             {new Date(selectedCase.prioridadeDataConcessao).toLocaleDateString('pt-BR')}
                           </span>
                         </div>
@@ -2979,8 +2979,8 @@ const Cases: React.FC = () => {
                 )}
 
                 {/* Caixa 3: Informar ao Cliente (editável) */}
-                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                  <h3 className="text-sm font-medium text-amber-700 mb-2 flex items-center gap-2">
+                <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+                  <h3 className="text-sm font-medium text-amber-700 dark:text-amber-400 mb-2 flex items-center gap-2">
                     <Edit size={16} />
                     Informar ao Cliente
                   </h3>
@@ -2989,7 +2989,7 @@ const Cases: React.FC = () => {
                     onChange={(e) => setFormData({ ...formData, informarCliente: e.target.value })}
                     rows={4}
                     placeholder="Digite aqui a informação que será enviada ou mostrada ao cliente..."
-                    className="w-full px-3 py-2 border border-amber-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white dark:bg-slate-800 text-neutral-900 dark:text-slate-100"
+                    className="w-full px-3 py-2 border border-amber-300 dark:border-amber-700 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white dark:bg-slate-800 text-neutral-900 dark:text-slate-100"
                   />
                   <button
                     onClick={async () => {

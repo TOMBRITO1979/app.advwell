@@ -277,10 +277,10 @@ const AIConfigPage: React.FC = () => {
           </div>
 
           {/* Info Box */}
-          <div className="mb-6 bg-info-50 border border-info-200 rounded-lg p-4">
+          <div className="mb-6 bg-info-50 dark:bg-info-700/20 border border-info-200 dark:border-info-700 rounded-lg p-4">
             <div className="flex gap-3">
-              <AlertCircle className="h-5 w-5 text-info-600 flex-shrink-0 mt-0.5" />
-              <div className="text-sm text-info-800">
+              <AlertCircle className="h-5 w-5 text-info-600 dark:text-info-400 flex-shrink-0 mt-0.5" />
+              <div className="text-sm text-info-800 dark:text-info-200">
                 <p className="font-semibold mb-2">Como funciona:</p>
                 <ul className="list-disc list-inside space-y-1">
                   <li>A IA analisa os andamentos processuais e gera resumos em linguagem simples</li>
@@ -354,9 +354,9 @@ const AIConfigPage: React.FC = () => {
 
               {/* Status da API Key Salva */}
               {hasConfig && !apiKey && (
-                <div className="mb-2 flex items-center gap-2 bg-success-50 border border-primary-200 rounded-md px-3 py-2 min-h-[44px]">
-                  <CheckCircle className="h-4 w-4 text-primary-600" />
-                  <span className="text-sm text-success-800 font-medium">
+                <div className="mb-2 flex items-center gap-2 bg-success-50 dark:bg-success-700/20 border border-primary-200 dark:border-primary-700 rounded-md px-3 py-2 min-h-[44px]">
+                  <CheckCircle className="h-4 w-4 text-primary-600 dark:text-primary-400" />
+                  <span className="text-sm text-success-800 dark:text-success-200 font-medium">
                     API Key salva e criptografada com segurança
                   </span>
                 </div>
@@ -369,7 +369,7 @@ const AIConfigPage: React.FC = () => {
                   onChange={(e) => setApiKey(e.target.value)}
                   placeholder={hasConfig ? 'Digite aqui SOMENTE para alterar a API Key' : 'Cole sua API Key aqui'}
                   required={!hasConfig}
-                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 text-neutral-900 dark:text-slate-100 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                 />
                 <button
                   type="button"
@@ -486,10 +486,10 @@ const AIConfigPage: React.FC = () => {
 
           {/* Success indicator */}
           {hasConfig && (
-            <div className="mt-6 bg-success-50 border border-primary-200 rounded-lg p-4">
+            <div className="mt-6 bg-success-50 dark:bg-success-700/20 border border-primary-200 dark:border-primary-700 rounded-lg p-4">
               <div className="flex gap-3">
-                <CheckCircle className="h-5 w-5 text-primary-600 flex-shrink-0" />
-                <div className="text-sm text-success-800">
+                <CheckCircle className="h-5 w-5 text-primary-600 dark:text-primary-400 flex-shrink-0" />
+                <div className="text-sm text-success-800 dark:text-success-200">
                   <p className="font-semibold">IA configurada com sucesso!</p>
                   <p className="mt-1">
                     Provedor: <span className="font-mono">{config.provider}</span> |

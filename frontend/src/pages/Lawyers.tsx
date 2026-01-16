@@ -631,7 +631,7 @@ export default function Lawyers() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20-xl w-full max-w-lg">
             <div className="p-6 border-b border-neutral-200 dark:border-slate-700 flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-neutral-800">Importar Advogados de CSV</h2>
+              <h2 className="text-xl font-semibold text-neutral-800 dark:text-slate-200">Importar Advogados de CSV</h2>
               <button
                 onClick={() => {
                   setShowImportModal(false);

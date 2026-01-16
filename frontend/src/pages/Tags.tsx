@@ -173,8 +173,8 @@ export default function Tags() {
           </div>
 
           {/* Info Box */}
-          <div className="mb-6 bg-info-50 dark:bg-info-900/30 border border-info-200 dark:border-info-700 rounded-lg p-4">
-            <p className="text-info-800 dark:text-info-300 text-sm">
+          <div className="mb-6 bg-info-50 dark:bg-info-700/20 border border-info-200 dark:border-info-600 rounded-lg p-4">
+            <p className="text-info-800 dark:text-info-200 text-sm">
               As tags permitem categorizar clientes e leads de forma padronizada.
               Cada tag pode ter uma cor personalizada para facilitar a identificação visual.
             </p>
@@ -418,7 +418,7 @@ export default function Tags() {
                         type="color"
                         value={formData.color}
                         onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-                        className="w-10 h-10 rounded border border-neutral-300 dark:border-slate-600 cursor-pointer"
+                        className="w-10 h-10 rounded border border-neutral-300 dark:border-slate-600 dark:bg-slate-700 cursor-pointer"
                       />
                       <input
                         type="text"

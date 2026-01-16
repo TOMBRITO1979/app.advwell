@@ -96,36 +96,36 @@ export default function TagSelector({
         type="button"
         onClick={() => !disabled && setIsOpen(!isOpen)}
         disabled={disabled}
-        className={`w-full px-3 py-2 border border-neutral-300 rounded-md flex items-center justify-between min-h-[44px] ${
+        className={`w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md flex items-center justify-between min-h-[44px] ${
           disabled
-            ? 'bg-neutral-100 cursor-not-allowed'
-            : 'bg-white hover:border-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500'
+            ? 'bg-neutral-100 dark:bg-slate-800 cursor-not-allowed'
+            : 'bg-white dark:bg-slate-700 hover:border-neutral-400 dark:hover:border-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500'
         }`}
       >
-        <span className={selectedTagIds.length === 0 ? 'text-neutral-400' : 'text-neutral-700'}>
+        <span className={selectedTagIds.length === 0 ? 'text-neutral-400 dark:text-slate-500' : 'text-neutral-700 dark:text-slate-200'}>
           {selectedTagIds.length === 0
             ? placeholder
             : `${selectedTagIds.length} tag${selectedTagIds.length > 1 ? 's' : ''} selecionada${selectedTagIds.length > 1 ? 's' : ''}`}
         </span>
         <ChevronDown
           size={20}
-          className={`text-neutral-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+          className={`text-neutral-400 dark:text-slate-500 transition-transform ${isOpen ? 'rotate-180' : ''}`}
         />
       </button>
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute z-50 w-full mt-1 bg-white border border-neutral-200 rounded-lg shadow-lg max-h-64 overflow-hidden">
+        <div className="absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border border-neutral-200 dark:border-slate-600 rounded-lg shadow-lg max-h-64 overflow-hidden">
           {/* Search Input */}
-          <div className="p-2 border-b border-neutral-200">
+          <div className="p-2 border-b border-neutral-200 dark:border-slate-600">
             <div className="relative">
-              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-slate-500" />
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Buscar tags..."
-                className="w-full pl-9 pr-3 py-2 border border-neutral-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md text-sm text-neutral-900 dark:text-slate-100 placeholder-neutral-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500"
                 autoFocus
               />
             </div>
@@ -134,9 +134,9 @@ export default function TagSelector({
           {/* Tags List */}
           <div className="overflow-y-auto max-h-48">
             {loading ? (
-              <div className="p-4 text-center text-neutral-500">Carregando...</div>
+              <div className="p-4 text-center text-neutral-500 dark:text-slate-400">Carregando...</div>
             ) : filteredTags.length === 0 ? (
-              <div className="p-4 text-center text-neutral-500">
+              <div className="p-4 text-center text-neutral-500 dark:text-slate-400">
                 {tags.length === 0 ? 'Nenhuma tag cadastrada' : 'Nenhuma tag encontrada'}
               </div>
             ) : (
@@ -147,8 +147,8 @@ export default function TagSelector({
                     key={tag.id}
                     type="button"
                     onClick={() => handleToggleTag(tag.id)}
-                    className={`w-full px-3 py-2 flex items-center justify-between hover:bg-neutral-50 ${
-                      isSelected ? 'bg-primary-50' : ''
+                    className={`w-full px-3 py-2 flex items-center justify-between hover:bg-neutral-50 dark:hover:bg-slate-700 ${
+                      isSelected ? 'bg-primary-50 dark:bg-primary-900/30' : ''
                     }`}
                   >
                     <div className="flex items-center gap-2">

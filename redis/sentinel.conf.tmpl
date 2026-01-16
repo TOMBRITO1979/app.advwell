@@ -1,5 +1,5 @@
 # Redis Sentinel Configuration Template
-# Environment variables are substituted at runtime
+# No password required - internal Docker network only
 
 # Port for this Sentinel
 port 26379
@@ -13,9 +13,6 @@ SENTINEL announce-hostnames yes
 # quorum = number of Sentinels that must agree the master is down
 sentinel monitor mymaster redis 6379 2
 
-# Master password (required if Redis has requirepass)
-sentinel auth-pass mymaster "${REDIS_PASSWORD}"
-
 # Time in milliseconds before considering master down (30 seconds)
 sentinel down-after-milliseconds mymaster 30000
 
@@ -24,12 +21,6 @@ sentinel parallel-syncs mymaster 1
 
 # Failover timeout in milliseconds (3 minutes)
 sentinel failover-timeout mymaster 180000
-
-# Sentinel password (required for client auth to Sentinel)
-requirepass "${REDIS_PASSWORD}"
-
-# Sentinel-to-Sentinel authentication
-sentinel sentinel-pass "${REDIS_PASSWORD}"
 
 # Log level
 loglevel notice

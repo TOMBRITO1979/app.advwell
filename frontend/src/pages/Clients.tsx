@@ -1861,10 +1861,10 @@ const Clients: React.FC = () => {
                             )}
                             <div className="flex flex-wrap gap-2 mt-2">
                               <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                caso.status === 'ACTIVE' ? 'bg-success-100 text-success-800' :
-                                caso.status === 'PENDENTE' ? 'bg-warning-100 text-warning-800' :
-                                caso.status === 'FINISHED' ? 'bg-info-100 text-info-800' :
-                                'bg-neutral-100 text-neutral-800'
+                                caso.status === 'ACTIVE' ? 'bg-success-100 dark:bg-success-900/30 text-success-800 dark:text-success-400' :
+                                caso.status === 'PENDENTE' ? 'bg-warning-100 dark:bg-warning-900/30 text-warning-800 dark:text-warning-400' :
+                                caso.status === 'FINISHED' ? 'bg-info-100 dark:bg-info-900/30 text-info-800 dark:text-info-400' :
+                                'bg-neutral-100 dark:bg-slate-600 text-neutral-800 dark:text-slate-300'
                               }`}>
                                 {caso.status === 'ACTIVE' ? 'Ativo' :
                                  caso.status === 'PENDENTE' ? 'Pendente' :
@@ -1872,7 +1872,7 @@ const Clients: React.FC = () => {
                                  caso.status === 'ARCHIVED' ? 'Arquivado' : caso.status}
                               </span>
                               {caso.court && (
-                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-neutral-100 text-neutral-700 dark:text-slate-300">
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-neutral-100 dark:bg-slate-600 text-neutral-700 dark:text-slate-300">
                                   {caso.court}
                                 </span>
                               )}
@@ -1898,7 +1898,7 @@ const Clients: React.FC = () => {
                     <div className="space-y-3">
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-success-100 rounded-full flex items-center justify-center">
+                          <div className="w-10 h-10 bg-success-100 dark:bg-success-900/30 rounded-full flex items-center justify-center">
                             <Mail className="text-success-600" size={20} />
                           </div>
                           <div>
@@ -1908,15 +1908,15 @@ const Clients: React.FC = () => {
                         </div>
                         <button
                           onClick={handleRemovePortalAccess}
-                          className="inline-flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-error-600 hover:bg-error-50 rounded-lg transition-colors"
+                          className="inline-flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-error-600 dark:text-error-400 hover:bg-error-50 dark:hover:bg-error-900/20 rounded-lg transition-colors"
                         >
                           <UserX size={18} />
                           Remover acesso
                         </button>
                       </div>
                       {portalUser.tempPassword && (
-                        <div className="bg-warning-50 border border-warning-200 rounded-lg p-3">
-                          <p className="text-sm font-medium text-warning-800 mb-1">Senha Temporária (anote agora!):</p>
+                        <div className="bg-warning-50 dark:bg-warning-900/20 border border-warning-200 dark:border-warning-800 rounded-lg p-3">
+                          <p className="text-sm font-medium text-warning-800 dark:text-warning-300 mb-1">Senha Temporária (anote agora!):</p>
                           <div className="flex items-center gap-2">
                             <code className="bg-white dark:bg-slate-800 px-3 py-1.5 rounded border text-lg font-mono font-bold text-neutral-900 dark:text-slate-100 select-all">
                               {portalUser.tempPassword}
@@ -1926,12 +1926,12 @@ const Clients: React.FC = () => {
                                 navigator.clipboard.writeText(portalUser.tempPassword!);
                                 toast.success('Senha copiada!');
                               }}
-                              className="px-3 py-1.5 text-sm bg-warning-100 hover:bg-warning-200 text-warning-800 rounded transition-colors"
+                              className="px-3 py-1.5 text-sm bg-warning-100 dark:bg-warning-900/30 hover:bg-warning-200 dark:hover:bg-warning-800/40 text-warning-800 dark:text-warning-300 rounded transition-colors"
                             >
                               Copiar
                             </button>
                           </div>
-                          <p className="text-xs text-warning-600 mt-2">
+                          <p className="text-xs text-warning-600 dark:text-warning-400 mt-2">
                             Esta senha só aparece uma vez. Envie para o cliente ou peça que ele redefina pelo email.
                           </p>
                         </div>
@@ -1994,7 +1994,7 @@ const Clients: React.FC = () => {
                       setShowDocumentModal(true);
                       loadAvailableDocuments();
                     }}
-                    className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+                    className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
                   >
                     <Upload size={16} />
                     Compartilhar
@@ -2011,7 +2011,7 @@ const Clients: React.FC = () => {
                         <div key={doc.id} className="bg-white dark:bg-slate-800 rounded-lg border border-neutral-200 dark:border-slate-700 p-3">
                           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                             <div className="flex items-start gap-3">
-                              <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                              <div className="w-10 h-10 bg-primary-100 dark:bg-primary-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
                                 {doc.requiresSignature ? (
                                   <FileSignature className="text-primary-600" size={20} />
                                 ) : (
@@ -2193,13 +2193,13 @@ const Clients: React.FC = () => {
 
             <div className="modal-body space-y-4">
               {/* Seleção de origem do documento */}
-              <div className="flex gap-2 p-1 bg-neutral-100 rounded-lg">
+              <div className="flex gap-2 p-1 bg-neutral-100 dark:bg-slate-700 rounded-lg">
                 <button
                   onClick={() => setDocumentSource('upload')}
                   className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${
                     documentSource === 'upload'
-                      ? 'bg-white dark:bg-slate-700 text-primary-700 dark:text-primary-400 shadow-sm'
-                      : 'text-neutral-600 dark:text-slate-400 hover:text-neutral-900 dark:text-slate-100'
+                      ? 'bg-white dark:bg-slate-600 text-primary-700 dark:text-primary-400 shadow-sm'
+                      : 'text-neutral-600 dark:text-slate-400 hover:text-neutral-900 dark:hover:text-slate-200'
                   }`}
                 >
                   <Upload size={16} className="inline mr-2" />
@@ -2209,8 +2209,8 @@ const Clients: React.FC = () => {
                   onClick={() => setDocumentSource('existing')}
                   className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${
                     documentSource === 'existing'
-                      ? 'bg-white dark:bg-slate-700 text-primary-700 dark:text-primary-400 shadow-sm'
-                      : 'text-neutral-600 dark:text-slate-400 hover:text-neutral-900 dark:text-slate-100'
+                      ? 'bg-white dark:bg-slate-600 text-primary-700 dark:text-primary-400 shadow-sm'
+                      : 'text-neutral-600 dark:text-slate-400 hover:text-neutral-900 dark:hover:text-slate-200'
                   }`}
                 >
                   <FileText size={16} className="inline mr-2" />
@@ -2243,7 +2243,7 @@ const Clients: React.FC = () => {
                           setDocumentName(doc.name);
                         }
                       }}
-                      className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 text-neutral-900 dark:text-slate-100 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                     >
                       <option value="">Selecione...</option>
                       {availableDocuments.map((doc) => (
@@ -2264,7 +2264,7 @@ const Clients: React.FC = () => {
                     type="file"
                     ref={docFileInputRef}
                     accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
-                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:font-medium file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 text-neutral-900 dark:text-slate-100 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:font-medium file:bg-primary-50 file:text-primary-700 dark:file:bg-slate-600 dark:file:text-slate-200 hover:file:bg-primary-100 dark:hover:file:bg-slate-500"
                   />
                   <p className="text-xs text-neutral-500 dark:text-slate-400 mt-1">
                     Formatos aceitos: PDF, DOC, DOCX, PNG, JPG (máx. 25MB)
@@ -2281,7 +2281,7 @@ const Clients: React.FC = () => {
                   value={documentName}
                   onChange={(e) => setDocumentName(e.target.value)}
                   placeholder="Ex: Contrato de Honorários"
-                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 text-neutral-900 dark:text-slate-100 placeholder-neutral-400 dark:placeholder-slate-500 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                 />
               </div>
 
@@ -2294,7 +2294,7 @@ const Clients: React.FC = () => {
                   onChange={(e) => setDocumentDescription(e.target.value)}
                   placeholder="Descrição do documento..."
                   rows={2}
-                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 text-neutral-900 dark:text-slate-100 placeholder-neutral-400 dark:placeholder-slate-500 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                 />
               </div>
 
@@ -2312,8 +2312,8 @@ const Clients: React.FC = () => {
               </div>
 
               {requiresSignature && (
-                <div className="bg-info-50 border border-info-200 rounded-lg p-3">
-                  <p className="text-sm text-info-700">
+                <div className="bg-info-50 dark:bg-info-900/20 border border-info-200 dark:border-info-800 rounded-lg p-3">
+                  <p className="text-sm text-info-700 dark:text-info-400">
                     O cliente poderá assinar o documento pelo portal usando o dedo (celular) ou mouse (computador).
                   </p>
                 </div>
@@ -2323,7 +2323,7 @@ const Clients: React.FC = () => {
             <div className="modal-footer">
               <button
                 onClick={resetDocumentModal}
-                className="flex-1 sm:flex-none px-4 py-2 bg-white dark:bg-slate-800 border border-neutral-300 dark:border-slate-600 text-neutral-700 dark:text-slate-300 rounded-lg font-medium text-sm hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 transition-colors"
+                className="flex-1 sm:flex-none px-4 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 text-neutral-700 dark:text-slate-300 rounded-lg font-medium text-sm hover:bg-neutral-50 dark:hover:bg-slate-600 transition-colors"
               >
                 Cancelar
               </button>

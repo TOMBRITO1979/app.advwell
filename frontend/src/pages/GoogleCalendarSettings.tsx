@@ -156,7 +156,7 @@ export default function GoogleCalendarSettings() {
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Google Calendar</h1>
       </div>
 
-      <div className="bg-white dark:bg-slate-800 dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
+      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md border border-gray-200 dark:border-slate-700">
         {/* Status da Conexao */}
         <div className="p-6 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
@@ -258,9 +258,9 @@ export default function GoogleCalendarSettings() {
         )}
 
         {/* Informacoes */}
-        <div className="p-6 bg-gray-50 dark:bg-gray-750 rounded-b-lg">
+        <div className="p-6 bg-gray-50 dark:bg-slate-700 rounded-b-lg">
           <h4 className="font-medium text-gray-900 dark:text-white mb-2">Como funciona?</h4>
-          <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-2">
+          <ul className="text-sm text-gray-600 dark:text-slate-400 space-y-2">
             <li className="flex items-start gap-2">
               <span className="text-blue-500 mt-0.5">1.</span>
               Ao criar um evento na agenda do AdvWell, ele sera automaticamente adicionado ao seu Google Calendar.

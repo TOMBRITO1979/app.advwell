@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import MobileCardList, { MobileCardItem } from '../components/MobileCardList';
 import RichTextEditor from '../components/RichTextEditor';
+import ActionsDropdown from '../components/ui/ActionsDropdown';
 
 interface Client {
   id: string;
@@ -551,7 +552,7 @@ const LegalDocuments: React.FC = () => {
         </div>
 
         {/* Busca */}
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 p-4">
           <div className="flex items-center gap-2">
             <Search size={20} className="text-neutral-400 dark:text-slate-500" />
             <input
@@ -559,13 +560,13 @@ const LegalDocuments: React.FC = () => {
               placeholder="Buscar por título, conteúdo ou cliente..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="flex-1 px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 min-h-[44px]"
+              className="flex-1 px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 text-neutral-900 dark:text-slate-100 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 min-h-[44px]"
             />
           </div>
         </div>
 
         {/* Lista de Documentos */}
-        <div className="bg-white rounded-lg shadow">
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20">
           {loading ? (
             <p className="text-center py-8 text-neutral-600 dark:text-slate-400">Carregando...</p>
           ) : documents.length === 0 ? (
@@ -614,7 +615,7 @@ const LegalDocuments: React.FC = () => {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-neutral-200 bg-white">
+                  <tbody className="divide-y divide-neutral-200 dark:divide-slate-700 bg-white dark:bg-slate-800">
                     {documents.map((doc) => (
                       <tr key={doc.id} className="odd:bg-white dark:odd:bg-slate-800 even:bg-neutral-50 dark:bg-slate-700 dark:even:bg-slate-700/50 hover:bg-success-100 dark:hover:bg-success-900/30 transition-colors">
                         <td className="px-4 py-3 text-sm">
@@ -642,36 +643,31 @@ const LegalDocuments: React.FC = () => {
                           {doc.signer?.name || <span className="text-neutral-400 dark:text-slate-500">-</span>}
                         </td>
                         <td className="px-4 py-3 text-sm text-center">
-                          <div className="flex items-center justify-center gap-1">
-                            <button
-                              onClick={() => handleDownloadPDF(doc)}
-                              className="inline-flex items-center justify-center p-2 min-h-[40px] min-w-[40px] text-info-600 hover:text-info-700 hover:bg-info-50 rounded-md transition-all duration-200"
-                              title="Gerar PDF"
-                            >
-                              <Download size={18} />
-                            </button>
-                            <button
-                              onClick={() => handleReviewWithAI(doc)}
-                              className="inline-flex items-center justify-center p-2 min-h-[40px] min-w-[40px] text-purple-700 hover:text-purple-800 hover:bg-purple-100 rounded-md transition-all duration-200"
-                              title="Revisar com IA"
-                            >
-                              <Sparkles size={18} />
-                            </button>
-                            <button
-                              onClick={() => handleEdit(doc)}
-                              className="inline-flex items-center justify-center p-2 min-h-[40px] min-w-[40px] text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-md transition-all duration-200"
-                              title="Editar"
-                            >
-                              <Edit size={18} />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(doc)}
-                              className="inline-flex items-center justify-center p-2 min-h-[40px] min-w-[40px] text-error-600 hover:text-error-700 hover:bg-error-50 rounded-md transition-all duration-200"
-                              title="Excluir"
-                            >
-                              <Trash2 size={18} />
-                            </button>
-                          </div>
+                          <ActionsDropdown
+                            actions={[
+                              {
+                                label: 'Gerar PDF',
+                                icon: <Download size={16} />,
+                                onClick: () => handleDownloadPDF(doc),
+                              },
+                              {
+                                label: 'Revisar com IA',
+                                icon: <Sparkles size={16} />,
+                                onClick: () => handleReviewWithAI(doc),
+                              },
+                              {
+                                label: 'Editar',
+                                icon: <Edit size={16} />,
+                                onClick: () => handleEdit(doc),
+                              },
+                              {
+                                label: 'Excluir',
+                                icon: <Trash2 size={16} />,
+                                onClick: () => handleDelete(doc),
+                                variant: 'danger',
+                              },
+                            ]}
+                          />
                         </td>
                       </tr>
                     ))}
@@ -684,7 +680,7 @@ const LegalDocuments: React.FC = () => {
 
         {/* Pagination */}
         {total > 0 && (
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white rounded-lg shadow px-4 py-3">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 px-4 py-3">
             <span className="text-sm text-neutral-600 dark:text-slate-400">
               Mostrando {((page - 1) * limit) + 1} a {Math.min(page * limit, total)} de {total} documentos
             </span>
@@ -695,7 +691,7 @@ const LegalDocuments: React.FC = () => {
                   setLimit(Number(e.target.value));
                   setPage(1);
                 }}
-                className="px-2 py-1 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="px-2 py-1 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 text-neutral-900 dark:text-slate-100 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 <option value={25}>25</option>
                 <option value={50}>50</option>
@@ -708,7 +704,7 @@ const LegalDocuments: React.FC = () => {
               <button
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="inline-flex items-center justify-center p-2 min-h-[40px] min-w-[40px] border border-neutral-300 dark:border-slate-600 rounded-md hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="inline-flex items-center justify-center p-2 min-h-[40px] min-w-[40px] bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 text-neutral-700 dark:text-slate-300 rounded-md hover:bg-neutral-50 dark:hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <ChevronLeft size={18} />
               </button>
@@ -718,7 +714,7 @@ const LegalDocuments: React.FC = () => {
               <button
                 onClick={() => setPage(p => Math.min(Math.ceil(total / limit), p + 1))}
                 disabled={page >= Math.ceil(total / limit)}
-                className="inline-flex items-center justify-center p-2 min-h-[40px] min-w-[40px] border border-neutral-300 dark:border-slate-600 rounded-md hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="inline-flex items-center justify-center p-2 min-h-[40px] min-w-[40px] bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 text-neutral-700 dark:text-slate-300 rounded-md hover:bg-neutral-50 dark:hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <ChevronRight size={18} />
               </button>
@@ -730,8 +726,8 @@ const LegalDocuments: React.FC = () => {
       {/* Modal Criar/Editar */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
-          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-neutral-200 dark:border-slate-700 px-6 py-4 flex justify-between items-center">
+          <div className="bg-white dark:bg-slate-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white dark:bg-slate-800 border-b border-neutral-200 dark:border-slate-700 px-6 py-4 flex justify-between items-center">
               <h2 className="text-xl font-bold text-neutral-900 dark:text-slate-100">
                 {editMode ? 'Editar Documento' : 'Novo Documento'}
               </h2>
@@ -759,7 +755,7 @@ const LegalDocuments: React.FC = () => {
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                     placeholder="Ex: Recibo de Honorários, Procuração, Contrato de Prestação de Serviços..."
-                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 text-neutral-900 dark:text-slate-100 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                     required
                   />
                 </div>
@@ -781,11 +777,11 @@ const LegalDocuments: React.FC = () => {
                       value={caseSearchText}
                       onChange={(e) => setCaseSearchText(e.target.value)}
                       placeholder="Digite nº processo, nome do cliente ou assunto..."
-                      className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-600 border border-neutral-300 dark:border-slate-500 text-neutral-900 dark:text-slate-100 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                     />
                     {/* Suggestions dropdown - only shows when typing */}
                     {caseSearchText.trim() && filteredCases.length > 0 && (
-                      <div className="absolute z-50 w-full mt-1 bg-white border border-neutral-300 dark:border-slate-600 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                      <div className="absolute z-50 w-full mt-1 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md shadow-lg max-h-48 overflow-y-auto">
                         {filteredCases.slice(0, 10).map((caseItem) => (
                           <button
                             key={caseItem.id}
@@ -795,9 +791,9 @@ const LegalDocuments: React.FC = () => {
                               setCaseSearchText(`${caseItem.processNumber} - ${caseItem.subject?.substring(0, 30)}`);
                               loadCaseParts(caseItem.id);
                             }}
-                            className="w-full px-3 py-2 text-left hover:bg-neutral-100 text-sm text-neutral-700 dark:text-slate-300 border-b border-neutral-100 last:border-b-0"
+                            className="w-full px-3 py-2 text-left hover:bg-neutral-100 dark:hover:bg-slate-600 text-sm text-neutral-700 dark:text-slate-300 border-b border-neutral-100 dark:border-slate-600 last:border-b-0"
                           >
-                            <div className="font-medium">{caseItem.processNumber}</div>
+                            <div className="font-medium text-neutral-900 dark:text-slate-100">{caseItem.processNumber}</div>
                             <div className="text-xs text-neutral-500 dark:text-slate-400">
                               {caseItem.subject?.substring(0, 50)}
                               {caseItem.client?.name && ` - ${caseItem.client.name}`}
@@ -833,7 +829,7 @@ const LegalDocuments: React.FC = () => {
                       {caseParts.map((part) => (
                         <label
                           key={part.id}
-                          className="flex items-start gap-3 p-2 border border-neutral-200 dark:border-slate-700 rounded-md bg-white cursor-pointer hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700"
+                          className="flex items-start gap-3 p-2 border border-neutral-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-600 cursor-pointer hover:bg-neutral-50 dark:hover:bg-slate-500"
                         >
                           <input
                             type="checkbox"
@@ -944,7 +940,7 @@ const LegalDocuments: React.FC = () => {
                         type="date"
                         value={formData.documentDate}
                         onChange={(e) => setFormData({ ...formData, documentDate: e.target.value })}
-                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 text-neutral-900 dark:text-slate-100 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
 
@@ -956,7 +952,7 @@ const LegalDocuments: React.FC = () => {
                       <select
                         value={formData.signerId}
                         onChange={(e) => setFormData({ ...formData, signerId: e.target.value })}
-                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 text-neutral-900 dark:text-slate-100 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       >
                         <option value="">Selecione o assinante...</option>
                         {users.map((user) => (
@@ -1014,13 +1010,13 @@ const LegalDocuments: React.FC = () => {
                     setShowModal(false);
                     resetForm();
                   }}
-                  className="px-4 py-2 border border-neutral-300 dark:border-slate-600 rounded-md text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 transition-colors min-h-[44px]"
+                  className="px-4 py-2 border border-neutral-300 dark:border-slate-600 bg-white dark:bg-slate-700 rounded-md text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-600 transition-colors min-h-[44px]"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-primary-100 text-primary-700 border border-primary-200 rounded-md hover:bg-primary-200 transition-colors min-h-[44px]"
+                  className="px-4 py-2 bg-primary-100 dark:bg-primary-700/30 text-primary-700 dark:text-primary-300 border border-primary-200 dark:border-primary-600 rounded-md hover:bg-primary-200 dark:hover:bg-primary-700/50 transition-colors min-h-[44px]"
                 >
                   {editMode ? 'Salvar Alterações' : 'Criar Documento'}
                 </button>
@@ -1033,8 +1029,8 @@ const LegalDocuments: React.FC = () => {
       {/* Modal de Revisão com IA */}
       {showReviewModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
-          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-neutral-200 dark:border-slate-700 px-6 py-4 flex justify-between items-center">
+          <div className="bg-white dark:bg-slate-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white dark:bg-slate-800 border-b border-neutral-200 dark:border-slate-700 px-6 py-4 flex justify-between items-center">
               <div className="flex items-center gap-2">
                 <Sparkles size={24} className="text-primary-600" />
                 <h2 className="text-xl font-bold text-neutral-900 dark:text-slate-100">Revisão com IA</h2>
@@ -1128,7 +1124,7 @@ const LegalDocuments: React.FC = () => {
                     setShowReviewModal(false);
                     setReviewResult(null);
                   }}
-                  className="px-4 py-2 border border-neutral-300 dark:border-slate-600 text-neutral-700 dark:text-slate-300 rounded-md hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 transition-colors min-h-[44px]"
+                  className="px-4 py-2 border border-neutral-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-neutral-700 dark:text-slate-300 rounded-md hover:bg-neutral-50 dark:hover:bg-slate-600 transition-colors min-h-[44px]"
                 >
                   Fechar
                 </button>

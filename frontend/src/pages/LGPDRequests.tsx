@@ -236,7 +236,7 @@ const LGPDRequests: React.FC = () => {
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="px-3 py-1.5 border border-neutral-300 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
+              className="px-3 py-1.5 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 text-neutral-900 dark:text-slate-100 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
             >
               <option value="">Todos os Status</option>
               <option value="PENDING">Pendente</option>
@@ -247,7 +247,7 @@ const LGPDRequests: React.FC = () => {
             <select
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
-              className="px-3 py-1.5 border border-neutral-300 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
+              className="px-3 py-1.5 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 text-neutral-900 dark:text-slate-100 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
             >
               <option value="">Todos os Tipos</option>
               <option value="ACCESS">Acesso</option>
@@ -426,7 +426,7 @@ const LGPDRequests: React.FC = () => {
                       <select
                         value={newStatus}
                         onChange={(e) => setNewStatus(e.target.value)}
-                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500"
+                        className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 text-neutral-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-primary-500"
                       >
                         <option value="IN_PROGRESS">Em Processamento</option>
                         <option value="COMPLETED">Concluído</option>
@@ -442,7 +442,7 @@ const LGPDRequests: React.FC = () => {
                         value={notes}
                         onChange={(e) => setNotes(e.target.value)}
                         rows={3}
-                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500"
+                        className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 text-neutral-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-primary-500"
                         placeholder="Informacoes sobre o processamento..."
                       />
                     </div>
@@ -456,7 +456,7 @@ const LGPDRequests: React.FC = () => {
                           value={rejectionReason}
                           onChange={(e) => setRejectionReason(e.target.value)}
                           rows={3}
-                          className="w-full px-3 py-2 border border-danger-300 rounded-lg focus:ring-2 focus:ring-danger-500"
+                          className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-danger-300 dark:border-danger-700 text-neutral-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-danger-500"
                           placeholder="Explique o motivo da rejeicao..."
                           required
                         />
@@ -472,7 +472,7 @@ const LGPDRequests: React.FC = () => {
                           type="url"
                           value={resultUrl}
                           onChange={(e) => setResultUrl(e.target.value)}
-                          className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500"
+                          className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 text-neutral-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-primary-500"
                           placeholder="https://..."
                         />
                       </div>

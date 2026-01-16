@@ -1,13 +1,11 @@
 #!/bin/sh
 # Sentinel Entrypoint Script
-# Substitutes environment variables and starts Sentinel
+# Starts Sentinel without password authentication
 
 set -e
 
-# Substitute REDIS_PASSWORD using sed (envsubst not available in Alpine)
-sed "s/\${REDIS_PASSWORD}/${REDIS_PASSWORD}/g" /etc/redis/sentinel.conf.tmpl > /tmp/sentinel.conf
-
-# Make the config writable (Sentinel updates it during runtime)
+# Copy template to writable location (Sentinel updates config during runtime)
+cp /etc/redis/sentinel.conf.tmpl /tmp/sentinel.conf
 chmod 666 /tmp/sentinel.conf
 
 echo "Starting Redis Sentinel..."

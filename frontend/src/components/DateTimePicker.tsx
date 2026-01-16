@@ -45,7 +45,7 @@ export default function DateTimePicker({
       dateFormat={dateFormat}
       locale="pt-BR"
       placeholderText={placeholderText}
-      className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] ${className}`}
+      className={`w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-neutral-900 dark:text-slate-100 placeholder-neutral-400 dark:placeholder-slate-500 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] ${className}`}
       required={required}
       minDate={minDate}
       maxDate={maxDate}
@@ -74,7 +74,7 @@ export function DateOnlyPicker({
       dateFormat={dateFormat}
       locale="pt-BR"
       placeholderText={placeholderText}
-      className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] ${className}`}
+      className={`w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-neutral-900 dark:text-slate-100 placeholder-neutral-400 dark:placeholder-slate-500 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] ${className}`}
       required={required}
       minDate={minDate}
       maxDate={maxDate}

@@ -203,11 +203,11 @@ const LeadAnalytics: React.FC = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-neutral-800 flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl font-bold text-neutral-800 dark:text-slate-100 flex items-center gap-2">
               <BarChart3 className="text-primary-600" size={24} />
               Analytics de Leads
             </h1>
-            <p className="text-sm sm:text-base text-neutral-600 mt-1">
+            <p className="text-sm sm:text-base text-neutral-600 dark:text-slate-400 mt-1">
               Estatísticas detalhadas de conversão e performance
             </p>
           </div>
@@ -217,7 +217,7 @@ const LeadAnalytics: React.FC = () => {
             <select
               value={period}
               onChange={(e) => setPeriod(e.target.value)}
-              className="px-3 py-2 text-sm border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="px-3 py-2 text-sm border border-neutral-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             >
               {PERIOD_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -456,26 +456,26 @@ const LeadAnalytics: React.FC = () => {
 
           {tagEffectiveness.length > 0 ? (
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-neutral-200">
-                <thead className="bg-neutral-50">
+              <table className="min-w-full divide-y divide-neutral-200 dark:divide-slate-700">
+                <thead className="bg-neutral-50 dark:bg-slate-700">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 dark:text-slate-400 uppercase tracking-wider">
                       Tag
                     </th>
-                    <th className="px-4 py-3 text-center text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-center text-xs font-medium text-neutral-500 dark:text-slate-400 uppercase tracking-wider">
                       Total
                     </th>
-                    <th className="px-4 py-3 text-center text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-center text-xs font-medium text-neutral-500 dark:text-slate-400 uppercase tracking-wider">
                       Convertidos
                     </th>
-                    <th className="px-4 py-3 text-center text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-center text-xs font-medium text-neutral-500 dark:text-slate-400 uppercase tracking-wider">
                       Taxa
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-neutral-200">
+                <tbody className="bg-white dark:bg-slate-800 divide-y divide-neutral-200 dark:divide-slate-700">
                   {tagEffectiveness.map((tag) => (
-                    <tr key={tag.tagId} className="hover:bg-neutral-50">
+                    <tr key={tag.tagId} className="hover:bg-neutral-50 dark:hover:bg-slate-700">
                       <td className="px-4 py-3 whitespace-nowrap">
                         <span
                           className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium text-white"
@@ -484,20 +484,20 @@ const LeadAnalytics: React.FC = () => {
                           {tag.tagName}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-center text-sm text-neutral-900">
+                      <td className="px-4 py-3 text-center text-sm text-neutral-900 dark:text-slate-100">
                         {tag.total}
                       </td>
-                      <td className="px-4 py-3 text-center text-sm text-neutral-900">
+                      <td className="px-4 py-3 text-center text-sm text-neutral-900 dark:text-slate-100">
                         {tag.converted}
                       </td>
                       <td className="px-4 py-3 text-center">
                         <span
                           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                             parseFloat(tag.conversionRate) >= 50
-                              ? 'bg-green-100 text-green-800'
+                              ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400'
                               : parseFloat(tag.conversionRate) >= 25
-                              ? 'bg-yellow-100 text-yellow-800'
-                              : 'bg-red-100 text-red-800'
+                              ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400'
+                              : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400'
                           }`}
                         >
                           {tag.conversionRate}%

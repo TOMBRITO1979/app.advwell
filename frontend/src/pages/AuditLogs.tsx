@@ -313,7 +313,7 @@ const AuditLogs: React.FC = () => {
                 setFilterEntityType(e.target.value);
                 setPage(1);
               }}
-              className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
+              className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 text-neutral-900 dark:text-slate-100 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
             >
               <option value="">Todas Entidades</option>
               <option value="CLIENT">Clientes</option>
@@ -327,7 +327,7 @@ const AuditLogs: React.FC = () => {
                 setFilterAction(e.target.value);
                 setPage(1);
               }}
-              className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
+              className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 text-neutral-900 dark:text-slate-100 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
             >
               <option value="">Todas Ações</option>
               <option value="CREATE">Criação</option>
@@ -342,7 +342,7 @@ const AuditLogs: React.FC = () => {
                   setFilterUserId(e.target.value);
                   setPage(1);
                 }}
-                className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
+                className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 text-neutral-900 dark:text-slate-100 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
               >
                 <option value="">Todos Usuários</option>
                 {users.map((u) => (
@@ -366,7 +366,7 @@ const AuditLogs: React.FC = () => {
                   setFilterStartDate(e.target.value);
                   setPage(1);
                 }}
-                className="flex-1 px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
+                className="flex-1 px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 text-neutral-900 dark:text-slate-100 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
               />
             </div>
             <div className="flex items-center gap-2">
@@ -378,7 +378,7 @@ const AuditLogs: React.FC = () => {
                   setFilterEndDate(e.target.value);
                   setPage(1);
                 }}
-                className="flex-1 px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
+                className="flex-1 px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 text-neutral-900 dark:text-slate-100 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
               />
             </div>
           </div>
@@ -393,7 +393,7 @@ const AuditLogs: React.FC = () => {
                 onChange={(e) => setSearch(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                 placeholder="Buscar por nome, usuário ou descrição..."
-                className="w-full pl-10 pr-4 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
+                className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 text-neutral-900 dark:text-slate-100 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
               />
             </div>
             <button

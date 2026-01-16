@@ -54,9 +54,9 @@ const planIcons: Record<string, React.ReactNode> = {
 };
 
 const planColors: Record<string, string> = {
-  BRONZE: 'border-amber-500 bg-amber-50',
-  PRATA: 'border-gray-400 bg-gray-50',
-  OURO: 'border-yellow-500 bg-yellow-50',
+  BRONZE: 'border-amber-500 bg-amber-50 dark:bg-amber-900/20',
+  PRATA: 'border-gray-400 dark:border-gray-500 bg-gray-50 dark:bg-gray-700/50',
+  OURO: 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20',
 };
 
 const planButtonColors: Record<string, string> = {
@@ -138,17 +138,17 @@ export default function Subscription() {
     return (
       <Layout>
         <div className="text-center py-12">
-          <p className="text-gray-500">Erro ao carregar informações</p>
+          <p className="text-gray-500 dark:text-slate-400">Erro ao carregar informações</p>
         </div>
       </Layout>
     );
   }
 
   const statusColors: Record<string, string> = {
-    TRIAL: 'bg-blue-100 text-blue-800',
-    ACTIVE: 'bg-green-100 text-green-800',
-    EXPIRED: 'bg-red-100 text-red-800',
-    CANCELLED: 'bg-gray-100 text-gray-800',
+    TRIAL: 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400',
+    ACTIVE: 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400',
+    EXPIRED: 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400',
+    CANCELLED: 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300',
   };
 
   const statusLabels: Record<string, string> = {
@@ -162,14 +162,14 @@ export default function Subscription() {
     <Layout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold text-gray-900">Assinatura</h1>
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-slate-100">Assinatura</h1>
         </div>
 
       {/* Status Card */}
-      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-200 dark:border-slate-700 p-6">
         <div className="flex items-start justify-between">
           <div>
-            <h2 className="text-lg font-medium text-gray-900">Status da Assinatura</h2>
+            <h2 className="text-lg font-medium text-gray-900 dark:text-slate-100">Status da Assinatura</h2>
             <div className="mt-2 flex items-center gap-3">
               <span
                 className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
@@ -179,8 +179,8 @@ export default function Subscription() {
                 {statusLabels[info.status || 'EXPIRED'] || 'Sem assinatura'}
               </span>
               {info.plan && (
-                <span className="text-gray-600">
-                  Plano: <strong>{info.plan}</strong>
+                <span className="text-gray-600 dark:text-slate-400">
+                  Plano: <strong className="dark:text-slate-200">{info.plan}</strong>
                 </span>
               )}
             </div>
@@ -188,7 +188,7 @@ export default function Subscription() {
           {info.hasStripeSubscription && (
             <button
               onClick={handleManageBilling}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg hover:bg-gray-50"
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-slate-300 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-600"
             >
               <CreditCard className="h-4 w-4" />
               Gerenciar Pagamento
@@ -198,17 +198,17 @@ export default function Subscription() {
 
         {/* Alert for expiring/expired */}
         {!info.isValid && (
-          <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
-            <AlertTriangle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+          <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-medium text-red-800">
+              <p className="text-sm font-medium text-red-800 dark:text-red-300">
                 {info.status === 'TRIAL'
                   ? 'Seu período de teste expirou'
                   : info.status === 'EXPIRED'
                   ? 'Sua assinatura expirou'
                   : 'Assine um plano para continuar usando o sistema'}
               </p>
-              <p className="text-sm text-red-600 mt-1">
+              <p className="text-sm text-red-600 dark:text-red-400 mt-1">
                 Escolha um plano abaixo para continuar usando todas as funcionalidades.
               </p>
             </div>
@@ -217,23 +217,23 @@ export default function Subscription() {
 
         {/* Usage stats */}
         <div className="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="p-4 bg-gray-50 rounded-lg">
-            <p className="text-sm text-gray-500">Processos Usados</p>
-            <p className="text-2xl font-semibold text-gray-900">{info.casesUsed}</p>
+          <div className="p-4 bg-gray-50 dark:bg-slate-700 rounded-lg">
+            <p className="text-sm text-gray-500 dark:text-slate-400">Processos Usados</p>
+            <p className="text-2xl font-semibold text-gray-900 dark:text-slate-100">{info.casesUsed}</p>
           </div>
-          <div className="p-4 bg-gray-50 rounded-lg">
-            <p className="text-sm text-gray-500">Limite de Processos</p>
-            <p className="text-2xl font-semibold text-gray-900">{info.casesLimit}</p>
+          <div className="p-4 bg-gray-50 dark:bg-slate-700 rounded-lg">
+            <p className="text-sm text-gray-500 dark:text-slate-400">Limite de Processos</p>
+            <p className="text-2xl font-semibold text-gray-900 dark:text-slate-100">{info.casesLimit}</p>
           </div>
-          <div className="p-4 bg-gray-50 rounded-lg">
-            <p className="text-sm text-gray-500">Restantes</p>
-            <p className="text-2xl font-semibold text-gray-900">{info.casesRemaining}</p>
+          <div className="p-4 bg-gray-50 dark:bg-slate-700 rounded-lg">
+            <p className="text-sm text-gray-500 dark:text-slate-400">Restantes</p>
+            <p className="text-2xl font-semibold text-gray-900 dark:text-slate-100">{info.casesRemaining}</p>
           </div>
-          <div className="p-4 bg-gray-50 rounded-lg">
-            <p className="text-sm text-gray-500">
+          <div className="p-4 bg-gray-50 dark:bg-slate-700 rounded-lg">
+            <p className="text-sm text-gray-500 dark:text-slate-400">
               {info.status === 'TRIAL' ? 'Teste expira em' : 'Renova em'}
             </p>
-            <p className="text-lg font-semibold text-gray-900">
+            <p className="text-lg font-semibold text-gray-900 dark:text-slate-100">
               {info.daysRemaining !== undefined
                 ? `${info.daysRemaining} dia(s)`
                 : formatDate(info.subscriptionEndsAt || info.trialEndsAt)}
@@ -242,19 +242,19 @@ export default function Subscription() {
         </div>
 
         {/* Storage Usage */}
-        <div className="mt-6 p-4 bg-purple-50 border border-purple-200 rounded-lg">
+        <div className="mt-6 p-4 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg">
           <div className="flex items-center gap-2 mb-3">
-            <HardDrive className="h-5 w-5 text-purple-600" />
-            <h3 className="font-medium text-purple-900">Armazenamento</h3>
+            <HardDrive className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+            <h3 className="font-medium text-purple-900 dark:text-purple-300">Armazenamento</h3>
           </div>
           <div className="space-y-3">
             <div className="flex justify-between items-center text-sm">
-              <span className="text-purple-700">Usado</span>
-              <span className="font-medium text-purple-900">
+              <span className="text-purple-700 dark:text-purple-400">Usado</span>
+              <span className="font-medium text-purple-900 dark:text-purple-300">
                 {info.storageUsedFormatted} de {info.storageLimitFormatted}
               </span>
             </div>
-            <div className="w-full bg-purple-200 rounded-full h-3">
+            <div className="w-full bg-purple-200 dark:bg-purple-800 rounded-full h-3">
               <div
                 className={`h-3 rounded-full transition-all ${
                   info.storageUsedPercent > 90
@@ -266,12 +266,12 @@ export default function Subscription() {
                 style={{ width: `${Math.min(info.storageUsedPercent, 100)}%` }}
               />
             </div>
-            <div className="flex justify-between items-center text-xs text-purple-600">
+            <div className="flex justify-between items-center text-xs text-purple-600 dark:text-purple-400">
               <span>{info.storageUsedPercent?.toFixed(1) || 0}% usado</span>
               <span>{info.fileCount} arquivo(s)</span>
             </div>
             {info.isStorageOverLimit && (
-              <div className="flex items-center gap-2 p-2 bg-red-100 border border-red-200 rounded text-sm text-red-700">
+              <div className="flex items-center gap-2 p-2 bg-red-100 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded text-sm text-red-700 dark:text-red-400">
                 <AlertTriangle className="h-4 w-4" />
                 Limite de armazenamento excedido! Faça upgrade do seu plano.
               </div>
@@ -281,8 +281,8 @@ export default function Subscription() {
       </div>
 
       {/* Plans */}
-      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-200 p-6">
-        <h2 className="text-lg font-medium text-gray-900 mb-6">Escolha seu Plano</h2>
+      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-200 dark:border-slate-700 p-6">
+        <h2 className="text-lg font-medium text-gray-900 dark:text-slate-100 mb-6">Escolha seu Plano</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {Object.entries(info.availablePlans).map(([key, plan]) => {
@@ -293,7 +293,7 @@ export default function Subscription() {
               <div
                 key={key}
                 className={`relative rounded-xl border-2 p-6 ${
-                  isCurrentPlan ? planColors[planKey] : 'border-gray-200'
+                  isCurrentPlan ? planColors[planKey] : 'border-gray-200 dark:border-slate-600'
                 }`}
               >
                 {isCurrentPlan && (
@@ -306,19 +306,19 @@ export default function Subscription() {
 
                 <div className="text-center">
                   <div className="flex justify-center mb-4">{planIcons[planKey]}</div>
-                  <h3 className="text-xl font-semibold text-gray-900">{plan.name}</h3>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-slate-100">{plan.name}</h3>
                   <div className="mt-2">
-                    <span className="text-4xl font-bold text-gray-900">${plan.priceUsd}</span>
-                    <span className="text-gray-500">/mês</span>
+                    <span className="text-4xl font-bold text-gray-900 dark:text-slate-100">${plan.priceUsd}</span>
+                    <span className="text-gray-500 dark:text-slate-400">/mês</span>
                   </div>
-                  <p className="mt-2 text-sm text-gray-500">
+                  <p className="mt-2 text-sm text-gray-500 dark:text-slate-400">
                     Até {plan.casesLimit.toLocaleString()} processos
                   </p>
                 </div>
 
                 <ul className="mt-6 space-y-3">
                   {plan.features.map((feature, idx) => (
-                    <li key={idx} className="flex items-center gap-2 text-sm text-gray-600">
+                    <li key={idx} className="flex items-center gap-2 text-sm text-gray-600 dark:text-slate-300">
                       <Check className="h-4 w-4 text-green-500 flex-shrink-0" />
                       {feature}
                     </li>
@@ -329,7 +329,7 @@ export default function Subscription() {
                   {isCurrentPlan ? (
                     <button
                       disabled
-                      className="w-full py-3 px-4 text-sm font-medium text-gray-500 bg-gray-100 rounded-lg cursor-not-allowed"
+                      className="w-full py-3 px-4 text-sm font-medium text-gray-500 dark:text-slate-400 bg-gray-100 dark:bg-slate-700 rounded-lg cursor-not-allowed"
                     >
                       Plano Atual
                     </button>
@@ -361,33 +361,33 @@ export default function Subscription() {
       </div>
 
       {/* FAQ */}
-      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-200 p-6">
-        <h2 className="text-lg font-medium text-gray-900 mb-4">Perguntas Frequentes</h2>
+      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-200 dark:border-slate-700 p-6">
+        <h2 className="text-lg font-medium text-gray-900 dark:text-slate-100 mb-4">Perguntas Frequentes</h2>
         <div className="space-y-4">
           <div>
-            <h3 className="font-medium text-gray-900">Como funciona a cobrança?</h3>
-            <p className="text-sm text-gray-600 mt-1">
+            <h3 className="font-medium text-gray-900 dark:text-slate-200">Como funciona a cobrança?</h3>
+            <p className="text-sm text-gray-600 dark:text-slate-400 mt-1">
               A cobrança é mensal e automática no cartão cadastrado. Você pode cancelar a qualquer
               momento.
             </p>
           </div>
           <div>
-            <h3 className="font-medium text-gray-900">Posso mudar de plano?</h3>
-            <p className="text-sm text-gray-600 mt-1">
+            <h3 className="font-medium text-gray-900 dark:text-slate-200">Posso mudar de plano?</h3>
+            <p className="text-sm text-gray-600 dark:text-slate-400 mt-1">
               Sim, você pode fazer upgrade ou downgrade a qualquer momento. A diferença será
               calculada proporcionalmente.
             </p>
           </div>
           <div>
-            <h3 className="font-medium text-gray-900">O que acontece se eu exceder o limite?</h3>
-            <p className="text-sm text-gray-600 mt-1">
+            <h3 className="font-medium text-gray-900 dark:text-slate-200">O que acontece se eu exceder o limite?</h3>
+            <p className="text-sm text-gray-600 dark:text-slate-400 mt-1">
               Você receberá uma notificação para fazer upgrade do plano. Processos existentes não
               serão afetados.
             </p>
           </div>
           <div>
-            <h3 className="font-medium text-gray-900">Os valores são em dólares?</h3>
-            <p className="text-sm text-gray-600 mt-1">
+            <h3 className="font-medium text-gray-900 dark:text-slate-200">Os valores são em dólares?</h3>
+            <p className="text-sm text-gray-600 dark:text-slate-400 mt-1">
               Sim, todos os preços são em dólares americanos (USD). A conversão para reais é feita
               automaticamente pelo seu banco.
             </p>

@@ -118,16 +118,16 @@ export default function CaseTimeline({ caseId }: CaseTimelineProps) {
           {logs.map((log) => (
             <div key={log.id} className="relative flex gap-4">
               {/* Ícone */}
-              <div className="relative z-10 flex-shrink-0 w-8 h-8 bg-white rounded-full border-2 border-neutral-200 flex items-center justify-center">
+              <div className="relative z-10 flex-shrink-0 w-8 h-8 bg-white dark:bg-slate-700 rounded-full border-2 border-neutral-200 dark:border-slate-600 flex items-center justify-center">
                 {getActionIcon(log.action)}
               </div>
 
               {/* Conteúdo */}
               <div className="flex-1 pb-6">
-                <div className="bg-neutral-50 rounded-lg p-4 border border-neutral-200">
-                  <p className="text-neutral-900 font-medium mb-1">{log.description}</p>
+                <div className="bg-neutral-50 dark:bg-slate-700 rounded-lg p-4 border border-neutral-200 dark:border-slate-600">
+                  <p className="text-neutral-900 dark:text-slate-100 font-medium mb-1">{log.description}</p>
 
-                  <div className="flex items-center gap-4 text-sm text-neutral-500 mt-2">
+                  <div className="flex items-center gap-4 text-sm text-neutral-500 dark:text-slate-400 mt-2">
                     <div className="flex items-center gap-1">
                       <User size={14} />
                       <span>{log.user.name}</span>

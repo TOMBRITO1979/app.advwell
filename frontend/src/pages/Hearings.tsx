@@ -982,10 +982,10 @@ const Hearings: React.FC = () => {
                       onChange={(e) => setClientSearchTerm(e.target.value)}
                       onFocus={() => setShowClientSuggestions(true)}
                       onBlur={() => setTimeout(() => setShowClientSuggestions(false), 200)}
-                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] ${
+                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-neutral-900 dark:text-slate-100 ${
                         formData.type === 'AUDIENCIA' && !selectedClient
-                          ? 'border-red-300 bg-red-50'
-                          : 'border-gray-300'
+                          ? 'border-red-300 bg-red-50 dark:bg-red-900/20 dark:border-red-700'
+                          : 'border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700'
                       }`}
                       placeholder="Digite o nome ou CPF do cliente..."
                     />
@@ -1025,10 +1025,10 @@ const Hearings: React.FC = () => {
                       onChange={(e) => setCaseSearchTerm(e.target.value)}
                       onFocus={() => setShowCaseSuggestions(true)}
                       onBlur={() => setTimeout(() => setShowCaseSuggestions(false), 200)}
-                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] ${
+                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-neutral-900 dark:text-slate-100 ${
                         formData.type === 'AUDIENCIA' && !selectedCase
-                          ? 'border-red-300 bg-red-50'
-                          : 'border-gray-300'
+                          ? 'border-red-300 bg-red-50 dark:bg-red-900/20 dark:border-red-700'
+                          : 'border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700'
                       }`}
                       placeholder="Digite o número ou assunto do processo..."
                     />

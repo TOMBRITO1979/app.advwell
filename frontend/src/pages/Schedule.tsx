@@ -677,7 +677,7 @@ const Schedule: React.FC = () => {
           {/* Import Button */}
           <button
             onClick={() => setShowImportModal(true)}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-white dark:bg-slate-800 text-neutral-700 dark:text-slate-300 border border-neutral-200 dark:border-slate-700 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 font-medium rounded-lg transition-all duration-200"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-700 dark:text-slate-300 border border-neutral-200 dark:border-slate-600 hover:bg-neutral-50 dark:hover:bg-slate-600 font-medium rounded-lg transition-all duration-200"
           >
             <Upload size={20} />
             <span>Importar</span>
@@ -687,7 +687,7 @@ const Schedule: React.FC = () => {
             <button
               onClick={() => setShowExportMenu(!showExportMenu)}
               disabled={exporting}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-white dark:bg-slate-800 text-neutral-700 dark:text-slate-300 border border-neutral-200 dark:border-slate-700 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 font-medium rounded-lg transition-all duration-200"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-700 dark:text-slate-300 border border-neutral-200 dark:border-slate-600 hover:bg-neutral-50 dark:hover:bg-slate-600 font-medium rounded-lg transition-all duration-200"
             >
               <Download size={20} />
               <span>{exporting ? 'Exportando...' : 'Exportar'}</span>
@@ -1298,10 +1298,10 @@ const Schedule: React.FC = () => {
                       onChange={(e) => setClientSearchTerm(e.target.value)}
                       onFocus={() => setShowClientSuggestions(true)}
                       onBlur={() => setTimeout(() => setShowClientSuggestions(false), 200)}
-                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] ${
+                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-neutral-900 dark:text-slate-100 ${
                         (formData.type === 'AUDIENCIA' || formData.type === 'PERICIA') && !selectedClient
-                          ? 'border-red-300 bg-red-50'
-                          : 'border-gray-300'
+                          ? 'border-red-300 bg-red-50 dark:bg-red-900/20 dark:border-red-700'
+                          : 'border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700'
                       }`}
                       placeholder="Digite o nome ou CPF do cliente..."
                     />
@@ -1365,10 +1365,10 @@ const Schedule: React.FC = () => {
                         }
                       }}
                       onBlur={() => setTimeout(() => setShowCaseSuggestions(false), 200)}
-                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] ${
+                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-neutral-900 dark:text-slate-100 ${
                         (formData.type === 'AUDIENCIA' || formData.type === 'PERICIA') && !selectedCase
-                          ? 'border-red-300 bg-red-50'
-                          : 'border-gray-300'
+                          ? 'border-red-300 bg-red-50 dark:bg-red-900/20 dark:border-red-700'
+                          : 'border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700'
                       }`}
                       placeholder={selectedClient ? 'Selecione ou digite para buscar...' : 'Selecione um cliente primeiro...'}
                     />
@@ -1650,7 +1650,7 @@ const Schedule: React.FC = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20-xl w-full max-w-lg">
             <div className="p-6 border-b border-neutral-200 dark:border-slate-700">
-              <h2 className="text-xl font-semibold text-neutral-800">Importar Eventos de CSV</h2>
+              <h2 className="text-xl font-semibold text-neutral-800 dark:text-slate-200">Importar Eventos de CSV</h2>
             </div>
             <div className="p-6 space-y-4">
               <div className="bg-info-50 border border-info-200 rounded-lg p-4">

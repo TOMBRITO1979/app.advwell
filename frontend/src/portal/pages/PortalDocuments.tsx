@@ -8,11 +8,11 @@ import { ptBR } from 'date-fns/locale';
 import toast from 'react-hot-toast';
 
 const statusConfig = {
-  PENDING: { label: 'Pendente', color: 'bg-gray-100 text-gray-700', icon: Clock },
-  VIEWED: { label: 'Visualizado', color: 'bg-yellow-100 text-yellow-700', icon: Eye },
-  DOWNLOADED: { label: 'Baixado', color: 'bg-blue-100 text-blue-700', icon: Download },
-  SIGNED: { label: 'Assinado', color: 'bg-green-100 text-green-700', icon: Check },
-  UPLOADED: { label: 'Enviado', color: 'bg-purple-100 text-purple-700', icon: Upload },
+  PENDING: { label: 'Pendente', color: 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300', icon: Clock },
+  VIEWED: { label: 'Visualizado', color: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300', icon: Eye },
+  DOWNLOADED: { label: 'Baixado', color: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300', icon: Download },
+  SIGNED: { label: 'Assinado', color: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300', icon: Check },
+  UPLOADED: { label: 'Enviado', color: 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300', icon: Upload },
 };
 
 export default function PortalDocuments() {
@@ -130,11 +130,11 @@ export default function PortalDocuments() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Meus Documentos</h1>
-            <p className="text-gray-500">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Meus Documentos</h1>
+            <p className="text-gray-500 dark:text-slate-400">
               {documents.length} documento(s)
               {pendingSignatures > 0 && (
-                <span className="text-yellow-600 ml-2">
+                <span className="text-yellow-600 dark:text-yellow-400 ml-2">
                   ({pendingSignatures} aguardando assinatura)
                 </span>
               )}
@@ -163,7 +163,7 @@ export default function PortalDocuments() {
               className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
                 filter === item.value
                   ? 'bg-green-600 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-600'
               }`}
             >
               {item.label}
@@ -178,9 +178,9 @@ export default function PortalDocuments() {
 
         {/* Documents List */}
         {filteredDocuments.length === 0 ? (
-          <div className="bg-white dark:bg-slate-800 rounded-xl border p-8 text-center">
-            <FileText className="mx-auto text-gray-400 mb-4" size={48} />
-            <p className="text-gray-500">Nenhum documento encontrado</p>
+          <div className="bg-white dark:bg-slate-800 rounded-xl border dark:border-slate-700 p-8 text-center">
+            <FileText className="mx-auto text-gray-400 dark:text-slate-500 mb-4" size={48} />
+            <p className="text-gray-500 dark:text-slate-400">Nenhum documento encontrado</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -192,43 +192,43 @@ export default function PortalDocuments() {
               return (
                 <div
                   key={doc.id}
-                  className={`bg-white rounded-xl border p-4 ${
-                    needsSignature ? 'border-yellow-300 bg-yellow-50/30' : ''
+                  className={`bg-white dark:bg-slate-800 rounded-xl border dark:border-slate-700 p-4 ${
+                    needsSignature ? 'border-yellow-300 dark:border-yellow-700 bg-yellow-50/30 dark:bg-yellow-900/10' : ''
                   }`}
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="flex items-start gap-4">
                       <div className={`w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                        doc.uploadedByClient ? 'bg-purple-100' : 'bg-green-100'
+                        doc.uploadedByClient ? 'bg-purple-100 dark:bg-purple-900/30' : 'bg-green-100 dark:bg-green-900/30'
                       }`}>
                         {needsSignature ? (
-                          <FileSignature className="text-yellow-600" size={24} />
+                          <FileSignature className="text-yellow-600 dark:text-yellow-400" size={24} />
                         ) : (
-                          <FileText className={doc.uploadedByClient ? 'text-purple-600' : 'text-green-600'} size={24} />
+                          <FileText className={doc.uploadedByClient ? 'text-purple-600 dark:text-purple-400' : 'text-green-600 dark:text-green-400'} size={24} />
                         )}
                       </div>
                       <div className="min-w-0">
-                        <h3 className="font-medium text-gray-900 truncate">{doc.name}</h3>
+                        <h3 className="font-medium text-gray-900 dark:text-white truncate">{doc.name}</h3>
                         {doc.description && (
-                          <p className="text-sm text-gray-500 mt-0.5">{doc.description}</p>
+                          <p className="text-sm text-gray-500 dark:text-slate-400 mt-0.5">{doc.description}</p>
                         )}
                         <div className="flex flex-wrap items-center gap-2 mt-2">
-                          <span className="text-xs text-gray-500">{formatFileSize(doc.fileSize)}</span>
-                          <span className="text-xs text-gray-400">•</span>
-                          <span className="text-xs text-gray-500">
+                          <span className="text-xs text-gray-500 dark:text-slate-400">{formatFileSize(doc.fileSize)}</span>
+                          <span className="text-xs text-gray-400 dark:text-slate-500">•</span>
+                          <span className="text-xs text-gray-500 dark:text-slate-400">
                             {format(new Date(doc.sharedAt), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
                           </span>
                           {!doc.uploadedByClient && (
                             <>
-                              <span className="text-xs text-gray-400">•</span>
-                              <span className="text-xs text-gray-500">
+                              <span className="text-xs text-gray-400 dark:text-slate-500">•</span>
+                              <span className="text-xs text-gray-500 dark:text-slate-400">
                                 Enviado por {doc.sharedBy.name}
                               </span>
                             </>
                           )}
                         </div>
                         {doc.signedAt && (
-                          <p className="text-xs text-green-600 mt-1">
+                          <p className="text-xs text-green-600 dark:text-green-400 mt-1">
                             Assinado em {format(new Date(doc.signedAt), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
                           </p>
                         )}
@@ -257,7 +257,7 @@ export default function PortalDocuments() {
                       {doc.allowDownload && (
                         <button
                           onClick={() => handleDownload(doc)}
-                          className="p-2 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                          className="p-2 text-gray-500 dark:text-slate-400 hover:text-green-600 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
                           title="Baixar"
                         >
                           <Download size={20} />
@@ -268,7 +268,7 @@ export default function PortalDocuments() {
                         href={doc.fileUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        className="p-2 text-gray-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
                         title="Abrir"
                       >
                         <ExternalLink size={20} />
@@ -279,7 +279,7 @@ export default function PortalDocuments() {
                           href={doc.signatureUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="p-2 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                          className="p-2 text-gray-500 dark:text-slate-400 hover:text-green-600 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
                           title="Ver assinatura"
                         >
                           <FileSignature size={20} />
@@ -310,15 +310,15 @@ export default function PortalDocuments() {
       {showUploadModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xl w-full max-w-lg">
-            <div className="flex justify-between items-center p-4 border-b">
-              <h2 className="text-lg font-semibold text-gray-900">Enviar Documento</h2>
+            <div className="flex justify-between items-center p-4 border-b dark:border-slate-700">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Enviar Documento</h2>
               <button
                 onClick={() => {
                   setShowUploadModal(false);
                   setUploadName('');
                   setUploadDescription('');
                 }}
-                className="text-gray-500 hover:text-gray-700"
+                className="text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-300"
               >
                 <X size={24} />
               </button>
@@ -326,7 +326,7 @@ export default function PortalDocuments() {
 
             <div className="p-4 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
                   Nome do Documento *
                 </label>
                 <input
@@ -334,12 +334,12 @@ export default function PortalDocuments() {
                   value={uploadName}
                   onChange={(e) => setUploadName(e.target.value)}
                   placeholder="Ex: Comprovante de Residência"
-                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-slate-100 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
                   Descrição (opcional)
                 </label>
                 <textarea
@@ -347,34 +347,34 @@ export default function PortalDocuments() {
                   onChange={(e) => setUploadDescription(e.target.value)}
                   placeholder="Descrição do documento..."
                   rows={2}
-                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-slate-100 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
                   Arquivo *
                 </label>
                 <input
                   type="file"
                   ref={fileInputRef}
                   accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
-                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:font-medium file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-slate-100 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:font-medium file:bg-green-50 dark:file:bg-green-900/30 file:text-green-700 dark:file:text-green-300 hover:file:bg-green-100 dark:hover:file:bg-green-900/50"
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">
                   Formatos aceitos: PDF, DOC, DOCX, PNG, JPG (máx. 25MB)
                 </p>
               </div>
             </div>
 
-            <div className="p-4 border-t bg-gray-50 flex gap-3">
+            <div className="p-4 border-t dark:border-slate-700 bg-gray-50 dark:bg-slate-700 flex gap-3">
               <button
                 onClick={() => {
                   setShowUploadModal(false);
                   setUploadName('');
                   setUploadDescription('');
                 }}
-                className="flex-1 px-4 py-2 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 text-gray-700 rounded-lg font-medium text-sm hover:bg-gray-50 transition-colors"
+                className="flex-1 px-4 py-2 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-300 rounded-lg font-medium text-sm hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
               >
                 Cancelar
               </button>

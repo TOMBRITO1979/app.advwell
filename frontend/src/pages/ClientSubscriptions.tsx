@@ -67,12 +67,12 @@ const intervalLabels: Record<string, string> = {
 };
 
 const statusLabels: Record<string, { label: string; color: string }> = {
-  ACTIVE: { label: 'Ativo', color: 'bg-green-100 text-green-800' },
-  PAST_DUE: { label: 'Atrasado', color: 'bg-red-100 text-red-800' },
-  CANCELED: { label: 'Cancelado', color: 'bg-gray-100 text-gray-800' },
-  UNPAID: { label: 'Nao Pago', color: 'bg-yellow-100 text-yellow-800' },
-  INCOMPLETE: { label: 'Aguardando', color: 'bg-blue-100 text-blue-800' },
-  TRIALING: { label: 'Teste', color: 'bg-purple-100 text-purple-800' },
+  ACTIVE: { label: 'Ativo', color: 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400' },
+  PAST_DUE: { label: 'Atrasado', color: 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400' },
+  CANCELED: { label: 'Cancelado', color: 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300' },
+  UNPAID: { label: 'Nao Pago', color: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400' },
+  INCOMPLETE: { label: 'Aguardando', color: 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400' },
+  TRIALING: { label: 'Teste', color: 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-400' },
 };
 
 export default function ClientSubscriptions() {
@@ -220,11 +220,11 @@ export default function ClientSubscriptions() {
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <CreditCard className="w-8 h-8 text-blue-600" />
-          <h1 className="text-2xl font-bold text-gray-900">Planos de Servico</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Planos de Servico</h1>
         </div>
         <button
           onClick={() => loadData()}
-          className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
+          className="p-2 text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg"
           title="Atualizar"
         >
           <RefreshCw className="w-5 h-5" />
@@ -238,8 +238,8 @@ export default function ClientSubscriptions() {
             <div className="flex items-center gap-3">
               <Users className="w-8 h-8 text-green-600" />
               <div>
-                <p className="text-sm text-gray-500">Assinaturas Ativas</p>
-                <p className="text-2xl font-bold text-gray-900">{reports.summary.activeSubscriptions}</p>
+                <p className="text-sm text-gray-500 dark:text-slate-400">Assinaturas Ativas</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-slate-100">{reports.summary.activeSubscriptions}</p>
               </div>
             </div>
           </div>
@@ -247,7 +247,7 @@ export default function ClientSubscriptions() {
             <div className="flex items-center gap-3">
               <AlertTriangle className="w-8 h-8 text-red-600" />
               <div>
-                <p className="text-sm text-gray-500">Inadimplentes</p>
+                <p className="text-sm text-gray-500 dark:text-slate-400">Inadimplentes</p>
                 <p className="text-2xl font-bold text-red-600">{reports.summary.pastDueSubscriptions}</p>
               </div>
             </div>
@@ -256,8 +256,8 @@ export default function ClientSubscriptions() {
             <div className="flex items-center gap-3">
               <TrendingUp className="w-8 h-8 text-blue-600" />
               <div>
-                <p className="text-sm text-gray-500">Recebido este mes</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-sm text-gray-500 dark:text-slate-400">Recebido este mes</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-slate-100">
                   R$ {reports.summary.receivedThisMonth.toFixed(2).replace('.', ',')}
                 </p>
               </div>
@@ -267,8 +267,8 @@ export default function ClientSubscriptions() {
             <div className="flex items-center gap-3">
               <TrendingUp className="w-8 h-8 text-purple-600" />
               <div>
-                <p className="text-sm text-gray-500">Previsao Mensal</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-sm text-gray-500 dark:text-slate-400">Previsao Mensal</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-slate-100">
                   R$ {reports.summary.monthlyForecast.toFixed(2).replace('.', ',')}
                 </p>
               </div>
@@ -278,13 +278,13 @@ export default function ClientSubscriptions() {
       )}
 
       {/* Tabs */}
-      <div className="flex border-b mb-6">
+      <div className="flex border-b border-gray-200 dark:border-slate-700 mb-6">
         <button
           onClick={() => setActiveTab('subscriptions')}
           className={`px-4 py-2 font-medium ${
             activeTab === 'subscriptions'
               ? 'text-blue-600 border-b-2 border-blue-600'
-              : 'text-gray-500 hover:text-gray-700'
+              : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'
           }`}
         >
           Assinaturas
@@ -294,7 +294,7 @@ export default function ClientSubscriptions() {
           className={`px-4 py-2 font-medium ${
             activeTab === 'plans'
               ? 'text-blue-600 border-b-2 border-blue-600'
-              : 'text-gray-500 hover:text-gray-700'
+              : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'
           }`}
         >
           Planos
@@ -304,7 +304,7 @@ export default function ClientSubscriptions() {
           className={`px-4 py-2 font-medium ${
             activeTab === 'reports'
               ? 'text-blue-600 border-b-2 border-blue-600'
-              : 'text-gray-500 hover:text-gray-700'
+              : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'
           }`}
         >
           Relatorios
@@ -377,46 +377,46 @@ export default function ClientSubscriptions() {
 
           {/* Desktop Table View */}
           <div className="desktop-table-view bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 overflow-hidden">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
+              <thead className="bg-gray-50 dark:bg-slate-700">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cliente</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Plano</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Periodo</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Acoes</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-300 uppercase">Cliente</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-300 uppercase">Plano</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-300 uppercase">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-300 uppercase">Periodo</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-slate-300 uppercase">Acoes</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-gray-200 dark:divide-slate-700">
                 {subscriptions.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
+                    <td colSpan={5} className="px-6 py-8 text-center text-gray-500 dark:text-slate-400">
                       Nenhuma assinatura encontrada
                     </td>
                   </tr>
                 ) : (
                   subscriptions.map((sub) => (
-                    <tr key={sub.id} className="hover:bg-gray-50">
+                    <tr key={sub.id} className="hover:bg-gray-50 dark:hover:bg-slate-700">
                       <td className="px-6 py-4">
                         <div>
-                          <p className="font-medium text-gray-900">{sub.client.name}</p>
-                          <p className="text-sm text-gray-500">{sub.client.email || sub.client.phone}</p>
+                          <p className="font-medium text-gray-900 dark:text-slate-100">{sub.client.name}</p>
+                          <p className="text-sm text-gray-500 dark:text-slate-400">{sub.client.email || sub.client.phone}</p>
                         </div>
                       </td>
                       <td className="px-6 py-4">
                         <div>
-                          <p className="text-gray-900">{sub.servicePlan.name}</p>
-                          <p className="text-sm text-gray-500">
+                          <p className="text-gray-900 dark:text-slate-100">{sub.servicePlan.name}</p>
+                          <p className="text-sm text-gray-500 dark:text-slate-400">
                             R$ {sub.servicePlan.price.toFixed(2).replace('.', ',')} / {intervalLabels[sub.servicePlan.interval]}
                           </p>
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusLabels[sub.status]?.color || 'bg-gray-100'}`}>
+                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusLabels[sub.status]?.color || 'bg-gray-100 dark:bg-gray-700'}`}>
                           {statusLabels[sub.status]?.label || sub.status}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-500">
+                      <td className="px-6 py-4 text-sm text-gray-500 dark:text-slate-400">
                         {sub.currentPeriodEnd ? (
                           <>Ate {formatDate(sub.currentPeriodEnd)}</>
                         ) : (
@@ -427,7 +427,7 @@ export default function ClientSubscriptions() {
                         {sub.status === 'INCOMPLETE' && (
                           <button
                             onClick={() => handleRegenerateCheckout(sub.id)}
-                            className="text-blue-600 hover:text-blue-800 text-sm"
+                            className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm"
                           >
                             Gerar Link
                           </button>
@@ -435,7 +435,7 @@ export default function ClientSubscriptions() {
                         {(sub.status === 'ACTIVE' || sub.status === 'PAST_DUE') && (
                           <button
                             onClick={() => handleCancelSubscription(sub.id)}
-                            className="text-red-600 hover:text-red-800 text-sm"
+                            className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 text-sm"
                           >
                             Cancelar
                           </button>
@@ -465,7 +465,7 @@ export default function ClientSubscriptions() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {plans.length === 0 ? (
-              <div className="col-span-3 text-center py-8 text-gray-500">
+              <div className="col-span-3 text-center py-8 text-gray-500 dark:text-slate-400">
                 Nenhum plano criado ainda
               </div>
             ) : (
@@ -473,26 +473,26 @@ export default function ClientSubscriptions() {
                 <div key={plan.id} className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 p-6">
                   <div className="flex justify-between items-start mb-4">
                     <div>
-                      <h3 className="text-lg font-bold text-gray-900">{plan.name}</h3>
+                      <h3 className="text-lg font-bold text-gray-900 dark:text-slate-100">{plan.name}</h3>
                       {plan.description && (
-                        <p className="text-sm text-gray-500 mt-1">{plan.description}</p>
+                        <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">{plan.description}</p>
                       )}
                     </div>
-                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${plan.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${plan.isActive ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300'}`}>
                       {plan.isActive ? 'Ativo' : 'Inativo'}
                     </span>
                   </div>
                   <div className="mb-4">
-                    <span className="text-3xl font-bold text-gray-900">
+                    <span className="text-3xl font-bold text-gray-900 dark:text-slate-100">
                       R$ {plan.price.toFixed(2).replace('.', ',')}
                     </span>
-                    <span className="text-gray-500">/{intervalLabels[plan.interval]}</span>
+                    <span className="text-gray-500 dark:text-slate-400">/{intervalLabels[plan.interval]}</span>
                   </div>
-                  <div className="flex justify-between items-center text-sm text-gray-500">
+                  <div className="flex justify-between items-center text-sm text-gray-500 dark:text-slate-400">
                     <span>{plan._count?.subscriptions || 0} assinantes</span>
                     <button
                       onClick={() => handleDeletePlan(plan.id)}
-                      className="text-red-600 hover:text-red-800"
+                      className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
                     >
                       Excluir
                     </button>
@@ -510,22 +510,22 @@ export default function ClientSubscriptions() {
           {/* Delinquent Clients */}
           {reports.delinquentClients.length > 0 && (
             <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 p-6">
-              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-slate-100 mb-4 flex items-center gap-2">
                 <AlertTriangle className="w-5 h-5 text-red-600" />
                 Clientes Inadimplentes
               </h3>
-              <div className="divide-y">
+              <div className="divide-y dark:divide-slate-700">
                 {reports.delinquentClients.map((sub) => (
                   <div key={sub.id} className="py-3 flex justify-between items-center">
                     <div>
-                      <p className="font-medium text-gray-900">{sub.client.name}</p>
-                      <p className="text-sm text-gray-500">{sub.servicePlan.name}</p>
+                      <p className="font-medium text-gray-900 dark:text-slate-100">{sub.client.name}</p>
+                      <p className="text-sm text-gray-500 dark:text-slate-400">{sub.servicePlan.name}</p>
                     </div>
                     <div className="text-right">
                       <p className="font-medium text-red-600">
                         R$ {sub.servicePlan.price.toFixed(2).replace('.', ',')}
                       </p>
-                      <p className="text-xs text-gray-500">{sub.client.phone || sub.client.email}</p>
+                      <p className="text-xs text-gray-500 dark:text-slate-400">{sub.client.phone || sub.client.email}</p>
                     </div>
                   </div>
                 ))}
@@ -535,22 +535,22 @@ export default function ClientSubscriptions() {
 
           {/* Monthly Revenue Chart (Simple Table) */}
           <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 p-6">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Receita Mensal (Ultimos 12 meses)</h3>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-slate-100 mb-4">Receita Mensal (Ultimos 12 meses)</h3>
             <div className="overflow-x-auto">
               <table className="min-w-full">
                 <thead>
-                  <tr className="border-b">
-                    <th className="text-left py-2 text-sm font-medium text-gray-500">Mes</th>
-                    <th className="text-right py-2 text-sm font-medium text-gray-500">Total</th>
+                  <tr className="border-b dark:border-slate-700">
+                    <th className="text-left py-2 text-sm font-medium text-gray-500 dark:text-slate-400">Mes</th>
+                    <th className="text-right py-2 text-sm font-medium text-gray-500 dark:text-slate-400">Total</th>
                   </tr>
                 </thead>
                 <tbody>
                   {reports.monthlyRevenue.map((item) => (
-                    <tr key={item.month} className="border-b">
-                      <td className="py-2 text-gray-900">
+                    <tr key={item.month} className="border-b dark:border-slate-700">
+                      <td className="py-2 text-gray-900 dark:text-slate-100">
                         {new Date(item.month + '-01').toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}
                       </td>
-                      <td className="py-2 text-right text-gray-900">
+                      <td className="py-2 text-right text-gray-900 dark:text-slate-100">
                         R$ {item.total.toFixed(2).replace('.', ',')}
                       </td>
                     </tr>
@@ -567,49 +567,49 @@ export default function ClientSubscriptions() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
           <div className="bg-white dark:bg-slate-800 rounded-lg shadow-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto my-4">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-900">Novo Plano</h2>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-slate-100">Novo Plano</h2>
               <button onClick={() => setShowNewPlanModal(false)}>
-                <X className="w-5 h-5 text-gray-500" />
+                <X className="w-5 h-5 text-gray-500 dark:text-slate-400" />
               </button>
             </div>
             <form onSubmit={handleCreatePlan} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nome do Plano</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Nome do Plano</label>
                 <input
                   type="text"
                   value={planForm.name}
                   onChange={(e) => setPlanForm({ ...planForm, name: e.target.value })}
-                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-slate-100 rounded-lg"
                   required
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Descricao</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Descricao</label>
                 <textarea
                   value={planForm.description}
                   onChange={(e) => setPlanForm({ ...planForm, description: e.target.value })}
-                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-slate-100 rounded-lg"
                   rows={2}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Preco (R$)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Preco (R$)</label>
                 <input
                   type="number"
                   step="0.01"
                   min="0.01"
                   value={planForm.price}
                   onChange={(e) => setPlanForm({ ...planForm, price: e.target.value })}
-                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-slate-100 rounded-lg"
                   required
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Intervalo</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Intervalo</label>
                 <select
                   value={planForm.interval}
                   onChange={(e) => setPlanForm({ ...planForm, interval: e.target.value })}
-                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-slate-100 rounded-lg"
                 >
                   <option value="MONTHLY">Mensal</option>
                   <option value="QUARTERLY">Trimestral</option>
@@ -620,7 +620,7 @@ export default function ClientSubscriptions() {
                 <button
                   type="button"
                   onClick={() => setShowNewPlanModal(false)}
-                  className="px-4 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg hover:bg-gray-50"
+                  className="px-4 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-300 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-600"
                 >
                   Cancelar
                 </button>
@@ -641,26 +641,26 @@ export default function ClientSubscriptions() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
           <div className="bg-white dark:bg-slate-800 rounded-lg shadow-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto my-4">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-900">Nova Assinatura</h2>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-slate-100">Nova Assinatura</h2>
               <button onClick={() => setShowNewSubscriptionModal(false)}>
-                <X className="w-5 h-5 text-gray-500" />
+                <X className="w-5 h-5 text-gray-500 dark:text-slate-400" />
               </button>
             </div>
             <form onSubmit={handleCreateSubscription} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Cliente</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Cliente</label>
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-slate-500" />
                   <input
                     type="text"
                     value={searchText}
                     onChange={(e) => setSearchText(e.target.value)}
                     placeholder="Buscar cliente..."
-                    className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg"
+                    className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-slate-100 rounded-lg"
                   />
                 </div>
                 {searchText && (
-                  <div className="mt-1 max-h-40 overflow-y-auto border rounded-lg">
+                  <div className="mt-1 max-h-40 overflow-y-auto border border-gray-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700">
                     {filteredClients.slice(0, 10).map((client) => (
                       <button
                         key={client.id}
@@ -669,23 +669,23 @@ export default function ClientSubscriptions() {
                           setSubscriptionForm({ ...subscriptionForm, clientId: client.id });
                           setSearchText(client.name);
                         }}
-                        className={`w-full text-left px-3 py-2 hover:bg-gray-100 ${
-                          subscriptionForm.clientId === client.id ? 'bg-blue-50' : ''
+                        className={`w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-slate-600 ${
+                          subscriptionForm.clientId === client.id ? 'bg-blue-50 dark:bg-blue-900/30' : ''
                         }`}
                       >
-                        <p className="font-medium text-gray-900">{client.name}</p>
-                        <p className="text-xs text-gray-500">{client.email || client.phone}</p>
+                        <p className="font-medium text-gray-900 dark:text-slate-100">{client.name}</p>
+                        <p className="text-xs text-gray-500 dark:text-slate-400">{client.email || client.phone}</p>
                       </button>
                     ))}
                   </div>
                 )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Plano</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Plano</label>
                 <select
                   value={subscriptionForm.servicePlanId}
                   onChange={(e) => setSubscriptionForm({ ...subscriptionForm, servicePlanId: e.target.value })}
-                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-slate-100 rounded-lg"
                   required
                 >
                   <option value="">Selecione um plano</option>
@@ -696,14 +696,14 @@ export default function ClientSubscriptions() {
                   ))}
                 </select>
               </div>
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800">
+              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 text-sm text-blue-800 dark:text-blue-300">
                 Ao criar a assinatura, sera gerado um link de pagamento Stripe Checkout para enviar ao cliente.
               </div>
               <div className="flex justify-end gap-3 pt-4">
                 <button
                   type="button"
                   onClick={() => setShowNewSubscriptionModal(false)}
-                  className="px-4 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg hover:bg-gray-50"
+                  className="px-4 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-300 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-600"
                 >
                   Cancelar
                 </button>
