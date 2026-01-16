@@ -1085,7 +1085,7 @@ const Cases: React.FC = () => {
       <div className="space-y-4 sm:space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-neutral-900 mb-3 sm:mb-4">Processos</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-slate-100 mb-3 sm:mb-4">Processos</h1>
 
           {/* Action Buttons - Mobile: Grid 3 columns, Desktop: Flex row */}
           <input
@@ -1115,22 +1115,22 @@ const Cases: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 p-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 mb-2">
             <div className="flex items-center gap-2 flex-1 w-full">
-              <Search size={20} className="text-neutral-400" />
+              <Search size={20} className="text-neutral-400 dark:text-slate-500" />
               <input
                 type="text"
                 placeholder="Buscar (numero, assunto, partes, advogado)..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="flex-1 px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 min-h-[44px]"
+                className="flex-1 px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 min-h-[44px]"
               />
             </div>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full sm:w-auto px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 min-h-[44px]"
+              className="w-full sm:w-auto px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 min-h-[44px]"
             >
               <option value="">Todos os Status</option>
               <option value="PENDENTE">Pendente</option>
@@ -1147,28 +1147,28 @@ const Cases: React.FC = () => {
               placeholder="Demandante..."
               value={demandanteFilter}
               onChange={(e) => setDemandanteFilter(e.target.value)}
-              className="flex-1 min-w-[150px] px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm"
+              className="flex-1 min-w-[150px] px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm"
             />
             <input
               type="text"
               placeholder="Demandado..."
               value={demandadoFilter}
               onChange={(e) => setDemandadoFilter(e.target.value)}
-              className="flex-1 min-w-[150px] px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm"
+              className="flex-1 min-w-[150px] px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm"
             />
             <input
               type="text"
               placeholder="Advogado..."
               value={lawyerFilter}
               onChange={(e) => setLawyerFilter(e.target.value)}
-              className="flex-1 min-w-[150px] px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm"
+              className="flex-1 min-w-[150px] px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm"
             />
             <input
               type="text"
               placeholder="OAB..."
               value={oabFilter}
               onChange={(e) => setOabFilter(e.target.value)}
-              className="flex-1 min-w-[100px] px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm"
+              className="flex-1 min-w-[100px] px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm"
             />
             {(demandanteFilter || demandadoFilter || lawyerFilter || oabFilter) && (
               <button
@@ -1178,7 +1178,7 @@ const Cases: React.FC = () => {
                   setLawyerFilter('');
                   setOabFilter('');
                 }}
-                className="px-3 py-2 text-sm text-neutral-600 hover:text-neutral-800 hover:bg-neutral-100 rounded-lg transition-colors min-h-[44px]"
+                className="px-3 py-2 text-sm text-neutral-600 dark:text-slate-400 hover:text-neutral-800 hover:bg-neutral-100 dark:hover:bg-slate-600 rounded-lg transition-colors min-h-[44px]"
               >
                 Limpar filtros
               </button>
@@ -1188,7 +1188,7 @@ const Cases: React.FC = () => {
           {loading ? (
             <p className="text-center py-4">Carregando...</p>
           ) : cases.length === 0 ? (
-            <p className="text-center py-4 text-neutral-600">Nenhum processo encontrado</p>
+            <p className="text-center py-4 text-neutral-600 dark:text-slate-400">Nenhum processo encontrado</p>
           ) : (
             <>
               {/* Mobile Card View */}
@@ -1265,32 +1265,32 @@ const Cases: React.FC = () => {
               {/* Desktop Table View */}
               <div className="desktop-table-view overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-neutral-50">
+                  <thead className="bg-neutral-50 dark:bg-slate-700">
                     <tr>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">
                         Numero
                       </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">
                         Demandante
                       </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">
                         Demandado
                       </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">
                         Assunto
                       </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">
                         Status
                       </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">
                         Prazo
                       </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">
                         Acoes
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-neutral-200">
+                  <tbody className="divide-y divide-neutral-200 dark:divide-slate-700">
                     {cases.map((caseItem) => {
                       const statusColors = {
                         PENDENTE: 'bg-yellow-100 text-yellow-800',
@@ -1305,7 +1305,7 @@ const Cases: React.FC = () => {
                         FINISHED: 'Finalizado',
                       };
                       return (
-                        <tr key={caseItem.id} className="odd:bg-white even:bg-neutral-50 hover:bg-success-100 transition-colors">
+                        <tr key={caseItem.id} className="odd:bg-white dark:bg-slate-800 even:bg-neutral-50 dark:bg-slate-700 hover:bg-success-100 transition-colors">
                           <td className="px-4 py-3 text-sm">
                             <button
                               onClick={() => handleCaseClick(caseItem.id)}
@@ -1315,19 +1315,19 @@ const Cases: React.FC = () => {
                               {formatProcessNumber(caseItem.processNumber)}
                             </button>
                           </td>
-                          <td className="px-4 py-3 text-sm text-neutral-600">
+                          <td className="px-4 py-3 text-sm text-neutral-600 dark:text-slate-400">
                             {caseItem.demandanteNames || caseItem.client?.name || '-'}
                           </td>
-                          <td className="px-4 py-3 text-sm text-neutral-600">
+                          <td className="px-4 py-3 text-sm text-neutral-600 dark:text-slate-400">
                             {caseItem.demandadoNames || '-'}
                           </td>
-                          <td className="px-4 py-3 text-sm text-neutral-600">{caseItem.subject}</td>
+                          <td className="px-4 py-3 text-sm text-neutral-600 dark:text-slate-400">{caseItem.subject}</td>
                           <td className="px-4 py-3 text-sm">
                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[caseItem.status as keyof typeof statusColors] || 'bg-neutral-100 text-neutral-800'}`}>
                               {statusLabels[caseItem.status as keyof typeof statusLabels] || caseItem.status}
                             </span>
                           </td>
-                          <td className="px-4 py-3 text-sm text-neutral-600">
+                          <td className="px-4 py-3 text-sm text-neutral-600 dark:text-slate-400">
                             {caseItem.deadline ? formatDate(caseItem.deadline) : '-'}
                           </td>
                           <td className="px-4 py-3 text-sm">
@@ -1353,7 +1353,7 @@ const Cases: React.FC = () => {
               {/* Pagination */}
               {total > 0 && (
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 px-4">
-                  <div className="text-sm text-neutral-600">
+                  <div className="text-sm text-neutral-600 dark:text-slate-400">
                     Mostrando {(page - 1) * limit + 1} - {Math.min(page * limit, total)} de {total} processos
                   </div>
                   <div className="flex items-center gap-2">
@@ -1363,7 +1363,7 @@ const Cases: React.FC = () => {
                         setLimit(Number(e.target.value));
                         setPage(1);
                       }}
-                      className="px-2 py-1 text-sm border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      className="px-2 py-1 text-sm border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                     >
                       <option value={25}>25 por página</option>
                       <option value={50}>50 por página</option>
@@ -1373,7 +1373,7 @@ const Cases: React.FC = () => {
                     <button
                       onClick={() => setPage((p) => Math.max(1, p - 1))}
                       disabled={page === 1}
-                      className="inline-flex items-center gap-1 px-3 py-2 text-sm text-neutral-600 hover:bg-neutral-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="inline-flex items-center gap-1 px-3 py-2 text-sm text-neutral-600 dark:text-slate-400 hover:bg-neutral-100 dark:hover:bg-slate-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <ChevronLeft className="w-4 h-4" />
                       Anterior
@@ -1399,7 +1399,7 @@ const Cases: React.FC = () => {
                             className={`px-3 py-1 text-sm rounded-lg ${
                               page === pageNum
                                 ? 'bg-primary-600 text-white'
-                                : 'text-neutral-600 hover:bg-neutral-100'
+                                : 'text-neutral-600 dark:text-slate-400 hover:bg-neutral-100'
                             }`}
                           >
                             {pageNum}
@@ -1411,7 +1411,7 @@ const Cases: React.FC = () => {
                     <button
                       onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                       disabled={page === totalPages}
-                      className="inline-flex items-center gap-1 px-3 py-2 text-sm text-neutral-600 hover:bg-neutral-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="inline-flex items-center gap-1 px-3 py-2 text-sm text-neutral-600 dark:text-slate-400 hover:bg-neutral-100 dark:hover:bg-slate-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Próximo
                       <ChevronRight className="w-4 h-4" />
@@ -1429,7 +1429,7 @@ const Cases: React.FC = () => {
         <div className="modal-overlay">
           <div className="modal-container sm:max-w-2xl">
             <div className="modal-header">
-              <h2 className="text-lg sm:text-xl font-bold text-neutral-900">
+              <h2 className="text-lg sm:text-xl font-bold text-neutral-900 dark:text-slate-100">
                 {editMode ? 'Editar Processo' : 'Novo Processo'}
               </h2>
               <button
@@ -1439,7 +1439,7 @@ const Cases: React.FC = () => {
                   setSelectedCase(null);
                   resetForm();
                 }}
-                className="p-2 text-neutral-400 hover:text-neutral-600 rounded-lg hover:bg-neutral-100"
+                className="p-2 text-neutral-400 dark:text-slate-500 hover:text-neutral-600 dark:text-slate-400 rounded-lg hover:bg-neutral-100 dark:hover:bg-slate-600"
               >
                 <X size={24} />
               </button>
@@ -1450,7 +1450,7 @@ const Cases: React.FC = () => {
               {/* Demandante e Demandado - busca em Clientes + Adversos */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="relative">
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                     Demandante (Autor)
                   </label>
                   <input
@@ -1460,10 +1460,10 @@ const Cases: React.FC = () => {
                     onChange={(e) => setFormData({ ...formData, demandante: e.target.value })}
                     onFocus={() => setShowDemandanteDropdown(true)}
                     onBlur={() => setTimeout(() => setShowDemandanteDropdown(false), 200)}
-                    className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="mt-1 block w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   />
                   {showDemandanteDropdown && filteredDemandantes.length > 0 && (
-                    <div className="absolute z-10 w-full mt-1 bg-white border border-neutral-300 rounded-md shadow-lg max-h-60 overflow-auto">
+                    <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-800 border border-neutral-300 dark:border-slate-600 rounded-md shadow-lg max-h-60 overflow-auto">
                       {filteredDemandantes.map((item) => (
                         <div
                           key={`${item.type}-${item.id}`}
@@ -1510,13 +1510,13 @@ const Cases: React.FC = () => {
                           }}
                         >
                           <div className="flex items-center justify-between">
-                            <span className="font-medium text-neutral-900">{item.name}</span>
+                            <span className="font-medium text-neutral-900 dark:text-slate-100">{item.name}</span>
                             <span className={`text-xs px-2 py-0.5 rounded ${item.type === 'cliente' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
                               {item.type === 'cliente' ? 'Cliente' : 'Adverso'}
                             </span>
                           </div>
                           {item.extra && (
-                            <div className="text-xs text-neutral-500">CPF/CNPJ: {item.extra}</div>
+                            <div className="text-xs text-neutral-500 dark:text-slate-400">CPF/CNPJ: {item.extra}</div>
                           )}
                         </div>
                       ))}
@@ -1524,7 +1524,7 @@ const Cases: React.FC = () => {
                   )}
                 </div>
                 <div className="relative">
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                     Demandado (Réu)
                   </label>
                   <input
@@ -1534,10 +1534,10 @@ const Cases: React.FC = () => {
                     onChange={(e) => setFormData({ ...formData, demandado: e.target.value })}
                     onFocus={() => setShowDemandadoDropdown(true)}
                     onBlur={() => setTimeout(() => setShowDemandadoDropdown(false), 200)}
-                    className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="mt-1 block w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   />
                   {showDemandadoDropdown && filteredDemandados.length > 0 && (
-                    <div className="absolute z-10 w-full mt-1 bg-white border border-neutral-300 rounded-md shadow-lg max-h-60 overflow-auto">
+                    <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-800 border border-neutral-300 dark:border-slate-600 rounded-md shadow-lg max-h-60 overflow-auto">
                       {filteredDemandados.map((item) => (
                         <div
                           key={`${item.type}-${item.id}`}
@@ -1548,13 +1548,13 @@ const Cases: React.FC = () => {
                           }}
                         >
                           <div className="flex items-center justify-between">
-                            <span className="font-medium text-neutral-900">{item.name}</span>
+                            <span className="font-medium text-neutral-900 dark:text-slate-100">{item.name}</span>
                             <span className={`text-xs px-2 py-0.5 rounded ${item.type === 'cliente' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
                               {item.type === 'cliente' ? 'Cliente' : 'Adverso'}
                             </span>
                           </div>
                           {item.extra && (
-                            <div className="text-xs text-neutral-500">CPF/CNPJ: {item.extra}</div>
+                            <div className="text-xs text-neutral-500 dark:text-slate-400">CPF/CNPJ: {item.extra}</div>
                           )}
                         </div>
                       ))}
@@ -1564,7 +1564,7 @@ const Cases: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-neutral-700">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300">
                   Número do Processo <span className="text-error-500">*</span>
                 </label>
                 <input
@@ -1575,53 +1575,53 @@ const Cases: React.FC = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, processNumber: e.target.value })
                   }
-                  className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md min-h-[44px]"
+                  className="mt-1 block w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md min-h-[44px]"
                   disabled={editMode}
                 />
-                <p className="text-xs text-neutral-500 mt-1">
+                <p className="text-xs text-neutral-500 dark:text-slate-400 mt-1">
                   {editMode ? 'O número do processo não pode ser alterado' : 'O sistema irá buscar automaticamente os dados no DataJud'}
                 </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700">Tribunal</label>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300">Tribunal</label>
                   <input
                     type="text"
                     value={formData.court}
                     onChange={(e) => setFormData({ ...formData, court: e.target.value })}
-                    className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md min-h-[44px]"
+                    className="mt-1 block w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md min-h-[44px]"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700">Valor</label>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300">Valor</label>
                   <input
                     type="number"
                     step="0.01"
                     value={formData.value}
                     onChange={(e) => setFormData({ ...formData, value: e.target.value })}
-                    className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md min-h-[44px]"
+                    className="mt-1 block w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md min-h-[44px]"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-neutral-700">Assunto</label>
+                <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300">Assunto</label>
                 <input
                   type="text"
                   value={formData.subject}
                   onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                  className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md min-h-[44px]"
+                  className="mt-1 block w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md min-h-[44px]"
                 />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">Status</label>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Status</label>
                   <select
                     value={formData.status}
                     onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   >
                     <option value="PENDENTE">Pendente</option>
                     <option value="ACTIVE">Ativo</option>
@@ -1631,11 +1631,11 @@ const Cases: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">Fase</label>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Fase</label>
                   <select
                     value={formData.phase}
                     onChange={(e) => setFormData({ ...formData, phase: e.target.value })}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   >
                     <option value="">Selecione...</option>
                     <option value="Inicial">Inicial</option>
@@ -1648,11 +1648,11 @@ const Cases: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">Natureza</label>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Natureza</label>
                   <select
                     value={formData.nature}
                     onChange={(e) => setFormData({ ...formData, nature: e.target.value })}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   >
                     <option value="">Selecione...</option>
                     <option value="Cível">Cível</option>
@@ -1667,11 +1667,11 @@ const Cases: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">Rito</label>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Rito</label>
                   <select
                     value={formData.rite}
                     onChange={(e) => setFormData({ ...formData, rite: e.target.value })}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   >
                     <option value="">Selecione...</option>
                     <option value="Ordinário">Ordinário</option>
@@ -1682,7 +1682,7 @@ const Cases: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">Data de Distribuição</label>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Data de Distribuição</label>
                   <DateOnlyPicker
                     selected={formData.distributionDate ? new Date(formData.distributionDate + 'T00:00:00') : null}
                     onChange={(date) => setFormData({ ...formData, distributionDate: date ? date.toISOString().split('T')[0] : '' })}
@@ -1692,7 +1692,7 @@ const Cases: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">Prazo</label>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Prazo</label>
                   <DateOnlyPicker
                     selected={formData.deadline ? new Date(formData.deadline + 'T00:00:00') : null}
                     onChange={(date) => setFormData({ ...formData, deadline: date ? date.toISOString().split('T')[0] : '' })}
@@ -1702,11 +1702,11 @@ const Cases: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">Responsável pelo Prazo</label>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Responsável pelo Prazo</label>
                   <select
                     value={formData.deadlineResponsibleId}
                     onChange={(e) => setFormData({ ...formData, deadlineResponsibleId: e.target.value })}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   >
                     <option value="">Nenhum</option>
                     {users.map((user) => (
@@ -1718,11 +1718,11 @@ const Cases: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">Advogado Responsável</label>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Advogado Responsável</label>
                   <select
                     value={formData.lawyerId}
                     onChange={(e) => setFormData({ ...formData, lawyerId: e.target.value })}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   >
                     <option value="">Selecione...</option>
                     {lawyers.map((lawyer) => (
@@ -1735,38 +1735,38 @@ const Cases: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-neutral-700">Observações</label>
+                <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300">Observações</label>
                 <textarea
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                   rows={4}
                   placeholder="Observações adicionais sobre o processo..."
-                  className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md min-h-[44px]"
+                  className="mt-1 block w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md min-h-[44px]"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-neutral-700">Link do Processo</label>
+                <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300">Link do Processo</label>
                 <input
                   type="url"
                   value={formData.linkProcesso}
                   onChange={(e) => setFormData({ ...formData, linkProcesso: e.target.value })}
                   placeholder="https://www.tjrj.jus.br/..."
-                  className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md min-h-[44px]"
+                  className="mt-1 block w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md min-h-[44px]"
                 />
-                <p className="mt-1 text-xs text-neutral-500">URL do processo no site do tribunal</p>
+                <p className="mt-1 text-xs text-neutral-500 dark:text-slate-400">URL do processo no site do tribunal</p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-neutral-700">Informar Andamento ao Cliente</label>
+                <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300">Informar Andamento ao Cliente</label>
                 <textarea
                   value={formData.informarCliente}
                   onChange={(e) => setFormData({ ...formData, informarCliente: e.target.value })}
                   rows={3}
                   placeholder="Digite aqui o texto explicativo do andamento que será informado ao cliente..."
-                  className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md min-h-[44px]"
+                  className="mt-1 block w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md min-h-[44px]"
                 />
-                <p className="mt-1 text-xs text-neutral-500">Este texto será exibido ao visualizar o andamento para o cliente</p>
+                <p className="mt-1 text-xs text-neutral-500 dark:text-slate-400">Este texto será exibido ao visualizar o andamento para o cliente</p>
               </div>
 
               {selectedCase && selectedCase.ultimoAndamento && (
@@ -1778,9 +1778,9 @@ const Cases: React.FC = () => {
               )}
 
               {/* Partes do Processo */}
-              <div className="border-t border-neutral-200 pt-4">
+              <div className="border-t border-neutral-200 dark:border-slate-700 pt-4">
                 <div className="flex justify-between items-center mb-3">
-                  <h3 className="text-md font-semibold text-neutral-900">Partes do Processo</h3>
+                  <h3 className="text-md font-semibold text-neutral-900 dark:text-slate-100">Partes do Processo</h3>
                   <button
                     type="button"
                     onClick={() => setShowAddPartForm(!showAddPartForm)}
@@ -1795,7 +1795,7 @@ const Cases: React.FC = () => {
                 {parts.length > 0 && (
                   <div className="mb-3 space-y-2">
                     {parts.map((part, index) => (
-                      <div key={index} className="flex items-center justify-between p-3 bg-neutral-50 rounded-md">
+                      <div key={index} className="flex items-center justify-between p-3 bg-neutral-50 dark:bg-slate-700 rounded-md">
                         <div className="flex items-center gap-2">
                           <span className={`px-2 py-0.5 rounded text-xs font-medium ${
                             part.type === 'DEMANDANTE' || part.type === 'AUTOR' ? 'bg-success-100 text-success-700' :
@@ -1809,7 +1809,7 @@ const Cases: React.FC = () => {
                             {getPartDisplayName(part)}
                           </span>
                           {part.lawyer && part.lawyer.oab && (
-                            <span className="text-xs text-neutral-500">
+                            <span className="text-xs text-neutral-500 dark:text-slate-400">
                               (OAB {part.lawyer.oab}{part.lawyer.oabState ? `/${part.lawyer.oabState}` : ''})
                             </span>
                           )}
@@ -1829,10 +1829,10 @@ const Cases: React.FC = () => {
 
                 {/* Formulário Adicionar Parte */}
                 {showAddPartForm && (
-                  <div className="border border-neutral-200 rounded-md p-4 bg-neutral-50 space-y-3">
+                  <div className="border border-neutral-200 dark:border-slate-700 rounded-md p-4 bg-neutral-50 dark:bg-slate-700 space-y-3">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-1">Tipo *</label>
+                        <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Tipo *</label>
                         <select
                           value={partFormData.type}
                           onChange={(e) => {
@@ -1840,7 +1840,7 @@ const Cases: React.FC = () => {
                             setPartEntitySearchText('');
                             setShowPartEntitySuggestions(false);
                           }}
-                          className="block w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                          className="block w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                         >
                           <option value="DEMANDANTE">Demandante (Cliente)</option>
                           <option value="DEMANDADO">Demandado (Adverso)</option>
@@ -1849,7 +1849,7 @@ const Cases: React.FC = () => {
                         </select>
                       </div>
                       <div className="relative">
-                        <label className="block text-sm font-medium text-neutral-700 mb-1">
+                        <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                           {partFormData.type === 'DEMANDANTE' ? 'Cliente *' :
                            partFormData.type === 'DEMANDADO' ? 'Adverso *' :
                            'Advogado *'}
@@ -1871,10 +1871,10 @@ const Cases: React.FC = () => {
                             partFormData.type === 'DEMANDADO' ? 'adverso' :
                             'advogado'
                           }...`}
-                          className="block w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                          className="block w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                         />
                         {showPartEntitySuggestions && filteredPartEntities.length > 0 && (
-                          <div className="absolute z-10 w-full mt-1 bg-white border border-neutral-200 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                          <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-800 border border-neutral-200 dark:border-slate-700 rounded-md shadow-lg max-h-48 overflow-y-auto">
                             {filteredPartEntities.map(entity => (
                               <div
                                 key={entity.id}
@@ -1882,14 +1882,14 @@ const Cases: React.FC = () => {
                                 className="px-3 py-2 hover:bg-primary-50 cursor-pointer text-sm"
                               >
                                 <span className="font-medium">{entity.name}</span>
-                                {entity.extra && <span className="text-neutral-500 ml-1">- {entity.extra}</span>}
+                                {entity.extra && <span className="text-neutral-500 dark:text-slate-400 ml-1">- {entity.extra}</span>}
                               </div>
                             ))}
                           </div>
                         )}
                         {showPartEntitySuggestions && partEntitySearchText.length > 0 && filteredPartEntities.length === 0 && (
-                          <div className="absolute z-10 w-full mt-1 bg-white border border-neutral-200 rounded-md shadow-lg">
-                            <div className="px-3 py-2 text-sm text-neutral-500">
+                          <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-800 border border-neutral-200 dark:border-slate-700 rounded-md shadow-lg">
+                            <div className="px-3 py-2 text-sm text-neutral-500 dark:text-slate-400">
                               Nenhum resultado encontrado
                             </div>
                           </div>
@@ -1906,7 +1906,7 @@ const Cases: React.FC = () => {
                           setPartEntitySearchText('');
                           setShowPartEntitySuggestions(false);
                         }}
-                        className="px-3 py-1.5 text-sm border border-neutral-300 rounded-md text-neutral-700 hover:bg-neutral-50 min-h-[44px]"
+                        className="px-3 py-1.5 text-sm border border-neutral-300 dark:border-slate-600 rounded-md text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 min-h-[44px]"
                       >
                         Cancelar
                       </button>
@@ -1923,9 +1923,9 @@ const Cases: React.FC = () => {
               </div>
 
               {/* Testemunhas */}
-              <div className="border-t border-neutral-200 pt-4">
+              <div className="border-t border-neutral-200 dark:border-slate-700 pt-4">
                 <div className="flex justify-between items-center mb-3">
-                  <h3 className="text-md font-semibold text-neutral-900">Testemunhas</h3>
+                  <h3 className="text-md font-semibold text-neutral-900 dark:text-slate-100">Testemunhas</h3>
                   <button
                     type="button"
                     onClick={() => {
@@ -1944,10 +1944,10 @@ const Cases: React.FC = () => {
                 {witnesses.length > 0 && (
                   <div className="mb-3 space-y-2">
                     {witnesses.map((witness, index) => (
-                      <div key={index} className="flex items-start justify-between p-3 bg-neutral-50 rounded-md">
+                      <div key={index} className="flex items-start justify-between p-3 bg-neutral-50 dark:bg-slate-700 rounded-md">
                         <div className="flex-1">
                           <span className="font-medium text-sm">{witness.name}</span>
-                          <div className="text-xs text-neutral-600 mt-1">
+                          <div className="text-xs text-neutral-600 dark:text-slate-400 mt-1">
                             {witness.address && <span>Endereço: {witness.address}</span>}
                             {witness.phone && <span className="ml-2">Tel: {witness.phone}</span>}
                             {witness.mobile && <span className="ml-2">Cel: {witness.mobile}</span>}
@@ -1978,44 +1978,44 @@ const Cases: React.FC = () => {
 
                 {/* Formulário Adicionar Testemunha */}
                 {showAddWitnessForm && (
-                  <div className="border border-neutral-200 rounded-md p-4 bg-neutral-50 space-y-3">
+                  <div className="border border-neutral-200 dark:border-slate-700 rounded-md p-4 bg-neutral-50 dark:bg-slate-700 space-y-3">
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">Nome *</label>
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Nome *</label>
                       <input
                         type="text"
                         value={witnessFormData.name}
                         onChange={(e) => setWitnessFormData({ ...witnessFormData, name: e.target.value })}
-                        className="block w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="block w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">Endereço</label>
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Endereço</label>
                       <input
                         type="text"
                         value={witnessFormData.address}
                         onChange={(e) => setWitnessFormData({ ...witnessFormData, address: e.target.value })}
-                        className="block w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="block w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-1">Telefone</label>
+                        <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Telefone</label>
                         <input
                           type="text"
                           value={witnessFormData.phone}
                           onChange={(e) => setWitnessFormData({ ...witnessFormData, phone: e.target.value })}
-                          className="block w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                          className="block w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-1">Celular</label>
+                        <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Celular</label>
                         <input
                           type="text"
                           value={witnessFormData.mobile}
                           onChange={(e) => setWitnessFormData({ ...witnessFormData, mobile: e.target.value })}
-                          className="block w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                          className="block w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                         />
                       </div>
                     </div>
@@ -2028,7 +2028,7 @@ const Cases: React.FC = () => {
                           setEditingWitnessIndex(null);
                           setWitnessFormData({ name: '', address: '', phone: '', mobile: '' });
                         }}
-                        className="px-3 py-1.5 text-sm border border-neutral-300 rounded-md text-neutral-700 hover:bg-neutral-50 min-h-[44px]"
+                        className="px-3 py-1.5 text-sm border border-neutral-300 dark:border-slate-600 rounded-md text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 min-h-[44px]"
                       >
                         Cancelar
                       </button>
@@ -2044,7 +2044,7 @@ const Cases: React.FC = () => {
                 )}
               </div>
 
-              <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-neutral-200">
+              <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-neutral-200 dark:border-slate-700">
                 <button
                   type="button"
                   onClick={() => {
@@ -2053,7 +2053,7 @@ const Cases: React.FC = () => {
                     setSelectedCase(null);
                     resetForm();
                   }}
-                  className="px-6 py-2 border border-neutral-300 rounded-md text-neutral-700 hover:bg-neutral-50 transition-colors min-h-[44px]"
+                  className="px-6 py-2 border border-neutral-300 dark:border-slate-600 rounded-md text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 transition-colors min-h-[44px]"
                 >
                   Cancelar
                 </button>
@@ -2074,40 +2074,40 @@ const Cases: React.FC = () => {
       {/* Modal Detalhes do Processo */}
       {showDetailsModal && selectedCase && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
-          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-slate-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             {loadingDetails ? (
               <div className="p-8 text-center">
-                <p className="text-neutral-600">Carregando detalhes...</p>
+                <p className="text-neutral-600 dark:text-slate-400">Carregando detalhes...</p>
               </div>
             ) : (
               <>
                 {/* Header */}
-                <div className="sticky top-0 bg-white border-b border-neutral-200 px-6 py-4 flex justify-between items-center min-h-[44px]">
+                <div className="sticky top-0 bg-white dark:bg-slate-800 border-b border-neutral-200 dark:border-slate-700 px-6 py-4 flex justify-between items-center min-h-[44px]">
                   <div>
-                    <h2 className="text-2xl font-bold text-neutral-900">
+                    <h2 className="text-2xl font-bold text-neutral-900 dark:text-slate-100">
                       {formatProcessNumber(selectedCase.processNumber)}
                     </h2>
-                    <p className="text-sm text-neutral-500 mt-1">
+                    <p className="text-sm text-neutral-500 dark:text-slate-400 mt-1">
                       {selectedCase.court} • Criado em {formatDate(selectedCase.createdAt)}
                     </p>
                   </div>
                   <button
                     onClick={() => setShowDetailsModal(false)}
-                    className="text-neutral-400 hover:text-neutral-600"
+                    className="text-neutral-400 dark:text-slate-500 hover:text-neutral-600 dark:text-slate-400"
                   >
                     <X size={24} />
                   </button>
                 </div>
 
                 {/* Tabs */}
-                <div className="border-b border-neutral-200">
+                <div className="border-b border-neutral-200 dark:border-slate-700">
                   <div className="flex px-6">
                     <button
                       onClick={() => setDetailsTab('info')}
                       className={`py-3 px-4 border-b-2 font-medium text-sm transition-colors ${
                         detailsTab === 'info'
                           ? 'border-primary-600 text-primary-600'
-                          : 'border-transparent text-neutral-500 hover:text-neutral-700'
+                          : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:text-slate-300'
                       }`}
                     >
                       Informações
@@ -2117,7 +2117,7 @@ const Cases: React.FC = () => {
                       className={`py-3 px-4 border-b-2 font-medium text-sm transition-colors ${
                         detailsTab === 'timeline'
                           ? 'border-primary-600 text-primary-600'
-                          : 'border-transparent text-neutral-500 hover:text-neutral-700'
+                          : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:text-slate-300'
                       }`}
                     >
                       Linha do Tempo
@@ -2127,7 +2127,7 @@ const Cases: React.FC = () => {
                       className={`py-3 px-4 border-b-2 font-medium text-sm transition-colors ${
                         detailsTab === 'cnj'
                           ? 'border-primary-600 text-primary-600'
-                          : 'border-transparent text-neutral-500 hover:text-neutral-700'
+                          : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:text-slate-300'
                       }`}
                     >
                       CNJ (ADVAPI)
@@ -2144,32 +2144,32 @@ const Cases: React.FC = () => {
                     <div className="space-y-4">
                       {selectedCase.client && (
                       <div>
-                        <div className="flex items-center text-neutral-500 text-sm mb-1">
+                        <div className="flex items-center text-neutral-500 dark:text-slate-400 text-sm mb-1">
                           <User size={16} className="mr-2" />
                           <span>Cliente</span>
                         </div>
-                        <p className="text-neutral-900 font-medium">{selectedCase.client.name}</p>
+                        <p className="text-neutral-900 dark:text-slate-100 font-medium">{selectedCase.client.name}</p>
                         {selectedCase.client.cpf && (
-                          <p className="text-sm text-neutral-500">CPF: {selectedCase.client.cpf}</p>
+                          <p className="text-sm text-neutral-500 dark:text-slate-400">CPF: {selectedCase.client.cpf}</p>
                         )}
                       </div>
                       )}
 
                       <div>
-                        <div className="flex items-center text-neutral-500 text-sm mb-1">
+                        <div className="flex items-center text-neutral-500 dark:text-slate-400 text-sm mb-1">
                           <FileText size={16} className="mr-2" />
                           <span>Assunto</span>
                         </div>
-                        <p className="text-neutral-900">{selectedCase.subject}</p>
+                        <p className="text-neutral-900 dark:text-slate-100">{selectedCase.subject}</p>
                       </div>
 
                       {selectedCase.value && (
                         <div>
-                          <div className="flex items-center text-neutral-500 text-sm mb-1">
+                          <div className="flex items-center text-neutral-500 dark:text-slate-400 text-sm mb-1">
                             <span className="mr-2">💰</span>
                             <span>Valor da Causa</span>
                           </div>
-                          <p className="text-neutral-900 font-semibold">
+                          <p className="text-neutral-900 dark:text-slate-100 font-semibold">
                             {formatCurrency(selectedCase.value)}
                           </p>
                         </div>
@@ -2178,7 +2178,7 @@ const Cases: React.FC = () => {
 
                     <div className="space-y-4">
                       <div>
-                        <div className="flex items-center text-neutral-500 text-sm mb-1">
+                        <div className="flex items-center text-neutral-500 dark:text-slate-400 text-sm mb-1">
                           <span className="mr-2">⚖️</span>
                           <span>Status</span>
                         </div>
@@ -2207,21 +2207,21 @@ const Cases: React.FC = () => {
 
                       {selectedCase.deadline && (
                         <div>
-                          <div className="flex items-center text-neutral-500 text-sm mb-1">
+                          <div className="flex items-center text-neutral-500 dark:text-slate-400 text-sm mb-1">
                             <Calendar size={16} className="mr-2" />
                             <span>Prazo</span>
                           </div>
-                          <p className="text-neutral-900 font-medium">{formatDate(selectedCase.deadline)}</p>
+                          <p className="text-neutral-900 dark:text-slate-100 font-medium">{formatDate(selectedCase.deadline)}</p>
                         </div>
                       )}
 
                       {selectedCase.lastSyncedAt && (
                         <div>
-                          <div className="flex items-center text-neutral-500 text-sm mb-1">
+                          <div className="flex items-center text-neutral-500 dark:text-slate-400 text-sm mb-1">
                             <Clock size={16} className="mr-2" />
                             <span>Última Sincronização</span>
                           </div>
-                          <p className="text-neutral-900">{formatDate(selectedCase.lastSyncedAt)}</p>
+                          <p className="text-neutral-900 dark:text-slate-100">{formatDate(selectedCase.lastSyncedAt)}</p>
                         </div>
                       )}
 
@@ -2247,7 +2247,7 @@ const Cases: React.FC = () => {
                         <button
                           onClick={() => handleGenerateSummary(selectedCase.id)}
                           disabled={generatingSummary}
-                          className="flex items-center gap-2 px-4 py-2 bg-purple-100 text-purple-700 border border-purple-200 rounded-md hover:bg-purple-200 disabled:bg-neutral-100 disabled:text-neutral-400 disabled:border-neutral-200 disabled:cursor-not-allowed transition-colors min-h-[44px]"
+                          className="flex items-center gap-2 px-4 py-2 bg-purple-100 text-purple-700 border border-purple-200 rounded-md hover:bg-purple-200 disabled:bg-neutral-100 disabled:text-neutral-400 dark:text-slate-500 disabled:border-neutral-200 dark:border-slate-700 disabled:cursor-not-allowed transition-colors min-h-[44px]"
                           title="Gerar resumo com Inteligencia Artificial"
                         >
                           {generatingSummary ? (
@@ -2268,8 +2268,8 @@ const Cases: React.FC = () => {
 
                   {selectedCase.notes && (
                     <div>
-                      <h3 className="text-sm font-medium text-neutral-500 mb-2">Observações</h3>
-                      <p className="text-neutral-900 bg-neutral-50 p-3 rounded-md">{selectedCase.notes}</p>
+                      <h3 className="text-sm font-medium text-neutral-500 dark:text-slate-400 mb-2">Observações</h3>
+                      <p className="text-neutral-900 dark:text-slate-100 bg-neutral-50 dark:bg-slate-700 p-3 rounded-md">{selectedCase.notes}</p>
                     </div>
                   )}
 
@@ -2283,14 +2283,14 @@ const Cases: React.FC = () => {
                             <span className="mr-2">🔗</span>
                             Consultar Processo no Tribunal
                           </h3>
-                          <div className="bg-white border border-success-300 rounded p-3 mb-3">
-                            <p className="text-sm text-neutral-700 mb-1">
+                          <div className="bg-white dark:bg-slate-800 border border-success-300 rounded p-3 mb-3">
+                            <p className="text-sm text-neutral-700 dark:text-slate-300 mb-1">
                               <strong>Número do Processo:</strong>
                             </p>
                             <p className="text-lg font-mono font-semibold text-primary-800 select-all">
                               {formatProcessNumber(selectedCase.processNumber)}
                             </p>
-                            <p className="text-xs text-neutral-500 mt-1">
+                            <p className="text-xs text-neutral-500 dark:text-slate-400 mt-1">
                               Clique no número acima para copiar
                             </p>
                           </div>
@@ -2322,14 +2322,14 @@ const Cases: React.FC = () => {
                           <span className="mr-2">🔗</span>
                           Consultar no Site do Tribunal ({tribunalInfo.tribunalName})
                         </h3>
-                        <div className="bg-white border border-info-300 rounded p-3 mb-3">
-                          <p className="text-sm text-neutral-700 mb-1">
+                        <div className="bg-white dark:bg-slate-800 border border-info-300 rounded p-3 mb-3">
+                          <p className="text-sm text-neutral-700 dark:text-slate-300 mb-1">
                             <strong>Número do Processo:</strong>
                           </p>
                           <p className="text-lg font-mono font-semibold text-info-700 select-all">
                             {formatProcessNumber(selectedCase.processNumber)}
                           </p>
-                          <p className="text-xs text-neutral-500 mt-1">
+                          <p className="text-xs text-neutral-500 dark:text-slate-400 mt-1">
                             Clique no número acima para copiar
                           </p>
                         </div>
@@ -2358,45 +2358,45 @@ const Cases: React.FC = () => {
                   {/* Informar Andamento ao Cliente */}
                   {selectedCase.informarCliente && (
                     <div>
-                      <h3 className="text-sm font-medium text-neutral-500 mb-2">Informação para o Cliente</h3>
+                      <h3 className="text-sm font-medium text-neutral-500 dark:text-slate-400 mb-2">Informação para o Cliente</h3>
                       <div className="bg-success-50 border border-primary-200 rounded-md p-4">
                         <p className="text-primary-800 whitespace-pre-wrap">{selectedCase.informarCliente}</p>
                       </div>
-                      <p className="text-xs text-neutral-500 mt-1">Texto explicativo do andamento para informar ao cliente</p>
+                      <p className="text-xs text-neutral-500 dark:text-slate-400 mt-1">Texto explicativo do andamento para informar ao cliente</p>
                     </div>
                   )}
 
                   {/* Partes Envolvidas */}
                   {selectedCase.parts && selectedCase.parts.length > 0 && (
                     <div>
-                      <h3 className="text-lg font-semibold text-neutral-900 mb-4">
+                      <h3 className="text-lg font-semibold text-neutral-900 dark:text-slate-100 mb-4">
                         Partes Envolvidas
                       </h3>
                       <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-neutral-200 border border-neutral-200 rounded-lg">
-                          <thead className="bg-neutral-50">
+                        <table className="min-w-full divide-y divide-neutral-200 dark:divide-slate-700 border border-neutral-200 dark:border-slate-700 rounded-lg">
+                          <thead className="bg-neutral-50 dark:bg-slate-700">
                             <tr>
-                              <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
+                              <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                                 Tipo
                               </th>
-                              <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
+                              <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                                 Nome
                               </th>
-                              <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
+                              <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                                 CPF/CNPJ
                               </th>
-                              <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
+                              <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                                 RG
                               </th>
-                              <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
+                              <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                                 Nascimento
                               </th>
-                              <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
+                              <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                                 Ações
                               </th>
                             </tr>
                           </thead>
-                          <tbody className="bg-white divide-y divide-neutral-200">
+                          <tbody className="bg-white dark:bg-slate-800 divide-y divide-neutral-200 dark:divide-slate-700">
                             {selectedCase.parts.map((part) => {
                               const typeLabels: { [key: string]: string } = {
                                 DEMANDANTE: 'Demandante',
@@ -2419,27 +2419,27 @@ const Cases: React.FC = () => {
                               };
 
                               return (
-                                <tr key={part.id} className="odd:bg-white even:bg-neutral-50 hover:bg-success-100 transition-colors">
+                                <tr key={part.id} className="odd:bg-white dark:bg-slate-800 even:bg-neutral-50 dark:bg-slate-700 hover:bg-success-100 transition-colors">
                                   <td className="px-4 py-3 whitespace-nowrap">
                                     <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${typeBadgeColors[part.type]}`}>
                                       {typeLabels[part.type]}
                                     </span>
                                   </td>
-                                  <td className="px-4 py-3 text-sm text-neutral-900">
+                                  <td className="px-4 py-3 text-sm text-neutral-900 dark:text-slate-100">
                                     {part.client?.name || part.adverse?.name || part.lawyer?.name || part.name || '-'}
                                     {part.lawyer?.oab && (
-                                      <span className="text-xs text-neutral-500 ml-1">
+                                      <span className="text-xs text-neutral-500 dark:text-slate-400 ml-1">
                                         (OAB {part.lawyer.oab}{part.lawyer.oabState ? `/${part.lawyer.oabState}` : ''})
                                       </span>
                                     )}
                                   </td>
-                                  <td className="px-4 py-3 text-sm text-neutral-600">
+                                  <td className="px-4 py-3 text-sm text-neutral-600 dark:text-slate-400">
                                     {part.cpfCnpj || '-'}
                                   </td>
-                                  <td className="px-4 py-3 text-sm text-neutral-600">
+                                  <td className="px-4 py-3 text-sm text-neutral-600 dark:text-slate-400">
                                     {part.rg || '-'}
                                   </td>
-                                  <td className="px-4 py-3 text-sm text-neutral-600">
+                                  <td className="px-4 py-3 text-sm text-neutral-600 dark:text-slate-400">
                                     {part.birthDate ? formatDate(part.birthDate) : '-'}
                                   </td>
                                   <td className="px-4 py-3 text-sm">
@@ -2462,21 +2462,21 @@ const Cases: React.FC = () => {
                   {/* Timeline de Movimentações */}
                   <div>
                     <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-lg font-semibold text-neutral-900">
+                      <h3 className="text-lg font-semibold text-neutral-900 dark:text-slate-100">
                         Andamento do Processo
                       </h3>
                       {selectedCase.movements && selectedCase.movements.length > 0 && (
-                        <span className="text-sm text-neutral-500">
+                        <span className="text-sm text-neutral-500 dark:text-slate-400">
                           {selectedCase.movements.length} movimentação(ões)
                         </span>
                       )}
                     </div>
 
                     {!selectedCase.movements || selectedCase.movements.length === 0 ? (
-                      <div className="text-center py-8 bg-neutral-50 rounded-lg">
+                      <div className="text-center py-8 bg-neutral-50 dark:bg-slate-700 rounded-lg">
                         <FileText size={48} className="mx-auto text-neutral-300 mb-3" />
-                        <p className="text-neutral-600">Nenhuma movimentação registrada</p>
-                        <p className="text-sm text-neutral-500 mt-1">
+                        <p className="text-neutral-600 dark:text-slate-400">Nenhuma movimentação registrada</p>
+                        <p className="text-sm text-neutral-500 dark:text-slate-400 mt-1">
                           Clique em "Sincronizar Agora" para buscar atualizações
                         </p>
                       </div>
@@ -2499,9 +2499,9 @@ const Cases: React.FC = () => {
                                 <div className="absolute left-2 top-1 w-4 h-4 bg-primary-600 rounded-full border-4 border-white"></div>
 
                                 {/* Conteúdo da movimentação */}
-                                <div className="bg-neutral-50 rounded-lg p-4 hover:bg-neutral-100 transition-colors">
+                                <div className="bg-neutral-50 dark:bg-slate-700 rounded-lg p-4 hover:bg-neutral-100 dark:hover:bg-slate-600 transition-colors">
                                   <div className="flex items-start justify-between mb-2">
-                                    <h4 className="font-semibold text-neutral-900 text-base">
+                                    <h4 className="font-semibold text-neutral-900 dark:text-slate-100 text-base">
                                       Tipo do Movimento: {movement.movementName}
                                     </h4>
                                     {index === 0 && (
@@ -2511,7 +2511,7 @@ const Cases: React.FC = () => {
                                     )}
                                   </div>
 
-                                  <div className="flex items-center text-sm text-neutral-600 mb-3">
+                                  <div className="flex items-center text-sm text-neutral-600 dark:text-slate-400 mb-3">
                                     <Calendar size={14} className="mr-1" />
                                     <span className="font-medium">Data:</span>
                                     <span className="ml-1">{formatDate(movement.movementDate)}</span>
@@ -2526,8 +2526,8 @@ const Cases: React.FC = () => {
 
                                         return (
                                           <div key={idx} className="text-sm">
-                                            <span className="font-medium text-neutral-700">{campo}:</span>
-                                            <span className="ml-1 text-neutral-600">{valor}</span>
+                                            <span className="font-medium text-neutral-700 dark:text-slate-300">{campo}:</span>
+                                            <span className="ml-1 text-neutral-600 dark:text-slate-400">{valor}</span>
                                           </div>
                                         );
                                       })}
@@ -2544,7 +2544,7 @@ const Cases: React.FC = () => {
                 </div>
 
                 {/* Footer */}
-                <div className="sticky bottom-0 bg-neutral-50 border-t border-neutral-200 px-6 py-4 flex justify-between min-h-[44px]">
+                <div className="sticky bottom-0 bg-neutral-50 dark:bg-slate-700 border-t border-neutral-200 dark:border-slate-700 px-6 py-4 flex justify-between min-h-[44px]">
                   <div className="flex gap-3">
                     <button
                       onClick={() => {
@@ -2566,7 +2566,7 @@ const Cases: React.FC = () => {
                   </div>
                   <button
                     onClick={() => setShowDetailsModal(false)}
-                    className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 text-neutral-700 bg-white hover:bg-neutral-50 font-medium rounded-lg transition-all duration-200"
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 dark:border-slate-600 text-neutral-700 dark:text-slate-300 bg-white dark:bg-slate-800 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 font-medium rounded-lg transition-all duration-200"
                   >
                     Fechar
                   </button>
@@ -2583,8 +2583,8 @@ const Cases: React.FC = () => {
                 {detailsTab === 'cnj' && (
                   <div className="p-6 space-y-4">
                     <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-lg font-semibold text-neutral-900">Publicações do Diário Oficial</h3>
-                      <span className="text-sm text-neutral-500">Dados via ADVAPI</span>
+                      <h3 className="text-lg font-semibold text-neutral-900 dark:text-slate-100">Publicações do Diário Oficial</h3>
+                      <span className="text-sm text-neutral-500 dark:text-slate-400">Dados via ADVAPI</span>
                     </div>
 
                     {selectedCase.ultimaPublicacaoAdvapi ? (
@@ -2604,10 +2604,10 @@ const Cases: React.FC = () => {
                         </div>
 
                         {/* Placeholder para publicacoes futuras */}
-                        <div className="border border-neutral-200 rounded-lg p-6 text-center">
+                        <div className="border border-neutral-200 dark:border-slate-700 rounded-lg p-6 text-center">
                           <FileText size={48} className="mx-auto text-neutral-300 mb-4" />
-                          <p className="text-neutral-500">Nenhuma publicação encontrada para este processo</p>
-                          <p className="text-sm text-neutral-400 mt-1">
+                          <p className="text-neutral-500 dark:text-slate-400">Nenhuma publicação encontrada para este processo</p>
+                          <p className="text-sm text-neutral-400 dark:text-slate-500 mt-1">
                             Número: {formatProcessNumber(selectedCase.processNumber)}
                           </p>
                         </div>
@@ -2624,15 +2624,15 @@ const Cases: React.FC = () => {
       {/* Modal de Edição de Parte */}
       {showEditPartModal && editingPart && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-neutral-200 px-6 py-4 flex justify-between items-center min-h-[44px]">
-              <h2 className="text-2xl font-bold text-neutral-900">Editar Parte</h2>
+          <div className="bg-white dark:bg-slate-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white dark:bg-slate-800 border-b border-neutral-200 dark:border-slate-700 px-6 py-4 flex justify-between items-center min-h-[44px]">
+              <h2 className="text-2xl font-bold text-neutral-900 dark:text-slate-100">Editar Parte</h2>
               <button
                 onClick={() => {
                   setShowEditPartModal(false);
                   setEditingPart(null);
                 }}
-                className="text-neutral-400 hover:text-neutral-600"
+                className="text-neutral-400 dark:text-slate-500 hover:text-neutral-600 dark:text-slate-400"
               >
                 <X size={24} />
               </button>
@@ -2641,13 +2641,13 @@ const Cases: React.FC = () => {
             <div className="p-6 space-y-4">
               {/* Tipo */}
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                   Tipo
                 </label>
                 <select
                   value={editingPart.type}
                   onChange={(e) => setEditingPart({ ...editingPart, type: e.target.value as 'AUTOR' | 'REU' | 'REPRESENTANTE_LEGAL' })}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                  className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                 >
                   <option value="AUTOR">Demandante</option>
                   <option value="REU">Demandado</option>
@@ -2657,60 +2657,60 @@ const Cases: React.FC = () => {
 
               {/* Nome */}
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                   Nome *
                 </label>
                 <input
                   type="text"
                   value={editingPart.name}
                   onChange={(e) => setEditingPart({ ...editingPart, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                  className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   required
                 />
               </div>
 
               {/* CPF/CNPJ */}
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                   CPF/CNPJ
                 </label>
                 <input
                   type="text"
                   value={editingPart.cpfCnpj || ''}
                   onChange={(e) => setEditingPart({ ...editingPart, cpfCnpj: e.target.value })}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                  className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                 />
               </div>
 
               {/* RG */}
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                   RG
                 </label>
                 <input
                   type="text"
                   value={editingPart.rg || ''}
                   onChange={(e) => setEditingPart({ ...editingPart, rg: e.target.value })}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                  className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                 />
               </div>
 
               {/* Data de Nascimento */}
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                   Data de Nascimento
                 </label>
                 <input
                   type="date"
                   value={editingPart.birthDate ? editingPart.birthDate.split('T')[0] : ''}
                   onChange={(e) => setEditingPart({ ...editingPart, birthDate: e.target.value })}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                  className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                 />
               </div>
 
               {/* Telefone / Identidade / Inscrição */}
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                   {editingPart.type === 'REPRESENTANTE_LEGAL' ? 'Identidade' : editingPart.type === 'REU' ? 'Inscrição' : 'Telefone'}
                 </label>
                 <input
@@ -2718,7 +2718,7 @@ const Cases: React.FC = () => {
                   value={editingPart.phone || ''}
                   onChange={(e) => setEditingPart({ ...editingPart, phone: e.target.value })}
                   placeholder={editingPart.type === 'REPRESENTANTE_LEGAL' ? 'Ex: RG 12.345.678-9' : editingPart.type === 'REU' ? 'Ex: OAB, CRECI, etc.' : ''}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                  className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                 />
               </div>
 
@@ -2726,7 +2726,7 @@ const Cases: React.FC = () => {
               {editingPart.type === 'AUTOR' && (
                 <>
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                       Nacionalidade
                     </label>
                     <input
@@ -2734,31 +2734,31 @@ const Cases: React.FC = () => {
                       value={editingPart.email || ''}
                       onChange={(e) => setEditingPart({ ...editingPart, email: e.target.value })}
                       placeholder="Ex: Brasileiro(a)"
-                      className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                      className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                       Estado Civil
                     </label>
                     <input
                       type="text"
                       value={editingPart.civilStatus || ''}
                       onChange={(e) => setEditingPart({ ...editingPart, civilStatus: e.target.value })}
-                      className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                      className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                       Profissão
                     </label>
                     <input
                       type="text"
                       value={editingPart.profession || ''}
                       onChange={(e) => setEditingPart({ ...editingPart, profession: e.target.value })}
-                      className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                      className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                     />
                   </div>
                 </>
@@ -2766,26 +2766,26 @@ const Cases: React.FC = () => {
 
               {/* Endereço */}
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                   Endereço
                 </label>
                 <textarea
                   value={editingPart.address || ''}
                   onChange={(e) => setEditingPart({ ...editingPart, address: e.target.value })}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                  className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   rows={2}
                 />
               </div>
             </div>
 
             {/* Footer */}
-            <div className="sticky bottom-0 bg-neutral-50 border-t border-neutral-200 px-6 py-4 flex justify-end gap-3 min-h-[44px]">
+            <div className="sticky bottom-0 bg-neutral-50 dark:bg-slate-700 border-t border-neutral-200 dark:border-slate-700 px-6 py-4 flex justify-end gap-3 min-h-[44px]">
               <button
                 onClick={() => {
                   setShowEditPartModal(false);
                   setEditingPart(null);
                 }}
-                className="px-6 py-2 border border-neutral-300 rounded-md text-neutral-700 hover:bg-neutral-50 transition-colors min-h-[44px]"
+                className="px-6 py-2 border border-neutral-300 dark:border-slate-600 rounded-md text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 transition-colors min-h-[44px]"
               >
                 Cancelar
               </button>
@@ -2803,12 +2803,12 @@ const Cases: React.FC = () => {
       {/* Modal de Resultados da Importação */}
       {showImportModal && importResults && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
-          <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+          <div className="bg-white dark:bg-slate-800 rounded-lg p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-neutral-900">Resultados da Importação</h2>
+              <h2 className="text-xl font-bold text-neutral-900 dark:text-slate-100">Resultados da Importação</h2>
               <button
                 onClick={() => setShowImportModal(false)}
-                className="text-neutral-500 hover:text-neutral-700"
+                className="text-neutral-500 dark:text-slate-400 hover:text-neutral-700 dark:text-slate-300"
               >
                 <X size={24} />
               </button>
@@ -2818,21 +2818,21 @@ const Cases: React.FC = () => {
               <div className="grid grid-cols-3 gap-4">
                 <div className="bg-success-50 p-4 rounded-lg text-center">
                   <p className="text-2xl font-bold text-primary-600">{importResults.total}</p>
-                  <p className="text-sm text-neutral-600">Total de linhas</p>
+                  <p className="text-sm text-neutral-600 dark:text-slate-400">Total de linhas</p>
                 </div>
                 <div className="bg-success-50 p-4 rounded-lg text-center">
                   <p className="text-2xl font-bold text-primary-600">{importResults.success}</p>
-                  <p className="text-sm text-neutral-600">Importados</p>
+                  <p className="text-sm text-neutral-600 dark:text-slate-400">Importados</p>
                 </div>
                 <div className="bg-error-50 p-4 rounded-lg text-center">
                   <p className="text-2xl font-bold text-error-600">{importResults.errors.length}</p>
-                  <p className="text-sm text-neutral-600">Erros</p>
+                  <p className="text-sm text-neutral-600 dark:text-slate-400">Erros</p>
                 </div>
               </div>
 
               {importResults.errors.length > 0 && (
                 <div>
-                  <h3 className="font-semibold text-neutral-900 mb-2">Erros encontrados:</h3>
+                  <h3 className="font-semibold text-neutral-900 dark:text-slate-100 mb-2">Erros encontrados:</h3>
                   <div className="bg-error-50 rounded-lg p-4 max-h-60 overflow-y-auto">
                     {importResults.errors.map((error: any, index: number) => (
                       <div key={index} className="mb-2 pb-2 border-b border-error-200 last:border-0">
@@ -2848,7 +2848,7 @@ const Cases: React.FC = () => {
 
               <button
                 onClick={() => setShowImportModal(false)}
-                className="w-full px-4 py-2 bg-neutral-100 text-neutral-700 border border-neutral-200 rounded-md hover:bg-neutral-200 min-h-[44px]"
+                className="w-full px-4 py-2 bg-neutral-100 text-neutral-700 dark:text-slate-300 border border-neutral-200 dark:border-slate-700 rounded-md hover:bg-neutral-200 min-h-[44px]"
               >
                 Fechar
               </button>
@@ -2860,18 +2860,18 @@ const Cases: React.FC = () => {
       {/* Modal de Visualização do Andamento para Cliente */}
       {showAndamentoModal && selectedCase && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-slate-800 rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-center mb-4 pb-4 border-b">
                 <div>
-                  <h2 className="text-2xl font-bold text-neutral-900">Andamento para Cliente</h2>
-                  <p className="text-sm text-neutral-500 mt-1">
+                  <h2 className="text-2xl font-bold text-neutral-900 dark:text-slate-100">Andamento para Cliente</h2>
+                  <p className="text-sm text-neutral-500 dark:text-slate-400 mt-1">
                     {formatProcessNumber(selectedCase.processNumber)} - {selectedCase.client?.name || 'Sem cliente'}
                   </p>
                 </div>
                 <button
                   onClick={() => setShowAndamentoModal(false)}
-                  className="text-neutral-500 hover:text-neutral-700"
+                  className="text-neutral-500 dark:text-slate-400 hover:text-neutral-700 dark:text-slate-300"
                 >
                   <X size={24} />
                 </button>
@@ -2959,7 +2959,7 @@ const Cases: React.FC = () => {
                     onChange={(e) => setFormData({ ...formData, informarCliente: e.target.value })}
                     rows={4}
                     placeholder="Digite aqui a informação que será enviada ou mostrada ao cliente..."
-                    className="w-full px-3 py-2 border border-amber-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white text-neutral-900"
+                    className="w-full px-3 py-2 border border-amber-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white dark:bg-slate-800 text-neutral-900 dark:text-slate-100"
                   />
                   <button
                     onClick={async () => {
@@ -2980,8 +2980,8 @@ const Cases: React.FC = () => {
                 </div>
 
                 {selectedCase.linkProcesso && (
-                  <div className="bg-neutral-50 border border-neutral-200 rounded-lg p-4">
-                    <h3 className="text-sm font-medium text-neutral-700 mb-1">Link do Processo</h3>
+                  <div className="bg-neutral-50 dark:bg-slate-700 border border-neutral-200 dark:border-slate-700 rounded-lg p-4">
+                    <h3 className="text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Link do Processo</h3>
                     <a
                       href={selectedCase.linkProcesso}
                       target="_blank"
@@ -2997,7 +2997,7 @@ const Cases: React.FC = () => {
               <div className="mt-6 flex justify-end">
                 <button
                   onClick={() => setShowAndamentoModal(false)}
-                  className="px-4 py-2 bg-neutral-100 text-neutral-700 border border-neutral-300 rounded-lg hover:bg-neutral-200 transition-colors min-h-[44px]"
+                  className="px-4 py-2 bg-neutral-100 text-neutral-700 dark:text-slate-300 border border-neutral-300 dark:border-slate-600 rounded-lg hover:bg-neutral-200 transition-colors min-h-[44px]"
                 >
                   Fechar
                 </button>

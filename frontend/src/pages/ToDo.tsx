@@ -240,11 +240,11 @@ const ToDo: React.FC = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-neutral-900 flex items-center gap-2">
+            <h1 className="text-3xl font-bold text-neutral-900 dark:text-slate-100 flex items-center gap-2">
               <Calendar className="text-primary-600" size={24} />
               Tarefas
             </h1>
-            <p className="text-neutral-600 mt-1">Gerencie suas tarefas e afazeres</p>
+            <p className="text-neutral-600 dark:text-slate-400 mt-1">Gerencie suas tarefas e afazeres</p>
           </div>
 
           <button
@@ -261,7 +261,7 @@ const ToDo: React.FC = () => {
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 p-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400" size={20} />
@@ -270,14 +270,14 @@ const ToDo: React.FC = () => {
                 placeholder="Buscar tarefas..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                className="w-full pl-10 pr-4 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
               />
             </div>
 
             <select
               value={filterCompleted}
               onChange={(e) => setFilterCompleted(e.target.value)}
-              className="px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+              className="px-4 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
             >
               <option value="">Todos os status</option>
               <option value="false">Pendentes</option>
@@ -287,11 +287,11 @@ const ToDo: React.FC = () => {
         </div>
 
         {/* Todos List */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 overflow-hidden">
           {loading ? (
-            <div className="p-8 text-center text-neutral-500">Carregando...</div>
+            <div className="p-8 text-center text-neutral-500 dark:text-slate-400">Carregando...</div>
           ) : todos.length === 0 ? (
-            <div className="p-8 text-center text-neutral-500">
+            <div className="p-8 text-center text-neutral-500 dark:text-slate-400">
               Nenhuma tarefa encontrada. Crie uma nova tarefa para começar.
             </div>
           ) : (
@@ -324,19 +324,19 @@ const ToDo: React.FC = () => {
 
               {/* Desktop Table View */}
               <div className="desktop-table-view overflow-x-auto">
-                <table className="min-w-full divide-y divide-neutral-200">
-                  <thead className="bg-neutral-50">
+                <table className="min-w-full divide-y divide-neutral-200 dark:divide-slate-700">
+                  <thead className="bg-neutral-50 dark:bg-slate-700">
                     <tr>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">Status</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">Tarefa</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">Prioridade</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">Vencimento</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">Ações</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">Status</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">Tarefa</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">Prioridade</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">Vencimento</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">Ações</th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-neutral-200">
+                  <tbody className="bg-white dark:bg-slate-800 divide-y divide-neutral-200 dark:divide-slate-700">
                     {todos.map((todo) => (
-                      <tr key={todo.id} className="odd:bg-white even:bg-neutral-50 hover:bg-success-100 transition-colors">
+                      <tr key={todo.id} className="odd:bg-white dark:bg-slate-800 even:bg-neutral-50 dark:bg-slate-700 hover:bg-success-100 transition-colors">
                         <td className="px-6 py-4">
                           <button
                             onClick={() => handleToggleComplete(todo)}
@@ -349,7 +349,7 @@ const ToDo: React.FC = () => {
                           <div className={todo.completed ? 'line-through text-neutral-400' : ''}>
                             <div className="font-medium">{todo.title}</div>
                             {todo.description && (
-                              <div className="text-sm text-neutral-500 mt-1">{todo.description}</div>
+                              <div className="text-sm text-neutral-500 dark:text-slate-400 mt-1">{todo.description}</div>
                             )}
                           </div>
                         </td>
@@ -358,7 +358,7 @@ const ToDo: React.FC = () => {
                             {getPriorityLabel(todo.priority)}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-sm text-neutral-500">
+                        <td className="px-6 py-4 text-sm text-neutral-500 dark:text-slate-400">
                           {todo.dueDate ? formatDate(todo.dueDate) : '-'}
                         </td>
                         <td className="px-6 py-4">
@@ -389,8 +389,8 @@ const ToDo: React.FC = () => {
 
               {/* Pagination */}
               {total > 0 && (
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-4 border-t border-neutral-200">
-                  <span className="text-sm text-neutral-600">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-4 border-t border-neutral-200 dark:border-slate-700">
+                  <span className="text-sm text-neutral-600 dark:text-slate-400">
                     Mostrando {((page - 1) * limit) + 1} a {Math.min(page * limit, total)} de {total} tarefas
                   </span>
                   <div className="flex items-center gap-2">
@@ -400,20 +400,20 @@ const ToDo: React.FC = () => {
                         setLimit(Number(e.target.value));
                         setPage(1);
                       }}
-                      className="px-2 py-1 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      className="px-2 py-1 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                     >
                       <option value={25}>25</option>
                       <option value={50}>50</option>
                       <option value={100}>100</option>
                       <option value={200}>200</option>
                     </select>
-                    <span className="text-sm text-neutral-600">por página</span>
+                    <span className="text-sm text-neutral-600 dark:text-slate-400">por página</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => setPage(p => Math.max(1, p - 1))}
                       disabled={page === 1}
-                      className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] border border-neutral-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-50"
+                      className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] border border-neutral-300 dark:border-slate-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700"
                     >
                       <ChevronLeft size={20} />
                     </button>
@@ -423,7 +423,7 @@ const ToDo: React.FC = () => {
                     <button
                       onClick={() => setPage(p => Math.min(Math.ceil(total / limit), p + 1))}
                       disabled={page >= Math.ceil(total / limit)}
-                      className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] border border-neutral-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-50"
+                      className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] border border-neutral-300 dark:border-slate-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700"
                     >
                       <ChevronRight size={20} />
                     </button>
@@ -437,7 +437,7 @@ const ToDo: React.FC = () => {
         {/* Modal */}
         {showModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
-            <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
               <div className="p-6">
                 <h2 className="text-2xl font-bold mb-6">{editMode ? 'Editar Tarefa' : 'Nova Tarefa'}</h2>
 
@@ -449,7 +449,7 @@ const ToDo: React.FC = () => {
                       required
                       value={formData.title}
                       onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                      className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                      className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                     />
                   </div>
 
@@ -459,7 +459,7 @@ const ToDo: React.FC = () => {
                       rows={3}
                       value={formData.description}
                       onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                      className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                     />
                   </div>
 
@@ -470,7 +470,7 @@ const ToDo: React.FC = () => {
                         type="date"
                         value={formData.dueDate}
                         onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
 
@@ -479,7 +479,7 @@ const ToDo: React.FC = () => {
                       <select
                         value={formData.priority}
                         onChange={(e) => setFormData({ ...formData, priority: e.target.value as any })}
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       >
                         <option value="BAIXA">🟢 Baixa</option>
                         <option value="MEDIA">🟡 Média</option>
@@ -492,7 +492,7 @@ const ToDo: React.FC = () => {
                   {/* Assigned Users */}
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <label className="block text-sm font-medium text-neutral-700">
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300">
                         Atribuir a usuários (opcional)
                       </label>
                       {companyUsers.length > 0 && (
@@ -513,13 +513,13 @@ const ToDo: React.FC = () => {
                     </div>
                     <div className="border border-gray-300 rounded-md p-3 max-h-48 overflow-y-auto">
                       {companyUsers.length === 0 ? (
-                        <p className="text-sm text-neutral-500 italic">Nenhum usuário disponível</p>
+                        <p className="text-sm text-neutral-500 dark:text-slate-400 italic">Nenhum usuário disponível</p>
                       ) : (
                         <div className="space-y-2">
                           {companyUsers.map((user) => (
                             <label
                               key={user.id}
-                              className="flex items-center gap-2 cursor-pointer hover:bg-neutral-50 p-2 rounded"
+                              className="flex items-center gap-2 cursor-pointer hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 p-2 rounded"
                             >
                               <input
                                 type="checkbox"
@@ -533,9 +533,9 @@ const ToDo: React.FC = () => {
                                 }}
                                 className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
                               />
-                              <span className="text-sm text-neutral-700">
+                              <span className="text-sm text-neutral-700 dark:text-slate-300">
                                 {user.name}
-                                <span className="text-neutral-500 text-xs ml-1">({user.email})</span>
+                                <span className="text-neutral-500 dark:text-slate-400 text-xs ml-1">({user.email})</span>
                               </span>
                             </label>
                           ))}
@@ -543,7 +543,7 @@ const ToDo: React.FC = () => {
                       )}
                     </div>
                     {selectedUserIds.length > 0 && (
-                      <p className="text-sm text-neutral-600 mt-2">
+                      <p className="text-sm text-neutral-600 dark:text-slate-400 mt-2">
                         {selectedUserIds.length} usuário(s) selecionado(s)
                       </p>
                     )}
@@ -556,7 +556,7 @@ const ToDo: React.FC = () => {
                         setShowModal(false);
                         resetForm();
                       }}
-                      className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 text-neutral-700 bg-white hover:bg-neutral-50 font-medium rounded-lg transition-all duration-200"
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 dark:border-slate-600 text-neutral-700 dark:text-slate-300 bg-white dark:bg-slate-800 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 font-medium rounded-lg transition-all duration-200"
                     >
                       Cancelar
                     </button>

@@ -526,7 +526,7 @@ const Financial: React.FC = () => {
       <div className="space-y-4 sm:space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-neutral-900 mb-3 sm:mb-4">Financeiro</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-slate-100 mb-3 sm:mb-4">Financeiro</h1>
 
           {/* Action Buttons - Mobile: 2 rows, Desktop: Single row */}
           <input
@@ -565,66 +565,66 @@ const Financial: React.FC = () => {
 
         {/* Cards de Resumo */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-neutral-600">Total Receitas</p>
-                <p className="text-2xl font-bold text-primary-600 mt-2">
+                <p className="text-sm font-medium text-neutral-600 dark:text-slate-400">Total Receitas</p>
+                <p className="text-2xl font-bold text-primary-600 dark:text-primary-400 mt-2">
                   {formatCurrency(summary.totalIncome)}
                 </p>
               </div>
-              <div className="p-3 bg-success-100 rounded-full">
-                <TrendingUp className="text-primary-600" size={24} />
+              <div className="p-3 bg-success-100 dark:bg-success-900/30 rounded-full">
+                <TrendingUp className="text-primary-600 dark:text-primary-400" size={24} />
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-neutral-600">Total Despesas</p>
-                <p className="text-2xl font-bold text-error-600 mt-2">
+                <p className="text-sm font-medium text-neutral-600 dark:text-slate-400">Total Despesas</p>
+                <p className="text-2xl font-bold text-error-600 dark:text-error-400 mt-2">
                   {formatCurrency(summary.totalExpense)}
                 </p>
               </div>
-              <div className="p-3 bg-error-100 rounded-full">
-                <TrendingDown className="text-error-600" size={24} />
+              <div className="p-3 bg-error-100 dark:bg-error-900/30 rounded-full">
+                <TrendingDown className="text-error-600 dark:text-error-400" size={24} />
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-neutral-600">Saldo</p>
-                <p className={`text-2xl font-bold mt-2 ${summary.balance >= 0 ? 'text-primary-600' : 'text-error-600'}`}>
+                <p className="text-sm font-medium text-neutral-600 dark:text-slate-400">Saldo</p>
+                <p className={`text-2xl font-bold mt-2 ${summary.balance >= 0 ? 'text-primary-600 dark:text-primary-400' : 'text-error-600 dark:text-error-400'}`}>
                   {formatCurrency(summary.balance)}
                 </p>
               </div>
-              <div className={`p-3 rounded-full ${summary.balance >= 0 ? 'bg-success-100' : 'bg-error-100'}`}>
-                <DollarSign className={summary.balance >= 0 ? 'text-primary-600' : 'text-error-600'} size={24} />
+              <div className={`p-3 rounded-full ${summary.balance >= 0 ? 'bg-success-100 dark:bg-success-900/30' : 'bg-error-100 dark:bg-error-900/30'}`}>
+                <DollarSign className={summary.balance >= 0 ? 'text-primary-600 dark:text-primary-400' : 'text-error-600 dark:text-error-400'} size={24} />
               </div>
             </div>
           </div>
         </div>
 
         {/* Filtros e Busca */}
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 p-4">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 flex items-center gap-2">
-              <Search size={20} className="text-neutral-400" />
+              <Search size={20} className="text-neutral-400 dark:text-slate-500" />
               <input
                 type="text"
                 placeholder="Buscar por descrição ou cliente..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="flex-1 px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 min-h-[44px]"
+                className="flex-1 px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100 placeholder-neutral-400 dark:placeholder-slate-500"
               />
             </div>
 
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 px-4 py-2 border border-neutral-300 rounded-md hover:bg-neutral-50 transition-colors min-h-[44px]"
+              className="flex items-center gap-2 px-4 py-2 border border-neutral-300 dark:border-slate-600 rounded-md hover:bg-neutral-50 dark:hover:bg-slate-700 transition-colors min-h-[44px] text-neutral-700 dark:text-slate-300"
             >
               <Filter size={20} />
               <span>Filtros</span>
@@ -632,21 +632,21 @@ const Financial: React.FC = () => {
           </div>
 
           {showFilters && (
-            <div className="mt-4 pt-4 border-t border-neutral-200 space-y-4">
+            <div className="mt-4 pt-4 border-t border-neutral-200 dark:border-slate-700 space-y-4">
               {/* Linha 1: Descrição e Valores */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">Descrição</label>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Descrição</label>
                   <input
                     type="text"
                     placeholder="Filtrar por descrição..."
                     value={filterDescription}
                     onChange={(e) => setFilterDescription(e.target.value)}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100 placeholder-neutral-400 dark:placeholder-slate-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">Valor Mínimo</label>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Valor Mínimo</label>
                   <input
                     type="number"
                     step="0.01"
@@ -654,11 +654,11 @@ const Financial: React.FC = () => {
                     placeholder="R$ 0,00"
                     value={filterValueMin}
                     onChange={(e) => setFilterValueMin(e.target.value)}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100 placeholder-neutral-400 dark:placeholder-slate-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">Valor Máximo</label>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Valor Máximo</label>
                   <input
                     type="number"
                     step="0.01"
@@ -666,7 +666,7 @@ const Financial: React.FC = () => {
                     placeholder="R$ 999.999,99"
                     value={filterValueMax}
                     onChange={(e) => setFilterValueMax(e.target.value)}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100 placeholder-neutral-400 dark:placeholder-slate-500"
                   />
                 </div>
               </div>
@@ -674,31 +674,31 @@ const Financial: React.FC = () => {
               {/* Linha 2: Filtros de data, tipo e status */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">Data Inicial</label>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Data Inicial</label>
                   <input
                     type="date"
                     value={filterStartDate}
                     onChange={(e) => setFilterStartDate(e.target.value)}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">Data Final</label>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Data Final</label>
                   <input
                     type="date"
                     value={filterEndDate}
                     onChange={(e) => setFilterEndDate(e.target.value)}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">Tipo</label>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Tipo</label>
                   <select
                     value={filterType}
                     onChange={(e) => setFilterType(e.target.value)}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100"
                   >
                     <option value="">Todos</option>
                     <option value="INCOME">Receitas</option>
@@ -707,11 +707,11 @@ const Financial: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">Status</label>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Status</label>
                   <select
                     value={filterStatus}
                     onChange={(e) => setFilterStatus(e.target.value)}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100"
                   >
                     <option value="">Todos</option>
                     <option value="PAID">Pago</option>
@@ -725,11 +725,11 @@ const Financial: React.FC = () => {
               {/* Linha 3: Cliente, PNJ e Centro de Custo */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">Cliente</label>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Cliente</label>
                   <select
                     value={filterClientId}
                     onChange={(e) => setFilterClientId(e.target.value)}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100"
                   >
                     <option value="">Todos</option>
                     {clients.map((client) => (
@@ -740,21 +740,21 @@ const Financial: React.FC = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">PNJ / Nº Processo</label>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">PNJ / Nº Processo</label>
                   <input
                     type="text"
                     placeholder="Digite o número do processo..."
                     value={filterCaseNumber}
                     onChange={(e) => setFilterCaseNumber(e.target.value)}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100 placeholder-neutral-400 dark:placeholder-slate-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">Centro de Custo</label>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Centro de Custo</label>
                   <select
                     value={filterCostCenterId}
                     onChange={(e) => setFilterCostCenterId(e.target.value)}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100"
                   >
                     <option value="">Todos</option>
                     {costCenters.map((cc) => (
@@ -832,11 +832,11 @@ const Financial: React.FC = () => {
         </div>
 
         {/* Tabela de Transações */}
-        <div className="bg-white rounded-lg shadow">
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20">
           {loading ? (
-            <p className="text-center py-8 text-neutral-600">Carregando...</p>
+            <p className="text-center py-8 text-neutral-600 dark:text-slate-400">Carregando...</p>
           ) : transactions.length === 0 ? (
-            <p className="text-center py-8 text-neutral-600">
+            <p className="text-center py-8 text-neutral-600 dark:text-slate-400">
               {search || filterType || filterClientId || filterStartDate || filterEndDate
                 ? 'Nenhuma transação encontrada para os filtros aplicados'
                 : 'Nenhuma transação cadastrada'}
@@ -871,62 +871,62 @@ const Financial: React.FC = () => {
               {/* Desktop Table View */}
               <div className="desktop-table-view overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-neutral-50">
+                  <thead className="bg-neutral-50 dark:bg-slate-700">
                     <tr>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                         Data
                       </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                         Tipo
                       </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                         Cliente
                       </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                         Descrição
                       </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                         Centro de Custo
                       </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                         Processo
                       </th>
-                      <th className="px-4 py-3 text-right text-sm font-semibold text-neutral-900 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-right text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                         Valor
                       </th>
-                      <th className="px-4 py-3 text-center text-sm font-semibold text-neutral-900 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                         Ações
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-neutral-200 bg-white">
+                  <tbody className="divide-y divide-neutral-200 dark:divide-slate-700 bg-white dark:bg-slate-800">
                     {transactions.map((transaction) => (
-                      <tr key={transaction.id} className="odd:bg-white even:bg-neutral-50 hover:bg-success-100 transition-colors">
-                        <td className="px-4 py-3 text-sm text-neutral-900">
+                      <tr key={transaction.id} className="odd:bg-white even:bg-neutral-50 dark:odd:bg-slate-800 dark:even:bg-slate-700/50 hover:bg-success-100 dark:hover:bg-slate-600 transition-colors">
+                        <td className="px-4 py-3 text-sm text-neutral-900 dark:text-slate-100">
                           {formatDate(transaction.date)}
                         </td>
                         <td className="px-4 py-3 text-sm">
                           {transaction.type === 'INCOME' ? (
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-success-100 text-success-800">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-success-100 dark:bg-success-900/30 text-success-800 dark:text-success-400">
                               <TrendingUp size={16} className="mr-1" />
                               Receita
                             </span>
                           ) : (
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-error-100 text-error-800">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-error-100 dark:bg-error-900/30 text-error-800 dark:text-error-400">
                               <TrendingDown size={16} className="mr-1" />
                               Despesa
                             </span>
                           )}
                         </td>
-                        <td className="px-4 py-3 text-sm text-neutral-900">
+                        <td className="px-4 py-3 text-sm text-neutral-900 dark:text-slate-100">
                           <div>
                             <p className="font-medium">{transaction.client.name}</p>
                             {transaction.client.cpf && (
-                              <p className="text-xs text-neutral-500">{transaction.client.cpf}</p>
+                              <p className="text-xs text-neutral-500 dark:text-slate-400">{transaction.client.cpf}</p>
                             )}
                           </div>
                         </td>
-                        <td className="px-4 py-3 text-sm text-neutral-600">
+                        <td className="px-4 py-3 text-sm text-neutral-600 dark:text-slate-300">
                           {transaction.description}
                         </td>
                         <td className="px-4 py-3 text-sm">
@@ -941,14 +941,14 @@ const Financial: React.FC = () => {
                               {transaction.costCenter.name}
                             </span>
                           ) : (
-                            <span className="text-xs text-neutral-400">-</span>
+                            <span className="text-xs text-neutral-400 dark:text-slate-500">-</span>
                           )}
                         </td>
-                        <td className="px-4 py-3 text-sm text-neutral-600">
+                        <td className="px-4 py-3 text-sm text-neutral-600 dark:text-slate-300">
                           {transaction.case ? (
                             <span className="text-xs">{transaction.case.processNumber}</span>
                           ) : (
-                            <span className="text-xs text-neutral-400">-</span>
+                            <span className="text-xs text-neutral-400 dark:text-slate-500">-</span>
                           )}
                         </td>
                         <td className="px-4 py-3 text-sm text-right">
@@ -977,8 +977,8 @@ const Financial: React.FC = () => {
 
         {/* Pagination */}
         {!loading && transactions.length > 0 && (
-          <div className="bg-white rounded-lg shadow px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2 text-sm text-neutral-600">
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-2 text-sm text-neutral-600 dark:text-slate-400">
               <span>Mostrando {((page - 1) * limit) + 1} a {Math.min(page * limit, total)} de {total} transações</span>
               <select
                 value={limit}
@@ -986,7 +986,7 @@ const Financial: React.FC = () => {
                   setLimit(Number(e.target.value));
                   setPage(1);
                 }}
-                className="ml-2 px-2 py-1 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="ml-2 px-2 py-1 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100"
               >
                 <option value={25}>25</option>
                 <option value={50}>50</option>
@@ -999,7 +999,7 @@ const Financial: React.FC = () => {
               <button
                 onClick={() => setPage(page - 1)}
                 disabled={page === 1}
-                className="p-2 border border-neutral-300 rounded-md hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="p-2 border border-neutral-300 dark:border-slate-600 rounded-md hover:bg-neutral-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-neutral-700 dark:text-slate-300"
               >
                 <ChevronLeft size={20} />
               </button>
@@ -1022,8 +1022,8 @@ const Financial: React.FC = () => {
                       onClick={() => setPage(pageNum)}
                       className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
                         page === pageNum
-                          ? 'bg-primary-100 text-primary-700 border border-primary-200'
-                          : 'border border-neutral-300 hover:bg-neutral-50'
+                          ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 border border-primary-200 dark:border-primary-800'
+                          : 'border border-neutral-300 dark:border-slate-600 hover:bg-neutral-50 dark:hover:bg-slate-700 text-neutral-700 dark:text-slate-300'
                       }`}
                     >
                       {pageNum}
@@ -1035,7 +1035,7 @@ const Financial: React.FC = () => {
               <button
                 onClick={() => setPage(page + 1)}
                 disabled={page === totalPages}
-                className="p-2 border border-neutral-300 rounded-md hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="p-2 border border-neutral-300 dark:border-slate-600 rounded-md hover:bg-neutral-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-neutral-700 dark:text-slate-300"
               >
                 <ChevronRight size={20} />
               </button>
@@ -1047,9 +1047,9 @@ const Financial: React.FC = () => {
       {/* Modal Criar/Editar */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-neutral-200 px-6 py-4 flex justify-between items-center min-h-[44px]">
-              <h2 className="text-xl font-bold text-neutral-900">
+          <div className="bg-white dark:bg-slate-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white dark:bg-slate-800 border-b border-neutral-200 dark:border-slate-700 px-6 py-4 flex justify-between items-center min-h-[44px]">
+              <h2 className="text-xl font-bold text-neutral-900 dark:text-slate-100">
                 {editMode ? 'Editar Transação' : 'Nova Transação'}
               </h2>
               <button
@@ -1059,7 +1059,7 @@ const Financial: React.FC = () => {
                   setSelectedTransaction(null);
                   resetForm();
                 }}
-                className="text-neutral-400 hover:text-neutral-600"
+                className="text-neutral-400 hover:text-neutral-600 dark:text-slate-500 dark:hover:text-slate-300"
               >
                 <X size={24} />
               </button>
@@ -1069,7 +1069,7 @@ const Financial: React.FC = () => {
               <div className="space-y-4">
                 {/* Tipo de Transação */}
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                     Tipo de Transação *
                   </label>
                   <div className="grid grid-cols-2 gap-4">
@@ -1078,8 +1078,8 @@ const Financial: React.FC = () => {
                       onClick={() => setFormData({ ...formData, type: 'INCOME' })}
                       className={`flex items-center justify-center gap-2 px-4 py-3 rounded-md border-2 transition-colors ${
                         formData.type === 'INCOME'
-                          ? 'border-primary-500 bg-success-50 text-primary-700'
-                          : 'border-neutral-300 hover:border-neutral-400'
+                          ? 'border-primary-500 bg-success-50 dark:bg-success-900/30 text-primary-700 dark:text-primary-400'
+                          : 'border-neutral-300 dark:border-slate-600 hover:border-neutral-400 dark:hover:border-slate-500 text-neutral-700 dark:text-slate-300'
                       }`}
                     >
                       <TrendingUp size={20} />
@@ -1090,8 +1090,8 @@ const Financial: React.FC = () => {
                       onClick={() => setFormData({ ...formData, type: 'EXPENSE' })}
                       className={`flex items-center justify-center gap-2 px-4 py-3 rounded-md border-2 transition-colors ${
                         formData.type === 'EXPENSE'
-                          ? 'border-error-500 bg-error-50 text-error-700'
-                          : 'border-neutral-300 hover:border-neutral-400'
+                          ? 'border-error-500 bg-error-50 dark:bg-error-900/30 text-error-700 dark:text-error-400'
+                          : 'border-neutral-300 dark:border-slate-600 hover:border-neutral-400 dark:hover:border-slate-500 text-neutral-700 dark:text-slate-300'
                       }`}
                     >
                       <TrendingDown size={20} />
@@ -1102,7 +1102,7 @@ const Financial: React.FC = () => {
 
                 {/* Cliente - Autocomplete */}
                 <div className="relative">
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                     Cliente <span className="text-error-500">*</span>
                   </label>
                   <input
@@ -1120,18 +1120,18 @@ const Financial: React.FC = () => {
                       }
                       setFormData({ ...formData, clientId: '' });
                     }}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100 placeholder-neutral-400 dark:placeholder-slate-500"
                   />
                   {showClientSuggestions && filteredClients.length > 0 && (
-                    <div className="absolute z-10 w-full mt-1 bg-white border border-neutral-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                    <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md shadow-lg max-h-60 overflow-y-auto">
                       {filteredClients.map((client) => (
                         <div
                           key={client.id}
                           onClick={() => handleClientSelect(client)}
-                          className="px-4 py-2 hover:bg-neutral-100 cursor-pointer min-h-[44px]"
+                          className="px-4 py-2 hover:bg-neutral-100 dark:hover:bg-slate-600 cursor-pointer min-h-[44px]"
                         >
-                          <p className="font-medium text-sm">{client.name}</p>
-                          {client.cpf && <p className="text-xs text-neutral-500">{client.cpf}</p>}
+                          <p className="font-medium text-sm text-neutral-900 dark:text-slate-100">{client.name}</p>
+                          {client.cpf && <p className="text-xs text-neutral-500 dark:text-slate-400">{client.cpf}</p>}
                         </div>
                       ))}
                     </div>
@@ -1140,7 +1140,7 @@ const Financial: React.FC = () => {
 
                 {/* Processo (Opcional) - Autocomplete */}
                 <div className="relative">
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                     Processo (Opcional)
                   </label>
                   <input
@@ -1157,27 +1157,27 @@ const Financial: React.FC = () => {
                       }
                       setFormData({ ...formData, caseId: '' });
                     }}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100 placeholder-neutral-400 dark:placeholder-slate-500"
                   />
                   {showCaseSuggestions && filteredCases.length > 0 && (
-                    <div className="absolute z-10 w-full mt-1 bg-white border border-neutral-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                    <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md shadow-lg max-h-60 overflow-y-auto">
                       {filteredCases.map((caseItem) => (
                         <div
                           key={caseItem.id}
                           onClick={() => handleCaseSelect(caseItem)}
-                          className="px-4 py-2 hover:bg-neutral-100 cursor-pointer min-h-[44px]"
+                          className="px-4 py-2 hover:bg-neutral-100 dark:hover:bg-slate-600 cursor-pointer min-h-[44px]"
                         >
                           <div className="flex items-center gap-2">
-                            <p className="font-medium text-sm">{caseItem.processNumber}</p>
+                            <p className="font-medium text-sm text-neutral-900 dark:text-slate-100">{caseItem.processNumber}</p>
                             <span className={`text-xs px-1.5 py-0.5 rounded ${
                               caseItem.type === 'PNJ'
-                                ? 'bg-purple-100 text-purple-700'
-                                : 'bg-blue-100 text-blue-700'
+                                ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400'
+                                : 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
                             }`}>
                               {caseItem.type === 'PNJ' ? 'PNJ' : 'Judicial'}
                             </span>
                           </div>
-                          <p className="text-xs text-neutral-500">{caseItem.subject}</p>
+                          <p className="text-xs text-neutral-500 dark:text-slate-400">{caseItem.subject}</p>
                         </div>
                       ))}
                     </div>
@@ -1189,7 +1189,7 @@ const Financial: React.FC = () => {
                         setCaseSearchText('');
                         setFormData({ ...formData, caseId: '' });
                       }}
-                      className="absolute right-3 top-9 text-neutral-400 hover:text-neutral-600 transition-colors"
+                      className="absolute right-3 top-9 text-neutral-400 hover:text-neutral-600 dark:text-slate-500 dark:hover:text-slate-300 transition-colors"
                     >
                       <X size={20} />
                     </button>
@@ -1198,13 +1198,13 @@ const Financial: React.FC = () => {
 
                 {/* Centro de Custo */}
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                     Centro de Custo
                   </label>
                   <select
                     value={formData.costCenterId}
                     onChange={(e) => setFormData({ ...formData, costCenterId: e.target.value })}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100"
                   >
                     <option value="">Selecione um centro de custo</option>
                     {costCenters
@@ -1223,7 +1223,7 @@ const Financial: React.FC = () => {
 
                 {/* Descrição */}
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                     Descrição <span className="text-error-500">*</span>
                   </label>
                   <input
@@ -1232,14 +1232,14 @@ const Financial: React.FC = () => {
                     placeholder="Ex: Honorários advocatícios, Custas processuais..."
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100 placeholder-neutral-400 dark:placeholder-slate-500"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   {/* Valor */}
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                       Valor <span className="text-error-500">*</span>
                     </label>
                     <input
@@ -1250,13 +1250,13 @@ const Financial: React.FC = () => {
                       placeholder="0,00"
                       value={formData.amount}
                       onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                      className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                      className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100 placeholder-neutral-400 dark:placeholder-slate-500"
                     />
                   </div>
 
                   {/* Data */}
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                       Data <span className="text-error-500">*</span>
                     </label>
                     <input
@@ -1264,20 +1264,20 @@ const Financial: React.FC = () => {
                       required
                       value={formData.date}
                       onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                      className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                      className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100"
                     />
                   </div>
                 </div>
 
                 {/* Status */}
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                     Status <span className="text-error-500">*</span>
                   </label>
                   <select
                     value={formData.status}
                     onChange={(e) => setFormData({ ...formData, status: e.target.value as 'PAID' | 'PENDING' | 'CANCELLED' | 'PARTIAL' })}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100"
                   >
                     <option value="PENDING">Pendente</option>
                     <option value="PAID">Pago</option>
@@ -1287,16 +1287,16 @@ const Financial: React.FC = () => {
                 </div>
 
                 {/* Parcelamento */}
-                <div className="border-t border-neutral-200 pt-4">
+                <div className="border-t border-neutral-200 dark:border-slate-700 pt-4">
                   <div className="flex items-center gap-2 mb-4">
                     <input
                       type="checkbox"
                       id="isInstallment"
                       checked={formData.isInstallment}
                       onChange={(e) => setFormData({ ...formData, isInstallment: e.target.checked })}
-                      className="w-4 h-4 text-primary-600 border-neutral-300 rounded focus:ring-primary-500"
+                      className="w-4 h-4 text-primary-600 border-neutral-300 dark:border-slate-600 rounded focus:ring-primary-500 bg-white dark:bg-slate-700"
                     />
-                    <label htmlFor="isInstallment" className="text-sm font-medium text-neutral-700">
+                    <label htmlFor="isInstallment" className="text-sm font-medium text-neutral-700 dark:text-slate-300">
                       Parcelar esta transação
                     </label>
                   </div>
@@ -1304,7 +1304,7 @@ const Financial: React.FC = () => {
                   {formData.isInstallment && (
                     <div className="grid grid-cols-2 gap-4 pl-6">
                       <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-1">
+                        <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                           Número de Parcelas <span className="text-error-500">*</span>
                         </label>
                         <input
@@ -1314,13 +1314,13 @@ const Financial: React.FC = () => {
                           placeholder="Ex: 12"
                           value={formData.installmentCount}
                           onChange={(e) => setFormData({ ...formData, installmentCount: e.target.value })}
-                          className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                          className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100 placeholder-neutral-400 dark:placeholder-slate-500"
                         />
-                        <p className="text-xs text-neutral-500 mt-1">Mínimo: 2 parcelas</p>
+                        <p className="text-xs text-neutral-500 dark:text-slate-400 mt-1">Mínimo: 2 parcelas</p>
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-1">
+                        <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                           Intervalo (dias)
                         </label>
                         <input
@@ -1329,14 +1329,14 @@ const Financial: React.FC = () => {
                           placeholder="Ex: 30"
                           value={formData.installmentInterval}
                           onChange={(e) => setFormData({ ...formData, installmentInterval: e.target.value })}
-                          className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                          className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100 placeholder-neutral-400 dark:placeholder-slate-500"
                         />
-                        <p className="text-xs text-neutral-500 mt-1">Padrão: 30 dias (mensal)</p>
+                        <p className="text-xs text-neutral-500 dark:text-slate-400 mt-1">Padrão: 30 dias (mensal)</p>
                       </div>
 
                       {formData.amount && formData.installmentCount && (
-                        <div className="col-span-2 p-3 bg-info-50 rounded-md border border-info-200">
-                          <p className="text-sm text-info-700">
+                        <div className="col-span-2 p-3 bg-info-50 dark:bg-info-900/30 rounded-md border border-info-200 dark:border-info-800">
+                          <p className="text-sm text-info-700 dark:text-info-400">
                             <span className="font-semibold">Valor por parcela:</span>{' '}
                             {formatCurrency(parseFloat(formData.amount) / parseInt(formData.installmentCount) || 0)}
                           </p>

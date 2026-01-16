@@ -758,7 +758,7 @@ const Clients: React.FC = () => {
       case 'VIEWED':
         return <span className="px-2 py-1 text-xs rounded-full bg-warning-100 text-warning-700 flex items-center gap-1"><Eye size={12} /> Visualizado</span>;
       default:
-        return <span className="px-2 py-1 text-xs rounded-full bg-neutral-100 text-neutral-700 flex items-center gap-1"><Clock size={12} /> Pendente</span>;
+        return <span className="px-2 py-1 text-xs rounded-full bg-neutral-100 text-neutral-700 dark:text-slate-300 flex items-center gap-1"><Clock size={12} /> Pendente</span>;
     }
   };
 
@@ -788,7 +788,7 @@ const Clients: React.FC = () => {
       <div className="space-y-4 sm:space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-neutral-900 mb-3 sm:mb-4">Clientes</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-slate-100 mb-3 sm:mb-4">Clientes</h1>
 
           {/* Action Buttons - Mobile: Grid 3 columns, Desktop: Flex row */}
           <input
@@ -836,24 +836,24 @@ const Clients: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 p-4">
           <div className="flex items-center gap-2 mb-4">
-            <Search size={20} className="text-neutral-400" />
+            <Search size={20} className="text-neutral-400 dark:text-slate-500" />
             <input
               type="text"
               placeholder="Buscar por nome, CPF ou email..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="flex-1 px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 min-h-[44px]"
+              className="flex-1 px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 min-h-[44px]"
             />
           </div>
 
           {/* Expanded Filters */}
           {showFilters && (
-            <div className="bg-neutral-50 rounded-lg p-4 mb-4 border border-neutral-200">
+            <div className="bg-neutral-50 dark:bg-slate-700 rounded-lg p-4 mb-4 border border-neutral-200 dark:border-slate-700">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                     <Calendar size={14} className="inline mr-1" />
                     Data Início
                   </label>
@@ -861,11 +861,11 @@ const Clients: React.FC = () => {
                     type="date"
                     value={dateFrom}
                     onChange={(e) => setDateFrom(e.target.value)}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                     <Calendar size={14} className="inline mr-1" />
                     Data Fim
                   </label>
@@ -873,17 +873,17 @@ const Clients: React.FC = () => {
                     type="date"
                     value={dateTo}
                     onChange={(e) => setDateTo(e.target.value)}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                     Tag
                   </label>
                   <select
                     value={tagFilter}
                     onChange={(e) => setTagFilter(e.target.value)}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   >
                     <option value="">Todas as Tags</option>
                     {tags.map((tag) => (
@@ -896,15 +896,15 @@ const Clients: React.FC = () => {
                 <div className="flex items-end">
                   <button
                     onClick={clearFilters}
-                    className="w-full px-4 py-2 text-sm font-medium text-neutral-600 bg-white border border-neutral-300 rounded-md hover:bg-neutral-50 min-h-[44px]"
+                    className="w-full px-4 py-2 text-sm font-medium text-neutral-600 dark:text-slate-400 bg-white dark:bg-slate-800 border border-neutral-300 dark:border-slate-600 rounded-md hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 min-h-[44px]"
                   >
                     Limpar Filtros
                   </button>
                 </div>
               </div>
               {hasActiveFilters && (
-                <div className="mt-3 pt-3 border-t border-neutral-200">
-                  <p className="text-sm text-neutral-600">
+                <div className="mt-3 pt-3 border-t border-neutral-200 dark:border-slate-700">
+                  <p className="text-sm text-neutral-600 dark:text-slate-400">
                     <strong>Filtros ativos:</strong>{' '}
                     {tagFilter && <span className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded text-xs mr-2">Tag: {tags.find(t => t.id === tagFilter)?.name}</span>}
                     {dateFrom && <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded text-xs mr-2">De: {dateFrom}</span>}
@@ -916,9 +916,9 @@ const Clients: React.FC = () => {
           )}
 
           {loading ? (
-            <p className="text-center py-8 text-neutral-600">Carregando...</p>
+            <p className="text-center py-8 text-neutral-600 dark:text-slate-400">Carregando...</p>
           ) : clients.length === 0 ? (
-            <p className="text-center py-8 text-neutral-600">
+            <p className="text-center py-8 text-neutral-600 dark:text-slate-400">
               {search ? 'Nenhum cliente encontrado para sua busca' : 'Nenhum cliente cadastrado'}
             </p>
           ) : (
@@ -952,36 +952,36 @@ const Clients: React.FC = () => {
               {/* Desktop Table View */}
               <div className="desktop-table-view overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-neutral-50">
+                  <thead className="bg-neutral-50 dark:bg-slate-700">
                     <tr>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                         Nome
                       </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                         CPF
                       </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                         Telefone
                       </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                         Email
                       </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                         TAG
                       </th>
-                      <th className="px-4 py-3 text-center text-sm font-semibold text-neutral-900 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                         Ações
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-neutral-200 bg-white">
+                  <tbody className="divide-y divide-neutral-200 dark:divide-slate-700 bg-white dark:bg-slate-800">
                     {clients.map((client) => (
-                      <tr key={client.id} className="odd:bg-white even:bg-neutral-50 hover:bg-success-100 transition-colors">
-                        <td className="px-4 py-3 text-sm font-medium text-neutral-900">{client.name}</td>
-                        <td className="px-4 py-3 text-sm text-neutral-600">{formatCPF(client.cpf)}</td>
-                        <td className="px-4 py-3 text-sm text-neutral-600">{client.phone || '-'}</td>
-                        <td className="px-4 py-3 text-sm text-neutral-600">{client.email || '-'}</td>
-                        <td className="px-4 py-3 text-sm text-neutral-600">
+                      <tr key={client.id} className="odd:bg-white dark:bg-slate-800 even:bg-neutral-50 dark:bg-slate-700 hover:bg-success-100 transition-colors">
+                        <td className="px-4 py-3 text-sm font-medium text-neutral-900 dark:text-slate-100">{client.name}</td>
+                        <td className="px-4 py-3 text-sm text-neutral-600 dark:text-slate-400">{formatCPF(client.cpf)}</td>
+                        <td className="px-4 py-3 text-sm text-neutral-600 dark:text-slate-400">{client.phone || '-'}</td>
+                        <td className="px-4 py-3 text-sm text-neutral-600 dark:text-slate-400">{client.email || '-'}</td>
+                        <td className="px-4 py-3 text-sm text-neutral-600 dark:text-slate-400">
                           {client.clientTags && client.clientTags.length > 0 ? (
                             <div className="flex flex-wrap gap-1">
                               {client.clientTags.map((ct) => (
@@ -1010,7 +1010,7 @@ const Clients: React.FC = () => {
               {/* Pagination */}
               {total > 0 && (
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 px-4">
-                  <div className="text-sm text-neutral-600">
+                  <div className="text-sm text-neutral-600 dark:text-slate-400">
                     Mostrando {(page - 1) * limit + 1} - {Math.min(page * limit, total)} de {total} clientes
                   </div>
                   <div className="flex items-center gap-2">
@@ -1020,7 +1020,7 @@ const Clients: React.FC = () => {
                         setLimit(Number(e.target.value));
                         setPage(1);
                       }}
-                      className="px-2 py-1 text-sm border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      className="px-2 py-1 text-sm border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                     >
                       <option value={25}>25 por página</option>
                       <option value={50}>50 por página</option>
@@ -1030,7 +1030,7 @@ const Clients: React.FC = () => {
                     <button
                       onClick={() => setPage((p) => Math.max(1, p - 1))}
                       disabled={page === 1}
-                      className="inline-flex items-center gap-1 px-3 py-2 text-sm text-neutral-600 hover:bg-neutral-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="inline-flex items-center gap-1 px-3 py-2 text-sm text-neutral-600 dark:text-slate-400 hover:bg-neutral-100 dark:hover:bg-slate-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <ChevronLeft className="w-4 h-4" />
                       Anterior
@@ -1056,7 +1056,7 @@ const Clients: React.FC = () => {
                             className={`px-3 py-1 text-sm rounded-lg ${
                               page === pageNum
                                 ? 'bg-primary-600 text-white'
-                                : 'text-neutral-600 hover:bg-neutral-100'
+                                : 'text-neutral-600 dark:text-slate-400 hover:bg-neutral-100'
                             }`}
                           >
                             {pageNum}
@@ -1068,7 +1068,7 @@ const Clients: React.FC = () => {
                     <button
                       onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                       disabled={page === totalPages}
-                      className="inline-flex items-center gap-1 px-3 py-2 text-sm text-neutral-600 hover:bg-neutral-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="inline-flex items-center gap-1 px-3 py-2 text-sm text-neutral-600 dark:text-slate-400 hover:bg-neutral-100 dark:hover:bg-slate-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Próximo
                       <ChevronRight className="w-4 h-4" />
@@ -1086,7 +1086,7 @@ const Clients: React.FC = () => {
         <div className="modal-overlay">
           <div className="modal-container">
             <div className="modal-header">
-              <h2 className="text-lg sm:text-xl font-bold text-neutral-900">
+              <h2 className="text-lg sm:text-xl font-bold text-neutral-900 dark:text-slate-100">
                 {editMode ? 'Editar Cliente' : 'Novo Cliente'}
               </h2>
               <button
@@ -1096,7 +1096,7 @@ const Clients: React.FC = () => {
                   setSelectedClient(null);
                   resetForm();
                 }}
-                className="p-2 text-neutral-400 hover:text-neutral-600 rounded-lg hover:bg-neutral-100"
+                className="p-2 text-neutral-400 dark:text-slate-500 hover:text-neutral-600 dark:text-slate-400 rounded-lg hover:bg-neutral-100 dark:hover:bg-slate-600"
               >
                 <X size={24} />
               </button>
@@ -1106,20 +1106,20 @@ const Clients: React.FC = () => {
               <div className="space-y-6">
                 {/* Dados da Empresa / Dados Pessoais */}
                 <div>
-                  <h3 className="text-lg font-semibold text-neutral-900 mb-4">
+                  <h3 className="text-lg font-semibold text-neutral-900 dark:text-slate-100 mb-4">
                     {formData.personType === 'JURIDICA' ? 'Dados da Empresa' : 'Dados Pessoais'}
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Tipo de Pessoa */}
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                         Tipo de Pessoa <span className="text-error-500">*</span>
                       </label>
                       <select
                         required
                         value={formData.personType}
                         onChange={(e) => setFormData({ ...formData, personType: e.target.value as 'FISICA' | 'JURIDICA' })}
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       >
                         <option value="FISICA">Pessoa Física</option>
                         <option value="JURIDICA">Pessoa Jurídica</option>
@@ -1128,13 +1128,13 @@ const Clients: React.FC = () => {
 
                     {/* Condição do Cliente */}
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                         Condição do Cliente
                       </label>
                       <select
                         value={formData.clientCondition}
                         onChange={(e) => setFormData({ ...formData, clientCondition: e.target.value as 'DEMANDANTE' | 'DEMANDADO' | '' })}
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       >
                         <option value="">Selecione...</option>
                         <option value="DEMANDANTE">Demandante</option>
@@ -1143,7 +1143,7 @@ const Clients: React.FC = () => {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                         {formData.personType === 'FISICA' ? 'Nome Completo' : 'Razão Social'} <span className="text-error-500">*</span>
                       </label>
                       <input
@@ -1151,12 +1151,12 @@ const Clients: React.FC = () => {
                         required
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                         {formData.personType === 'FISICA' ? 'CPF' : 'CNPJ'}
                       </label>
                       <input
@@ -1165,14 +1165,14 @@ const Clients: React.FC = () => {
                         onChange={(e) => setFormData({ ...formData, cpf: e.target.value })}
                         placeholder={formData.personType === 'FISICA' ? '000.000.000-00' : '00.000.000/0000-00'}
                         maxLength={formData.personType === 'FISICA' ? 14 : 18}
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
 
                     {/* Inscrição Estadual - apenas para Pessoa Jurídica */}
                     {formData.personType === 'JURIDICA' && (
                       <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-1">
+                        <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                           Inscrição Estadual
                         </label>
                         <input
@@ -1180,7 +1180,7 @@ const Clients: React.FC = () => {
                           value={formData.stateRegistration}
                           onChange={(e) => setFormData({ ...formData, stateRegistration: e.target.value })}
                           placeholder="123.456.789.012"
-                          className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                          className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                         />
                       </div>
                     )}
@@ -1189,79 +1189,79 @@ const Clients: React.FC = () => {
                     {formData.personType === 'FISICA' && (
                       <>
                         <div>
-                          <label className="block text-sm font-medium text-neutral-700 mb-1">RG</label>
+                          <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">RG</label>
                           <input
                             type="text"
                             value={formData.rg}
                             onChange={(e) => setFormData({ ...formData, rg: e.target.value })}
-                            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                            className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                           />
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-neutral-700 mb-1">Número do PIS</label>
+                          <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Número do PIS</label>
                           <input
                             type="text"
                             value={formData.pis}
                             onChange={(e) => setFormData({ ...formData, pis: e.target.value })}
                             placeholder="000.00000.00-0"
-                            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                            className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                           />
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-neutral-700 mb-1">CTPS</label>
+                          <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">CTPS</label>
                           <input
                             type="text"
                             value={formData.ctps}
                             onChange={(e) => setFormData({ ...formData, ctps: e.target.value })}
                             placeholder="Número da CTPS"
-                            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                            className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                           />
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-neutral-700 mb-1">CTPS Série</label>
+                          <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">CTPS Série</label>
                           <input
                             type="text"
                             value={formData.ctpsSerie}
                             onChange={(e) => setFormData({ ...formData, ctpsSerie: e.target.value })}
                             placeholder="Série da CTPS"
-                            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                            className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                           />
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-neutral-700 mb-1">Nome da Mãe</label>
+                          <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Nome da Mãe</label>
                           <input
                             type="text"
                             value={formData.motherName}
                             onChange={(e) => setFormData({ ...formData, motherName: e.target.value })}
                             placeholder="Nome completo da mãe"
-                            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                            className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                           />
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-neutral-700 mb-1">
+                          <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                             Data de Nascimento
                           </label>
                           <input
                             type="date"
                             value={formData.birthDate}
                             onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
-                            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                            className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                           />
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-neutral-700 mb-1">
+                          <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                             Estado Civil
                           </label>
                           <select
                             value={formData.maritalStatus}
                             onChange={(e) => setFormData({ ...formData, maritalStatus: e.target.value })}
-                            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                            className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                           >
                             <option value="">Selecione...</option>
                             <option value="Solteiro(a)">Solteiro(a)</option>
@@ -1273,19 +1273,19 @@ const Clients: React.FC = () => {
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-neutral-700 mb-1">
+                          <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                             Profissão
                           </label>
                           <input
                             type="text"
                             value={formData.profession}
                             onChange={(e) => setFormData({ ...formData, profession: e.target.value })}
-                            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                            className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                           />
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-neutral-700 mb-1">
+                          <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                             Nacionalidade
                           </label>
                           <input
@@ -1293,12 +1293,12 @@ const Clients: React.FC = () => {
                             value={formData.nationality}
                             onChange={(e) => setFormData({ ...formData, nationality: e.target.value })}
                             placeholder="Ex: Brasileiro(a)"
-                            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                            className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                           />
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-neutral-700 mb-1">
+                          <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                             Outros
                           </label>
                           <input
@@ -1306,7 +1306,7 @@ const Clients: React.FC = () => {
                             value={formData.customField1}
                             onChange={(e) => setFormData({ ...formData, customField1: e.target.value })}
                             placeholder="Informações adicionais"
-                            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                            className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                           />
                         </div>
                       </>
@@ -1317,10 +1317,10 @@ const Clients: React.FC = () => {
                 {/* Dados do Representante Legal - apenas para Pessoa Jurídica */}
                 {formData.personType === 'JURIDICA' && (
                   <div>
-                    <h3 className="text-lg font-semibold text-neutral-900 mb-4">Dados do Representante Legal</h3>
+                    <h3 className="text-lg font-semibold text-neutral-900 dark:text-slate-100 mb-4">Dados do Representante Legal</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-1">
+                        <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                           Nome do Representante Legal
                         </label>
                         <input
@@ -1328,12 +1328,12 @@ const Clients: React.FC = () => {
                           value={formData.representativeName}
                           onChange={(e) => setFormData({ ...formData, representativeName: e.target.value })}
                           placeholder="Nome completo do representante"
-                          className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                          className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-1">
+                        <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                           CPF do Representante Legal
                         </label>
                         <input
@@ -1342,40 +1342,40 @@ const Clients: React.FC = () => {
                           onChange={(e) => setFormData({ ...formData, representativeCpf: e.target.value })}
                           placeholder="000.000.000-00"
                           maxLength={14}
-                          className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                          className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-1">RG do Representante</label>
+                        <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">RG do Representante</label>
                         <input
                           type="text"
                           value={formData.rg}
                           onChange={(e) => setFormData({ ...formData, rg: e.target.value })}
-                          className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                          className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-1">
+                        <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                           Data de Nascimento do Representante
                         </label>
                         <input
                           type="date"
                           value={formData.birthDate}
                           onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
-                          className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                          className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-1">
+                        <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                           Estado Civil do Representante
                         </label>
                         <select
                           value={formData.maritalStatus}
                           onChange={(e) => setFormData({ ...formData, maritalStatus: e.target.value })}
-                          className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                          className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                         >
                           <option value="">Selecione...</option>
                           <option value="Solteiro(a)">Solteiro(a)</option>
@@ -1387,19 +1387,19 @@ const Clients: React.FC = () => {
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-1">
+                        <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                           Profissão do Representante
                         </label>
                         <input
                           type="text"
                           value={formData.profession}
                           onChange={(e) => setFormData({ ...formData, profession: e.target.value })}
-                          className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                          className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-1">
+                        <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                           Nacionalidade do Representante
                         </label>
                         <input
@@ -1407,7 +1407,7 @@ const Clients: React.FC = () => {
                           value={formData.nationality}
                           onChange={(e) => setFormData({ ...formData, nationality: e.target.value })}
                           placeholder="Ex: Brasileiro(a)"
-                          className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                          className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                         />
                       </div>
                     </div>
@@ -1416,20 +1416,20 @@ const Clients: React.FC = () => {
 
                 {/* Contato */}
                 <div>
-                  <h3 className="text-lg font-semibold text-neutral-900 mb-4">Contato</h3>
+                  <h3 className="text-lg font-semibold text-neutral-900 dark:text-slate-100 mb-4">Contato</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">Email</label>
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Email</label>
                       <input
                         type="email"
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                         Telefone 1
                       </label>
                       <input
@@ -1437,12 +1437,12 @@ const Clients: React.FC = () => {
                         value={formData.phone}
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                         placeholder="(00) 00000-0000"
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                         Telefone 2
                       </label>
                       <input
@@ -1450,12 +1450,12 @@ const Clients: React.FC = () => {
                         value={formData.phone2}
                         onChange={(e) => setFormData({ ...formData, phone2: e.target.value })}
                         placeholder="(00) 00000-0000"
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                         Instagram
                       </label>
                       <input
@@ -1463,12 +1463,12 @@ const Clients: React.FC = () => {
                         value={formData.instagram}
                         onChange={(e) => setFormData({ ...formData, instagram: e.target.value })}
                         placeholder="@usuario"
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                         Facebook
                       </label>
                       <input
@@ -1476,12 +1476,12 @@ const Clients: React.FC = () => {
                         value={formData.facebook}
                         onChange={(e) => setFormData({ ...formData, facebook: e.target.value })}
                         placeholder="URL ou nome de usuário"
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                         Outros 2
                       </label>
                       <input
@@ -1489,7 +1489,7 @@ const Clients: React.FC = () => {
                         value={formData.customField2}
                         onChange={(e) => setFormData({ ...formData, customField2: e.target.value })}
                         placeholder="Informações adicionais"
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
                   </div>
@@ -1497,10 +1497,10 @@ const Clients: React.FC = () => {
 
                 {/* Endereço */}
                 <div>
-                  <h3 className="text-lg font-semibold text-neutral-900 mb-4">Endereço</h3>
+                  <h3 className="text-lg font-semibold text-neutral-900 dark:text-slate-100 mb-4">Endereço</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                         Endereço
                       </label>
                       <input
@@ -1508,37 +1508,37 @@ const Clients: React.FC = () => {
                         value={formData.address}
                         onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                         placeholder="Rua, número, complemento"
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">Bairro</label>
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Bairro</label>
                       <input
                         type="text"
                         value={formData.neighborhood}
                         onChange={(e) => setFormData({ ...formData, neighborhood: e.target.value })}
                         placeholder="Nome do bairro"
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">Cidade</label>
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Cidade</label>
                       <input
                         type="text"
                         value={formData.city}
                         onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">Estado</label>
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Estado</label>
                       <select
                         value={formData.state}
                         onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       >
                         <option value="">Selecione...</option>
                         <option value="AC">AC</option>
@@ -1572,13 +1572,13 @@ const Clients: React.FC = () => {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">CEP</label>
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">CEP</label>
                       <input
                         type="text"
                         value={formData.zipCode}
                         onChange={(e) => setFormData({ ...formData, zipCode: e.target.value })}
                         placeholder="00000-000"
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
                   </div>
@@ -1586,19 +1586,19 @@ const Clients: React.FC = () => {
 
                 {/* Observações */}
                 <div>
-                  <h3 className="text-lg font-semibold text-neutral-900 mb-4">Observações</h3>
+                  <h3 className="text-lg font-semibold text-neutral-900 dark:text-slate-100 mb-4">Observações</h3>
                   <textarea
                     value={formData.notes}
                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                     rows={4}
                     placeholder="Informações adicionais sobre o cliente..."
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   />
                 </div>
 
                 {/* Tags */}
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                     Tags
                   </label>
                   <TagSelector
@@ -1609,7 +1609,7 @@ const Clients: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-neutral-200">
+              <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-neutral-200 dark:border-slate-700">
                 <button
                   type="button"
                   onClick={() => {
@@ -1618,7 +1618,7 @@ const Clients: React.FC = () => {
                     setSelectedClient(null);
                     resetForm();
                   }}
-                  className="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-white border border-neutral-300 hover:bg-neutral-50 text-neutral-700 rounded-lg font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200 min-h-[44px]"
+                  className="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-white dark:bg-slate-800 border border-neutral-300 dark:border-slate-600 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 text-neutral-700 dark:text-slate-300 rounded-lg font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200 min-h-[44px]"
                 >
                   Cancelar
                 </button>
@@ -1639,13 +1639,13 @@ const Clients: React.FC = () => {
         <div className="modal-overlay">
           <div className="modal-container sm:max-w-3xl">
             <div className="modal-header">
-              <h2 className="text-lg sm:text-xl font-bold text-neutral-900">Detalhes do Cliente</h2>
+              <h2 className="text-lg sm:text-xl font-bold text-neutral-900 dark:text-slate-100">Detalhes do Cliente</h2>
               <button
                 onClick={() => {
                   setShowDetailsModal(false);
                   setSelectedClient(null);
                 }}
-                className="p-2 text-neutral-400 hover:text-neutral-600 rounded-lg hover:bg-neutral-100"
+                className="p-2 text-neutral-400 dark:text-slate-500 hover:text-neutral-600 dark:text-slate-400 rounded-lg hover:bg-neutral-100 dark:hover:bg-slate-600"
               >
                 <X size={24} />
               </button>
@@ -1654,76 +1654,76 @@ const Clients: React.FC = () => {
             <div className="modal-body space-y-4 sm:space-y-6">
               {/* Dados da Empresa / Dados Pessoais */}
               <div>
-                <h3 className="text-lg font-semibold text-neutral-900 mb-3">
+                <h3 className="text-lg font-semibold text-neutral-900 dark:text-slate-100 mb-3">
                   {selectedClient.personType === 'JURIDICA' ? 'Dados da Empresa' : 'Dados Pessoais'}
                 </h3>
-                <div className="bg-neutral-50 rounded-lg p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-neutral-50 dark:bg-slate-700 rounded-lg p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm font-medium text-neutral-500">Tipo de Pessoa</p>
-                    <p className="text-sm text-neutral-900 mt-1">
+                    <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">Tipo de Pessoa</p>
+                    <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">
                       {selectedClient.personType === 'JURIDICA' ? 'Pessoa Jurídica' : 'Pessoa Física'}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-500">Condição</p>
-                    <p className="text-sm text-neutral-900 mt-1">
+                    <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">Condição</p>
+                    <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">
                       {selectedClient.clientCondition === 'DEMANDANTE' ? 'Demandante' :
                        selectedClient.clientCondition === 'DEMANDADO' ? 'Demandado' : '-'}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-500">
+                    <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">
                       {selectedClient.personType === 'JURIDICA' ? 'Razão Social' : 'Nome Completo'}
                     </p>
-                    <p className="text-sm text-neutral-900 mt-1">{selectedClient.name}</p>
+                    <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{selectedClient.name}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-500">
+                    <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">
                       {selectedClient.personType === 'JURIDICA' ? 'CNPJ' : 'CPF'}
                     </p>
-                    <p className="text-sm text-neutral-900 mt-1">{formatCPF(selectedClient.cpf)}</p>
+                    <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{formatCPF(selectedClient.cpf)}</p>
                   </div>
 
                   {selectedClient.personType === 'JURIDICA' && selectedClient.stateRegistration && (
                     <div>
-                      <p className="text-sm font-medium text-neutral-500">Inscrição Estadual</p>
-                      <p className="text-sm text-neutral-900 mt-1">{selectedClient.stateRegistration}</p>
+                      <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">Inscrição Estadual</p>
+                      <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{selectedClient.stateRegistration}</p>
                     </div>
                   )}
 
                   {selectedClient.personType === 'FISICA' && (
                     <>
                       <div>
-                        <p className="text-sm font-medium text-neutral-500">RG</p>
-                        <p className="text-sm text-neutral-900 mt-1">{selectedClient.rg || '-'}</p>
+                        <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">RG</p>
+                        <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{selectedClient.rg || '-'}</p>
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-neutral-500">PIS</p>
-                        <p className="text-sm text-neutral-900 mt-1">{selectedClient.pis || '-'}</p>
+                        <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">PIS</p>
+                        <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{selectedClient.pis || '-'}</p>
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-neutral-500">CTPS</p>
-                        <p className="text-sm text-neutral-900 mt-1">{selectedClient.ctps || '-'}</p>
+                        <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">CTPS</p>
+                        <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{selectedClient.ctps || '-'}</p>
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-neutral-500">CTPS Série</p>
-                        <p className="text-sm text-neutral-900 mt-1">{selectedClient.ctpsSerie || '-'}</p>
+                        <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">CTPS Série</p>
+                        <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{selectedClient.ctpsSerie || '-'}</p>
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-neutral-500">Nome da Mãe</p>
-                        <p className="text-sm text-neutral-900 mt-1">{selectedClient.motherName || '-'}</p>
+                        <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">Nome da Mãe</p>
+                        <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{selectedClient.motherName || '-'}</p>
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-neutral-500">Data de Nascimento</p>
-                        <p className="text-sm text-neutral-900 mt-1">{formatDateDisplay(selectedClient.birthDate)}</p>
+                        <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">Data de Nascimento</p>
+                        <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{formatDateDisplay(selectedClient.birthDate)}</p>
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-neutral-500">Estado Civil</p>
-                        <p className="text-sm text-neutral-900 mt-1">{selectedClient.maritalStatus || '-'}</p>
+                        <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">Estado Civil</p>
+                        <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{selectedClient.maritalStatus || '-'}</p>
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-neutral-500">Profissão</p>
-                        <p className="text-sm text-neutral-900 mt-1">{selectedClient.profession || '-'}</p>
+                        <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">Profissão</p>
+                        <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{selectedClient.profession || '-'}</p>
                       </div>
                     </>
                   )}
@@ -1733,31 +1733,31 @@ const Clients: React.FC = () => {
               {/* Dados do Representante Legal - apenas para Pessoa Jurídica */}
               {selectedClient.personType === 'JURIDICA' && (
                 <div>
-                  <h3 className="text-lg font-semibold text-neutral-900 mb-3">Dados do Representante Legal</h3>
-                  <div className="bg-neutral-50 rounded-lg p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <h3 className="text-lg font-semibold text-neutral-900 dark:text-slate-100 mb-3">Dados do Representante Legal</h3>
+                  <div className="bg-neutral-50 dark:bg-slate-700 rounded-lg p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <p className="text-sm font-medium text-neutral-500">Nome do Representante</p>
-                      <p className="text-sm text-neutral-900 mt-1">{selectedClient.representativeName || '-'}</p>
+                      <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">Nome do Representante</p>
+                      <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{selectedClient.representativeName || '-'}</p>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-neutral-500">CPF do Representante</p>
-                      <p className="text-sm text-neutral-900 mt-1">{formatCPF(selectedClient.representativeCpf)}</p>
+                      <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">CPF do Representante</p>
+                      <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{formatCPF(selectedClient.representativeCpf)}</p>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-neutral-500">RG do Representante</p>
-                      <p className="text-sm text-neutral-900 mt-1">{selectedClient.rg || '-'}</p>
+                      <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">RG do Representante</p>
+                      <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{selectedClient.rg || '-'}</p>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-neutral-500">Data de Nascimento</p>
-                      <p className="text-sm text-neutral-900 mt-1">{formatDateDisplay(selectedClient.birthDate)}</p>
+                      <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">Data de Nascimento</p>
+                      <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{formatDateDisplay(selectedClient.birthDate)}</p>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-neutral-500">Estado Civil</p>
-                      <p className="text-sm text-neutral-900 mt-1">{selectedClient.maritalStatus || '-'}</p>
+                      <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">Estado Civil</p>
+                      <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{selectedClient.maritalStatus || '-'}</p>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-neutral-500">Profissão</p>
-                      <p className="text-sm text-neutral-900 mt-1">{selectedClient.profession || '-'}</p>
+                      <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">Profissão</p>
+                      <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{selectedClient.profession || '-'}</p>
                     </div>
                   </div>
                 </div>
@@ -1765,50 +1765,50 @@ const Clients: React.FC = () => {
 
               {/* Contato */}
               <div>
-                <h3 className="text-lg font-semibold text-neutral-900 mb-3">Contato</h3>
-                <div className="bg-neutral-50 rounded-lg p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <h3 className="text-lg font-semibold text-neutral-900 dark:text-slate-100 mb-3">Contato</h3>
+                <div className="bg-neutral-50 dark:bg-slate-700 rounded-lg p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm font-medium text-neutral-500">Email</p>
-                    <p className="text-sm text-neutral-900 mt-1">{selectedClient.email || '-'}</p>
+                    <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">Email</p>
+                    <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{selectedClient.email || '-'}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-500">Telefone 1</p>
-                    <p className="text-sm text-neutral-900 mt-1">{selectedClient.phone || '-'}</p>
+                    <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">Telefone 1</p>
+                    <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{selectedClient.phone || '-'}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-500">Telefone 2</p>
-                    <p className="text-sm text-neutral-900 mt-1">{selectedClient.phone2 || '-'}</p>
+                    <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">Telefone 2</p>
+                    <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{selectedClient.phone2 || '-'}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-500">Instagram</p>
-                    <p className="text-sm text-neutral-900 mt-1">{selectedClient.instagram || '-'}</p>
+                    <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">Instagram</p>
+                    <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{selectedClient.instagram || '-'}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-500">Facebook</p>
-                    <p className="text-sm text-neutral-900 mt-1">{selectedClient.facebook || '-'}</p>
+                    <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">Facebook</p>
+                    <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{selectedClient.facebook || '-'}</p>
                   </div>
                 </div>
               </div>
 
               {/* Endereço */}
               <div>
-                <h3 className="text-lg font-semibold text-neutral-900 mb-3">Endereço</h3>
-                <div className="bg-neutral-50 rounded-lg p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <h3 className="text-lg font-semibold text-neutral-900 dark:text-slate-100 mb-3">Endereço</h3>
+                <div className="bg-neutral-50 dark:bg-slate-700 rounded-lg p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="md:col-span-2">
-                    <p className="text-sm font-medium text-neutral-500">Endereço</p>
-                    <p className="text-sm text-neutral-900 mt-1">{selectedClient.address || '-'}</p>
+                    <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">Endereço</p>
+                    <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{selectedClient.address || '-'}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-500">Cidade</p>
-                    <p className="text-sm text-neutral-900 mt-1">{selectedClient.city || '-'}</p>
+                    <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">Cidade</p>
+                    <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{selectedClient.city || '-'}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-500">Estado</p>
-                    <p className="text-sm text-neutral-900 mt-1">{selectedClient.state || '-'}</p>
+                    <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">Estado</p>
+                    <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{selectedClient.state || '-'}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-500">CEP</p>
-                    <p className="text-sm text-neutral-900 mt-1">{selectedClient.zipCode || '-'}</p>
+                    <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">CEP</p>
+                    <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{selectedClient.zipCode || '-'}</p>
                   </div>
                 </div>
               </div>
@@ -1816,48 +1816,48 @@ const Clients: React.FC = () => {
               {/* Observações */}
               {selectedClient.notes && (
                 <div>
-                  <h3 className="text-lg font-semibold text-neutral-900 mb-3">Observações</h3>
-                  <div className="bg-neutral-50 rounded-lg p-4">
-                    <p className="text-sm text-neutral-900 whitespace-pre-wrap">{selectedClient.notes}</p>
+                  <h3 className="text-lg font-semibold text-neutral-900 dark:text-slate-100 mb-3">Observações</h3>
+                  <div className="bg-neutral-50 dark:bg-slate-700 rounded-lg p-4">
+                    <p className="text-sm text-neutral-900 dark:text-slate-100 whitespace-pre-wrap">{selectedClient.notes}</p>
                   </div>
                 </div>
               )}
 
               {/* Datas */}
               <div>
-                <h3 className="text-lg font-semibold text-neutral-900 mb-3">Informações do Sistema</h3>
-                <div className="bg-neutral-50 rounded-lg p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <h3 className="text-lg font-semibold text-neutral-900 dark:text-slate-100 mb-3">Informações do Sistema</h3>
+                <div className="bg-neutral-50 dark:bg-slate-700 rounded-lg p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm font-medium text-neutral-500">Data de Cadastro</p>
-                    <p className="text-sm text-neutral-900 mt-1">{formatDateDisplay(selectedClient.createdAt)}</p>
+                    <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">Data de Cadastro</p>
+                    <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{formatDateDisplay(selectedClient.createdAt)}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-500">Última Atualização</p>
-                    <p className="text-sm text-neutral-900 mt-1">{formatDateDisplay(selectedClient.updatedAt)}</p>
+                    <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">Última Atualização</p>
+                    <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{formatDateDisplay(selectedClient.updatedAt)}</p>
                   </div>
                 </div>
               </div>
 
               {/* Processos Vinculados */}
               <div>
-                <h3 className="text-lg font-semibold text-neutral-900 mb-3 flex items-center gap-2">
+                <h3 className="text-lg font-semibold text-neutral-900 dark:text-slate-100 mb-3 flex items-center gap-2">
                   <FileText size={20} className="text-primary-600" />
                   Processos Vinculados
                 </h3>
                 {loadingDetails ? (
-                  <div className="bg-neutral-50 rounded-lg p-6 flex items-center justify-center">
+                  <div className="bg-neutral-50 dark:bg-slate-700 rounded-lg p-6 flex items-center justify-center">
                     <Loader2 size={24} className="animate-spin text-primary-600" />
-                    <span className="ml-2 text-neutral-600">Carregando processos...</span>
+                    <span className="ml-2 text-neutral-600 dark:text-slate-400">Carregando processos...</span>
                   </div>
                 ) : selectedClient.cases && selectedClient.cases.length > 0 ? (
-                  <div className="bg-neutral-50 rounded-lg divide-y divide-neutral-200">
+                  <div className="bg-neutral-50 dark:bg-slate-700 rounded-lg divide-y divide-neutral-200 dark:divide-slate-700">
                     {selectedClient.cases.map((caso) => (
-                      <div key={caso.id} className="p-4 hover:bg-neutral-100 transition-colors">
+                      <div key={caso.id} className="p-4 hover:bg-neutral-100 dark:hover:bg-slate-600 transition-colors">
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
-                            <p className="font-medium text-neutral-900">{caso.processNumber}</p>
+                            <p className="font-medium text-neutral-900 dark:text-slate-100">{caso.processNumber}</p>
                             {caso.subject && (
-                              <p className="text-sm text-neutral-600 mt-1">{caso.subject}</p>
+                              <p className="text-sm text-neutral-600 dark:text-slate-400 mt-1">{caso.subject}</p>
                             )}
                             <div className="flex flex-wrap gap-2 mt-2">
                               <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -1872,7 +1872,7 @@ const Clients: React.FC = () => {
                                  caso.status === 'ARCHIVED' ? 'Arquivado' : caso.status}
                               </span>
                               {caso.court && (
-                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-neutral-100 text-neutral-700">
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-neutral-100 text-neutral-700 dark:text-slate-300">
                                   {caso.court}
                                 </span>
                               )}
@@ -1883,17 +1883,17 @@ const Clients: React.FC = () => {
                     ))}
                   </div>
                 ) : (
-                  <div className="bg-neutral-50 rounded-lg p-6 text-center">
-                    <FileText size={32} className="mx-auto text-neutral-400 mb-2" />
-                    <p className="text-neutral-500">Nenhum processo vinculado a este cliente</p>
+                  <div className="bg-neutral-50 dark:bg-slate-700 rounded-lg p-6 text-center">
+                    <FileText size={32} className="mx-auto text-neutral-400 dark:text-slate-500 mb-2" />
+                    <p className="text-neutral-500 dark:text-slate-400">Nenhum processo vinculado a este cliente</p>
                   </div>
                 )}
               </div>
 
               {/* Acesso ao Portal do Cliente */}
               <div>
-                <h3 className="text-lg font-semibold text-neutral-900 mb-3">Acesso ao Portal</h3>
-                <div className="bg-neutral-50 rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-neutral-900 dark:text-slate-100 mb-3">Acesso ao Portal</h3>
+                <div className="bg-neutral-50 dark:bg-slate-700 rounded-lg p-4">
                   {portalUser ? (
                     <div className="space-y-3">
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -1902,8 +1902,8 @@ const Clients: React.FC = () => {
                             <Mail className="text-success-600" size={20} />
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-neutral-900">Acesso ativo</p>
-                            <p className="text-sm text-neutral-500">{portalUser.email}</p>
+                            <p className="text-sm font-medium text-neutral-900 dark:text-slate-100">Acesso ativo</p>
+                            <p className="text-sm text-neutral-500 dark:text-slate-400">{portalUser.email}</p>
                           </div>
                         </div>
                         <button
@@ -1918,7 +1918,7 @@ const Clients: React.FC = () => {
                         <div className="bg-warning-50 border border-warning-200 rounded-lg p-3">
                           <p className="text-sm font-medium text-warning-800 mb-1">Senha Temporária (anote agora!):</p>
                           <div className="flex items-center gap-2">
-                            <code className="bg-white px-3 py-1.5 rounded border text-lg font-mono font-bold text-neutral-900 select-all">
+                            <code className="bg-white dark:bg-slate-800 px-3 py-1.5 rounded border text-lg font-mono font-bold text-neutral-900 dark:text-slate-100 select-all">
                               {portalUser.tempPassword}
                             </code>
                             <button
@@ -1936,19 +1936,19 @@ const Clients: React.FC = () => {
                           </p>
                         </div>
                       )}
-                      <p className="text-xs text-neutral-400">
+                      <p className="text-xs text-neutral-400 dark:text-slate-500">
                         URL do portal: https://cliente.advwell.pro
                       </p>
                     </div>
                   ) : (
                     <div className="space-y-3">
                       <div>
-                        <p className="text-sm text-neutral-600">
+                        <p className="text-sm text-neutral-600 dark:text-slate-400">
                           {selectedClient.email
                             ? 'Este cliente ainda não tem acesso ao portal.'
                             : 'Cadastre um email para criar acesso ao portal.'}
                         </p>
-                        <p className="text-xs text-neutral-400 mt-1">
+                        <p className="text-xs text-neutral-400 dark:text-slate-500 mt-1">
                           URL do portal: https://cliente.advwell.pro
                         </p>
                       </div>
@@ -1960,9 +1960,9 @@ const Clients: React.FC = () => {
                               value={portalPassword}
                               onChange={(e) => setPortalPassword(e.target.value)}
                               placeholder="Senha (deixe vazio para gerar automaticamente)"
-                              className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                              className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                             />
-                            <p className="text-xs text-neutral-400 mt-1">
+                            <p className="text-xs text-neutral-400 dark:text-slate-500 mt-1">
                               Min. 12 caracteres, com maiúscula, minúscula, número e especial
                             </p>
                           </div>
@@ -1988,7 +1988,7 @@ const Clients: React.FC = () => {
               {/* Documentos Compartilhados */}
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-lg font-semibold text-neutral-900">Documentos Compartilhados</h3>
+                  <h3 className="text-lg font-semibold text-neutral-900 dark:text-slate-100">Documentos Compartilhados</h3>
                   <button
                     onClick={() => {
                       setShowDocumentModal(true);
@@ -2000,7 +2000,7 @@ const Clients: React.FC = () => {
                     Compartilhar
                   </button>
                 </div>
-                <div className="bg-neutral-50 rounded-lg p-4">
+                <div className="bg-neutral-50 dark:bg-slate-700 rounded-lg p-4">
                   {loadingDocuments ? (
                     <div className="flex items-center justify-center py-4">
                       <Loader2 size={24} className="animate-spin text-primary-500" />
@@ -2008,7 +2008,7 @@ const Clients: React.FC = () => {
                   ) : sharedDocuments.length > 0 ? (
                     <div className="space-y-3">
                       {sharedDocuments.map((doc) => (
-                        <div key={doc.id} className="bg-white rounded-lg border border-neutral-200 p-3">
+                        <div key={doc.id} className="bg-white dark:bg-slate-800 rounded-lg border border-neutral-200 dark:border-slate-700 p-3">
                           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                             <div className="flex items-start gap-3">
                               <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -2019,18 +2019,18 @@ const Clients: React.FC = () => {
                                 )}
                               </div>
                               <div className="min-w-0">
-                                <p className="font-medium text-neutral-900 truncate">{doc.name}</p>
+                                <p className="font-medium text-neutral-900 dark:text-slate-100 truncate">{doc.name}</p>
                                 <div className="flex flex-wrap items-center gap-2 mt-1">
-                                  <span className="text-xs text-neutral-500">
+                                  <span className="text-xs text-neutral-500 dark:text-slate-400">
                                     {formatFileSize(doc.fileSize)}
                                   </span>
-                                  <span className="text-xs text-neutral-400">•</span>
-                                  <span className="text-xs text-neutral-500">
+                                  <span className="text-xs text-neutral-400 dark:text-slate-500">•</span>
+                                  <span className="text-xs text-neutral-500 dark:text-slate-400">
                                     {formatDate(doc.sharedAt)}
                                   </span>
                                   {doc.requiresSignature && (
                                     <>
-                                      <span className="text-xs text-neutral-400">•</span>
+                                      <span className="text-xs text-neutral-400 dark:text-slate-500">•</span>
                                       <span className="text-xs text-warning-600">Requer assinatura</span>
                                     </>
                                   )}
@@ -2047,7 +2047,7 @@ const Clients: React.FC = () => {
                               {doc.uploadedByClient ? (
                                 <button
                                   onClick={() => handleDownloadFromClient(doc)}
-                                  className="p-2 text-neutral-500 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+                                  className="p-2 text-neutral-500 dark:text-slate-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
                                   title="Baixar documento do cliente"
                                 >
                                   <ExternalLink size={18} />
@@ -2057,7 +2057,7 @@ const Clients: React.FC = () => {
                                   href={doc.fileUrl}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="p-2 text-neutral-500 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+                                  className="p-2 text-neutral-500 dark:text-slate-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
                                   title="Abrir documento"
                                 >
                                   <ExternalLink size={18} />
@@ -2068,7 +2068,7 @@ const Clients: React.FC = () => {
                                   href={doc.signatureUrl}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="p-2 text-neutral-500 hover:text-success-600 hover:bg-success-50 rounded-lg transition-colors"
+                                  className="p-2 text-neutral-500 dark:text-slate-400 hover:text-success-600 hover:bg-success-50 rounded-lg transition-colors"
                                   title="Ver assinatura"
                                 >
                                   <FileSignature size={18} />
@@ -2076,7 +2076,7 @@ const Clients: React.FC = () => {
                               )}
                               <button
                                 onClick={() => handleDeleteDocument(doc.id)}
-                                className="p-2 text-neutral-500 hover:text-error-600 hover:bg-error-50 rounded-lg transition-colors"
+                                className="p-2 text-neutral-500 dark:text-slate-400 hover:text-error-600 hover:bg-error-50 rounded-lg transition-colors"
                                 title="Excluir"
                               >
                                 <Trash2 size={18} />
@@ -2087,7 +2087,7 @@ const Clients: React.FC = () => {
                       ))}
                     </div>
                   ) : (
-                    <p className="text-neutral-500 text-center py-4">
+                    <p className="text-neutral-500 dark:text-slate-400 text-center py-4">
                       Nenhum documento compartilhado com este cliente
                     </p>
                   )}
@@ -2101,7 +2101,7 @@ const Clients: React.FC = () => {
                   setShowDetailsModal(false);
                   setSelectedClient(null);
                 }}
-                className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2 bg-white border border-neutral-300 hover:bg-neutral-50 text-neutral-700 rounded-lg font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200 min-h-[44px]"
+                className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-neutral-300 dark:border-slate-600 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 text-neutral-700 dark:text-slate-300 rounded-lg font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200 min-h-[44px]"
               >
                 Fechar
               </button>
@@ -2125,10 +2125,10 @@ const Clients: React.FC = () => {
         <div className="modal-overlay">
           <div className="modal-container sm:max-w-2xl">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-neutral-900">Resultados da Importação</h2>
+              <h2 className="text-xl font-bold text-neutral-900 dark:text-slate-100">Resultados da Importação</h2>
               <button
                 onClick={() => setShowImportModal(false)}
-                className="text-neutral-500 hover:text-neutral-700"
+                className="text-neutral-500 dark:text-slate-400 hover:text-neutral-700 dark:text-slate-300"
               >
                 <X size={24} />
               </button>
@@ -2138,21 +2138,21 @@ const Clients: React.FC = () => {
               <div className="grid grid-cols-3 gap-4">
                 <div className="bg-primary-50 p-4 rounded-lg text-center">
                   <p className="text-2xl font-bold text-primary-600">{importResults.total}</p>
-                  <p className="text-sm text-neutral-600">Total de linhas</p>
+                  <p className="text-sm text-neutral-600 dark:text-slate-400">Total de linhas</p>
                 </div>
                 <div className="bg-success-50 p-4 rounded-lg text-center">
                   <p className="text-2xl font-bold text-success-600">{importResults.success}</p>
-                  <p className="text-sm text-neutral-600">Importados</p>
+                  <p className="text-sm text-neutral-600 dark:text-slate-400">Importados</p>
                 </div>
                 <div className="bg-error-50 p-4 rounded-lg text-center">
                   <p className="text-2xl font-bold text-error-600">{importResults.errors.length}</p>
-                  <p className="text-sm text-neutral-600">Erros</p>
+                  <p className="text-sm text-neutral-600 dark:text-slate-400">Erros</p>
                 </div>
               </div>
 
               {importResults.errors.length > 0 && (
                 <div>
-                  <h3 className="font-semibold text-neutral-900 mb-2">Erros encontrados:</h3>
+                  <h3 className="font-semibold text-neutral-900 dark:text-slate-100 mb-2">Erros encontrados:</h3>
                   <div className="bg-error-50 rounded-lg p-4 max-h-60 overflow-y-auto">
                     {importResults.errors.map((error: any, index: number) => (
                       <div key={index} className="mb-2 pb-2 border-b border-error-200 last:border-0">
@@ -2168,7 +2168,7 @@ const Clients: React.FC = () => {
 
               <button
                 onClick={() => setShowImportModal(false)}
-                className="w-full inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-white border border-neutral-300 hover:bg-neutral-50 text-neutral-700 rounded-lg font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200 min-h-[44px]"
+                className="w-full inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-white dark:bg-slate-800 border border-neutral-300 dark:border-slate-600 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 text-neutral-700 dark:text-slate-300 rounded-lg font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200 min-h-[44px]"
               >
                 Fechar
               </button>
@@ -2182,10 +2182,10 @@ const Clients: React.FC = () => {
         <div className="modal-overlay">
           <div className="modal-container sm:max-w-lg">
             <div className="modal-header">
-              <h2 className="text-xl font-bold text-neutral-900">Compartilhar Documento</h2>
+              <h2 className="text-xl font-bold text-neutral-900 dark:text-slate-100">Compartilhar Documento</h2>
               <button
                 onClick={resetDocumentModal}
-                className="text-neutral-500 hover:text-neutral-700"
+                className="text-neutral-500 dark:text-slate-400 hover:text-neutral-700 dark:text-slate-300"
               >
                 <X size={24} />
               </button>
@@ -2198,8 +2198,8 @@ const Clients: React.FC = () => {
                   onClick={() => setDocumentSource('upload')}
                   className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${
                     documentSource === 'upload'
-                      ? 'bg-white text-primary-700 shadow-sm'
-                      : 'text-neutral-600 hover:text-neutral-900'
+                      ? 'bg-white dark:bg-slate-700 text-primary-700 dark:text-primary-400 shadow-sm'
+                      : 'text-neutral-600 dark:text-slate-400 hover:text-neutral-900 dark:text-slate-100'
                   }`}
                 >
                   <Upload size={16} className="inline mr-2" />
@@ -2209,8 +2209,8 @@ const Clients: React.FC = () => {
                   onClick={() => setDocumentSource('existing')}
                   className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${
                     documentSource === 'existing'
-                      ? 'bg-white text-primary-700 shadow-sm'
-                      : 'text-neutral-600 hover:text-neutral-900'
+                      ? 'bg-white dark:bg-slate-700 text-primary-700 dark:text-primary-400 shadow-sm'
+                      : 'text-neutral-600 dark:text-slate-400 hover:text-neutral-900 dark:text-slate-100'
                   }`}
                 >
                   <FileText size={16} className="inline mr-2" />
@@ -2221,16 +2221,16 @@ const Clients: React.FC = () => {
               {documentSource === 'existing' ? (
                 /* Seleção de documento jurídico */
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                     Selecione um documento jurídico *
                   </label>
                   {loadingAvailableDocuments ? (
                     <div className="flex items-center justify-center py-4">
                       <Loader2 size={20} className="animate-spin text-primary-600" />
-                      <span className="ml-2 text-sm text-neutral-500">Carregando...</span>
+                      <span className="ml-2 text-sm text-neutral-500 dark:text-slate-400">Carregando...</span>
                     </div>
                   ) : availableDocuments.length === 0 ? (
-                    <div className="text-sm text-neutral-500 py-4 text-center bg-neutral-50 rounded-lg">
+                    <div className="text-sm text-neutral-500 dark:text-slate-400 py-4 text-center bg-neutral-50 dark:bg-slate-700 rounded-lg">
                       Nenhum documento disponível na aba Documentos Jurídicos.
                     </div>
                   ) : (
@@ -2243,7 +2243,7 @@ const Clients: React.FC = () => {
                           setDocumentName(doc.name);
                         }
                       }}
-                      className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                      className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                     >
                       <option value="">Selecione...</option>
                       {availableDocuments.map((doc) => (
@@ -2257,23 +2257,23 @@ const Clients: React.FC = () => {
               ) : (
                 /* Upload de novo arquivo */
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                     Arquivo *
                   </label>
                   <input
                     type="file"
                     ref={docFileInputRef}
                     accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:font-medium file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:font-medium file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
                   />
-                  <p className="text-xs text-neutral-500 mt-1">
+                  <p className="text-xs text-neutral-500 dark:text-slate-400 mt-1">
                     Formatos aceitos: PDF, DOC, DOCX, PNG, JPG (máx. 25MB)
                   </p>
                 </div>
               )}
 
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                   Nome do Documento {documentSource === 'upload' ? '*' : '(opcional)'}
                 </label>
                 <input
@@ -2281,12 +2281,12 @@ const Clients: React.FC = () => {
                   value={documentName}
                   onChange={(e) => setDocumentName(e.target.value)}
                   placeholder="Ex: Contrato de Honorários"
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                   Descrição (opcional)
                 </label>
                 <textarea
@@ -2294,7 +2294,7 @@ const Clients: React.FC = () => {
                   onChange={(e) => setDocumentDescription(e.target.value)}
                   placeholder="Descrição do documento..."
                   rows={2}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                 />
               </div>
 
@@ -2304,9 +2304,9 @@ const Clients: React.FC = () => {
                   id="requiresSignature"
                   checked={requiresSignature}
                   onChange={(e) => setRequiresSignature(e.target.checked)}
-                  className="w-4 h-4 text-primary-600 border-neutral-300 rounded focus:ring-primary-500"
+                  className="w-4 h-4 text-primary-600 border-neutral-300 dark:border-slate-600 rounded focus:ring-primary-500"
                 />
-                <label htmlFor="requiresSignature" className="text-sm text-neutral-700">
+                <label htmlFor="requiresSignature" className="text-sm text-neutral-700 dark:text-slate-300">
                   Requer assinatura do cliente
                 </label>
               </div>
@@ -2323,7 +2323,7 @@ const Clients: React.FC = () => {
             <div className="modal-footer">
               <button
                 onClick={resetDocumentModal}
-                className="flex-1 sm:flex-none px-4 py-2 bg-white border border-neutral-300 text-neutral-700 rounded-lg font-medium text-sm hover:bg-neutral-50 transition-colors"
+                className="flex-1 sm:flex-none px-4 py-2 bg-white dark:bg-slate-800 border border-neutral-300 dark:border-slate-600 text-neutral-700 dark:text-slate-300 rounded-lg font-medium text-sm hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 transition-colors"
               >
                 Cancelar
               </button>

@@ -365,18 +365,18 @@ export default function Lawyers() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-neutral-900 flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-slate-100 flex items-center gap-2">
               <Scale className="text-primary-600" />
               Advogados
             </h1>
-            <p className="text-sm text-neutral-500 mt-1">
+            <p className="text-sm text-neutral-500 dark:text-slate-400 mt-1">
               Gerencie os advogados do seu escritório
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setShowImportModal(true)}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-white text-neutral-700 border border-neutral-200 hover:bg-neutral-50 font-medium rounded-lg transition-all duration-200 min-h-[44px] text-sm"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 text-neutral-700 dark:text-slate-300 border border-neutral-200 dark:border-slate-700 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 font-medium rounded-lg transition-all duration-200 min-h-[44px] text-sm"
             >
               <Upload size={18} />
               <span className="hidden sm:inline">Importar</span>
@@ -385,7 +385,7 @@ export default function Lawyers() {
             <button
               onClick={handleExport}
               disabled={exporting}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-white text-neutral-700 border border-neutral-200 hover:bg-neutral-50 font-medium rounded-lg transition-all duration-200 min-h-[44px] text-sm disabled:opacity-50"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 text-neutral-700 dark:text-slate-300 border border-neutral-200 dark:border-slate-700 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 font-medium rounded-lg transition-all duration-200 min-h-[44px] text-sm disabled:opacity-50"
             >
               <Download size={18} />
               <span className="hidden sm:inline">{exporting ? 'Exportando...' : 'Exportar'}</span>
@@ -410,13 +410,13 @@ export default function Lawyers() {
         <div className="flex flex-col gap-4">
           {/* Linha 1: Busca */}
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400" size={20} />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400 dark:text-slate-500" size={20} />
             <input
               type="text"
               placeholder="Buscar por nome, OAB ou email..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+              className="w-full pl-10 pr-4 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
             />
           </div>
 
@@ -425,7 +425,7 @@ export default function Lawyers() {
             <select
               value={filterLawyerType}
               onChange={(e) => setFilterLawyerType(e.target.value)}
-              className="flex-1 min-w-[150px] px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white text-sm"
+              className="flex-1 min-w-[150px] px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-800 text-sm"
             >
               <option value="">Todos os Tipos</option>
               <option value="SOCIO">Sócio</option>
@@ -437,7 +437,7 @@ export default function Lawyers() {
             <select
               value={filterAffiliation}
               onChange={(e) => setFilterAffiliation(e.target.value)}
-              className="flex-1 min-w-[150px] px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white text-sm"
+              className="flex-1 min-w-[150px] px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-800 text-sm"
             >
               <option value="">Todos os Vínculos</option>
               <option value="ESCRITORIO">Escritório</option>
@@ -449,7 +449,7 @@ export default function Lawyers() {
               placeholder="Equipe/Área"
               value={filterTeam}
               onChange={(e) => setFilterTeam(e.target.value)}
-              className="flex-1 min-w-[150px] px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm"
+              className="flex-1 min-w-[150px] px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm"
             />
 
             {/* Botão limpar filtros */}
@@ -460,7 +460,7 @@ export default function Lawyers() {
                   setFilterAffiliation('');
                   setFilterTeam('');
                 }}
-                className="px-3 py-2 text-sm text-neutral-600 hover:text-neutral-800 hover:bg-neutral-100 rounded-lg transition-colors"
+                className="px-3 py-2 text-sm text-neutral-600 dark:text-slate-400 hover:text-neutral-800 hover:bg-neutral-100 dark:hover:bg-slate-600 rounded-lg transition-colors"
               >
                 Limpar filtros
               </button>
@@ -469,17 +469,17 @@ export default function Lawyers() {
         </div>
 
         {/* Lista */}
-        <div className="bg-white rounded-xl shadow-sm border border-neutral-200">
+        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-neutral-200 dark:border-slate-700">
           {loading ? (
             <div className="p-8 text-center">
               <Loader2 className="animate-spin mx-auto text-primary-600" size={32} />
-              <p className="text-neutral-500 mt-2">Carregando...</p>
+              <p className="text-neutral-500 dark:text-slate-400 mt-2">Carregando...</p>
             </div>
           ) : filteredLawyers.length === 0 ? (
             <div className="p-8 text-center">
               <Scale size={48} className="mx-auto text-neutral-300 mb-4" />
-              <h3 className="text-lg font-medium text-neutral-900 mb-2">Nenhum advogado encontrado</h3>
-              <p className="text-neutral-500 mb-4">
+              <h3 className="text-lg font-medium text-neutral-900 dark:text-slate-100 mb-2">Nenhum advogado encontrado</h3>
+              <p className="text-neutral-500 dark:text-slate-400 mb-4">
                 {search || filterLawyerType || filterAffiliation || filterTeam
                   ? 'Tente ajustar sua busca ou filtros'
                   : 'Cadastre o primeiro advogado'}
@@ -495,38 +495,38 @@ export default function Lawyers() {
               {/* Desktop */}
               <div className="hidden md:block overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-neutral-50 border-b border-neutral-200">
+                  <thead className="bg-neutral-50 dark:bg-slate-700 border-b border-neutral-200 dark:border-slate-700">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-slate-400 uppercase tracking-wider">
                         Nome
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-slate-400 uppercase tracking-wider">
                         OAB
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-slate-400 uppercase tracking-wider">
                         Tipo
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-slate-400 uppercase tracking-wider">
                         Vínculo
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-slate-400 uppercase tracking-wider">
                         Equipe
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-slate-400 uppercase tracking-wider">
                         Contato
                       </th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-right text-xs font-medium text-neutral-500 dark:text-slate-400 uppercase tracking-wider">
                         Ações
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-neutral-200">
+                  <tbody className="divide-y divide-neutral-200 dark:divide-slate-700">
                     {filteredLawyers.map((lawyer) => (
-                      <tr key={lawyer.id} className="hover:bg-neutral-50">
+                      <tr key={lawyer.id} className="hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700">
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-neutral-900">{lawyer.name}</div>
+                          <div className="text-sm font-medium text-neutral-900 dark:text-slate-100">{lawyer.name}</div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-500">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-500 dark:text-slate-400">
                           {formatOAB(lawyer.oab, lawyer.oabState)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
@@ -543,12 +543,12 @@ export default function Lawyers() {
                             </span>
                           )}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-500">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-500 dark:text-slate-400">
                           {lawyer.team || '-'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-neutral-900">{lawyer.email || '-'}</div>
-                          <div className="text-sm text-neutral-500">{lawyer.phone || '-'}</div>
+                          <div className="text-sm text-neutral-900 dark:text-slate-100">{lawyer.email || '-'}</div>
+                          <div className="text-sm text-neutral-500 dark:text-slate-400">{lawyer.phone || '-'}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right">
                           <ActionsDropdown
@@ -567,15 +567,15 @@ export default function Lawyers() {
 
               {/* Paginação */}
               {totalPages > 1 && (
-                <div className="px-6 py-4 border-t border-neutral-200 flex flex-col sm:flex-row items-center justify-between gap-4">
-                  <div className="text-sm text-neutral-500">
+                <div className="px-6 py-4 border-t border-neutral-200 dark:border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="text-sm text-neutral-500 dark:text-slate-400">
                     Mostrando {((page - 1) * limit) + 1} a {Math.min(page * limit, total)} de {total} advogados
                   </div>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => setPage((p) => Math.max(1, p - 1))}
                       disabled={page === 1}
-                      className="inline-flex items-center gap-1 px-3 py-2 text-sm text-neutral-600 hover:bg-neutral-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="inline-flex items-center gap-1 px-3 py-2 text-sm text-neutral-600 dark:text-slate-400 hover:bg-neutral-100 dark:hover:bg-slate-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <ChevronLeft className="w-4 h-4" />
                       Anterior
@@ -601,7 +601,7 @@ export default function Lawyers() {
                             className={`px-3 py-1 text-sm rounded-lg ${
                               page === pageNum
                                 ? 'bg-primary-600 text-white'
-                                : 'text-neutral-600 hover:bg-neutral-100'
+                                : 'text-neutral-600 dark:text-slate-400 hover:bg-neutral-100'
                             }`}
                           >
                             {pageNum}
@@ -613,7 +613,7 @@ export default function Lawyers() {
                     <button
                       onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                       disabled={page === totalPages}
-                      className="inline-flex items-center gap-1 px-3 py-2 text-sm text-neutral-600 hover:bg-neutral-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="inline-flex items-center gap-1 px-3 py-2 text-sm text-neutral-600 dark:text-slate-400 hover:bg-neutral-100 dark:hover:bg-slate-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Próximo
                       <ChevronRight className="w-4 h-4" />
@@ -629,15 +629,15 @@ export default function Lawyers() {
       {/* Import Modal */}
       {showImportModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-lg">
-            <div className="p-6 border-b border-neutral-200 flex items-center justify-between">
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20-xl w-full max-w-lg">
+            <div className="p-6 border-b border-neutral-200 dark:border-slate-700 flex items-center justify-between">
               <h2 className="text-xl font-semibold text-neutral-800">Importar Advogados de CSV</h2>
               <button
                 onClick={() => {
                   setShowImportModal(false);
                   setImportFile(null);
                 }}
-                className="p-2 text-neutral-400 hover:text-neutral-600 rounded-lg hover:bg-neutral-100"
+                className="p-2 text-neutral-400 dark:text-slate-500 hover:text-neutral-600 dark:text-slate-400 rounded-lg hover:bg-neutral-100 dark:hover:bg-slate-600"
               >
                 <X size={24} />
               </button>
@@ -655,22 +655,22 @@ export default function Lawyers() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-2">Arquivo CSV</label>
+                <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2">Arquivo CSV</label>
                 <input
                   ref={fileInputRef}
                   type="file"
                   accept=".csv"
                   onChange={(e) => setImportFile(e.target.files?.[0] || null)}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
                 {importFile && (
-                  <p className="mt-2 text-sm text-neutral-600">
+                  <p className="mt-2 text-sm text-neutral-600 dark:text-slate-400">
                     Arquivo selecionado: {importFile.name}
                   </p>
                 )}
               </div>
             </div>
-            <div className="p-6 border-t border-neutral-200 flex gap-3">
+            <div className="p-6 border-t border-neutral-200 dark:border-slate-700 flex gap-3">
               <button
                 onClick={handleImport}
                 disabled={!importFile || importing}
@@ -685,7 +685,7 @@ export default function Lawyers() {
                   setImportFile(null);
                 }}
                 disabled={importing}
-                className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 text-neutral-700 bg-white hover:bg-neutral-50 font-medium rounded-lg transition-all duration-200"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 dark:border-slate-600 text-neutral-700 dark:text-slate-300 bg-white dark:bg-slate-800 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 font-medium rounded-lg transition-all duration-200"
               >
                 Cancelar
               </button>
@@ -699,7 +699,7 @@ export default function Lawyers() {
         <div className="modal-overlay">
           <div className="modal-container">
             <div className="modal-header">
-              <h2 className="text-lg sm:text-xl font-bold text-neutral-900">
+              <h2 className="text-lg sm:text-xl font-bold text-neutral-900 dark:text-slate-100">
                 {editMode ? 'Editar Advogado' : 'Novo Advogado'}
               </h2>
               <button
@@ -709,7 +709,7 @@ export default function Lawyers() {
                   setSelectedLawyer(null);
                   resetForm();
                 }}
-                className="p-2 text-neutral-400 hover:text-neutral-600 rounded-lg hover:bg-neutral-100"
+                className="p-2 text-neutral-400 dark:text-slate-500 hover:text-neutral-600 dark:text-slate-400 rounded-lg hover:bg-neutral-100 dark:hover:bg-slate-600"
               >
                 <X size={24} />
               </button>
@@ -719,10 +719,10 @@ export default function Lawyers() {
               <div className="space-y-6">
                 {/* Dados Profissionais */}
                 <div>
-                  <h3 className="text-lg font-semibold text-neutral-900 mb-4">Dados Profissionais</h3>
+                  <h3 className="text-lg font-semibold text-neutral-900 dark:text-slate-100 mb-4">Dados Profissionais</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                         Nome Completo <span className="text-error-500">*</span>
                       </label>
                       <input
@@ -730,38 +730,38 @@ export default function Lawyers() {
                         required
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">CPF</label>
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">CPF</label>
                       <input
                         type="text"
                         value={formData.cpf}
                         onChange={(e) => setFormData({ ...formData, cpf: e.target.value })}
                         placeholder="000.000.000-00"
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">Número OAB</label>
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Número OAB</label>
                       <input
                         type="text"
                         value={formData.oab}
                         onChange={(e) => setFormData({ ...formData, oab: e.target.value })}
                         placeholder="123456"
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">Estado OAB</label>
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Estado OAB</label>
                       <select
                         value={formData.oabState}
                         onChange={(e) => setFormData({ ...formData, oabState: e.target.value })}
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       >
                         <option value="">Selecione...</option>
                         <option value="AC">AC</option>
@@ -795,11 +795,11 @@ export default function Lawyers() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">Tipo</label>
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Tipo</label>
                       <select
                         value={formData.lawyerType}
                         onChange={(e) => setFormData({ ...formData, lawyerType: e.target.value as any })}
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       >
                         <option value="SOCIO">Sócio</option>
                         <option value="ASSOCIADO">Associado</option>
@@ -809,11 +809,11 @@ export default function Lawyers() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">Vínculo</label>
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Vínculo</label>
                       <select
                         value={formData.affiliation}
                         onChange={(e) => setFormData({ ...formData, affiliation: e.target.value as any })}
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       >
                         <option value="ESCRITORIO">Escritório</option>
                         <option value="ADVERSO">Adverso</option>
@@ -821,13 +821,13 @@ export default function Lawyers() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">Equipe/Área</label>
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Equipe/Área</label>
                       <input
                         type="text"
                         value={formData.team}
                         onChange={(e) => setFormData({ ...formData, team: e.target.value })}
                         placeholder="Ex: Trabalhista, Cível, Tributário"
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
                   </div>
@@ -835,80 +835,80 @@ export default function Lawyers() {
 
                 {/* Contato */}
                 <div>
-                  <h3 className="text-lg font-semibold text-neutral-900 mb-4">Contato</h3>
+                  <h3 className="text-lg font-semibold text-neutral-900 dark:text-slate-100 mb-4">Contato</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">Email</label>
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Email</label>
                       <input
                         type="email"
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">Telefone 1</label>
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Telefone 1</label>
                       <input
                         type="text"
                         value={formData.phone}
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                         placeholder="(00) 00000-0000"
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">Telefone 2</label>
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Telefone 2</label>
                       <input
                         type="text"
                         value={formData.phone2}
                         onChange={(e) => setFormData({ ...formData, phone2: e.target.value })}
                         placeholder="(00) 00000-0000"
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">Instagram</label>
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Instagram</label>
                       <input
                         type="text"
                         value={formData.instagram}
                         onChange={(e) => setFormData({ ...formData, instagram: e.target.value })}
                         placeholder="@usuario"
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">Facebook</label>
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Facebook</label>
                       <input
                         type="text"
                         value={formData.facebook}
                         onChange={(e) => setFormData({ ...formData, facebook: e.target.value })}
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">Outros</label>
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Outros</label>
                       <input
                         type="text"
                         value={formData.customField1}
                         onChange={(e) => setFormData({ ...formData, customField1: e.target.value })}
                         placeholder="Informações adicionais"
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">Outros 2</label>
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Outros 2</label>
                       <input
                         type="text"
                         value={formData.customField2}
                         onChange={(e) => setFormData({ ...formData, customField2: e.target.value })}
                         placeholder="Informações adicionais"
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
                   </div>
@@ -916,46 +916,46 @@ export default function Lawyers() {
 
                 {/* Endereço */}
                 <div>
-                  <h3 className="text-lg font-semibold text-neutral-900 mb-4">Endereço</h3>
+                  <h3 className="text-lg font-semibold text-neutral-900 dark:text-slate-100 mb-4">Endereço</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">Endereço</label>
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Endereço</label>
                       <input
                         type="text"
                         value={formData.address}
                         onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                         placeholder="Rua, número, complemento"
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">Bairro</label>
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Bairro</label>
                       <input
                         type="text"
                         value={formData.neighborhood}
                         onChange={(e) => setFormData({ ...formData, neighborhood: e.target.value })}
                         placeholder="Nome do bairro"
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">Cidade</label>
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Cidade</label>
                       <input
                         type="text"
                         value={formData.city}
                         onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">Estado</label>
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Estado</label>
                       <select
                         value={formData.state}
                         onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       >
                         <option value="">Selecione...</option>
                         <option value="AC">AC</option>
@@ -989,13 +989,13 @@ export default function Lawyers() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">CEP</label>
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">CEP</label>
                       <input
                         type="text"
                         value={formData.zipCode}
                         onChange={(e) => setFormData({ ...formData, zipCode: e.target.value })}
                         placeholder="00000-000"
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
                   </div>
@@ -1003,18 +1003,18 @@ export default function Lawyers() {
 
                 {/* Observações */}
                 <div>
-                  <h3 className="text-lg font-semibold text-neutral-900 mb-4">Observações</h3>
+                  <h3 className="text-lg font-semibold text-neutral-900 dark:text-slate-100 mb-4">Observações</h3>
                   <textarea
                     value={formData.notes}
                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                     rows={4}
                     placeholder="Informações adicionais sobre o advogado..."
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   />
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-neutral-200">
+              <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-neutral-200 dark:border-slate-700">
                 <button
                   type="button"
                   onClick={() => {
@@ -1023,7 +1023,7 @@ export default function Lawyers() {
                     setSelectedLawyer(null);
                     resetForm();
                   }}
-                  className="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-white border border-neutral-300 hover:bg-neutral-50 text-neutral-700 rounded-lg font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200 min-h-[44px]"
+                  className="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-white dark:bg-slate-800 border border-neutral-300 dark:border-slate-600 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 text-neutral-700 dark:text-slate-300 rounded-lg font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200 min-h-[44px]"
                 >
                   Cancelar
                 </button>
@@ -1044,13 +1044,13 @@ export default function Lawyers() {
         <div className="modal-overlay">
           <div className="modal-container sm:max-w-3xl">
             <div className="modal-header">
-              <h2 className="text-lg sm:text-xl font-bold text-neutral-900">Detalhes do Advogado</h2>
+              <h2 className="text-lg sm:text-xl font-bold text-neutral-900 dark:text-slate-100">Detalhes do Advogado</h2>
               <button
                 onClick={() => {
                   setShowDetailsModal(false);
                   setSelectedLawyer(null);
                 }}
-                className="p-2 text-neutral-400 hover:text-neutral-600 rounded-lg hover:bg-neutral-100"
+                className="p-2 text-neutral-400 dark:text-slate-500 hover:text-neutral-600 dark:text-slate-400 rounded-lg hover:bg-neutral-100 dark:hover:bg-slate-600"
               >
                 <X size={24} />
               </button>
@@ -1059,85 +1059,85 @@ export default function Lawyers() {
             <div className="modal-body space-y-4 sm:space-y-6">
               {/* Dados Profissionais */}
               <div>
-                <h3 className="text-lg font-semibold text-neutral-900 mb-3">Dados Profissionais</h3>
-                <div className="bg-neutral-50 rounded-lg p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <h3 className="text-lg font-semibold text-neutral-900 dark:text-slate-100 mb-3">Dados Profissionais</h3>
+                <div className="bg-neutral-50 dark:bg-slate-700 rounded-lg p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm font-medium text-neutral-500">Nome Completo</p>
-                    <p className="text-sm text-neutral-900 mt-1">{selectedLawyer.name}</p>
+                    <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">Nome Completo</p>
+                    <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{selectedLawyer.name}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-500">CPF</p>
-                    <p className="text-sm text-neutral-900 mt-1">{selectedLawyer.cpf || '-'}</p>
+                    <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">CPF</p>
+                    <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{selectedLawyer.cpf || '-'}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-500">OAB</p>
-                    <p className="text-sm text-neutral-900 mt-1">{formatOAB(selectedLawyer.oab, selectedLawyer.oabState)}</p>
+                    <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">OAB</p>
+                    <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{formatOAB(selectedLawyer.oab, selectedLawyer.oabState)}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-500">Tipo</p>
-                    <p className="text-sm text-neutral-900 mt-1">
+                    <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">Tipo</p>
+                    <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">
                       {selectedLawyer.lawyerType ? lawyerTypeLabels[selectedLawyer.lawyerType] : '-'}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-500">Vínculo</p>
-                    <p className="text-sm text-neutral-900 mt-1">
+                    <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">Vínculo</p>
+                    <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">
                       {selectedLawyer.affiliation ? affiliationLabels[selectedLawyer.affiliation] : '-'}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-500">Equipe/Área</p>
-                    <p className="text-sm text-neutral-900 mt-1">{selectedLawyer.team || '-'}</p>
+                    <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">Equipe/Área</p>
+                    <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{selectedLawyer.team || '-'}</p>
                   </div>
                 </div>
               </div>
 
               {/* Contato */}
               <div>
-                <h3 className="text-lg font-semibold text-neutral-900 mb-3">Contato</h3>
-                <div className="bg-neutral-50 rounded-lg p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <h3 className="text-lg font-semibold text-neutral-900 dark:text-slate-100 mb-3">Contato</h3>
+                <div className="bg-neutral-50 dark:bg-slate-700 rounded-lg p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm font-medium text-neutral-500">Email</p>
-                    <p className="text-sm text-neutral-900 mt-1">{selectedLawyer.email || '-'}</p>
+                    <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">Email</p>
+                    <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{selectedLawyer.email || '-'}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-500">Telefone 1</p>
-                    <p className="text-sm text-neutral-900 mt-1">{selectedLawyer.phone || '-'}</p>
+                    <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">Telefone 1</p>
+                    <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{selectedLawyer.phone || '-'}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-500">Telefone 2</p>
-                    <p className="text-sm text-neutral-900 mt-1">{selectedLawyer.phone2 || '-'}</p>
+                    <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">Telefone 2</p>
+                    <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{selectedLawyer.phone2 || '-'}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-500">Instagram</p>
-                    <p className="text-sm text-neutral-900 mt-1">{selectedLawyer.instagram || '-'}</p>
+                    <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">Instagram</p>
+                    <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{selectedLawyer.instagram || '-'}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-500">Facebook</p>
-                    <p className="text-sm text-neutral-900 mt-1">{selectedLawyer.facebook || '-'}</p>
+                    <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">Facebook</p>
+                    <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{selectedLawyer.facebook || '-'}</p>
                   </div>
                 </div>
               </div>
 
               {/* Endereço */}
               <div>
-                <h3 className="text-lg font-semibold text-neutral-900 mb-3">Endereço</h3>
-                <div className="bg-neutral-50 rounded-lg p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <h3 className="text-lg font-semibold text-neutral-900 dark:text-slate-100 mb-3">Endereço</h3>
+                <div className="bg-neutral-50 dark:bg-slate-700 rounded-lg p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="md:col-span-2">
-                    <p className="text-sm font-medium text-neutral-500">Endereço</p>
-                    <p className="text-sm text-neutral-900 mt-1">{selectedLawyer.address || '-'}</p>
+                    <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">Endereço</p>
+                    <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{selectedLawyer.address || '-'}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-500">Cidade</p>
-                    <p className="text-sm text-neutral-900 mt-1">{selectedLawyer.city || '-'}</p>
+                    <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">Cidade</p>
+                    <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{selectedLawyer.city || '-'}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-500">Estado</p>
-                    <p className="text-sm text-neutral-900 mt-1">{selectedLawyer.state || '-'}</p>
+                    <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">Estado</p>
+                    <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{selectedLawyer.state || '-'}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-500">CEP</p>
-                    <p className="text-sm text-neutral-900 mt-1">{selectedLawyer.zipCode || '-'}</p>
+                    <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">CEP</p>
+                    <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{selectedLawyer.zipCode || '-'}</p>
                   </div>
                 </div>
               </div>
@@ -1145,24 +1145,24 @@ export default function Lawyers() {
               {/* Observações */}
               {selectedLawyer.notes && (
                 <div>
-                  <h3 className="text-lg font-semibold text-neutral-900 mb-3">Observações</h3>
-                  <div className="bg-neutral-50 rounded-lg p-4">
-                    <p className="text-sm text-neutral-900 whitespace-pre-wrap">{selectedLawyer.notes}</p>
+                  <h3 className="text-lg font-semibold text-neutral-900 dark:text-slate-100 mb-3">Observações</h3>
+                  <div className="bg-neutral-50 dark:bg-slate-700 rounded-lg p-4">
+                    <p className="text-sm text-neutral-900 dark:text-slate-100 whitespace-pre-wrap">{selectedLawyer.notes}</p>
                   </div>
                 </div>
               )}
 
               {/* Datas */}
               <div>
-                <h3 className="text-lg font-semibold text-neutral-900 mb-3">Informações do Sistema</h3>
-                <div className="bg-neutral-50 rounded-lg p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <h3 className="text-lg font-semibold text-neutral-900 dark:text-slate-100 mb-3">Informações do Sistema</h3>
+                <div className="bg-neutral-50 dark:bg-slate-700 rounded-lg p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm font-medium text-neutral-500">Data de Cadastro</p>
-                    <p className="text-sm text-neutral-900 mt-1">{formatDateDisplay(selectedLawyer.createdAt)}</p>
+                    <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">Data de Cadastro</p>
+                    <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{formatDateDisplay(selectedLawyer.createdAt)}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-500">Última Atualização</p>
-                    <p className="text-sm text-neutral-900 mt-1">{formatDateDisplay(selectedLawyer.updatedAt)}</p>
+                    <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">Última Atualização</p>
+                    <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{formatDateDisplay(selectedLawyer.updatedAt)}</p>
                   </div>
                 </div>
               </div>

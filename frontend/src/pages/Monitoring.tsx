@@ -599,15 +599,15 @@ const Monitoring: React.FC = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-neutral-900">Monitoramento</h1>
-            <p className="text-neutral-600 mt-1">
+            <h1 className="text-2xl font-bold text-neutral-900 dark:text-slate-100">Monitoramento</h1>
+            <p className="text-neutral-600 dark:text-slate-400 mt-1">
               Monitore publicacoes do Diario Oficial por OAB
             </p>
           </div>
           <div className="flex gap-2">
             <button
               onClick={() => handleOpenConsultaModal()}
-              className="flex items-center gap-2 px-4 py-2 bg-white border border-neutral-300 text-neutral-700 rounded-lg hover:bg-neutral-50 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-neutral-300 dark:border-slate-600 text-neutral-700 dark:text-slate-300 rounded-lg hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 transition-colors"
             >
               <RefreshCw size={18} />
               <span className="hidden sm:inline">Nova Consulta</span>
@@ -625,32 +625,32 @@ const Monitoring: React.FC = () => {
         {/* Stats Cards */}
         {stats && (
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <div className="bg-white rounded-lg shadow p-4">
+            <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 p-4">
               <div className="text-2xl font-bold text-primary-600">{stats.totalOabs}</div>
-              <div className="text-sm text-neutral-600">OABs Cadastradas</div>
+              <div className="text-sm text-neutral-600 dark:text-slate-400">OABs Cadastradas</div>
             </div>
-            <div className="bg-white rounded-lg shadow p-4">
+            <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 p-4">
               <div className="text-2xl font-bold text-green-600">{stats.activeOabs}</div>
-              <div className="text-sm text-neutral-600">Monitoramento Ativo</div>
+              <div className="text-sm text-neutral-600 dark:text-slate-400">Monitoramento Ativo</div>
             </div>
-            <div className="bg-white rounded-lg shadow p-4">
+            <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 p-4">
               <div className="text-2xl font-bold text-blue-600">{stats.totalPublications}</div>
-              <div className="text-sm text-neutral-600">Publicacoes</div>
+              <div className="text-sm text-neutral-600 dark:text-slate-400">Publicacoes</div>
             </div>
-            <div className="bg-white rounded-lg shadow p-4">
+            <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 p-4">
               <div className="text-2xl font-bold text-yellow-600">{stats.pendingPublications}</div>
-              <div className="text-sm text-neutral-600">Aguardando Importacao</div>
+              <div className="text-sm text-neutral-600 dark:text-slate-400">Aguardando Importacao</div>
             </div>
-            <div className="bg-white rounded-lg shadow p-4">
+            <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 p-4">
               <div className="text-2xl font-bold text-purple-600">{stats.recentConsultas}</div>
-              <div className="text-sm text-neutral-600">Consultas (7 dias)</div>
+              <div className="text-sm text-neutral-600 dark:text-slate-400">Consultas (7 dias)</div>
             </div>
           </div>
         )}
 
         {/* Tabs */}
-        <div className="bg-white rounded-lg shadow">
-          <div className="border-b border-neutral-200">
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow">
+          <div className="border-b border-neutral-200 dark:border-slate-700">
             <nav className="flex -mb-px">
               <button
                 onClick={() => setActiveTab('oabs')}
@@ -702,13 +702,13 @@ const Monitoring: React.FC = () => {
                       placeholder="Buscar por nome ou número da OAB..."
                       value={searchOab}
                       onChange={(e) => setSearchOab(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      className="w-full pl-10 pr-4 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                     />
                   </div>
                   <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
-                    className="px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="px-4 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   >
                     <option value="">Todos os Status</option>
                     <option value="ACTIVE">Ativo</option>
@@ -723,27 +723,27 @@ const Monitoring: React.FC = () => {
                     <Loader2 className="animate-spin text-primary-600" size={32} />
                   </div>
                 ) : oabs.length === 0 ? (
-                  <div className="text-center py-8 text-neutral-500">
+                  <div className="text-center py-8 text-neutral-500 dark:text-slate-400">
                     Nenhuma OAB cadastrada para monitoramento
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full">
-                      <thead className="bg-neutral-50">
+                      <thead className="bg-neutral-50 dark:bg-slate-700">
                         <tr>
-                          <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600">Advogado</th>
-                          <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600">OAB</th>
-                          <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600">Status</th>
-                          <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600">Publicacoes</th>
-                          <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600">Ultima Consulta</th>
-                          <th className="px-4 py-3 text-right text-sm font-medium text-neutral-600">Acoes</th>
+                          <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-slate-400">Advogado</th>
+                          <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-slate-400">OAB</th>
+                          <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-slate-400">Status</th>
+                          <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-slate-400">Publicacoes</th>
+                          <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-slate-400">Ultima Consulta</th>
+                          <th className="px-4 py-3 text-right text-sm font-medium text-neutral-600 dark:text-slate-400">Acoes</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-neutral-200">
+                      <tbody className="divide-y divide-neutral-200 dark:divide-slate-700">
                         {oabs.map((oab) => (
-                          <tr key={oab.id} className="hover:bg-neutral-50">
-                            <td className="px-4 py-3 text-sm text-neutral-900">{oab.name}</td>
-                            <td className="px-4 py-3 text-sm text-neutral-600">
+                          <tr key={oab.id} className="hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700">
+                            <td className="px-4 py-3 text-sm text-neutral-900 dark:text-slate-100">{oab.name}</td>
+                            <td className="px-4 py-3 text-sm text-neutral-600 dark:text-slate-400">
                               {oab.oab}/{oab.oabState}
                             </td>
                             <td className="px-4 py-3">
@@ -755,10 +755,10 @@ const Monitoring: React.FC = () => {
                                 {statusColors[oab.status].label}
                               </span>
                             </td>
-                            <td className="px-4 py-3 text-sm text-neutral-600">
+                            <td className="px-4 py-3 text-sm text-neutral-600 dark:text-slate-400">
                               {oab._count?.publications || 0}
                             </td>
-                            <td className="px-4 py-3 text-sm text-neutral-600">
+                            <td className="px-4 py-3 text-sm text-neutral-600 dark:text-slate-400">
                               {oab.lastConsultaAt ? formatDateTime(oab.lastConsultaAt) : '-'}
                             </td>
                             <td className="px-4 py-3 text-right">
@@ -796,7 +796,7 @@ const Monitoring: React.FC = () => {
                         setSearchPublication(e.target.value);
                         setPublicationPage(1);
                       }}
-                      className="w-full pl-10 pr-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      className="w-full pl-10 pr-4 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                     />
                   </div>
                   <select
@@ -805,7 +805,7 @@ const Monitoring: React.FC = () => {
                       setSelectedOabFilter(e.target.value);
                       setPublicationPage(1);
                     }}
-                    className="px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="px-4 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   >
                     <option value="">Todas as OABs</option>
                     {oabs.map((oab) => (
@@ -820,7 +820,7 @@ const Monitoring: React.FC = () => {
                       setImportedFilter(e.target.value);
                       setPublicationPage(1);
                     }}
-                    className="px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="px-4 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   >
                     <option value="">Todos</option>
                     <option value="false">Pendentes</option>
@@ -834,38 +834,38 @@ const Monitoring: React.FC = () => {
                     <Loader2 className="animate-spin text-primary-600" size={32} />
                   </div>
                 ) : publications.length === 0 ? (
-                  <div className="text-center py-8 text-neutral-500">
+                  <div className="text-center py-8 text-neutral-500 dark:text-slate-400">
                     Nenhuma publicacao encontrada
                   </div>
                 ) : (
                   <>
                     <div className="overflow-x-auto">
                       <table className="w-full">
-                        <thead className="bg-neutral-50">
+                        <thead className="bg-neutral-50 dark:bg-slate-700">
                           <tr>
-                            <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600">Processo</th>
-                            <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600">Tribunal</th>
-                            <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600">Data</th>
-                            <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600">Tipo</th>
-                            <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600">Advogado</th>
-                            <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600">Status</th>
-                            <th className="px-4 py-3 text-right text-sm font-medium text-neutral-600">Acoes</th>
+                            <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-slate-400">Processo</th>
+                            <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-slate-400">Tribunal</th>
+                            <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-slate-400">Data</th>
+                            <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-slate-400">Tipo</th>
+                            <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-slate-400">Advogado</th>
+                            <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-slate-400">Status</th>
+                            <th className="px-4 py-3 text-right text-sm font-medium text-neutral-600 dark:text-slate-400">Acoes</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-neutral-200">
+                        <tbody className="divide-y divide-neutral-200 dark:divide-slate-700">
                           {publications.map((pub) => (
-                            <tr key={pub.id} className="hover:bg-neutral-50">
-                              <td className="px-4 py-3 text-sm text-neutral-900 font-mono">
+                            <tr key={pub.id} className="hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700">
+                              <td className="px-4 py-3 text-sm text-neutral-900 dark:text-slate-100 font-mono">
                                 {formatProcessNumber(pub.numeroProcesso)}
                               </td>
-                              <td className="px-4 py-3 text-sm text-neutral-600">{pub.siglaTribunal}</td>
-                              <td className="px-4 py-3 text-sm text-neutral-600">
+                              <td className="px-4 py-3 text-sm text-neutral-600 dark:text-slate-400">{pub.siglaTribunal}</td>
+                              <td className="px-4 py-3 text-sm text-neutral-600 dark:text-slate-400">
                                 {formatDate(pub.dataPublicacao)}
                               </td>
-                              <td className="px-4 py-3 text-sm text-neutral-600">
+                              <td className="px-4 py-3 text-sm text-neutral-600 dark:text-slate-400">
                                 {pub.tipoComunicacao || '-'}
                               </td>
-                              <td className="px-4 py-3 text-sm text-neutral-600">
+                              <td className="px-4 py-3 text-sm text-neutral-600 dark:text-slate-400">
                                 {pub.monitoredOab.name}
                               </td>
                               <td className="px-4 py-3">
@@ -898,21 +898,21 @@ const Monitoring: React.FC = () => {
                     {/* Pagination */}
                     {publicationTotalPages > 1 && (
                       <div className="flex items-center justify-between mt-4">
-                        <div className="text-sm text-neutral-600">
+                        <div className="text-sm text-neutral-600 dark:text-slate-400">
                           Mostrando pagina {publicationPage} de {publicationTotalPages} ({publicationTotal} publicacoes)
                         </div>
                         <div className="flex gap-2">
                           <button
                             onClick={() => setPublicationPage((p) => Math.max(1, p - 1))}
                             disabled={publicationPage === 1}
-                            className="p-2 border border-neutral-300 rounded-lg hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="p-2 border border-neutral-300 dark:border-slate-600 rounded-lg hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             <ChevronLeft size={16} />
                           </button>
                           <button
                             onClick={() => setPublicationPage((p) => Math.min(publicationTotalPages, p + 1))}
                             disabled={publicationPage === publicationTotalPages}
-                            className="p-2 border border-neutral-300 rounded-lg hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="p-2 border border-neutral-300 dark:border-slate-600 rounded-lg hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             <ChevronRight size={16} />
                           </button>
@@ -932,31 +932,31 @@ const Monitoring: React.FC = () => {
                     <Loader2 className="animate-spin text-primary-600" size={32} />
                   </div>
                 ) : consultas.length === 0 ? (
-                  <div className="text-center py-8 text-neutral-500">
+                  <div className="text-center py-8 text-neutral-500 dark:text-slate-400">
                     Nenhuma consulta realizada
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full">
-                      <thead className="bg-neutral-50">
+                      <thead className="bg-neutral-50 dark:bg-slate-700">
                         <tr>
-                          <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600">Advogado</th>
-                          <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600">Periodo</th>
-                          <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600">Status</th>
-                          <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600">Publicacoes</th>
-                          <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600">Data</th>
+                          <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-slate-400">Advogado</th>
+                          <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-slate-400">Periodo</th>
+                          <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-slate-400">Status</th>
+                          <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-slate-400">Publicacoes</th>
+                          <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-slate-400">Data</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-neutral-200">
+                      <tbody className="divide-y divide-neutral-200 dark:divide-slate-700">
                         {consultas.map((consulta) => (
-                          <tr key={consulta.id} className="hover:bg-neutral-50">
-                            <td className="px-4 py-3 text-sm text-neutral-900">
+                          <tr key={consulta.id} className="hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700">
+                            <td className="px-4 py-3 text-sm text-neutral-900 dark:text-slate-100">
                               {consulta.monitoredOab.name}
-                              <div className="text-xs text-neutral-500">
+                              <div className="text-xs text-neutral-500 dark:text-slate-400">
                                 {consulta.monitoredOab.oab}/{consulta.monitoredOab.oabState}
                               </div>
                             </td>
-                            <td className="px-4 py-3 text-sm text-neutral-600">
+                            <td className="px-4 py-3 text-sm text-neutral-600 dark:text-slate-400">
                               {formatDate(consulta.dataInicio)} - {formatDate(consulta.dataFim)}
                             </td>
                             <td className="px-4 py-3">
@@ -978,7 +978,7 @@ const Monitoring: React.FC = () => {
                                       style={{ width: `${consultaStatuses[consulta.id].progress}%` }}
                                     />
                                   </div>
-                                  <div className="text-xs text-neutral-500">
+                                  <div className="text-xs text-neutral-500 dark:text-slate-400">
                                     {consultaStatuses[consulta.id].progress}% -
                                     {consultaStatuses[consulta.id].savedCount > 0 && (
                                       <> {consultaStatuses[consulta.id].savedCount} salvas</>
@@ -1003,7 +1003,7 @@ const Monitoring: React.FC = () => {
                                 </>
                               )}
                             </td>
-                            <td className="px-4 py-3 text-sm text-neutral-600">
+                            <td className="px-4 py-3 text-sm text-neutral-600 dark:text-slate-400">
                               {consultaStatuses[consulta.id]?.totalPublications > 0 ? (
                                 <>
                                   {consultaStatuses[consulta.id].savedCount}/{consultaStatuses[consulta.id].totalPublications}
@@ -1016,7 +1016,7 @@ const Monitoring: React.FC = () => {
                                 '-'
                               )}
                             </td>
-                            <td className="px-4 py-3 text-sm text-neutral-600">
+                            <td className="px-4 py-3 text-sm text-neutral-600 dark:text-slate-400">
                               {formatDateTime(consulta.createdAt)}
                             </td>
                           </tr>
@@ -1034,14 +1034,14 @@ const Monitoring: React.FC = () => {
       {/* OAB Modal */}
       {showOabModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-md">
             <div className="flex items-center justify-between p-4 border-b">
               <h2 className="text-lg font-semibold">
                 {editMode ? 'Editar OAB Monitorada' : 'Nova OAB Monitorada'}
               </h2>
               <button
                 onClick={handleCloseOabModal}
-                className="p-2 hover:bg-neutral-100 rounded-lg transition-colors"
+                className="p-2 hover:bg-neutral-100 dark:hover:bg-slate-600 rounded-lg transition-colors"
               >
                 <X size={20} />
               </button>
@@ -1050,13 +1050,13 @@ const Monitoring: React.FC = () => {
               {/* Select para escolher advogado existente */}
               {!editMode && lawyers.length > 0 && (
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                     Selecionar Advogado Cadastrado
                   </label>
                   <select
                     value={selectedLawyerId}
                     onChange={(e) => handleSelectLawyer(e.target.value)}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   >
                     <option value="">-- Digitar manualmente --</option>
                     {lawyers.map((lawyer) => (
@@ -1065,14 +1065,14 @@ const Monitoring: React.FC = () => {
                       </option>
                     ))}
                   </select>
-                  <p className="text-xs text-neutral-500 mt-1">
+                  <p className="text-xs text-neutral-500 dark:text-slate-400 mt-1">
                     Selecione um advogado ja cadastrado ou digite manualmente abaixo
                   </p>
                 </div>
               )}
 
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                   Nome do Advogado <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -1080,13 +1080,13 @@ const Monitoring: React.FC = () => {
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   disabled={!!selectedLawyerId}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-neutral-100"
+                  className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-neutral-100"
                   placeholder="Nome completo"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                     Numero OAB <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -1094,19 +1094,19 @@ const Monitoring: React.FC = () => {
                     value={formData.oab}
                     onChange={(e) => setFormData({ ...formData, oab: e.target.value })}
                     disabled={editMode || !!selectedLawyerId}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-neutral-100"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-neutral-100"
                     placeholder="123456"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                     Estado <span className="text-red-500">*</span>
                   </label>
                   <select
                     value={formData.oabState}
                     onChange={(e) => setFormData({ ...formData, oabState: e.target.value })}
                     disabled={editMode || !!selectedLawyerId}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-neutral-100"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-neutral-100"
                   >
                     {BRAZILIAN_STATES.map((state) => (
                       <option key={state} value={state}>
@@ -1122,9 +1122,9 @@ const Monitoring: React.FC = () => {
                   id="autoImport"
                   checked={formData.autoImport}
                   onChange={(e) => setFormData({ ...formData, autoImport: e.target.checked })}
-                  className="rounded border-neutral-300 text-primary-600 focus:ring-primary-500"
+                  className="rounded border-neutral-300 dark:border-slate-600 text-primary-600 focus:ring-primary-500"
                 />
-                <label htmlFor="autoImport" className="text-sm text-neutral-700">
+                <label htmlFor="autoImport" className="text-sm text-neutral-700 dark:text-slate-300">
                   Importar publicacoes automaticamente
                 </label>
               </div>
@@ -1132,7 +1132,7 @@ const Monitoring: React.FC = () => {
             <div className="flex justify-end gap-3 p-4 border-t">
               <button
                 onClick={handleCloseOabModal}
-                className="px-4 py-2 border border-neutral-300 rounded-lg hover:bg-neutral-50 transition-colors"
+                className="px-4 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 transition-colors"
               >
                 Cancelar
               </button>
@@ -1152,12 +1152,12 @@ const Monitoring: React.FC = () => {
       {/* Publication Details Modal */}
       {showPublicationModal && selectedPublication && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-4 border-b sticky top-0 bg-white">
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-4 border-b sticky top-0 bg-white dark:bg-slate-800">
               <h2 className="text-lg font-semibold">Detalhes da Publicação</h2>
               <button
                 onClick={() => setShowPublicationModal(false)}
-                className="p-2 hover:bg-neutral-100 rounded-lg transition-colors"
+                className="p-2 hover:bg-neutral-100 dark:hover:bg-slate-600 rounded-lg transition-colors"
               >
                 <X size={20} />
               </button>
@@ -1165,33 +1165,33 @@ const Monitoring: React.FC = () => {
             <div className="p-4 space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-neutral-500">Numero do Processo</label>
-                  <div className="font-mono text-neutral-900">{formatProcessNumber(selectedPublication.numeroProcesso)}</div>
+                  <label className="text-sm font-medium text-neutral-500 dark:text-slate-400">Numero do Processo</label>
+                  <div className="font-mono text-neutral-900 dark:text-slate-100">{formatProcessNumber(selectedPublication.numeroProcesso)}</div>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-neutral-500">Tribunal</label>
-                  <div className="text-neutral-900">{selectedPublication.siglaTribunal}</div>
+                  <label className="text-sm font-medium text-neutral-500 dark:text-slate-400">Tribunal</label>
+                  <div className="text-neutral-900 dark:text-slate-100">{selectedPublication.siglaTribunal}</div>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-neutral-500">Data da Publicação</label>
-                  <div className="text-neutral-900">{formatDate(selectedPublication.dataPublicacao)}</div>
+                  <label className="text-sm font-medium text-neutral-500 dark:text-slate-400">Data da Publicação</label>
+                  <div className="text-neutral-900 dark:text-slate-100">{formatDate(selectedPublication.dataPublicacao)}</div>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-neutral-500">Tipo de Comunicacao</label>
-                  <div className="text-neutral-900">{selectedPublication.tipoComunicacao || '-'}</div>
+                  <label className="text-sm font-medium text-neutral-500 dark:text-slate-400">Tipo de Comunicacao</label>
+                  <div className="text-neutral-900 dark:text-slate-100">{selectedPublication.tipoComunicacao || '-'}</div>
                 </div>
               </div>
               <div>
-                <label className="text-sm font-medium text-neutral-500">Advogado Vinculado</label>
-                <div className="text-neutral-900">
+                <label className="text-sm font-medium text-neutral-500 dark:text-slate-400">Advogado Vinculado</label>
+                <div className="text-neutral-900 dark:text-slate-100">
                   {selectedPublication.monitoredOab.name} (OAB {selectedPublication.monitoredOab.oab}/
                   {selectedPublication.monitoredOab.oabState})
                 </div>
               </div>
               {selectedPublication.textoComunicacao && (
                 <div>
-                  <label className="text-sm font-medium text-neutral-500">Texto da Publicação</label>
-                  <div className="mt-1 p-3 bg-neutral-50 rounded-lg text-sm text-neutral-700 whitespace-pre-wrap">
+                  <label className="text-sm font-medium text-neutral-500 dark:text-slate-400">Texto da Publicação</label>
+                  <div className="mt-1 p-3 bg-neutral-50 dark:bg-slate-700 rounded-lg text-sm text-neutral-700 dark:text-slate-300 whitespace-pre-wrap">
                     {cleanPublicationText(selectedPublication.textoComunicacao) || selectedPublication.textoComunicacao}
                   </div>
                 </div>
@@ -1200,7 +1200,7 @@ const Monitoring: React.FC = () => {
             <div className="flex justify-end gap-3 p-4 border-t">
               <button
                 onClick={() => setShowPublicationModal(false)}
-                className="px-4 py-2 border border-neutral-300 rounded-lg hover:bg-neutral-50 transition-colors"
+                className="px-4 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 transition-colors"
               >
                 Fechar
               </button>
@@ -1224,25 +1224,25 @@ const Monitoring: React.FC = () => {
       {/* Consulta Modal */}
       {showConsultaModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-md">
             <div className="flex items-center justify-between p-4 border-b">
               <h2 className="text-lg font-semibold">Nova Consulta</h2>
               <button
                 onClick={() => setShowConsultaModal(false)}
-                className="p-2 hover:bg-neutral-100 rounded-lg transition-colors"
+                className="p-2 hover:bg-neutral-100 dark:hover:bg-slate-600 rounded-lg transition-colors"
               >
                 <X size={20} />
               </button>
             </div>
             <div className="p-4 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                   OAB <span className="text-red-500">*</span>
                 </label>
                 <select
                   value={consultaOabId}
                   onChange={(e) => setConsultaOabId(e.target.value)}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
                   <option value="">Selecione uma OAB</option>
                   {oabs
@@ -1256,7 +1256,7 @@ const Monitoring: React.FC = () => {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                     Data Inicio <span className="text-red-500">*</span>
                   </label>
                   <DateOnlyPicker
@@ -1267,7 +1267,7 @@ const Monitoring: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                     Data Fim <span className="text-red-500">*</span>
                   </label>
                   <DateOnlyPicker
@@ -1278,14 +1278,14 @@ const Monitoring: React.FC = () => {
                   />
                 </div>
               </div>
-              <p className="text-sm text-neutral-500">
+              <p className="text-sm text-neutral-500 dark:text-slate-400">
                 A consulta buscara publicacoes do Diario Oficial no periodo selecionado.
               </p>
             </div>
             <div className="flex justify-end gap-3 p-4 border-t">
               <button
                 onClick={() => setShowConsultaModal(false)}
-                className="px-4 py-2 border border-neutral-300 rounded-lg hover:bg-neutral-50 transition-colors"
+                className="px-4 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 transition-colors"
               >
                 Cancelar
               </button>

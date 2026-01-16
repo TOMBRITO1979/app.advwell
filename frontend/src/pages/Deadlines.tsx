@@ -183,20 +183,20 @@ const Deadlines: React.FC = () => {
       <div className="space-y-4 sm:space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-neutral-900 mb-2">Prazos</h1>
-          <p className="text-sm text-neutral-600">Processos com prazos definidos, ordenados por urgência</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-slate-100 mb-2">Prazos</h1>
+          <p className="text-sm text-neutral-600 dark:text-slate-400">Processos com prazos definidos, ordenados por urgência</p>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 p-4">
           {/* Search Bar */}
           <div className="flex items-center gap-2 mb-4">
-            <Search size={20} className="text-neutral-400" />
+            <Search size={20} className="text-neutral-400 dark:text-slate-500" />
             <input
               type="text"
               placeholder="Buscar por processo, cliente ou assunto..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="flex-1 px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 min-h-[44px]"
+              className="flex-1 px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 min-h-[44px]"
             />
           </div>
 
@@ -205,8 +205,8 @@ const Deadlines: React.FC = () => {
           ) : cases.length === 0 ? (
             <div className="text-center py-8">
               <Clock size={48} className="mx-auto text-neutral-300 mb-3" />
-              <p className="text-neutral-600">Nenhum processo com prazo definido</p>
-              <p className="text-sm text-neutral-500 mt-1">
+              <p className="text-neutral-600 dark:text-slate-400">Nenhum processo com prazo definido</p>
+              <p className="text-sm text-neutral-500 dark:text-slate-400 mt-1">
                 {search ? 'Tente ajustar sua busca' : 'Adicione prazos aos processos para vê-los aqui'}
               </p>
             </div>
@@ -251,41 +251,41 @@ const Deadlines: React.FC = () => {
               {/* Desktop Table View */}
               <div className="desktop-table-view overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-neutral-50">
+                  <thead className="bg-neutral-50 dark:bg-slate-700">
                     <tr>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">
                         Urgência
                       </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">
                         Número do Processo
                       </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">
                         Cliente
                       </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">
                         Assunto
                       </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">
                         Prazo
                       </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">
                         Dias Restantes
                       </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">
                         Status
                       </th>
-                      <th className="px-4 py-3 text-center text-sm font-semibold text-neutral-900 uppercase">
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">
                         Ações
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-neutral-200">
+                  <tbody className="divide-y divide-neutral-200 dark:divide-slate-700">
                     {cases.map((caseItem) => {
                       const daysRemaining = calculateDaysRemaining(caseItem.deadline);
                       const deadlineColor = getDeadlineColor(daysRemaining);
 
                       return (
-                        <tr key={caseItem.id} className={`odd:bg-white even:bg-neutral-50 hover:bg-success-100 transition-colors ${caseItem.deadlineCompleted ? 'bg-success-50' : ''}`}>
+                        <tr key={caseItem.id} className={`odd:bg-white dark:odd:bg-slate-800 even:bg-neutral-50 dark:even:bg-slate-700/50 hover:bg-success-100 transition-colors ${caseItem.deadlineCompleted ? 'bg-success-50' : ''}`}>
                           <td className="px-4 py-3 text-sm">
                             <div className="flex items-center justify-center">
                               {caseItem.deadlineCompleted ? (
@@ -304,15 +304,15 @@ const Deadlines: React.FC = () => {
                               {caseItem.processNumber}
                             </button>
                           </td>
-                          <td className="px-4 py-3 text-sm text-neutral-600">
+                          <td className="px-4 py-3 text-sm text-neutral-600 dark:text-slate-400">
                             {caseItem.client?.name || 'Sem cliente'}
                           </td>
-                          <td className="px-4 py-3 text-sm text-neutral-600">
+                          <td className="px-4 py-3 text-sm text-neutral-600 dark:text-slate-400">
                             <div className="max-w-xs truncate" title={caseItem.subject}>
                               {caseItem.subject}
                             </div>
                           </td>
-                          <td className="px-4 py-3 text-sm text-neutral-600">
+                          <td className="px-4 py-3 text-sm text-neutral-600 dark:text-slate-400">
                             {formatDate(caseItem.deadline)}
                           </td>
                           <td className="px-4 py-3 text-sm">
@@ -369,8 +369,8 @@ const Deadlines: React.FC = () => {
 
               {/* Pagination */}
               {total > 0 && (
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4 pt-4 border-t border-neutral-200">
-                  <p className="text-sm text-neutral-600">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4 pt-4 border-t border-neutral-200 dark:border-slate-700">
+                  <p className="text-sm text-neutral-600 dark:text-slate-400">
                     Mostrando {((page - 1) * limit) + 1} a {Math.min(page * limit, total)} de {total} prazos
                   </p>
                   <div className="flex items-center gap-2">
@@ -380,30 +380,30 @@ const Deadlines: React.FC = () => {
                         setLimit(Number(e.target.value));
                         setPage(1);
                       }}
-                      className="px-2 py-1 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      className="px-2 py-1 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                     >
                       <option value={25}>25</option>
                       <option value={50}>50</option>
                       <option value={100}>100</option>
                       <option value={200}>200</option>
                     </select>
-                    <span className="text-sm text-neutral-600">por página</span>
+                    <span className="text-sm text-neutral-600 dark:text-slate-400">por página</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => setPage(p => Math.max(1, p - 1))}
                       disabled={page === 1}
-                      className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] border border-neutral-300 rounded-md hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] border border-neutral-300 dark:border-slate-600 rounded-md hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <ChevronLeft size={20} />
                     </button>
-                    <span className="text-sm text-neutral-600 px-2">
+                    <span className="text-sm text-neutral-600 dark:text-slate-400 px-2">
                       Página {page} de {Math.ceil(total / limit)}
                     </span>
                     <button
                       onClick={() => setPage(p => Math.min(Math.ceil(total / limit), p + 1))}
                       disabled={page >= Math.ceil(total / limit)}
-                      className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] border border-neutral-300 rounded-md hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] border border-neutral-300 dark:border-slate-600 rounded-md hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <ChevronRight size={20} />
                     </button>
@@ -418,20 +418,20 @@ const Deadlines: React.FC = () => {
       {/* Modal de Detalhes do Processo */}
       {showDetailsModal && selectedCase && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
-          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-slate-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             {/* Header */}
-            <div className="sticky top-0 bg-white border-b border-neutral-200 px-6 py-4 flex justify-between items-center min-h-[44px]">
+            <div className="sticky top-0 bg-white dark:bg-slate-800 border-b border-neutral-200 dark:border-slate-700 px-6 py-4 flex justify-between items-center min-h-[44px]">
               <div>
-                <h2 className="text-2xl font-bold text-neutral-900">
+                <h2 className="text-2xl font-bold text-neutral-900 dark:text-slate-100">
                   {selectedCase.processNumber}
                 </h2>
-                <p className="text-sm text-neutral-500 mt-1">
+                <p className="text-sm text-neutral-500 dark:text-slate-400 mt-1">
                   {selectedCase.court} • Criado em {formatDate(selectedCase.createdAt)}
                 </p>
               </div>
               <button
                 onClick={() => setShowDetailsModal(false)}
-                className="text-neutral-400 hover:text-neutral-600"
+                className="text-neutral-400 dark:text-slate-500 hover:text-neutral-600 dark:text-slate-400"
               >
                 <span className="text-2xl">&times;</span>
               </button>
@@ -443,31 +443,31 @@ const Deadlines: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div>
-                    <div className="flex items-center text-neutral-500 text-sm mb-1">
+                    <div className="flex items-center text-neutral-500 dark:text-slate-400 text-sm mb-1">
                       <span className="mr-2">👤</span>
                       <span>Cliente</span>
                     </div>
-                    <p className="text-neutral-900 font-medium">{selectedCase.client?.name || 'Sem cliente'}</p>
+                    <p className="text-neutral-900 dark:text-slate-100 font-medium">{selectedCase.client?.name || 'Sem cliente'}</p>
                     {selectedCase.client?.cpf && (
-                      <p className="text-sm text-neutral-500">CPF: {selectedCase.client.cpf}</p>
+                      <p className="text-sm text-neutral-500 dark:text-slate-400">CPF: {selectedCase.client.cpf}</p>
                     )}
                   </div>
 
                   <div>
-                    <div className="flex items-center text-neutral-500 text-sm mb-1">
+                    <div className="flex items-center text-neutral-500 dark:text-slate-400 text-sm mb-1">
                       <span className="mr-2">📄</span>
                       <span>Assunto</span>
                     </div>
-                    <p className="text-neutral-900">{selectedCase.subject}</p>
+                    <p className="text-neutral-900 dark:text-slate-100">{selectedCase.subject}</p>
                   </div>
 
                   {selectedCase.value && (
                     <div>
-                      <div className="flex items-center text-neutral-500 text-sm mb-1">
+                      <div className="flex items-center text-neutral-500 dark:text-slate-400 text-sm mb-1">
                         <span className="mr-2">💰</span>
                         <span>Valor da Causa</span>
                       </div>
-                      <p className="text-neutral-900 font-semibold">
+                      <p className="text-neutral-900 dark:text-slate-100 font-semibold">
                         {formatCurrency(selectedCase.value)}
                       </p>
                     </div>
@@ -476,7 +476,7 @@ const Deadlines: React.FC = () => {
 
                 <div className="space-y-4">
                   <div>
-                    <div className="flex items-center text-neutral-500 text-sm mb-1">
+                    <div className="flex items-center text-neutral-500 dark:text-slate-400 text-sm mb-1">
                       <span className="mr-2">⚖️</span>
                       <span>Status</span>
                     </div>
@@ -487,11 +487,11 @@ const Deadlines: React.FC = () => {
 
                   {selectedCase.deadline && (
                     <div>
-                      <div className="flex items-center text-neutral-500 text-sm mb-1">
+                      <div className="flex items-center text-neutral-500 dark:text-slate-400 text-sm mb-1">
                         <Calendar size={16} className="mr-2" />
                         <span>Prazo</span>
                       </div>
-                      <p className="text-neutral-900 font-medium">
+                      <p className="text-neutral-900 dark:text-slate-100 font-medium">
                         {formatDate(selectedCase.deadline)}
                       </p>
                       <div className="mt-2">
@@ -511,11 +511,11 @@ const Deadlines: React.FC = () => {
 
                   {selectedCase.lastSyncedAt && (
                     <div>
-                      <div className="flex items-center text-neutral-500 text-sm mb-1">
+                      <div className="flex items-center text-neutral-500 dark:text-slate-400 text-sm mb-1">
                         <Clock size={16} className="mr-2" />
                         <span>Última Sincronização</span>
                       </div>
-                      <p className="text-neutral-900">{formatDate(selectedCase.lastSyncedAt)}</p>
+                      <p className="text-neutral-900 dark:text-slate-100">{formatDate(selectedCase.lastSyncedAt)}</p>
                     </div>
                   )}
                 </div>
@@ -523,14 +523,14 @@ const Deadlines: React.FC = () => {
 
               {selectedCase.notes && (
                 <div>
-                  <h3 className="text-sm font-medium text-neutral-500 mb-2">Observações</h3>
-                  <p className="text-neutral-900 bg-neutral-50 p-3 rounded-md">{selectedCase.notes}</p>
+                  <h3 className="text-sm font-medium text-neutral-500 dark:text-slate-400 mb-2">Observações</h3>
+                  <p className="text-neutral-900 dark:text-slate-100 bg-neutral-50 dark:bg-slate-700 p-3 rounded-md">{selectedCase.notes}</p>
                 </div>
               )}
 
               {selectedCase.informarCliente && (
                 <div>
-                  <h3 className="text-sm font-medium text-neutral-500 mb-2">Informação para o Cliente</h3>
+                  <h3 className="text-sm font-medium text-neutral-500 dark:text-slate-400 mb-2">Informação para o Cliente</h3>
                   <div className="bg-success-50 border border-primary-200 rounded-md p-4">
                     <p className="text-primary-800 whitespace-pre-wrap">{selectedCase.informarCliente}</p>
                   </div>
@@ -539,7 +539,7 @@ const Deadlines: React.FC = () => {
 
               {selectedCase.linkProcesso && (
                 <div>
-                  <h3 className="text-sm font-medium text-neutral-500 mb-2">Link do Processo</h3>
+                  <h3 className="text-sm font-medium text-neutral-500 dark:text-slate-400 mb-2">Link do Processo</h3>
                   <a
                     href={selectedCase.linkProcesso}
                     target="_blank"
@@ -553,10 +553,10 @@ const Deadlines: React.FC = () => {
             </div>
 
             {/* Footer */}
-            <div className="sticky bottom-0 bg-neutral-50 border-t border-neutral-200 px-6 py-4 flex justify-end min-h-[44px]">
+            <div className="sticky bottom-0 bg-neutral-50 dark:bg-slate-700 border-t border-neutral-200 dark:border-slate-700 px-6 py-4 flex justify-end min-h-[44px]">
               <button
                 onClick={() => setShowDetailsModal(false)}
-                className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 bg-white hover:bg-neutral-50 text-neutral-700 font-medium rounded-lg transition-all duration-200"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 text-neutral-700 dark:text-slate-300 font-medium rounded-lg transition-all duration-200"
               >
                 Fechar
               </button>
@@ -568,19 +568,19 @@ const Deadlines: React.FC = () => {
       {/* Modal de Edição do Prazo */}
       {showEditModal && selectedCase && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
-          <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto my-4">
+          <div className="bg-white dark:bg-slate-800 rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto my-4">
             {/* Header */}
-            <div className="border-b border-neutral-200 px-6 py-4 flex justify-between items-center">
+            <div className="border-b border-neutral-200 dark:border-slate-700 px-6 py-4 flex justify-between items-center">
               <div>
-                <h2 className="text-xl font-bold text-neutral-900">Editar Prazo</h2>
-                <p className="text-sm text-neutral-500 mt-1">{selectedCase.processNumber}</p>
+                <h2 className="text-xl font-bold text-neutral-900 dark:text-slate-100">Editar Prazo</h2>
+                <p className="text-sm text-neutral-500 dark:text-slate-400 mt-1">{selectedCase.processNumber}</p>
               </div>
               <button
                 onClick={() => {
                   setShowEditModal(false);
                   setSelectedCase(null);
                 }}
-                className="text-neutral-400 hover:text-neutral-600"
+                className="text-neutral-400 dark:text-slate-500 hover:text-neutral-600 dark:text-slate-400"
               >
                 <X size={24} />
               </button>
@@ -589,40 +589,40 @@ const Deadlines: React.FC = () => {
             {/* Conteúdo */}
             <div className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                   Cliente
                 </label>
-                <p className="text-neutral-600">{selectedCase.client?.name || 'Sem cliente'}</p>
+                <p className="text-neutral-600 dark:text-slate-400">{selectedCase.client?.name || 'Sem cliente'}</p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                   Assunto
                 </label>
-                <p className="text-neutral-600">{selectedCase.subject}</p>
+                <p className="text-neutral-600 dark:text-slate-400">{selectedCase.subject}</p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                   Nova Data do Prazo <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="date"
                   value={editDeadline}
                   onChange={(e) => setEditDeadline(e.target.value)}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 min-h-[44px]"
+                  className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 min-h-[44px]"
                 />
               </div>
             </div>
 
             {/* Footer */}
-            <div className="border-t border-neutral-200 px-6 py-4 flex justify-end gap-3">
+            <div className="border-t border-neutral-200 dark:border-slate-700 px-6 py-4 flex justify-end gap-3">
               <button
                 onClick={() => {
                   setShowEditModal(false);
                   setSelectedCase(null);
                 }}
-                className="px-4 py-2 border border-neutral-300 bg-white hover:bg-neutral-50 text-neutral-700 font-medium rounded-lg transition-all duration-200 min-h-[44px]"
+                className="px-4 py-2 border border-neutral-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 text-neutral-700 dark:text-slate-300 font-medium rounded-lg transition-all duration-200 min-h-[44px]"
               >
                 Cancelar
               </button>

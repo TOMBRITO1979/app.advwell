@@ -325,7 +325,7 @@ const AccountsPayable: React.FC = () => {
     <Layout>
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-          <h1 className="text-3xl font-bold text-neutral-900">
+          <h1 className="text-3xl font-bold text-neutral-900 dark:text-slate-100">
             Contas a Pagar
           </h1>
           <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
@@ -350,7 +350,7 @@ const AccountsPayable: React.FC = () => {
         </div>
 
         {/* Filtros */}
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 p-4">
           <div className="flex flex-col gap-4">
             {/* Linha 1: Fornecedor, Descrição, Categoria */}
             <div className="flex flex-wrap gap-3">
@@ -359,19 +359,19 @@ const AccountsPayable: React.FC = () => {
                 placeholder="Fornecedor..."
                 value={filterSupplier}
                 onChange={(e) => setFilterSupplier(e.target.value)}
-                className="flex-1 min-w-[150px] px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm"
+                className="flex-1 min-w-[150px] px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm"
               />
               <input
                 type="text"
                 placeholder="Descrição..."
                 value={filterDescription}
                 onChange={(e) => setFilterDescription(e.target.value)}
-                className="flex-1 min-w-[150px] px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm"
+                className="flex-1 min-w-[150px] px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm"
               />
               <select
                 value={filterCategory}
                 onChange={(e) => setFilterCategory(e.target.value)}
-                className="flex-1 min-w-[150px] px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm bg-white"
+                className="flex-1 min-w-[150px] px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm bg-white dark:bg-slate-800"
               >
                 <option value="">Todas Categorias</option>
                 {categories.map((cat) => (
@@ -381,7 +381,7 @@ const AccountsPayable: React.FC = () => {
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
-                className="flex-1 min-w-[120px] px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm bg-white"
+                className="flex-1 min-w-[120px] px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm bg-white dark:bg-slate-800"
               >
                 <option value="">Todos Status</option>
                 <option value="PENDING">Pendente</option>
@@ -394,41 +394,41 @@ const AccountsPayable: React.FC = () => {
             {/* Linha 2: Data e Valor */}
             <div className="flex flex-wrap gap-3 items-end">
               <div className="flex-1 min-w-[140px]">
-                <label className="block text-xs font-medium text-neutral-500 mb-1">Data de</label>
+                <label className="block text-xs font-medium text-neutral-500 dark:text-slate-400 mb-1">Data de</label>
                 <input
                   type="date"
                   value={filterDateFrom}
                   onChange={(e) => setFilterDateFrom(e.target.value)}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm"
+                  className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm"
                 />
               </div>
               <div className="flex-1 min-w-[140px]">
-                <label className="block text-xs font-medium text-neutral-500 mb-1">Data até</label>
+                <label className="block text-xs font-medium text-neutral-500 dark:text-slate-400 mb-1">Data até</label>
                 <input
                   type="date"
                   value={filterDateTo}
                   onChange={(e) => setFilterDateTo(e.target.value)}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm"
+                  className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm"
                 />
               </div>
               <div className="flex-1 min-w-[120px]">
-                <label className="block text-xs font-medium text-neutral-500 mb-1">Valor mín</label>
+                <label className="block text-xs font-medium text-neutral-500 dark:text-slate-400 mb-1">Valor mín</label>
                 <input
                   type="number"
                   placeholder="R$ 0,00"
                   value={filterValueMin}
                   onChange={(e) => setFilterValueMin(e.target.value)}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm"
+                  className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm"
                 />
               </div>
               <div className="flex-1 min-w-[120px]">
-                <label className="block text-xs font-medium text-neutral-500 mb-1">Valor máx</label>
+                <label className="block text-xs font-medium text-neutral-500 dark:text-slate-400 mb-1">Valor máx</label>
                 <input
                   type="number"
                   placeholder="R$ 0,00"
                   value={filterValueMax}
                   onChange={(e) => setFilterValueMax(e.target.value)}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm"
+                  className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm"
                 />
               </div>
               {/* Botão limpar filtros */}
@@ -444,7 +444,7 @@ const AccountsPayable: React.FC = () => {
                     setFilterValueMin('');
                     setFilterValueMax('');
                   }}
-                  className="px-4 py-2 text-sm text-neutral-600 hover:text-neutral-800 hover:bg-neutral-100 rounded-lg transition-colors min-h-[44px]"
+                  className="px-4 py-2 text-sm text-neutral-600 dark:text-slate-400 hover:text-neutral-800 hover:bg-neutral-100 dark:hover:bg-slate-600 rounded-lg transition-colors min-h-[44px]"
                 >
                   Limpar filtros
                 </button>
@@ -455,15 +455,15 @@ const AccountsPayable: React.FC = () => {
 
         {/* Lista */}
         {loading ? (
-          <div className="text-center py-8 text-neutral-600">
+          <div className="text-center py-8 text-neutral-600 dark:text-slate-400">
             Carregando...
           </div>
         ) : accounts.length === 0 ? (
-          <div className="bg-white rounded-lg shadow p-8 text-center text-neutral-600">
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 p-8 text-center text-neutral-600 dark:text-slate-400">
             Nenhuma conta encontrada
           </div>
         ) : (
-          <div className="bg-white rounded-lg shadow overflow-hidden">
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 overflow-hidden">
             {/* Mobile Card View */}
             <div className="mobile-card-view">
               <MobileCardList
@@ -507,36 +507,36 @@ const AccountsPayable: React.FC = () => {
 
             {/* Desktop Table View */}
             <div className="desktop-table-view overflow-x-auto">
-              <table className="min-w-[950px] w-full divide-y divide-neutral-200">
-                <thead className="bg-neutral-50">
+              <table className="min-w-[950px] w-full divide-y divide-neutral-200 dark:divide-slate-700">
+                <thead className="bg-neutral-50 dark:bg-slate-700">
                   <tr>
-                    <th className="w-[20%] px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
+                    <th className="w-[20%] px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">
                       Fornecedor
                     </th>
-                    <th className="w-[25%] px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
+                    <th className="w-[25%] px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">
                       Descrição
                     </th>
-                    <th className="w-[12%] px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
+                    <th className="w-[12%] px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">
                       Valor
                     </th>
-                    <th className="w-[12%] px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
+                    <th className="w-[12%] px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">
                       Vencimento
                     </th>
-                    <th className="w-[13%] px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
+                    <th className="w-[13%] px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">
                       Status
                     </th>
-                    <th className="w-[18%] px-4 py-3 text-right text-sm font-semibold text-neutral-900 uppercase">
+                    <th className="w-[18%] px-4 py-3 text-right text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">
                       Ações
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-neutral-200">
+                <tbody className="bg-white dark:bg-slate-800 divide-y divide-neutral-200 dark:divide-slate-700">
                   {accounts.map((account) => (
-                    <tr key={account.id} className="odd:bg-white even:bg-neutral-50 hover:bg-success-100 transition-colors">
-                      <td className="px-4 py-3 text-sm text-neutral-900 truncate" title={account.supplier}>
+                    <tr key={account.id} className="odd:bg-white dark:bg-slate-800 even:bg-neutral-50 dark:bg-slate-700 hover:bg-success-100 transition-colors">
+                      <td className="px-4 py-3 text-sm text-neutral-900 dark:text-slate-100 truncate" title={account.supplier}>
                         {account.supplier}
                       </td>
-                      <td className="px-4 py-3 text-sm text-neutral-600" title={account.description}>
+                      <td className="px-4 py-3 text-sm text-neutral-600 dark:text-slate-400" title={account.description}>
                         <div className="flex flex-col gap-1">
                           <span className="truncate">{account.description}</span>
                           {(account as any).isRecurring && (
@@ -547,10 +547,10 @@ const AccountsPayable: React.FC = () => {
                           )}
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-sm font-medium text-neutral-900">
+                      <td className="px-4 py-3 text-sm font-medium text-neutral-900 dark:text-slate-100">
                         {formatCurrency(account.amount)}
                       </td>
-                      <td className="px-4 py-3 text-sm text-neutral-600">
+                      <td className="px-4 py-3 text-sm text-neutral-600 dark:text-slate-400">
                         {formatDate(account.dueDate)}
                       </td>
                       <td className="px-4 py-3">
@@ -602,9 +602,9 @@ const AccountsPayable: React.FC = () => {
 
         {/* Pagination */}
         {!loading && accounts.length > 0 && (
-          <div className="bg-white rounded-lg shadow p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 p-4">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="text-sm text-neutral-600">
+              <div className="text-sm text-neutral-600 dark:text-slate-400">
                 Mostrando {((page - 1) * limit) + 1} a {Math.min(page * limit, total)} de {total} contas
               </div>
               <div className="flex items-center gap-2">
@@ -614,30 +614,30 @@ const AccountsPayable: React.FC = () => {
                     setLimit(Number(e.target.value));
                     setPage(1);
                   }}
-                  className="px-2 py-1 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="px-2 py-1 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
                   <option value={25}>25</option>
                   <option value={50}>50</option>
                   <option value={100}>100</option>
                   <option value={200}>200</option>
                 </select>
-                <span className="text-sm text-neutral-600">por página</span>
+                <span className="text-sm text-neutral-600 dark:text-slate-400">por página</span>
               </div>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setPage(p => Math.max(1, p - 1))}
                   disabled={page === 1}
-                  className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] border border-neutral-300 bg-white hover:bg-neutral-50 text-neutral-700 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] border border-neutral-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 text-neutral-700 dark:text-slate-300 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <ChevronLeft size={20} />
                 </button>
-                <span className="px-4 py-2 text-sm font-medium text-neutral-700">
+                <span className="px-4 py-2 text-sm font-medium text-neutral-700 dark:text-slate-300">
                   Página {page} de {totalPages}
                 </span>
                 <button
                   onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                   disabled={page === totalPages}
-                  className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] border border-neutral-300 bg-white hover:bg-neutral-50 text-neutral-700 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] border border-neutral-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 text-neutral-700 dark:text-slate-300 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <ChevronRight size={20} />
                 </button>
@@ -649,10 +649,10 @@ const AccountsPayable: React.FC = () => {
         {/* Statement Modal */}
         {showStatementModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-            <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto my-4">
+            <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto my-4">
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold text-neutral-900 flex items-center gap-2">
+                  <h2 className="text-2xl font-bold text-neutral-900 dark:text-slate-100 flex items-center gap-2">
                     <FileText size={28} className="text-primary-600" />
                     Gerar Extrato de Pagamentos
                   </h2>
@@ -662,17 +662,17 @@ const AccountsPayable: React.FC = () => {
                       setStatementData(null);
                       setStatementFilters({ startDate: '', endDate: '', category: '' });
                     }}
-                    className="text-neutral-400 hover:text-neutral-600"
+                    className="text-neutral-400 dark:text-slate-500 hover:text-neutral-600 dark:text-slate-400"
                   >
                     ✕
                   </button>
                 </div>
 
                 {/* Filters */}
-                <div className="bg-neutral-50 rounded-lg p-4 mb-6">
+                <div className="bg-neutral-50 dark:bg-slate-700 rounded-lg p-4 mb-6">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-2">
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2">
                         Data Início *
                       </label>
                       <input
@@ -684,7 +684,7 @@ const AccountsPayable: React.FC = () => {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-2">
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2">
                         Data Fim *
                       </label>
                       <input
@@ -696,7 +696,7 @@ const AccountsPayable: React.FC = () => {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-2">
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2">
                         Categoria
                       </label>
                       <select
@@ -731,11 +731,11 @@ const AccountsPayable: React.FC = () => {
                     {/* Total Box */}
                     <div className="bg-success-50 border border-primary-200 rounded-lg p-4">
                       <div className="text-center">
-                        <p className="text-sm text-neutral-600 mb-1">Total Pago no Período</p>
+                        <p className="text-sm text-neutral-600 dark:text-slate-400 mb-1">Total Pago no Período</p>
                         <p className="text-3xl font-bold text-primary-600">
                           {formatCurrency(statementData.total)}
                         </p>
-                        <p className="text-sm text-neutral-500 mt-1">
+                        <p className="text-sm text-neutral-500 dark:text-slate-400 mt-1">
                           {statementData.count} pagamento{statementData.count !== 1 ? 's' : ''}
                         </p>
                       </div>
@@ -761,49 +761,49 @@ const AccountsPayable: React.FC = () => {
 
                     {/* Payments Table */}
                     <div className="border border-gray-200 rounded-lg overflow-hidden">
-                      <table className="w-full table-fixed divide-y divide-neutral-200">
-                        <thead className="bg-neutral-50">
+                      <table className="w-full table-fixed divide-y divide-neutral-200 dark:divide-slate-700">
+                        <thead className="bg-neutral-50 dark:bg-slate-700">
                           <tr>
-                            <th className="w-[22%] px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
+                            <th className="w-[22%] px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">
                               Fornecedor
                             </th>
-                            <th className="w-[30%] px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
+                            <th className="w-[30%] px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">
                               Descrição
                             </th>
-                            <th className="w-[16%] px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
+                            <th className="w-[16%] px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">
                               Categoria
                             </th>
-                            <th className="w-[14%] px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
+                            <th className="w-[14%] px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">
                               Valor
                             </th>
-                            <th className="w-[18%] px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
+                            <th className="w-[18%] px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">
                               Data Pagamento
                             </th>
                           </tr>
                         </thead>
-                        <tbody className="bg-white divide-y divide-neutral-200">
+                        <tbody className="bg-white dark:bg-slate-800 divide-y divide-neutral-200 dark:divide-slate-700">
                           {statementData.accounts.length === 0 ? (
                             <tr>
-                              <td colSpan={5} className="px-4 py-8 text-center text-neutral-500">
+                              <td colSpan={5} className="px-4 py-8 text-center text-neutral-500 dark:text-slate-400">
                                 Nenhum pagamento encontrado no período selecionado
                               </td>
                             </tr>
                           ) : (
                             statementData.accounts.map((account) => (
-                              <tr key={account.id} className="odd:bg-white even:bg-neutral-50 hover:bg-success-100 transition-colors">
-                                <td className="px-4 py-3 text-sm text-neutral-900 truncate" title={account.supplier}>
+                              <tr key={account.id} className="odd:bg-white dark:bg-slate-800 even:bg-neutral-50 dark:bg-slate-700 hover:bg-success-100 transition-colors">
+                                <td className="px-4 py-3 text-sm text-neutral-900 dark:text-slate-100 truncate" title={account.supplier}>
                                   {account.supplier}
                                 </td>
-                                <td className="px-4 py-3 text-sm text-neutral-600 truncate" title={account.description}>
+                                <td className="px-4 py-3 text-sm text-neutral-600 dark:text-slate-400 truncate" title={account.description}>
                                   {account.description}
                                 </td>
-                                <td className="px-4 py-3 text-sm text-neutral-600 truncate" title={account.category || '-'}>
+                                <td className="px-4 py-3 text-sm text-neutral-600 dark:text-slate-400 truncate" title={account.category || '-'}>
                                   {account.category || '-'}
                                 </td>
-                                <td className="px-4 py-3 text-sm font-medium text-neutral-900">
+                                <td className="px-4 py-3 text-sm font-medium text-neutral-900 dark:text-slate-100">
                                   {formatCurrency(account.amount)}
                                 </td>
-                                <td className="px-4 py-3 text-sm text-neutral-600">
+                                <td className="px-4 py-3 text-sm text-neutral-600 dark:text-slate-400">
                                   {formatDate(account.paidDate || account.dueDate)}
                                 </td>
                               </tr>
@@ -816,7 +816,7 @@ const AccountsPayable: React.FC = () => {
                 )}
 
                 {!statementData && (
-                  <div className="text-center py-8 text-neutral-500">
+                  <div className="text-center py-8 text-neutral-500 dark:text-slate-400">
                     Selecione o período e clique em "Visualizar Extrato" para gerar o relatório
                   </div>
                 )}
@@ -828,7 +828,7 @@ const AccountsPayable: React.FC = () => {
                       setStatementData(null);
                       setStatementFilters({ startDate: '', endDate: '', category: '' });
                     }}
-                    className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 bg-white hover:bg-neutral-50 text-neutral-700 font-medium rounded-lg transition-all duration-200"
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 text-neutral-700 dark:text-slate-300 font-medium rounded-lg transition-all duration-200"
                   >
                     Fechar
                   </button>
@@ -841,14 +841,14 @@ const AccountsPayable: React.FC = () => {
         {/* Modal */}
         {showModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-            <div className="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto my-4">
+            <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20-xl w-full max-w-md max-h-[90vh] overflow-y-auto my-4">
               <div className="p-6">
-                <h2 className="text-2xl font-bold text-neutral-900 mb-4">
+                <h2 className="text-2xl font-bold text-neutral-900 dark:text-slate-100 mb-4">
                   {editingAccount ? 'Editar Conta' : 'Nova Conta'}
                 </h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                       Fornecedor *
                     </label>
                     <input
@@ -860,7 +860,7 @@ const AccountsPayable: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                       Descrição *
                     </label>
                     <input
@@ -872,7 +872,7 @@ const AccountsPayable: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                       Valor *
                     </label>
                     <input
@@ -885,7 +885,7 @@ const AccountsPayable: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                       Vencimento *
                     </label>
                     <input
@@ -897,7 +897,7 @@ const AccountsPayable: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                       Categoria
                     </label>
                     <input
@@ -919,14 +919,14 @@ const AccountsPayable: React.FC = () => {
                         onChange={(e) => setFormData({ ...formData, isRecurring: e.target.checked, recurrencePeriod: e.target.checked ? 'DAYS_30' : '' })}
                         className="w-4 h-4 text-success-600 border-gray-300 rounded focus:ring-green-500"
                       />
-                      <label htmlFor="isRecurring" className="ml-2 text-sm font-medium text-neutral-700">
+                      <label htmlFor="isRecurring" className="ml-2 text-sm font-medium text-neutral-700 dark:text-slate-300">
                         Conta Recorrente (criar automaticamente ao pagar)
                       </label>
                     </div>
 
                     {formData.isRecurring && (
                       <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-1">
+                        <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                           Período de Recorrência *
                         </label>
                         <select
@@ -942,7 +942,7 @@ const AccountsPayable: React.FC = () => {
                           <option value="MONTHS_6">A cada 6 meses (semestral)</option>
                           <option value="YEAR_1">A cada 1 ano (anual)</option>
                         </select>
-                        <p className="mt-1 text-xs text-neutral-500">
+                        <p className="mt-1 text-xs text-neutral-500 dark:text-slate-400">
                           Ao marcar como paga, uma nova conta será criada automaticamente para o próximo período
                         </p>
                       </div>
@@ -956,13 +956,13 @@ const AccountsPayable: React.FC = () => {
                         setShowModal(false);
                         resetForm();
                       }}
-                      className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 bg-white hover:bg-neutral-50 text-neutral-700 font-medium rounded-lg transition-all duration-200"
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 text-neutral-700 dark:text-slate-300 font-medium rounded-lg transition-all duration-200"
                     >
                       Cancelar
                     </button>
                     <button
                       type="submit"
-                      className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-success-600 hover:bg-success-700 text-white font-medium rounded-lg shadow-sm hover:shadow-md transition-all duration-200"
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-success-600 hover:bg-success-700 text-white font-medium rounded-lg shadow dark:shadow-slate-700/20-sm hover:shadow-md transition-all duration-200"
                     >
                       {editingAccount ? 'Atualizar' : 'Criar'}
                     </button>

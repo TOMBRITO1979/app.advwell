@@ -441,8 +441,8 @@ const WhatsAppCampaigns: React.FC = () => {
       <Layout>
         <div className="space-y-6">
           <div>
-            <h1 className="text-3xl font-bold text-neutral-900">Campanhas WhatsApp</h1>
-            <p className="text-neutral-600 mt-1">Envie mensagens em massa via WhatsApp</p>
+            <h1 className="text-3xl font-bold text-neutral-900 dark:text-slate-100">Campanhas WhatsApp</h1>
+            <p className="text-neutral-600 dark:text-slate-400 mt-1">Envie mensagens em massa via WhatsApp</p>
           </div>
 
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
@@ -472,8 +472,8 @@ const WhatsAppCampaigns: React.FC = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-neutral-900">Campanhas WhatsApp</h1>
-            <p className="text-neutral-600 mt-1">Envie mensagens em massa via WhatsApp</p>
+            <h1 className="text-3xl font-bold text-neutral-900 dark:text-slate-100">Campanhas WhatsApp</h1>
+            <p className="text-neutral-600 dark:text-slate-400 mt-1">Envie mensagens em massa via WhatsApp</p>
           </div>
           <button
             onClick={() => setShowModal(true)}
@@ -486,38 +486,38 @@ const WhatsAppCampaigns: React.FC = () => {
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-white rounded-lg shadow p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-neutral-600 text-sm">Total</p>
-                <p className="text-2xl font-bold text-neutral-900">{totalCampaigns}</p>
+                <p className="text-neutral-600 dark:text-slate-400 text-sm">Total</p>
+                <p className="text-2xl font-bold text-neutral-900 dark:text-slate-100">{totalCampaigns}</p>
               </div>
               <MessageCircle className="text-green-600" size={32} />
             </div>
           </div>
-          <div className="bg-white rounded-lg shadow p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-neutral-600 text-sm">Concluídas</p>
+                <p className="text-neutral-600 dark:text-slate-400 text-sm">Concluídas</p>
                 <p className="text-2xl font-bold text-green-600">{completedCampaigns}</p>
               </div>
               <CheckCircle className="text-green-600" size={32} />
             </div>
           </div>
-          <div className="bg-white rounded-lg shadow p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-neutral-600 text-sm">Em Envio</p>
+                <p className="text-neutral-600 dark:text-slate-400 text-sm">Em Envio</p>
                 <p className="text-2xl font-bold text-info-600">{sendingCampaigns}</p>
               </div>
               <Clock className="text-info-600" size={32} />
             </div>
           </div>
-          <div className="bg-white rounded-lg shadow p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-neutral-600 text-sm">Msgs Enviadas</p>
-                <p className="text-2xl font-bold text-neutral-900">{totalSent}</p>
+                <p className="text-neutral-600 dark:text-slate-400 text-sm">Msgs Enviadas</p>
+                <p className="text-2xl font-bold text-neutral-900 dark:text-slate-100">{totalSent}</p>
               </div>
               <Send className="text-green-600" size={32} />
             </div>
@@ -538,14 +538,14 @@ const WhatsAppCampaigns: React.FC = () => {
 
         {/* Lista de Campanhas */}
         {loading ? (
-          <div className="text-center py-8 text-neutral-600">Carregando...</div>
+          <div className="text-center py-8 text-neutral-600 dark:text-slate-400">Carregando...</div>
         ) : campaigns.length === 0 ? (
-          <div className="bg-white rounded-lg shadow p-8 text-center">
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 p-8 text-center">
             <MessageCircle size={48} className="mx-auto text-neutral-400 mb-4" />
-            <h3 className="text-lg font-semibold text-neutral-900 mb-2">
+            <h3 className="text-lg font-semibold text-neutral-900 dark:text-slate-100 mb-2">
               Nenhuma campanha criada
             </h3>
-            <p className="text-neutral-600 mb-4">
+            <p className="text-neutral-600 dark:text-slate-400 mb-4">
               Crie sua primeira campanha de WhatsApp
             </p>
             <button
@@ -557,7 +557,7 @@ const WhatsAppCampaigns: React.FC = () => {
             </button>
           </div>
         ) : (
-          <div className="bg-white rounded-lg shadow overflow-hidden">
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 overflow-hidden">
             {/* Mobile View */}
             <div className="mobile-card-view">
               <MobileCardList
@@ -587,26 +587,26 @@ const WhatsAppCampaigns: React.FC = () => {
 
             {/* Desktop Table */}
             <div className="desktop-table-view">
-              <table className="min-w-full divide-y divide-neutral-200">
-                <thead className="bg-neutral-50">
+              <table className="min-w-full divide-y divide-neutral-200 dark:divide-slate-700">
+                <thead className="bg-neutral-50 dark:bg-slate-700">
                   <tr>
-                    <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">Nome</th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">Template</th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">Status</th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">Enviados</th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">Entregues</th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">Lidos</th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">Data</th>
-                    <th className="px-6 py-3 text-right text-sm font-semibold text-neutral-900 uppercase">Ações</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">Nome</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">Template</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">Status</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">Enviados</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">Entregues</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">Lidos</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">Data</th>
+                    <th className="px-6 py-3 text-right text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">Ações</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-neutral-200">
+                <tbody className="bg-white dark:bg-slate-800 divide-y divide-neutral-200 dark:divide-slate-700">
                   {campaigns.map((campaign) => (
-                    <tr key={campaign.id} className="odd:bg-white even:bg-neutral-50 hover:bg-success-100 transition-colors">
-                      <td className="px-6 py-4 text-sm font-medium text-neutral-900">
+                    <tr key={campaign.id} className="odd:bg-white dark:bg-slate-800 even:bg-neutral-50 dark:bg-slate-700 hover:bg-success-100 transition-colors">
+                      <td className="px-6 py-4 text-sm font-medium text-neutral-900 dark:text-slate-100">
                         {campaign.name}
                       </td>
-                      <td className="px-6 py-4 text-sm text-neutral-600">
+                      <td className="px-6 py-4 text-sm text-neutral-600 dark:text-slate-400">
                         <code className="text-xs bg-neutral-100 px-2 py-1 rounded">
                           {campaign.template?.name || '-'}
                         </code>
@@ -616,7 +616,7 @@ const WhatsAppCampaigns: React.FC = () => {
                           {statusLabels[campaign.status]}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-sm text-neutral-600">
+                      <td className="px-6 py-4 text-sm text-neutral-600 dark:text-slate-400">
                         {campaign.sentCount} / {campaign.totalRecipients}
                         {campaign.failedCount > 0 && (
                           <span className="text-red-600 ml-1">({campaign.failedCount} falhas)</span>
@@ -628,7 +628,7 @@ const WhatsAppCampaigns: React.FC = () => {
                       <td className="px-6 py-4 text-sm text-blue-600 font-medium">
                         {campaign.readCount}
                       </td>
-                      <td className="px-6 py-4 text-sm text-neutral-600">
+                      <td className="px-6 py-4 text-sm text-neutral-600 dark:text-slate-400">
                         {formatDate(campaign.createdAt)}
                       </td>
                       <td className="px-6 py-4 text-sm text-right">
@@ -679,8 +679,8 @@ const WhatsAppCampaigns: React.FC = () => {
 
         {/* Pagination */}
         {total > 0 && (
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white rounded-lg shadow px-4 py-3">
-            <span className="text-sm text-neutral-600">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 px-4 py-3">
+            <span className="text-sm text-neutral-600 dark:text-slate-400">
               Mostrando {((page - 1) * limit) + 1} a {Math.min(page * limit, total)} de {total} campanhas
             </span>
             <div className="flex items-center gap-2">
@@ -690,30 +690,30 @@ const WhatsAppCampaigns: React.FC = () => {
                   setLimit(Number(e.target.value));
                   setPage(1);
                 }}
-                className="px-2 py-1 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="px-2 py-1 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 <option value={25}>25</option>
                 <option value={50}>50</option>
                 <option value={100}>100</option>
                 <option value={200}>200</option>
               </select>
-              <span className="text-sm text-neutral-600">por página</span>
+              <span className="text-sm text-neutral-600 dark:text-slate-400">por página</span>
             </div>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="p-2 rounded-md border border-neutral-300 hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="p-2 rounded-md border border-neutral-300 dark:border-slate-600 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <ChevronLeft size={20} />
               </button>
-              <span className="text-sm text-neutral-700 px-3">
+              <span className="text-sm text-neutral-700 dark:text-slate-300 px-3">
                 Página {page} de {Math.ceil(total / limit)}
               </span>
               <button
                 onClick={() => setPage(p => Math.min(Math.ceil(total / limit), p + 1))}
                 disabled={page >= Math.ceil(total / limit)}
-                className="p-2 rounded-md border border-neutral-300 hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="p-2 rounded-md border border-neutral-300 dark:border-slate-600 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <ChevronRight size={20} />
               </button>
@@ -724,15 +724,15 @@ const WhatsAppCampaigns: React.FC = () => {
         {/* Modal Nova Campanha */}
         {showModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-            <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
               <div className="p-6">
-                <h2 className="text-2xl font-bold text-neutral-900 mb-4">
+                <h2 className="text-2xl font-bold text-neutral-900 dark:text-slate-100 mb-4">
                   Nova Campanha WhatsApp
                 </h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
                   {/* Nome */}
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                       Nome da Campanha *
                     </label>
                     <input
@@ -747,7 +747,7 @@ const WhatsAppCampaigns: React.FC = () => {
 
                   {/* Template */}
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                       Template da Meta *
                     </label>
                     <select
@@ -767,7 +767,7 @@ const WhatsAppCampaigns: React.FC = () => {
                         </option>
                       ))}
                     </select>
-                    <p className="text-xs text-neutral-500 mt-1">
+                    <p className="text-xs text-neutral-500 dark:text-slate-400 mt-1">
                       Apenas templates aprovados pela Meta aparecem aqui
                     </p>
                   </div>
@@ -857,7 +857,7 @@ const WhatsAppCampaigns: React.FC = () => {
                   </div>
 
                   {/* Info */}
-                  <div className="bg-neutral-50 border border-neutral-200 rounded-lg p-3 text-sm text-neutral-600">
+                  <div className="bg-neutral-50 dark:bg-slate-700 border border-neutral-200 dark:border-slate-700 rounded-lg p-3 text-sm text-neutral-600 dark:text-slate-400">
                     <p><strong>Limite:</strong> 500 destinatários por campanha</p>
                     <p><strong>Rate limit:</strong> ~5 mensagens por segundo</p>
                   </div>
@@ -867,7 +867,7 @@ const WhatsAppCampaigns: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => { setShowModal(false); resetForm(); }}
-                      className="px-4 py-2 min-h-[44px] border border-neutral-300 bg-white hover:bg-neutral-50 text-neutral-700 font-medium rounded-lg"
+                      className="px-4 py-2 min-h-[44px] border border-neutral-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 text-neutral-700 dark:text-slate-300 font-medium rounded-lg"
                     >
                       Cancelar
                     </button>
@@ -888,16 +888,16 @@ const WhatsAppCampaigns: React.FC = () => {
         {/* Modal Importar Destinatários */}
         {showImportModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
+            <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-md">
               <div className="p-6">
-                <h3 className="text-xl font-bold text-neutral-900 mb-4">
+                <h3 className="text-xl font-bold text-neutral-900 dark:text-slate-100 mb-4">
                   Importar Destinatários
                 </h3>
 
                 <div className="space-y-4">
                   {/* Tipo de destinatário */}
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-2">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2">
                       Tipo de Destinatário
                     </label>
                     <div className="flex gap-4">
@@ -913,7 +913,7 @@ const WhatsAppCampaigns: React.FC = () => {
                           }}
                           className="text-green-600"
                         />
-                        <span className="text-sm text-neutral-700">Clientes ({clients.filter(c => c.phone).length})</span>
+                        <span className="text-sm text-neutral-700 dark:text-slate-300">Clientes ({clients.filter(c => c.phone).length})</span>
                       </label>
                       <label className="flex items-center gap-2 cursor-pointer">
                         <input
@@ -927,14 +927,14 @@ const WhatsAppCampaigns: React.FC = () => {
                           }}
                           className="text-green-600"
                         />
-                        <span className="text-sm text-neutral-700">Leads ({leads.filter(l => l.phone).length})</span>
+                        <span className="text-sm text-neutral-700 dark:text-slate-300">Leads ({leads.filter(l => l.phone).length})</span>
                       </label>
                     </div>
                   </div>
 
                   {/* Filtrar */}
                   <div className="space-y-3">
-                    <label className="block text-sm font-medium text-neutral-700">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300">
                       Filtrar Destinatários
                     </label>
 
@@ -1001,7 +1001,7 @@ const WhatsAppCampaigns: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                       Limite
                     </label>
                     <input
@@ -1012,7 +1012,7 @@ const WhatsAppCampaigns: React.FC = () => {
                       onChange={(e) => setImportFilter({ ...importFilter, limit: parseInt(e.target.value) || 500 })}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md min-h-[44px]"
                     />
-                    <p className="text-xs text-neutral-500 mt-1">Máximo 500</p>
+                    <p className="text-xs text-neutral-500 dark:text-slate-400 mt-1">Máximo 500</p>
                   </div>
 
                   {/* Preview count */}
@@ -1031,7 +1031,7 @@ const WhatsAppCampaigns: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setShowImportModal(false)}
-                      className="px-4 py-2 border border-neutral-300 bg-white hover:bg-neutral-50 text-neutral-700 font-medium rounded-lg"
+                      className="px-4 py-2 border border-neutral-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 text-neutral-700 dark:text-slate-300 font-medium rounded-lg"
                     >
                       Cancelar
                     </button>
@@ -1053,14 +1053,14 @@ const WhatsAppCampaigns: React.FC = () => {
         {/* Modal Visualizar */}
         {showViewModal && selectedCampaign && campaignStats && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-            <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
               <div className="p-6">
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <h2 className="text-2xl font-bold text-neutral-900">
+                    <h2 className="text-2xl font-bold text-neutral-900 dark:text-slate-100">
                       {selectedCampaign.name}
                     </h2>
-                    <p className="text-neutral-600 mt-1">
+                    <p className="text-neutral-600 dark:text-slate-400 mt-1">
                       Template: <code className="bg-neutral-100 px-2 py-1 rounded text-sm">
                         {selectedCampaign.template?.name}
                       </code>
@@ -1068,7 +1068,7 @@ const WhatsAppCampaigns: React.FC = () => {
                   </div>
                   <button
                     onClick={() => setShowViewModal(false)}
-                    className="text-neutral-500 hover:text-neutral-600 text-xl"
+                    className="text-neutral-500 dark:text-slate-400 hover:text-neutral-600 dark:text-slate-400 text-xl"
                   >
                     ✕
                   </button>
@@ -1076,9 +1076,9 @@ const WhatsAppCampaigns: React.FC = () => {
 
                 {/* Stats Grid */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                  <div className="bg-neutral-50 rounded-lg p-3 text-center">
-                    <p className="text-sm text-neutral-600">Total</p>
-                    <p className="text-2xl font-bold text-neutral-900">{campaignStats.totalRecipients}</p>
+                  <div className="bg-neutral-50 dark:bg-slate-700 rounded-lg p-3 text-center">
+                    <p className="text-sm text-neutral-600 dark:text-slate-400">Total</p>
+                    <p className="text-2xl font-bold text-neutral-900 dark:text-slate-100">{campaignStats.totalRecipients}</p>
                   </div>
                   <div className="bg-green-50 rounded-lg p-3 text-center">
                     <p className="text-sm text-green-600">Enviados</p>
@@ -1099,13 +1099,13 @@ const WhatsAppCampaigns: React.FC = () => {
                 {/* Status e Falhas */}
                 <div className="grid grid-cols-2 gap-4 mb-6">
                   <div>
-                    <p className="text-sm text-neutral-600 mb-1">Status</p>
+                    <p className="text-sm text-neutral-600 dark:text-slate-400 mb-1">Status</p>
                     <span className={`px-3 py-1 text-sm font-medium rounded-full ${statusColors[campaignStats.status]}`}>
                       {statusLabels[campaignStats.status]}
                     </span>
                   </div>
                   <div>
-                    <p className="text-sm text-neutral-600 mb-1">Falhas</p>
+                    <p className="text-sm text-neutral-600 dark:text-slate-400 mb-1">Falhas</p>
                     <p className="text-lg font-semibold text-red-600">
                       {campaignStats.failedCount}
                       <span className="text-sm font-normal ml-1">({campaignStats.failureRate}%)</span>
@@ -1126,7 +1126,7 @@ const WhatsAppCampaigns: React.FC = () => {
                 <div className="flex justify-end gap-2 pt-4 border-t border-gray-200">
                   <button
                     onClick={() => setShowViewModal(false)}
-                    className="px-4 py-2 border border-neutral-300 bg-white hover:bg-neutral-50 text-neutral-700 font-medium rounded-lg"
+                    className="px-4 py-2 border border-neutral-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 text-neutral-700 dark:text-slate-300 font-medium rounded-lg"
                   >
                     Fechar
                   </button>

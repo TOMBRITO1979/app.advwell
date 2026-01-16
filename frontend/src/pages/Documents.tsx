@@ -375,15 +375,15 @@ const Documents: React.FC = () => {
       <div className="p-6">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-neutral-800">Documentos</h1>
-          <p className="text-neutral-600">Gerencie documentos de clientes e processos</p>
+          <p className="text-neutral-600 dark:text-slate-400">Gerencie documentos de clientes e processos</p>
         </div>
 
       {/* Search Section */}
-      <div className="bg-white rounded-lg shadow p-4 sm:p-6 mb-6">
+      <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 p-4 sm:p-6 mb-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {/* Search Type */}
           <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-2">
+            <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2">
               Buscar por
             </label>
             <select
@@ -394,7 +394,7 @@ const Documents: React.FC = () => {
                 setSelectedClient(null);
                 setSelectedCase(null);
               }}
-              className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+              className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
             >
               <option value="client">Cliente</option>
               <option value="case">Processo</option>
@@ -403,7 +403,7 @@ const Documents: React.FC = () => {
 
           {/* Search Input */}
           <div className="relative sm:col-span-1 lg:col-span-1">
-            <label className="block text-sm font-medium text-neutral-700 mb-2">
+            <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2">
               {searchType === 'client' ? 'Nome do Cliente ou CPF' : 'Número do Processo'}
             </label>
             <input
@@ -416,42 +416,42 @@ const Documents: React.FC = () => {
                   ? 'Digite o nome ou CPF'
                   : 'Digite o número do processo'
               }
-              className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+              className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
             />
 
             {/* Autocomplete Dropdown */}
             {showSuggestions && searchText && (
-              <div className="absolute z-10 w-full mt-1 bg-white border border-neutral-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+              <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-800 border border-neutral-300 dark:border-slate-600 rounded-md shadow-lg max-h-60 overflow-y-auto">
                 {searchType === 'client' ? (
                   filteredClients.length > 0 ? (
                     filteredClients.map((client) => (
                       <div
                         key={client.id}
                         onClick={() => handleSelectClient(client)}
-                        className="px-4 py-2 hover:bg-neutral-100 cursor-pointer min-h-[44px]"
+                        className="px-4 py-2 hover:bg-neutral-100 dark:hover:bg-slate-600 cursor-pointer min-h-[44px]"
                       >
                         <div className="font-medium">{client.name}</div>
                         {client.cpf && (
-                          <div className="text-sm text-neutral-600">{client.cpf}</div>
+                          <div className="text-sm text-neutral-600 dark:text-slate-400">{client.cpf}</div>
                         )}
                       </div>
                     ))
                   ) : (
-                    <div className="px-4 py-2 text-neutral-500">Nenhum cliente encontrado</div>
+                    <div className="px-4 py-2 text-neutral-500 dark:text-slate-400">Nenhum cliente encontrado</div>
                   )
                 ) : filteredCases.length > 0 ? (
                   filteredCases.map((caseItem) => (
                     <div
                       key={caseItem.id}
                       onClick={() => handleSelectCase(caseItem)}
-                      className="px-4 py-2 hover:bg-neutral-100 cursor-pointer min-h-[44px]"
+                      className="px-4 py-2 hover:bg-neutral-100 dark:hover:bg-slate-600 cursor-pointer min-h-[44px]"
                     >
                       <div className="font-medium">{caseItem.processNumber}</div>
-                      <div className="text-sm text-neutral-600">{caseItem.subject}</div>
+                      <div className="text-sm text-neutral-600 dark:text-slate-400">{caseItem.subject}</div>
                     </div>
                   ))
                 ) : (
-                  <div className="px-4 py-2 text-neutral-500">Nenhum processo encontrado</div>
+                  <div className="px-4 py-2 text-neutral-500 dark:text-slate-400">Nenhum processo encontrado</div>
                 )}
               </div>
             )}
@@ -462,7 +462,7 @@ const Documents: React.FC = () => {
             <button
               onClick={handleSearch}
               disabled={loading || (!selectedClient && !selectedCase)}
-              className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-info-600 hover:bg-info-700 text-white font-medium rounded-lg shadow-sm hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base whitespace-nowrap"
+              className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-info-600 hover:bg-info-700 text-white font-medium rounded-lg shadow dark:shadow-slate-700/20-sm hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base whitespace-nowrap"
             >
               {loading ? 'Buscando...' : 'Visualizar Documentos'}
             </button>
@@ -492,8 +492,8 @@ const Documents: React.FC = () => {
       {/* View Documents Modal */}
       {showViewModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-            <div className="p-6 border-b border-neutral-200">
+          <div className="bg-white dark:bg-slate-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="p-6 border-b border-neutral-200 dark:border-slate-700">
               <h2 className="text-xl font-bold text-neutral-800">
                 Documentos -{' '}
                 {selectedClient
@@ -504,7 +504,7 @@ const Documents: React.FC = () => {
 
             <div className="p-6 overflow-y-auto flex-1">
               {documents.length === 0 ? (
-                <div className="text-center py-8 text-neutral-500">
+                <div className="text-center py-8 text-neutral-500 dark:text-slate-400">
                   Nenhum documento encontrado
                 </div>
               ) : (
@@ -512,13 +512,13 @@ const Documents: React.FC = () => {
                   {documents.map((doc) => (
                     <div
                       key={doc.id}
-                      className="border border-neutral-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                      className="border border-neutral-200 dark:border-slate-700 rounded-lg p-4 hover:shadow-md transition-shadow"
                     >
                       <div className="flex justify-between items-start mb-2">
                         <div className="flex-1">
                           <h3 className="font-semibold text-lg text-neutral-800">{doc.name}</h3>
                           {doc.description && (
-                            <p className="text-sm text-neutral-600 mt-1">{doc.description}</p>
+                            <p className="text-sm text-neutral-600 dark:text-slate-400 mt-1">{doc.description}</p>
                           )}
                         </div>
                         <span
@@ -534,8 +534,8 @@ const Documents: React.FC = () => {
 
                       <div className="grid grid-cols-2 gap-4 mt-3 text-sm">
                         <div>
-                          <span className="text-neutral-500">Tipo: </span>
-                          <span className="text-neutral-700">
+                          <span className="text-neutral-500 dark:text-slate-400">Tipo: </span>
+                          <span className="text-neutral-700 dark:text-slate-300">
                             {doc.storageType === 'link'
                               ? getExternalTypeLabel(doc.externalType)
                               : doc.fileType || 'Arquivo'}
@@ -543,20 +543,20 @@ const Documents: React.FC = () => {
                         </div>
                         {doc.fileSize && (
                           <div>
-                            <span className="text-neutral-500">Tamanho: </span>
-                            <span className="text-neutral-700">{formatFileSize(doc.fileSize)}</span>
+                            <span className="text-neutral-500 dark:text-slate-400">Tamanho: </span>
+                            <span className="text-neutral-700 dark:text-slate-300">{formatFileSize(doc.fileSize)}</span>
                           </div>
                         )}
                         <div>
-                          <span className="text-neutral-500">Adicionado em: </span>
-                          <span className="text-neutral-700">
+                          <span className="text-neutral-500 dark:text-slate-400">Adicionado em: </span>
+                          <span className="text-neutral-700 dark:text-slate-300">
                             {formatDate(doc.createdAt)}
                           </span>
                         </div>
                         {doc.user && (
                           <div>
-                            <span className="text-neutral-500">Por: </span>
-                            <span className="text-neutral-700">{doc.user.name}</span>
+                            <span className="text-neutral-500 dark:text-slate-400">Por: </span>
+                            <span className="text-neutral-700 dark:text-slate-300">{doc.user.name}</span>
                           </div>
                         )}
                       </div>
@@ -610,10 +610,10 @@ const Documents: React.FC = () => {
               )}
             </div>
 
-            <div className="p-6 border-t border-neutral-200">
+            <div className="p-6 border-t border-neutral-200 dark:border-slate-700">
               <button
                 onClick={() => setShowViewModal(false)}
-                className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 bg-white hover:bg-neutral-50 text-neutral-700 font-medium rounded-lg transition-all duration-200"
+                className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 text-neutral-700 dark:text-slate-300 font-medium rounded-lg transition-all duration-200"
               >
                 Fechar
               </button>
@@ -625,8 +625,8 @@ const Documents: React.FC = () => {
       {/* Add Document Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-            <div className="p-6 border-b border-neutral-200">
+          <div className="bg-white dark:bg-slate-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="p-6 border-b border-neutral-200 dark:border-slate-700">
               <h2 className="text-xl font-bold text-neutral-800">
                 {editMode ? 'Editar Documento' : 'Adicionar Documento'}
               </h2>
@@ -659,35 +659,35 @@ const Documents: React.FC = () => {
 
                 {/* Document Name */}
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-2">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2">
                     Nome do Documento *
                   </label>
                   <input
                     type="text"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                     required
                   />
                 </div>
 
                 {/* Description */}
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-2">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2">
                     Descrição (opcional)
                   </label>
                   <textarea
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     rows={3}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   />
                 </div>
 
                 {/* Storage Type - only show when adding new document */}
                 {!editMode && (
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-2">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2">
                       Tipo de Armazenamento *
                     </label>
                     <div className="space-y-2">
@@ -723,7 +723,7 @@ const Documents: React.FC = () => {
                 {formData.storageType === 'link' && (
                   <>
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-2">
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2">
                         URL do Documento *
                       </label>
                       <input
@@ -732,14 +732,14 @@ const Documents: React.FC = () => {
                         onChange={(e) =>
                           setFormData({ ...formData, externalUrl: e.target.value })
                         }
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                         placeholder="https://..."
                         required
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-2">
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2">
                         Tipo de Link
                       </label>
                       <select
@@ -750,7 +750,7 @@ const Documents: React.FC = () => {
                             externalType: e.target.value as any,
                           })
                         }
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       >
                         <option value="google_drive">Google Drive</option>
                         <option value="google_docs">Google Docs</option>
@@ -764,7 +764,7 @@ const Documents: React.FC = () => {
                 {/* Upload Fields - only show when adding new document */}
                 {!editMode && formData.storageType === 'upload' && (
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-2">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2">
                       Selecionar Arquivo *
                     </label>
                     <input
@@ -779,16 +779,16 @@ const Documents: React.FC = () => {
                           }
                         }
                       }}
-                      className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                      className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.jpg,.jpeg,.png,.gif,.webp,.zip,.rar"
                     />
                     {selectedFile && (
-                      <p className="mt-2 text-sm text-neutral-600">
+                      <p className="mt-2 text-sm text-neutral-600 dark:text-slate-400">
                         Arquivo selecionado: <span className="font-medium">{selectedFile.name}</span>
                         {' '}({(selectedFile.size / (1024 * 1024)).toFixed(2)} MB)
                       </p>
                     )}
-                    <p className="mt-2 text-xs text-neutral-500">
+                    <p className="mt-2 text-xs text-neutral-500 dark:text-slate-400">
                       Tamanho máximo: 50MB. Formatos aceitos: PDF, Word, Excel, PowerPoint, imagens, arquivos compactados.
                     </p>
                   </div>
@@ -796,8 +796,8 @@ const Documents: React.FC = () => {
 
                 {/* Info message for upload documents in edit mode */}
                 {editMode && formData.storageType === 'upload' && (
-                  <div className="p-3 bg-neutral-50 border border-neutral-200 rounded-md">
-                    <p className="text-sm text-neutral-600">
+                  <div className="p-3 bg-neutral-50 dark:bg-slate-700 border border-neutral-200 dark:border-slate-700 rounded-md">
+                    <p className="text-sm text-neutral-600 dark:text-slate-400">
                       O arquivo não pode ser alterado. Para substituir o arquivo, exclua este documento e adicione um novo.
                     </p>
                   </div>
@@ -805,7 +805,7 @@ const Documents: React.FC = () => {
               </div>
             </form>
 
-            <div className="p-6 border-t border-neutral-200 flex gap-3">
+            <div className="p-6 border-t border-neutral-200 dark:border-slate-700 flex gap-3">
               <button
                 type="button"
                 onClick={() => {
@@ -814,7 +814,7 @@ const Documents: React.FC = () => {
                   setSelectedDocument(null);
                   resetForm();
                 }}
-                className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 bg-white hover:bg-neutral-50 text-neutral-700 font-medium rounded-lg transition-all duration-200"
+                className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 text-neutral-700 dark:text-slate-300 font-medium rounded-lg transition-all duration-200"
               >
                 Cancelar
               </button>

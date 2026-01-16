@@ -426,11 +426,11 @@ const Hearings: React.FC = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-neutral-900 flex items-center gap-2">
+            <h1 className="text-3xl font-bold text-neutral-900 dark:text-slate-100 flex items-center gap-2">
               <Gavel className="text-primary-600" size={28} />
               Audiências
             </h1>
-            <p className="text-neutral-600 mt-1">
+            <p className="text-neutral-600 dark:text-slate-400 mt-1">
               {viewMode === 'list' ? 'Visualização em lista' : 'Visualização semanal'}
             </p>
           </div>
@@ -441,8 +441,8 @@ const Hearings: React.FC = () => {
               onClick={() => setViewMode('list')}
               className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
                 viewMode === 'list'
-                  ? 'bg-white text-primary-700 shadow-sm'
-                  : 'text-neutral-600 hover:text-neutral-900'
+                  ? 'bg-white dark:bg-slate-700 text-primary-700 dark:text-primary-400 shadow-sm'
+                  : 'text-neutral-600 dark:text-slate-400 hover:text-neutral-900 dark:text-slate-100'
               }`}
             >
               <List size={18} />
@@ -452,8 +452,8 @@ const Hearings: React.FC = () => {
               onClick={() => setViewMode('week')}
               className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
                 viewMode === 'week'
-                  ? 'bg-white text-primary-700 shadow-sm'
-                  : 'text-neutral-600 hover:text-neutral-900'
+                  ? 'bg-white dark:bg-slate-700 text-primary-700 dark:text-primary-400 shadow-sm'
+                  : 'text-neutral-600 dark:text-slate-400 hover:text-neutral-900 dark:text-slate-100'
               }`}
             >
               <CalendarDays size={18} />
@@ -463,7 +463,7 @@ const Hearings: React.FC = () => {
         </div>
 
         {/* Filtros */}
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 p-4">
           <div className="flex flex-col gap-4">
             {/* Botão Hoje - Primeira linha */}
             <div className="flex justify-center">
@@ -481,13 +481,13 @@ const Hearings: React.FC = () => {
               <div className="flex items-center justify-center gap-2">
                 <button
                   onClick={() => viewMode === 'list' ? changeDate(-1) : changeWeek(-1)}
-                  className="p-2 hover:bg-neutral-100 rounded-lg transition-colors flex-shrink-0"
+                  className="p-2 hover:bg-neutral-100 dark:hover:bg-slate-600 rounded-lg transition-colors flex-shrink-0"
                   title={viewMode === 'list' ? 'Dia anterior' : 'Semana anterior'}
                 >
                   <ChevronLeft size={20} />
                 </button>
                 <div className="flex items-center gap-2 flex-1 min-w-0">
-                  <Calendar size={20} className="text-neutral-500 flex-shrink-0" />
+                  <Calendar size={20} className="text-neutral-500 dark:text-slate-400 flex-shrink-0" />
                   <input
                     type="date"
                     value={selectedDate}
@@ -497,7 +497,7 @@ const Hearings: React.FC = () => {
                 </div>
                 <button
                   onClick={() => viewMode === 'list' ? changeDate(1) : changeWeek(1)}
-                  className="p-2 hover:bg-neutral-100 rounded-lg transition-colors flex-shrink-0"
+                  className="p-2 hover:bg-neutral-100 dark:hover:bg-slate-600 rounded-lg transition-colors flex-shrink-0"
                   title={viewMode === 'list' ? 'Próximo dia' : 'Próxima semana'}
                 >
                   <ChevronRight size={20} />
@@ -506,7 +506,7 @@ const Hearings: React.FC = () => {
 
               {/* Filtro por Advogado */}
               <div className="flex items-center justify-center gap-2">
-                <User size={20} className="text-neutral-500 flex-shrink-0" />
+                <User size={20} className="text-neutral-500 dark:text-slate-400 flex-shrink-0" />
                 <select
                   value={selectedUserId}
                   onChange={(e) => setSelectedUserId(e.target.value)}
@@ -527,19 +527,19 @@ const Hearings: React.FC = () => {
           <div className="mt-4 text-center">
             {viewMode === 'list' ? (
               <>
-                <p className="text-lg font-semibold text-neutral-800 capitalize">
+                <p className="text-lg font-semibold text-neutral-800 dark:text-slate-200 capitalize">
                   {formatDateDisplay(selectedDate)}
                 </p>
-                <p className="text-sm text-neutral-500">
+                <p className="text-sm text-neutral-500 dark:text-slate-400">
                   {total} audiência(s) encontrada(s)
                 </p>
               </>
             ) : (
               <>
-                <p className="text-lg font-semibold text-neutral-800">
+                <p className="text-lg font-semibold text-neutral-800 dark:text-slate-200">
                   Semana de {getWeekDays()[0].toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })} a {getWeekDays()[6].toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })}
                 </p>
-                <p className="text-sm text-neutral-500">
+                <p className="text-sm text-neutral-500 dark:text-slate-400">
                   {weekEvents.length} audiência(s) na semana
                 </p>
               </>
@@ -550,17 +550,17 @@ const Hearings: React.FC = () => {
         {/* Visualização */}
         {loading ? (
           <div className="flex items-center justify-center h-64">
-            <div className="text-neutral-500">Carregando audiências...</div>
+            <div className="text-neutral-500 dark:text-slate-400">Carregando audiências...</div>
           </div>
         ) : viewMode === 'list' ? (
           /* Visualização em Lista/Tabela */
           events.length === 0 ? (
-            <div className="bg-white rounded-lg shadow p-8 text-center">
+            <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 p-8 text-center">
               <Gavel size={48} className="text-neutral-300 mx-auto mb-4" />
-              <p className="text-neutral-500">Nenhuma audiência encontrada para esta data.</p>
+              <p className="text-neutral-500 dark:text-slate-400">Nenhuma audiência encontrada para esta data.</p>
             </div>
           ) : (
-            <div className="bg-white rounded-lg shadow overflow-hidden">
+            <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 overflow-hidden">
               {/* Mobile Card View */}
               <div className="mobile-card-view">
                 <MobileCardList
@@ -591,33 +591,33 @@ const Hearings: React.FC = () => {
 
               {/* Desktop Table View */}
               <div className="desktop-table-view overflow-x-auto">
-                <table className="min-w-full divide-y divide-neutral-200">
-                  <thead className="bg-neutral-50">
+                <table className="min-w-full divide-y divide-neutral-200 dark:divide-slate-700">
+                  <thead className="bg-neutral-50 dark:bg-slate-700">
                     <tr>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                         Horário
                       </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                         Título
                       </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider hidden md:table-cell">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider hidden md:table-cell">
                         Cliente
                       </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider hidden lg:table-cell">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider hidden lg:table-cell">
                         Processo
                       </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider hidden md:table-cell">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider hidden md:table-cell">
                         Advogado
                       </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                         Prioridade
                       </th>
-                      <th className="px-4 py-3 text-center text-sm font-semibold text-neutral-900 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                         Ações
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-neutral-200">
+                  <tbody className="bg-white dark:bg-slate-800 divide-y divide-neutral-200 dark:divide-slate-700">
                     {events
                       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
                       .map((hearing) => (
@@ -632,58 +632,58 @@ const Hearings: React.FC = () => {
                           onClick={() => handleEditClick(hearing)}
                         >
                           <td className="px-4 py-3 whitespace-nowrap">
-                            <span className="text-lg font-bold text-neutral-800">
+                            <span className="text-lg font-bold text-neutral-800 dark:text-slate-200">
                               {formatTime(hearing.date)}
                             </span>
                           </td>
                           <td className="px-4 py-3">
                             <div className="max-w-xs">
-                              <p className="font-medium text-neutral-900 truncate">
+                              <p className="font-medium text-neutral-900 dark:text-slate-100 truncate">
                                 {hearing.title}
                               </p>
                               {/* Mobile: mostrar cliente e processo aqui */}
-                              <div className="md:hidden text-sm text-neutral-500 mt-1">
+                              <div className="md:hidden text-sm text-neutral-500 dark:text-slate-400 mt-1">
                                 {hearing.client && <span>{hearing.client.name}</span>}
                                 {hearing.case && <span className="block font-mono text-xs">{hearing.case.processNumber}</span>}
                               </div>
                             </div>
                           </td>
                           <td className="px-4 py-3 hidden md:table-cell">
-                            <div className="flex items-center gap-1 text-sm text-neutral-600">
+                            <div className="flex items-center gap-1 text-sm text-neutral-600 dark:text-slate-400">
                               {hearing.client ? (
                                 <>
                                   <User size={14} />
                                   <span className="truncate max-w-[150px]">{hearing.client.name}</span>
                                 </>
                               ) : (
-                                <span className="text-neutral-400">-</span>
+                                <span className="text-neutral-400 dark:text-slate-500">-</span>
                               )}
                             </div>
                           </td>
                           <td className="px-4 py-3 hidden lg:table-cell">
                             {hearing.case ? (
-                              <span className="text-sm text-neutral-600 font-mono truncate max-w-[180px] block">
+                              <span className="text-sm text-neutral-600 dark:text-slate-400 font-mono truncate max-w-[180px] block">
                                 {hearing.case.processNumber}
                               </span>
                             ) : (
-                              <span className="text-neutral-400">-</span>
+                              <span className="text-neutral-400 dark:text-slate-500">-</span>
                             )}
                           </td>
                           <td className="px-4 py-3 hidden md:table-cell">
                             {hearing.assignedUsers && hearing.assignedUsers.length > 0 ? (
-                              <div className="flex items-center gap-1 text-sm text-neutral-600">
+                              <div className="flex items-center gap-1 text-sm text-neutral-600 dark:text-slate-400">
                                 <User size={14} />
                                 <span className="truncate max-w-[120px]">
                                   {hearing.assignedUsers[0].user.name}
                                 </span>
                               </div>
                             ) : hearing.user ? (
-                              <div className="flex items-center gap-1 text-sm text-neutral-600">
+                              <div className="flex items-center gap-1 text-sm text-neutral-600 dark:text-slate-400">
                                 <User size={14} />
                                 <span className="truncate max-w-[120px]">{hearing.user.name}</span>
                               </div>
                             ) : (
-                              <span className="text-neutral-400">-</span>
+                              <span className="text-neutral-400 dark:text-slate-500">-</span>
                             )}
                           </td>
                           <td className="px-4 py-3 whitespace-nowrap">
@@ -722,7 +722,7 @@ const Hearings: React.FC = () => {
               {/* Pagination */}
               {total > 0 && (
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 px-4 pb-4">
-                  <div className="text-sm text-neutral-600">
+                  <div className="text-sm text-neutral-600 dark:text-slate-400">
                     Mostrando {(page - 1) * limit + 1} - {Math.min(page * limit, total)} de {total} audiências
                   </div>
                   <div className="flex items-center gap-2">
@@ -732,7 +732,7 @@ const Hearings: React.FC = () => {
                         setLimit(Number(e.target.value));
                         setPage(1);
                       }}
-                      className="px-2 py-1 text-sm border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      className="px-2 py-1 text-sm border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                     >
                       <option value={25}>25 por página</option>
                       <option value={50}>50 por página</option>
@@ -742,7 +742,7 @@ const Hearings: React.FC = () => {
                     <button
                       onClick={() => setPage((p) => Math.max(1, p - 1))}
                       disabled={page === 1}
-                      className="inline-flex items-center gap-1 px-3 py-2 text-sm text-neutral-600 hover:bg-neutral-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="inline-flex items-center gap-1 px-3 py-2 text-sm text-neutral-600 dark:text-slate-400 hover:bg-neutral-100 dark:hover:bg-slate-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <ChevronLeft className="w-4 h-4" />
                       Anterior
@@ -768,7 +768,7 @@ const Hearings: React.FC = () => {
                             className={`px-3 py-1 text-sm rounded-lg ${
                               page === pageNum
                                 ? 'bg-primary-600 text-white'
-                                : 'text-neutral-600 hover:bg-neutral-100'
+                                : 'text-neutral-600 dark:text-slate-400 hover:bg-neutral-100'
                             }`}
                           >
                             {pageNum}
@@ -780,7 +780,7 @@ const Hearings: React.FC = () => {
                     <button
                       onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                       disabled={page === totalPages}
-                      className="inline-flex items-center gap-1 px-3 py-2 text-sm text-neutral-600 hover:bg-neutral-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="inline-flex items-center gap-1 px-3 py-2 text-sm text-neutral-600 dark:text-slate-400 hover:bg-neutral-100 dark:hover:bg-slate-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Próximo
                       <ChevronRight className="w-4 h-4" />
@@ -792,7 +792,7 @@ const Hearings: React.FC = () => {
           )
         ) : (
           /* Visualização Semanal - Calendário */
-          <div className="bg-white rounded-lg shadow overflow-hidden">
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 overflow-hidden">
             {/* Cabeçalho dos dias da semana */}
             <div className="grid grid-cols-7 border-b">
               {getWeekDays().map((day, index) => (
@@ -849,25 +849,25 @@ const Hearings: React.FC = () => {
                             }`}
                           >
                             {/* Horário */}
-                            <div className="font-bold text-neutral-800 mb-1">
+                            <div className="font-bold text-neutral-800 dark:text-slate-200 mb-1">
                               {formatTime(hearing.date)}
                             </div>
 
                             {/* Título */}
-                            <div className="font-medium text-neutral-900 line-clamp-2 mb-1">
+                            <div className="font-medium text-neutral-900 dark:text-slate-100 line-clamp-2 mb-1">
                               {hearing.title}
                             </div>
 
                             {/* Cliente */}
                             {hearing.client && (
-                              <div className="text-neutral-600 truncate">
+                              <div className="text-neutral-600 dark:text-slate-400 truncate">
                                 {hearing.client.name}
                               </div>
                             )}
 
                             {/* Advogado atribuído */}
                             {hearing.assignedUsers && hearing.assignedUsers.length > 0 && (
-                              <div className="text-neutral-500 truncate mt-1 flex items-center gap-1">
+                              <div className="text-neutral-500 dark:text-slate-400 truncate mt-1 flex items-center gap-1">
                                 <User size={10} />
                                 {hearing.assignedUsers[0].user.name}
                               </div>
@@ -886,16 +886,16 @@ const Hearings: React.FC = () => {
         {/* Modal de Edição */}
         {showEditModal && editingEvent && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-            <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
               <div className="p-6">
-                <h2 className="text-2xl font-bold text-neutral-900 mb-4">
+                <h2 className="text-2xl font-bold text-neutral-900 dark:text-slate-100 mb-4">
                   Editar Evento
                 </h2>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                   {/* Title */}
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                       Título *
                     </label>
                     <input
@@ -909,7 +909,7 @@ const Hearings: React.FC = () => {
 
                   {/* Type */}
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                       Tipo *
                     </label>
                     <select
@@ -928,7 +928,7 @@ const Hearings: React.FC = () => {
 
                   {/* Priority */}
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                       Prioridade *
                     </label>
                     <select
@@ -947,7 +947,7 @@ const Hearings: React.FC = () => {
                   {/* Date and Time */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                         Data e Hora *
                       </label>
                       <input
@@ -959,7 +959,7 @@ const Hearings: React.FC = () => {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                         Data/Hora Término (opcional)
                       </label>
                       <input
@@ -973,7 +973,7 @@ const Hearings: React.FC = () => {
 
                   {/* Client Autocomplete */}
                   <div className="relative">
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                       Cliente {formData.type === 'AUDIENCIA' ? '*' : '(opcional)'}
                     </label>
                     <input
@@ -990,7 +990,7 @@ const Hearings: React.FC = () => {
                       placeholder="Digite o nome ou CPF do cliente..."
                     />
                     {showClientSuggestions && clientSuggestions.length > 0 && (
-                      <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                      <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-800 border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
                         {clientSuggestions.map((client) => (
                           <div
                             key={client.id}
@@ -999,10 +999,10 @@ const Hearings: React.FC = () => {
                               setClientSearchTerm(client.name);
                               setShowClientSuggestions(false);
                             }}
-                            className="px-4 py-2 hover:bg-neutral-100 cursor-pointer min-h-[44px]"
+                            className="px-4 py-2 hover:bg-neutral-100 dark:hover:bg-slate-600 cursor-pointer min-h-[44px]"
                           >
-                            <div className="font-medium text-neutral-900">{client.name}</div>
-                            {client.cpf && <div className="text-sm text-neutral-500">CPF: {client.cpf}</div>}
+                            <div className="font-medium text-neutral-900 dark:text-slate-100">{client.name}</div>
+                            {client.cpf && <div className="text-sm text-neutral-500 dark:text-slate-400">CPF: {client.cpf}</div>}
                           </div>
                         ))}
                       </div>
@@ -1016,7 +1016,7 @@ const Hearings: React.FC = () => {
 
                   {/* Case Autocomplete */}
                   <div className="relative">
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                       Processo {formData.type === 'AUDIENCIA' ? '*' : '(opcional)'}
                     </label>
                     <input
@@ -1033,7 +1033,7 @@ const Hearings: React.FC = () => {
                       placeholder="Digite o número ou assunto do processo..."
                     />
                     {showCaseSuggestions && caseSuggestions.length > 0 && (
-                      <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                      <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-800 border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
                         {caseSuggestions.map((caseItem) => (
                           <div
                             key={caseItem.id}
@@ -1042,10 +1042,10 @@ const Hearings: React.FC = () => {
                               setCaseSearchTerm(caseItem.processNumber);
                               setShowCaseSuggestions(false);
                             }}
-                            className="px-4 py-2 hover:bg-neutral-100 cursor-pointer min-h-[44px]"
+                            className="px-4 py-2 hover:bg-neutral-100 dark:hover:bg-slate-600 cursor-pointer min-h-[44px]"
                           >
-                            <div className="font-medium text-neutral-900">{caseItem.processNumber}</div>
-                            <div className="text-sm text-neutral-500">{caseItem.subject}</div>
+                            <div className="font-medium text-neutral-900 dark:text-slate-100">{caseItem.processNumber}</div>
+                            <div className="text-sm text-neutral-500 dark:text-slate-400">{caseItem.subject}</div>
                           </div>
                         ))}
                       </div>
@@ -1059,7 +1059,7 @@ const Hearings: React.FC = () => {
 
                   {/* Assigned User - Select único */}
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                       Responsável (opcional)
                     </label>
                     <select
@@ -1078,7 +1078,7 @@ const Hearings: React.FC = () => {
 
                   {/* Description */}
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                       Descrição
                     </label>
                     <textarea
@@ -1105,7 +1105,7 @@ const Hearings: React.FC = () => {
                         setShowEditModal(false);
                         resetForm();
                       }}
-                      className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 text-neutral-700 bg-white hover:bg-neutral-50 font-medium rounded-lg transition-all duration-200"
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 dark:border-slate-600 text-neutral-700 dark:text-slate-300 bg-white dark:bg-slate-800 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-700 dark:bg-slate-700 font-medium rounded-lg transition-all duration-200"
                     >
                       Cancelar
                     </button>

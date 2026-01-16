@@ -158,7 +158,7 @@ const Settings: React.FC = () => {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
-          <div className="text-neutral-500">Carregando...</div>
+          <div className="text-neutral-500 dark:text-slate-400">Carregando...</div>
         </div>
       </Layout>
     );
@@ -173,21 +173,21 @@ const Settings: React.FC = () => {
               <Building2 size={28} className="text-primary-600" />
               Configurações da Empresa
             </h1>
-            <p className="text-neutral-600 mt-2">
+            <p className="text-neutral-600 dark:text-slate-400 mt-2">
               Configure os dados da sua empresa. Essas informações serão incluídas nos relatórios em PDF.
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md p-6">
+          <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20-md p-6">
             {/* Informações Básicas */}
             <div className="mb-6">
-              <h2 className="text-lg font-semibold text-neutral-700 mb-4 flex items-center gap-2">
+              <h2 className="text-lg font-semibold text-neutral-700 dark:text-slate-300 mb-4 flex items-center gap-2">
                 <Building2 size={20} className="text-primary-600" />
                 Informações Básicas
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-2">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2">
                     Nome da Empresa *
                   </label>
                   <input
@@ -196,12 +196,12 @@ const Settings: React.FC = () => {
                     value={settings.name}
                     onChange={handleChange}
                     required
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-2">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2">
                     Email *
                   </label>
                   <input
@@ -210,12 +210,12 @@ const Settings: React.FC = () => {
                     value={settings.email}
                     onChange={handleChange}
                     required
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-2">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2">
                     Telefone
                   </label>
                   <input
@@ -224,12 +224,12 @@ const Settings: React.FC = () => {
                     value={settings.phone || ''}
                     onChange={handleChange}
                     placeholder="(00) 0000-0000"
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-2">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2">
                     URL do Logo
                   </label>
                   <input
@@ -238,7 +238,7 @@ const Settings: React.FC = () => {
                     value={settings.logo || ''}
                     onChange={handleChange}
                     placeholder="https://exemplo.com/logo.png"
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   />
                 </div>
               </div>
@@ -246,13 +246,13 @@ const Settings: React.FC = () => {
 
             {/* Endereço */}
             <div className="mb-6">
-              <h2 className="text-lg font-semibold text-neutral-700 mb-4 flex items-center gap-2">
+              <h2 className="text-lg font-semibold text-neutral-700 dark:text-slate-300 mb-4 flex items-center gap-2">
                 <MapPin size={20} className="text-primary-600" />
                 Endereço
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-neutral-700 mb-2">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2">
                     Logradouro
                   </label>
                   <input
@@ -261,12 +261,12 @@ const Settings: React.FC = () => {
                     value={settings.address || ''}
                     onChange={handleChange}
                     placeholder="Rua, Avenida, número"
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-2">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2">
                     Cidade
                   </label>
                   <input
@@ -275,12 +275,12 @@ const Settings: React.FC = () => {
                     value={settings.city || ''}
                     onChange={handleChange}
                     placeholder="Ex: São Paulo"
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-2">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2">
                     Estado (UF)
                   </label>
                   <input
@@ -290,13 +290,13 @@ const Settings: React.FC = () => {
                     onChange={handleChange}
                     placeholder="Ex: SP"
                     maxLength={2}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 uppercase min-h-[44px]"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 uppercase min-h-[44px]"
                     style={{ textTransform: 'uppercase' }}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-2">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2">
                     CEP
                   </label>
                   <input
@@ -305,7 +305,7 @@ const Settings: React.FC = () => {
                     value={settings.zipCode || ''}
                     onChange={handleChange}
                     placeholder="00000-000"
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   />
                 </div>
               </div>
@@ -313,17 +313,17 @@ const Settings: React.FC = () => {
 
             {/* Configuracao DPO/LGPD */}
             <div className="mb-6">
-              <h2 className="text-lg font-semibold text-neutral-700 mb-4 flex items-center gap-2">
+              <h2 className="text-lg font-semibold text-neutral-700 dark:text-slate-300 mb-4 flex items-center gap-2">
                 <Shield size={20} className="text-primary-600" />
                 Encarregado de Dados (DPO) - LGPD
               </h2>
-              <p className="text-sm text-neutral-600 mb-4">
+              <p className="text-sm text-neutral-600 dark:text-slate-400 mb-4">
                 Conforme a LGPD (Lei 13.709/2018), e recomendado que empresas indiquem um Encarregado de Protecao de Dados (DPO).
                 Estas informacoes serao exibidas na Politica de Privacidade.
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-2">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2">
                     Nome do Encarregado (DPO)
                   </label>
                   <input
@@ -332,12 +332,12 @@ const Settings: React.FC = () => {
                     value={settings.dpoName || ''}
                     onChange={handleChange}
                     placeholder="Nome completo do responsavel"
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-2">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2">
                     Email do Encarregado (DPO)
                   </label>
                   <input
@@ -346,7 +346,7 @@ const Settings: React.FC = () => {
                     value={settings.dpoEmail || ''}
                     onChange={handleChange}
                     placeholder="dpo@seuescritorio.com.br"
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   />
                 </div>
               </div>
@@ -381,12 +381,12 @@ const Settings: React.FC = () => {
           </div>
 
           {/* API Key Section */}
-          <div className="mt-6 bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-lg font-semibold text-neutral-700 mb-4 flex items-center gap-2">
+          <div className="mt-6 bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20-md p-6">
+            <h2 className="text-lg font-semibold text-neutral-700 dark:text-slate-300 mb-4 flex items-center gap-2">
               <Key size={20} className="text-orange-600" />
               API Key para Integrações
             </h2>
-            <p className="text-sm text-neutral-600 mb-4">
+            <p className="text-sm text-neutral-600 dark:text-slate-400 mb-4">
               Use esta chave para integrar com WhatsApp, N8N, Chatwoot ou outros sistemas externos.
               A IA do WhatsApp usará esta chave para consultar processos e agenda dos seus clientes.
             </p>
@@ -394,7 +394,7 @@ const Settings: React.FC = () => {
             <div className="space-y-4">
               {/* API Key Display */}
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-2">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2">
                   Sua API Key
                 </label>
                 <div className="flex gap-2">
@@ -403,12 +403,12 @@ const Settings: React.FC = () => {
                       type={showApiKey ? 'text' : 'password'}
                       readOnly
                       value={apiKey || 'Nenhuma API Key gerada'}
-                      className="w-full px-3 py-2 pr-10 border border-neutral-300 rounded-md bg-neutral-50 text-neutral-700 font-mono text-sm min-h-[44px]"
+                      className="w-full px-3 py-2 pr-10 border border-neutral-300 dark:border-slate-600 rounded-md bg-neutral-50 dark:bg-slate-700 text-neutral-700 dark:text-slate-300 font-mono text-sm min-h-[44px]"
                     />
                     <button
                       type="button"
                       onClick={() => setShowApiKey(!showApiKey)}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-neutral-700"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-neutral-500 dark:text-slate-400 hover:text-neutral-700 dark:text-slate-300"
                       title={showApiKey ? 'Ocultar' : 'Mostrar'}
                     >
                       {showApiKey ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -439,7 +439,7 @@ const Settings: React.FC = () => {
                   {regeneratingKey ? 'Gerando...' : apiKey ? 'Regenerar API Key' : 'Gerar API Key'}
                 </button>
                 {apiKey && (
-                  <span className="text-sm text-neutral-500">
+                  <span className="text-sm text-neutral-500 dark:text-slate-400">
                     Regenerar invalidará a chave atual
                   </span>
                 )}
@@ -470,12 +470,12 @@ const Settings: React.FC = () => {
 
           {/* Embed URLs for Chatwell */}
           {apiKey && (
-            <div className="mt-6 bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-lg font-semibold text-neutral-700 mb-4 flex items-center gap-2">
+            <div className="mt-6 bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20-md p-6">
+              <h2 className="text-lg font-semibold text-neutral-700 dark:text-slate-300 mb-4 flex items-center gap-2">
                 <ExternalLink size={20} className="text-purple-600" />
                 URLs de Embed para Chatwell
               </h2>
-              <p className="text-sm text-neutral-600 mb-4">
+              <p className="text-sm text-neutral-600 dark:text-slate-400 mb-4">
                 Use estas URLs para incorporar o AdvWell no painel de aplicativos do Chatwell.
                 O login será automático - não será necessário digitar senha.
               </p>
@@ -493,12 +493,12 @@ const Settings: React.FC = () => {
                   const embedUrl = `https://app.advwell.pro/embed/${apiKey}/${page}`;
                   return (
                     <div key={page} className="flex items-center gap-2">
-                      <span className="w-24 text-sm font-medium text-neutral-600">{label}:</span>
+                      <span className="w-24 text-sm font-medium text-neutral-600 dark:text-slate-400">{label}:</span>
                       <input
                         type="text"
                         readOnly
                         value={embedUrl}
-                        className="flex-1 px-3 py-1.5 border border-neutral-300 rounded-md bg-neutral-50 text-neutral-700 font-mono text-xs"
+                        className="flex-1 px-3 py-1.5 border border-neutral-300 dark:border-slate-600 rounded-md bg-neutral-50 dark:bg-slate-700 text-neutral-700 dark:text-slate-300 font-mono text-xs"
                       />
                       <button
                         type="button"
@@ -533,12 +533,12 @@ const Settings: React.FC = () => {
           )}
 
           {/* Zona de Perigo - Excluir Empresa */}
-          <div className="mt-6 bg-white rounded-lg shadow-md p-6 border-2 border-red-200">
+          <div className="mt-6 bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20-md p-6 border-2 border-red-200">
             <h2 className="text-lg font-semibold text-red-700 mb-4 flex items-center gap-2">
               <AlertTriangle size={20} className="text-red-600" />
               Zona de Perigo
             </h2>
-            <p className="text-sm text-neutral-600 mb-4">
+            <p className="text-sm text-neutral-600 dark:text-slate-400 mb-4">
               Ao excluir sua empresa, todos os dados serao permanentemente removidos, incluindo usuarios, clientes, processos, documentos e transacoes financeiras.
               <strong className="text-red-600"> Esta acao e irreversivel.</strong>
             </p>
@@ -558,16 +558,16 @@ const Settings: React.FC = () => {
       {/* Modal de Confirmacao de Exclusao */}
       {showDeleteModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
-          <div className="bg-white rounded-lg max-w-md w-full p-6 max-h-[90vh] overflow-y-auto my-4">
+          <div className="bg-white dark:bg-slate-800 rounded-lg max-w-md w-full p-6 max-h-[90vh] overflow-y-auto my-4">
             <div className="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full mb-4">
               <AlertTriangle className="text-red-600" size={24} />
             </div>
 
-            <h3 className="text-lg font-semibold text-neutral-900 text-center mb-2">
+            <h3 className="text-lg font-semibold text-neutral-900 dark:text-slate-100 text-center mb-2">
               Excluir Empresa?
             </h3>
 
-            <p className="text-sm text-neutral-600 text-center mb-4">
+            <p className="text-sm text-neutral-600 dark:text-slate-400 text-center mb-4">
               Voce esta prestes a excluir permanentemente a empresa <strong>{settings.name}</strong> e todos os seus dados.
             </p>
 
@@ -579,7 +579,7 @@ const Settings: React.FC = () => {
             </div>
 
             <div className="mb-6">
-              <label className="block text-sm font-medium text-neutral-700 mb-2">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2">
                 Para confirmar, digite o nome da empresa: <strong>{settings.name}</strong>
               </label>
               <input
@@ -587,7 +587,7 @@ const Settings: React.FC = () => {
                 value={confirmName}
                 onChange={(e) => setConfirmName(e.target.value)}
                 placeholder="Digite o nome da empresa"
-                className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 min-h-[44px]"
+                className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 min-h-[44px]"
               />
             </div>
 
@@ -598,7 +598,7 @@ const Settings: React.FC = () => {
                   setConfirmName('');
                 }}
                 disabled={deleting}
-                className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 bg-white hover:bg-neutral-50 text-neutral-700 font-medium rounded-lg transition-all duration-200 disabled:opacity-50"
+                className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 text-neutral-700 dark:text-slate-300 font-medium rounded-lg transition-all duration-200 disabled:opacity-50"
               >
                 Cancelar
               </button>

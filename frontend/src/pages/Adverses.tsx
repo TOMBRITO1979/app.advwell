@@ -362,18 +362,18 @@ export default function Adverses() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-neutral-900 flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-slate-100 flex items-center gap-2">
               <Users className="text-primary-600" />
               Adversos
             </h1>
-            <p className="text-sm text-neutral-500 mt-1">
+            <p className="text-sm text-neutral-500 dark:text-slate-400 mt-1">
               Gerencie os adversos (partes contrárias) dos seus processos
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setShowImportModal(true)}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-white text-neutral-700 border border-neutral-200 hover:bg-neutral-50 font-medium rounded-lg transition-all duration-200 min-h-[44px] text-sm"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 text-neutral-700 dark:text-slate-300 border border-neutral-200 dark:border-slate-700 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 font-medium rounded-lg transition-all duration-200 min-h-[44px] text-sm"
             >
               <Upload size={18} />
               <span className="hidden sm:inline">Importar</span>
@@ -382,7 +382,7 @@ export default function Adverses() {
             <button
               onClick={handleExport}
               disabled={exporting}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-white text-neutral-700 border border-neutral-200 hover:bg-neutral-50 font-medium rounded-lg transition-all duration-200 min-h-[44px] text-sm disabled:opacity-50"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 text-neutral-700 dark:text-slate-300 border border-neutral-200 dark:border-slate-700 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 font-medium rounded-lg transition-all duration-200 min-h-[44px] text-sm disabled:opacity-50"
             >
               <Download size={18} />
               <span className="hidden sm:inline">{exporting ? 'Exportando...' : 'Exportar'}</span>
@@ -406,29 +406,29 @@ export default function Adverses() {
         {/* Busca */}
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400" size={20} />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400 dark:text-slate-500" size={20} />
             <input
               type="text"
               placeholder="Buscar por nome, CPF/CNPJ ou email..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+              className="w-full pl-10 pr-4 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
             />
           </div>
         </div>
 
         {/* Lista */}
-        <div className="bg-white rounded-xl shadow-sm border border-neutral-200">
+        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-neutral-200 dark:border-slate-700">
           {loading ? (
             <div className="p-8 text-center">
               <Loader2 className="animate-spin mx-auto text-primary-600" size={32} />
-              <p className="text-neutral-500 mt-2">Carregando...</p>
+              <p className="text-neutral-500 dark:text-slate-400 mt-2">Carregando...</p>
             </div>
           ) : adverses.length === 0 ? (
             <div className="p-8 text-center">
               <Users size={48} className="mx-auto text-neutral-300 mb-4" />
-              <h3 className="text-lg font-medium text-neutral-900 mb-2">Nenhum adverso encontrado</h3>
-              <p className="text-neutral-500 mb-4">
+              <h3 className="text-lg font-medium text-neutral-900 dark:text-slate-100 mb-2">Nenhum adverso encontrado</h3>
+              <p className="text-neutral-500 dark:text-slate-400 mb-4">
                 {search ? 'Tente ajustar sua busca' : 'Cadastre o primeiro adverso'}
               </p>
             </div>
@@ -442,30 +442,30 @@ export default function Adverses() {
               {/* Desktop */}
               <div className="hidden md:block overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-neutral-50 border-b border-neutral-200">
+                  <thead className="bg-neutral-50 dark:bg-slate-700 border-b border-neutral-200 dark:border-slate-700">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-slate-400 uppercase tracking-wider">
                         Nome
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-slate-400 uppercase tracking-wider">
                         Tipo
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-slate-400 uppercase tracking-wider">
                         CPF/CNPJ
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-slate-400 uppercase tracking-wider">
                         Contato
                       </th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-right text-xs font-medium text-neutral-500 dark:text-slate-400 uppercase tracking-wider">
                         Ações
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-neutral-200">
+                  <tbody className="divide-y divide-neutral-200 dark:divide-slate-700">
                     {adverses.map((adverse) => (
-                      <tr key={adverse.id} className="hover:bg-neutral-50">
+                      <tr key={adverse.id} className="hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700">
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-neutral-900">{adverse.name}</div>
+                          <div className="text-sm font-medium text-neutral-900 dark:text-slate-100">{adverse.name}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -476,12 +476,12 @@ export default function Adverses() {
                             {adverse.personType === 'JURIDICA' ? 'PJ' : 'PF'}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-500">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-500 dark:text-slate-400">
                           {formatCPF(adverse.cpf)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-neutral-900">{adverse.email || '-'}</div>
-                          <div className="text-sm text-neutral-500">{adverse.phone || '-'}</div>
+                          <div className="text-sm text-neutral-900 dark:text-slate-100">{adverse.email || '-'}</div>
+                          <div className="text-sm text-neutral-500 dark:text-slate-400">{adverse.phone || '-'}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right">
                           <ActionsDropdown
@@ -500,15 +500,15 @@ export default function Adverses() {
 
               {/* Paginação */}
               {totalPages > 1 && (
-                <div className="px-6 py-4 border-t border-neutral-200 flex flex-col sm:flex-row items-center justify-between gap-4">
-                  <div className="text-sm text-neutral-500">
+                <div className="px-6 py-4 border-t border-neutral-200 dark:border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="text-sm text-neutral-500 dark:text-slate-400">
                     Mostrando {((page - 1) * limit) + 1} a {Math.min(page * limit, total)} de {total} adversos
                   </div>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => setPage((p) => Math.max(1, p - 1))}
                       disabled={page === 1}
-                      className="inline-flex items-center gap-1 px-3 py-2 text-sm text-neutral-600 hover:bg-neutral-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="inline-flex items-center gap-1 px-3 py-2 text-sm text-neutral-600 dark:text-slate-400 hover:bg-neutral-100 dark:hover:bg-slate-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <ChevronLeft className="w-4 h-4" />
                       Anterior
@@ -534,7 +534,7 @@ export default function Adverses() {
                             className={`px-3 py-1 text-sm rounded-lg ${
                               page === pageNum
                                 ? 'bg-primary-600 text-white'
-                                : 'text-neutral-600 hover:bg-neutral-100'
+                                : 'text-neutral-600 dark:text-slate-400 hover:bg-neutral-100'
                             }`}
                           >
                             {pageNum}
@@ -546,7 +546,7 @@ export default function Adverses() {
                     <button
                       onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                       disabled={page === totalPages}
-                      className="inline-flex items-center gap-1 px-3 py-2 text-sm text-neutral-600 hover:bg-neutral-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="inline-flex items-center gap-1 px-3 py-2 text-sm text-neutral-600 dark:text-slate-400 hover:bg-neutral-100 dark:hover:bg-slate-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Próximo
                       <ChevronRight className="w-4 h-4" />
@@ -562,15 +562,15 @@ export default function Adverses() {
       {/* Import Modal */}
       {showImportModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-lg">
-            <div className="p-6 border-b border-neutral-200 flex items-center justify-between">
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20-xl w-full max-w-lg">
+            <div className="p-6 border-b border-neutral-200 dark:border-slate-700 flex items-center justify-between">
               <h2 className="text-xl font-semibold text-neutral-800">Importar Adversos de CSV</h2>
               <button
                 onClick={() => {
                   setShowImportModal(false);
                   setImportFile(null);
                 }}
-                className="p-2 text-neutral-400 hover:text-neutral-600 rounded-lg hover:bg-neutral-100"
+                className="p-2 text-neutral-400 dark:text-slate-500 hover:text-neutral-600 dark:text-slate-400 rounded-lg hover:bg-neutral-100 dark:hover:bg-slate-600"
               >
                 <X size={24} />
               </button>
@@ -588,22 +588,22 @@ export default function Adverses() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-2">Arquivo CSV</label>
+                <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2">Arquivo CSV</label>
                 <input
                   ref={fileInputRef}
                   type="file"
                   accept=".csv"
                   onChange={(e) => setImportFile(e.target.files?.[0] || null)}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
                 {importFile && (
-                  <p className="mt-2 text-sm text-neutral-600">
+                  <p className="mt-2 text-sm text-neutral-600 dark:text-slate-400">
                     Arquivo selecionado: {importFile.name}
                   </p>
                 )}
               </div>
             </div>
-            <div className="p-6 border-t border-neutral-200 flex gap-3">
+            <div className="p-6 border-t border-neutral-200 dark:border-slate-700 flex gap-3">
               <button
                 onClick={handleImport}
                 disabled={!importFile || importing}
@@ -618,7 +618,7 @@ export default function Adverses() {
                   setImportFile(null);
                 }}
                 disabled={importing}
-                className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 text-neutral-700 bg-white hover:bg-neutral-50 font-medium rounded-lg transition-all duration-200"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 dark:border-slate-600 text-neutral-700 dark:text-slate-300 bg-white dark:bg-slate-800 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 font-medium rounded-lg transition-all duration-200"
               >
                 Cancelar
               </button>
@@ -632,7 +632,7 @@ export default function Adverses() {
         <div className="modal-overlay">
           <div className="modal-container">
             <div className="modal-header">
-              <h2 className="text-lg sm:text-xl font-bold text-neutral-900">
+              <h2 className="text-lg sm:text-xl font-bold text-neutral-900 dark:text-slate-100">
                 {editMode ? 'Editar Adverso' : 'Novo Adverso'}
               </h2>
               <button
@@ -642,7 +642,7 @@ export default function Adverses() {
                   setSelectedAdverse(null);
                   resetForm();
                 }}
-                className="p-2 text-neutral-400 hover:text-neutral-600 rounded-lg hover:bg-neutral-100"
+                className="p-2 text-neutral-400 dark:text-slate-500 hover:text-neutral-600 dark:text-slate-400 rounded-lg hover:bg-neutral-100 dark:hover:bg-slate-600"
               >
                 <X size={24} />
               </button>
@@ -652,19 +652,19 @@ export default function Adverses() {
               <div className="space-y-6">
                 {/* Dados Pessoais/Empresa */}
                 <div>
-                  <h3 className="text-lg font-semibold text-neutral-900 mb-4">
+                  <h3 className="text-lg font-semibold text-neutral-900 dark:text-slate-100 mb-4">
                     {formData.personType === 'JURIDICA' ? 'Dados da Empresa' : 'Dados Pessoais'}
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                         Tipo de Pessoa <span className="text-error-500">*</span>
                       </label>
                       <select
                         required
                         value={formData.personType}
                         onChange={(e) => setFormData({ ...formData, personType: e.target.value as 'FISICA' | 'JURIDICA' })}
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       >
                         <option value="FISICA">Pessoa Física</option>
                         <option value="JURIDICA">Pessoa Jurídica</option>
@@ -672,7 +672,7 @@ export default function Adverses() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                         {formData.personType === 'FISICA' ? 'Nome Completo' : 'Razão Social'} <span className="text-error-500">*</span>
                       </label>
                       <input
@@ -680,12 +680,12 @@ export default function Adverses() {
                         required
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                         {formData.personType === 'FISICA' ? 'CPF' : 'CNPJ'}
                       </label>
                       <input
@@ -693,78 +693,78 @@ export default function Adverses() {
                         value={formData.cpf}
                         onChange={(e) => setFormData({ ...formData, cpf: e.target.value })}
                         placeholder={formData.personType === 'FISICA' ? '000.000.000-00' : '00.000.000/0000-00'}
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
 
                     {formData.personType === 'FISICA' && (
                       <>
                         <div>
-                          <label className="block text-sm font-medium text-neutral-700 mb-1">RG</label>
+                          <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">RG</label>
                           <input
                             type="text"
                             value={formData.rg}
                             onChange={(e) => setFormData({ ...formData, rg: e.target.value })}
-                            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                            className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                           />
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-neutral-700 mb-1">PIS</label>
+                          <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">PIS</label>
                           <input
                             type="text"
                             value={formData.pis}
                             onChange={(e) => setFormData({ ...formData, pis: e.target.value })}
-                            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                            className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                           />
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-neutral-700 mb-1">CTPS</label>
+                          <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">CTPS</label>
                           <input
                             type="text"
                             value={formData.ctps}
                             onChange={(e) => setFormData({ ...formData, ctps: e.target.value })}
-                            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                            className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                           />
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-neutral-700 mb-1">CTPS Série</label>
+                          <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">CTPS Série</label>
                           <input
                             type="text"
                             value={formData.ctpsSerie}
                             onChange={(e) => setFormData({ ...formData, ctpsSerie: e.target.value })}
-                            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                            className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                           />
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-neutral-700 mb-1">Nome da Mãe</label>
+                          <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Nome da Mãe</label>
                           <input
                             type="text"
                             value={formData.motherName}
                             onChange={(e) => setFormData({ ...formData, motherName: e.target.value })}
-                            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                            className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                           />
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-neutral-700 mb-1">Data de Nascimento</label>
+                          <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Data de Nascimento</label>
                           <input
                             type="date"
                             value={formData.birthDate}
                             onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
-                            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                            className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                           />
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-neutral-700 mb-1">Estado Civil</label>
+                          <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Estado Civil</label>
                           <select
                             value={formData.maritalStatus}
                             onChange={(e) => setFormData({ ...formData, maritalStatus: e.target.value })}
-                            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                            className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                           >
                             <option value="">Selecione...</option>
                             <option value="Solteiro(a)">Solteiro(a)</option>
@@ -776,33 +776,33 @@ export default function Adverses() {
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-neutral-700 mb-1">Profissão</label>
+                          <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Profissão</label>
                           <input
                             type="text"
                             value={formData.profession}
                             onChange={(e) => setFormData({ ...formData, profession: e.target.value })}
-                            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                            className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                           />
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-neutral-700 mb-1">Nacionalidade</label>
+                          <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Nacionalidade</label>
                           <input
                             type="text"
                             value={formData.nationality}
                             onChange={(e) => setFormData({ ...formData, nationality: e.target.value })}
-                            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                            className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                           />
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-neutral-700 mb-1">Outros</label>
+                          <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Outros</label>
                           <input
                             type="text"
                             value={formData.customField1}
                             onChange={(e) => setFormData({ ...formData, customField1: e.target.value })}
                             placeholder="Informações adicionais"
-                            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                            className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                           />
                         </div>
                       </>
@@ -811,32 +811,32 @@ export default function Adverses() {
                     {formData.personType === 'JURIDICA' && (
                       <>
                         <div>
-                          <label className="block text-sm font-medium text-neutral-700 mb-1">Inscrição Estadual</label>
+                          <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Inscrição Estadual</label>
                           <input
                             type="text"
                             value={formData.stateRegistration}
                             onChange={(e) => setFormData({ ...formData, stateRegistration: e.target.value })}
-                            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                            className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                           />
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-neutral-700 mb-1">Nome do Representante</label>
+                          <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Nome do Representante</label>
                           <input
                             type="text"
                             value={formData.representativeName}
                             onChange={(e) => setFormData({ ...formData, representativeName: e.target.value })}
-                            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                            className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                           />
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-neutral-700 mb-1">CPF do Representante</label>
+                          <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">CPF do Representante</label>
                           <input
                             type="text"
                             value={formData.representativeCpf}
                             onChange={(e) => setFormData({ ...formData, representativeCpf: e.target.value })}
-                            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                            className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                           />
                         </div>
                       </>
@@ -846,69 +846,69 @@ export default function Adverses() {
 
                 {/* Contato */}
                 <div>
-                  <h3 className="text-lg font-semibold text-neutral-900 mb-4">Contato</h3>
+                  <h3 className="text-lg font-semibold text-neutral-900 dark:text-slate-100 mb-4">Contato</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">Email</label>
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Email</label>
                       <input
                         type="email"
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">Telefone 1</label>
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Telefone 1</label>
                       <input
                         type="text"
                         value={formData.phone}
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                         placeholder="(00) 00000-0000"
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">Telefone 2</label>
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Telefone 2</label>
                       <input
                         type="text"
                         value={formData.phone2}
                         onChange={(e) => setFormData({ ...formData, phone2: e.target.value })}
                         placeholder="(00) 00000-0000"
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">Instagram</label>
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Instagram</label>
                       <input
                         type="text"
                         value={formData.instagram}
                         onChange={(e) => setFormData({ ...formData, instagram: e.target.value })}
                         placeholder="@usuario"
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">Facebook</label>
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Facebook</label>
                       <input
                         type="text"
                         value={formData.facebook}
                         onChange={(e) => setFormData({ ...formData, facebook: e.target.value })}
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">Outros 2</label>
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Outros 2</label>
                       <input
                         type="text"
                         value={formData.customField2}
                         onChange={(e) => setFormData({ ...formData, customField2: e.target.value })}
                         placeholder="Informações adicionais"
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
                   </div>
@@ -916,46 +916,46 @@ export default function Adverses() {
 
                 {/* Endereço */}
                 <div>
-                  <h3 className="text-lg font-semibold text-neutral-900 mb-4">Endereço</h3>
+                  <h3 className="text-lg font-semibold text-neutral-900 dark:text-slate-100 mb-4">Endereço</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">Endereço</label>
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Endereço</label>
                       <input
                         type="text"
                         value={formData.address}
                         onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                         placeholder="Rua, número, complemento"
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">Bairro</label>
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Bairro</label>
                       <input
                         type="text"
                         value={formData.neighborhood}
                         onChange={(e) => setFormData({ ...formData, neighborhood: e.target.value })}
                         placeholder="Nome do bairro"
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">Cidade</label>
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Cidade</label>
                       <input
                         type="text"
                         value={formData.city}
                         onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">Estado</label>
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Estado</label>
                       <select
                         value={formData.state}
                         onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       >
                         <option value="">Selecione...</option>
                         <option value="AC">AC</option>
@@ -989,13 +989,13 @@ export default function Adverses() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">CEP</label>
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">CEP</label>
                       <input
                         type="text"
                         value={formData.zipCode}
                         onChange={(e) => setFormData({ ...formData, zipCode: e.target.value })}
                         placeholder="00000-000"
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
                   </div>
@@ -1003,18 +1003,18 @@ export default function Adverses() {
 
                 {/* Observações */}
                 <div>
-                  <h3 className="text-lg font-semibold text-neutral-900 mb-4">Observações</h3>
+                  <h3 className="text-lg font-semibold text-neutral-900 dark:text-slate-100 mb-4">Observações</h3>
                   <textarea
                     value={formData.notes}
                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                     rows={4}
                     placeholder="Informações adicionais sobre o adverso..."
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   />
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-neutral-200">
+              <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-neutral-200 dark:border-slate-700">
                 <button
                   type="button"
                   onClick={() => {
@@ -1023,7 +1023,7 @@ export default function Adverses() {
                     setSelectedAdverse(null);
                     resetForm();
                   }}
-                  className="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-white border border-neutral-300 hover:bg-neutral-50 text-neutral-700 rounded-lg font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200 min-h-[44px]"
+                  className="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-white dark:bg-slate-800 border border-neutral-300 dark:border-slate-600 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 text-neutral-700 dark:text-slate-300 rounded-lg font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200 min-h-[44px]"
                 >
                   Cancelar
                 </button>
@@ -1044,13 +1044,13 @@ export default function Adverses() {
         <div className="modal-overlay">
           <div className="modal-container sm:max-w-3xl">
             <div className="modal-header">
-              <h2 className="text-lg sm:text-xl font-bold text-neutral-900">Detalhes do Adverso</h2>
+              <h2 className="text-lg sm:text-xl font-bold text-neutral-900 dark:text-slate-100">Detalhes do Adverso</h2>
               <button
                 onClick={() => {
                   setShowDetailsModal(false);
                   setSelectedAdverse(null);
                 }}
-                className="p-2 text-neutral-400 hover:text-neutral-600 rounded-lg hover:bg-neutral-100"
+                className="p-2 text-neutral-400 dark:text-slate-500 hover:text-neutral-600 dark:text-slate-400 rounded-lg hover:bg-neutral-100 dark:hover:bg-slate-600"
               >
                 <X size={24} />
               </button>
@@ -1059,62 +1059,62 @@ export default function Adverses() {
             <div className="modal-body space-y-4 sm:space-y-6">
               {/* Dados Pessoais */}
               <div>
-                <h3 className="text-lg font-semibold text-neutral-900 mb-3">
+                <h3 className="text-lg font-semibold text-neutral-900 dark:text-slate-100 mb-3">
                   {selectedAdverse.personType === 'JURIDICA' ? 'Dados da Empresa' : 'Dados Pessoais'}
                 </h3>
-                <div className="bg-neutral-50 rounded-lg p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-neutral-50 dark:bg-slate-700 rounded-lg p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm font-medium text-neutral-500">Tipo de Pessoa</p>
-                    <p className="text-sm text-neutral-900 mt-1">
+                    <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">Tipo de Pessoa</p>
+                    <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">
                       {selectedAdverse.personType === 'JURIDICA' ? 'Pessoa Jurídica' : 'Pessoa Física'}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-500">
+                    <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">
                       {selectedAdverse.personType === 'JURIDICA' ? 'Razão Social' : 'Nome Completo'}
                     </p>
-                    <p className="text-sm text-neutral-900 mt-1">{selectedAdverse.name}</p>
+                    <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{selectedAdverse.name}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-500">
+                    <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">
                       {selectedAdverse.personType === 'JURIDICA' ? 'CNPJ' : 'CPF'}
                     </p>
-                    <p className="text-sm text-neutral-900 mt-1">{formatCPF(selectedAdverse.cpf)}</p>
+                    <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{formatCPF(selectedAdverse.cpf)}</p>
                   </div>
 
                   {selectedAdverse.personType === 'FISICA' && (
                     <>
                       <div>
-                        <p className="text-sm font-medium text-neutral-500">RG</p>
-                        <p className="text-sm text-neutral-900 mt-1">{selectedAdverse.rg || '-'}</p>
+                        <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">RG</p>
+                        <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{selectedAdverse.rg || '-'}</p>
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-neutral-500">PIS</p>
-                        <p className="text-sm text-neutral-900 mt-1">{selectedAdverse.pis || '-'}</p>
+                        <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">PIS</p>
+                        <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{selectedAdverse.pis || '-'}</p>
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-neutral-500">CTPS</p>
-                        <p className="text-sm text-neutral-900 mt-1">{selectedAdverse.ctps || '-'}</p>
+                        <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">CTPS</p>
+                        <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{selectedAdverse.ctps || '-'}</p>
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-neutral-500">CTPS Série</p>
-                        <p className="text-sm text-neutral-900 mt-1">{selectedAdverse.ctpsSerie || '-'}</p>
+                        <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">CTPS Série</p>
+                        <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{selectedAdverse.ctpsSerie || '-'}</p>
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-neutral-500">Nome da Mãe</p>
-                        <p className="text-sm text-neutral-900 mt-1">{selectedAdverse.motherName || '-'}</p>
+                        <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">Nome da Mãe</p>
+                        <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{selectedAdverse.motherName || '-'}</p>
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-neutral-500">Data de Nascimento</p>
-                        <p className="text-sm text-neutral-900 mt-1">{formatDateDisplay(selectedAdverse.birthDate)}</p>
+                        <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">Data de Nascimento</p>
+                        <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{formatDateDisplay(selectedAdverse.birthDate)}</p>
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-neutral-500">Estado Civil</p>
-                        <p className="text-sm text-neutral-900 mt-1">{selectedAdverse.maritalStatus || '-'}</p>
+                        <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">Estado Civil</p>
+                        <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{selectedAdverse.maritalStatus || '-'}</p>
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-neutral-500">Profissão</p>
-                        <p className="text-sm text-neutral-900 mt-1">{selectedAdverse.profession || '-'}</p>
+                        <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">Profissão</p>
+                        <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{selectedAdverse.profession || '-'}</p>
                       </div>
                     </>
                   )}
@@ -1123,50 +1123,50 @@ export default function Adverses() {
 
               {/* Contato */}
               <div>
-                <h3 className="text-lg font-semibold text-neutral-900 mb-3">Contato</h3>
-                <div className="bg-neutral-50 rounded-lg p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <h3 className="text-lg font-semibold text-neutral-900 dark:text-slate-100 mb-3">Contato</h3>
+                <div className="bg-neutral-50 dark:bg-slate-700 rounded-lg p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm font-medium text-neutral-500">Email</p>
-                    <p className="text-sm text-neutral-900 mt-1">{selectedAdverse.email || '-'}</p>
+                    <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">Email</p>
+                    <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{selectedAdverse.email || '-'}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-500">Telefone 1</p>
-                    <p className="text-sm text-neutral-900 mt-1">{selectedAdverse.phone || '-'}</p>
+                    <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">Telefone 1</p>
+                    <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{selectedAdverse.phone || '-'}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-500">Telefone 2</p>
-                    <p className="text-sm text-neutral-900 mt-1">{selectedAdverse.phone2 || '-'}</p>
+                    <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">Telefone 2</p>
+                    <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{selectedAdverse.phone2 || '-'}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-500">Instagram</p>
-                    <p className="text-sm text-neutral-900 mt-1">{selectedAdverse.instagram || '-'}</p>
+                    <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">Instagram</p>
+                    <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{selectedAdverse.instagram || '-'}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-500">Facebook</p>
-                    <p className="text-sm text-neutral-900 mt-1">{selectedAdverse.facebook || '-'}</p>
+                    <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">Facebook</p>
+                    <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{selectedAdverse.facebook || '-'}</p>
                   </div>
                 </div>
               </div>
 
               {/* Endereço */}
               <div>
-                <h3 className="text-lg font-semibold text-neutral-900 mb-3">Endereço</h3>
-                <div className="bg-neutral-50 rounded-lg p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <h3 className="text-lg font-semibold text-neutral-900 dark:text-slate-100 mb-3">Endereço</h3>
+                <div className="bg-neutral-50 dark:bg-slate-700 rounded-lg p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="md:col-span-2">
-                    <p className="text-sm font-medium text-neutral-500">Endereço</p>
-                    <p className="text-sm text-neutral-900 mt-1">{selectedAdverse.address || '-'}</p>
+                    <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">Endereço</p>
+                    <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{selectedAdverse.address || '-'}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-500">Cidade</p>
-                    <p className="text-sm text-neutral-900 mt-1">{selectedAdverse.city || '-'}</p>
+                    <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">Cidade</p>
+                    <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{selectedAdverse.city || '-'}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-500">Estado</p>
-                    <p className="text-sm text-neutral-900 mt-1">{selectedAdverse.state || '-'}</p>
+                    <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">Estado</p>
+                    <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{selectedAdverse.state || '-'}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-500">CEP</p>
-                    <p className="text-sm text-neutral-900 mt-1">{selectedAdverse.zipCode || '-'}</p>
+                    <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">CEP</p>
+                    <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{selectedAdverse.zipCode || '-'}</p>
                   </div>
                 </div>
               </div>
@@ -1174,24 +1174,24 @@ export default function Adverses() {
               {/* Observações */}
               {selectedAdverse.notes && (
                 <div>
-                  <h3 className="text-lg font-semibold text-neutral-900 mb-3">Observações</h3>
-                  <div className="bg-neutral-50 rounded-lg p-4">
-                    <p className="text-sm text-neutral-900 whitespace-pre-wrap">{selectedAdverse.notes}</p>
+                  <h3 className="text-lg font-semibold text-neutral-900 dark:text-slate-100 mb-3">Observações</h3>
+                  <div className="bg-neutral-50 dark:bg-slate-700 rounded-lg p-4">
+                    <p className="text-sm text-neutral-900 dark:text-slate-100 whitespace-pre-wrap">{selectedAdverse.notes}</p>
                   </div>
                 </div>
               )}
 
               {/* Datas */}
               <div>
-                <h3 className="text-lg font-semibold text-neutral-900 mb-3">Informações do Sistema</h3>
-                <div className="bg-neutral-50 rounded-lg p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <h3 className="text-lg font-semibold text-neutral-900 dark:text-slate-100 mb-3">Informações do Sistema</h3>
+                <div className="bg-neutral-50 dark:bg-slate-700 rounded-lg p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm font-medium text-neutral-500">Data de Cadastro</p>
-                    <p className="text-sm text-neutral-900 mt-1">{formatDateDisplay(selectedAdverse.createdAt)}</p>
+                    <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">Data de Cadastro</p>
+                    <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{formatDateDisplay(selectedAdverse.createdAt)}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-500">Última Atualização</p>
-                    <p className="text-sm text-neutral-900 mt-1">{formatDateDisplay(selectedAdverse.updatedAt)}</p>
+                    <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">Última Atualização</p>
+                    <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{formatDateDisplay(selectedAdverse.updatedAt)}</p>
                   </div>
                 </div>
               </div>

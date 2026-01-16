@@ -319,10 +319,10 @@ const Campaigns: React.FC = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-neutral-900">
+            <h1 className="text-3xl font-bold text-neutral-900 dark:text-slate-100">
               Campanhas de Email
             </h1>
-            <p className="text-neutral-600 mt-1">
+            <p className="text-neutral-600 dark:text-slate-400 mt-1">
               Envie emails em massa para seus clientes
             </p>
           </div>
@@ -337,19 +337,19 @@ const Campaigns: React.FC = () => {
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="bg-white rounded-lg shadow p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-neutral-600 text-sm">Total de Campanhas</p>
-                <p className="text-2xl font-bold text-neutral-900">{campaigns.length}</p>
+                <p className="text-neutral-600 dark:text-slate-400 text-sm">Total de Campanhas</p>
+                <p className="text-2xl font-bold text-neutral-900 dark:text-slate-100">{campaigns.length}</p>
               </div>
               <Mail className="text-success-600" size={32} />
             </div>
           </div>
-          <div className="bg-white rounded-lg shadow p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-neutral-600 text-sm">Concluídas</p>
+                <p className="text-neutral-600 dark:text-slate-400 text-sm">Concluídas</p>
                 <p className="text-2xl font-bold text-success-600">
                   {campaigns.filter((c) => c.status === 'completed').length}
                 </p>
@@ -357,10 +357,10 @@ const Campaigns: React.FC = () => {
               <CheckCircle className="text-success-600" size={32} />
             </div>
           </div>
-          <div className="bg-white rounded-lg shadow p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-neutral-600 text-sm">Em Envio</p>
+                <p className="text-neutral-600 dark:text-slate-400 text-sm">Em Envio</p>
                 <p className="text-2xl font-bold text-info-600">
                   {campaigns.filter((c) => c.status === 'sending').length}
                 </p>
@@ -368,11 +368,11 @@ const Campaigns: React.FC = () => {
               <Clock className="text-info-600" size={32} />
             </div>
           </div>
-          <div className="bg-white rounded-lg shadow p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-neutral-600 text-sm">Clientes com Email</p>
-                <p className="text-2xl font-bold text-neutral-900">
+                <p className="text-neutral-600 dark:text-slate-400 text-sm">Clientes com Email</p>
+                <p className="text-2xl font-bold text-neutral-900 dark:text-slate-100">
                   {clients.filter((c) => c.email).length}
                 </p>
               </div>
@@ -383,14 +383,14 @@ const Campaigns: React.FC = () => {
 
         {/* Lista de Campanhas */}
         {loading ? (
-          <div className="text-center py-8 text-neutral-600">Carregando...</div>
+          <div className="text-center py-8 text-neutral-600 dark:text-slate-400">Carregando...</div>
         ) : campaigns.length === 0 ? (
-          <div className="bg-white rounded-lg shadow p-8 text-center">
-            <Mail size={48} className="mx-auto text-neutral-500 mb-4" />
-            <h3 className="text-lg font-semibold text-neutral-900 mb-2">
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 p-8 text-center">
+            <Mail size={48} className="mx-auto text-neutral-500 dark:text-slate-400 mb-4" />
+            <h3 className="text-lg font-semibold text-neutral-900 dark:text-slate-100 mb-2">
               Nenhuma campanha criada
             </h3>
-            <p className="text-neutral-600 mb-4">
+            <p className="text-neutral-600 dark:text-slate-400 mb-4">
               Crie sua primeira campanha de email para começar
             </p>
             <button
@@ -402,7 +402,7 @@ const Campaigns: React.FC = () => {
             </button>
           </div>
         ) : (
-          <div className="bg-white rounded-lg shadow overflow-hidden">
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 overflow-hidden">
             {/* Mobile Card View */}
             <div className="mobile-card-view">
               <MobileCardList
@@ -431,39 +431,39 @@ const Campaigns: React.FC = () => {
 
             {/* Desktop Table View */}
             <div className="desktop-table-view">
-              <table className="min-w-full divide-y divide-neutral-200">
-                <thead className="bg-neutral-50">
+              <table className="min-w-full divide-y divide-neutral-200 dark:divide-slate-700">
+                <thead className="bg-neutral-50 dark:bg-slate-700">
                   <tr>
-                    <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">
                       Nome
                     </th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">
                       Assunto
                     </th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">
                       Status
                     </th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">
                       Destinatários
                     </th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">
                       Enviados
                     </th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">
                       Data
                     </th>
-                    <th className="px-6 py-3 text-right text-sm font-semibold text-neutral-900 uppercase">
+                    <th className="px-6 py-3 text-right text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">
                       Ações
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-neutral-200">
+                <tbody className="bg-white dark:bg-slate-800 divide-y divide-neutral-200 dark:divide-slate-700">
                   {campaigns.map((campaign) => (
-                    <tr key={campaign.id} className="odd:bg-white even:bg-neutral-50 hover:bg-success-100 transition-colors">
-                      <td className="px-6 py-4 text-sm font-medium text-neutral-900">
+                    <tr key={campaign.id} className="odd:bg-white dark:bg-slate-800 even:bg-neutral-50 dark:bg-slate-700 hover:bg-success-100 transition-colors">
+                      <td className="px-6 py-4 text-sm font-medium text-neutral-900 dark:text-slate-100">
                         {campaign.name}
                       </td>
-                      <td className="px-6 py-4 text-sm text-neutral-600">
+                      <td className="px-6 py-4 text-sm text-neutral-600 dark:text-slate-400">
                         {campaign.subject}
                       </td>
                       <td className="px-6 py-4">
@@ -475,16 +475,16 @@ const Campaigns: React.FC = () => {
                           {statusLabels[campaign.status]}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-sm text-neutral-600">
+                      <td className="px-6 py-4 text-sm text-neutral-600 dark:text-slate-400">
                         {campaign.totalRecipients}
                       </td>
-                      <td className="px-6 py-4 text-sm text-neutral-600">
+                      <td className="px-6 py-4 text-sm text-neutral-600 dark:text-slate-400">
                         {campaign.sentCount} / {campaign.totalRecipients}
                         {campaign.failedCount > 0 && (
                           <span className="text-red-600 ml-2">({campaign.failedCount} falhas)</span>
                         )}
                       </td>
-                      <td className="px-6 py-4 text-sm text-neutral-600">
+                      <td className="px-6 py-4 text-sm text-neutral-600 dark:text-slate-400">
                         {formatDate(campaign.createdAt)}
                       </td>
                       <td className="px-6 py-4 text-sm text-right">
@@ -526,8 +526,8 @@ const Campaigns: React.FC = () => {
 
         {/* Pagination */}
         {!loading && campaigns.length > 0 && (
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white rounded-lg shadow px-4 py-3">
-            <div className="text-sm text-neutral-600">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 px-4 py-3">
+            <div className="text-sm text-neutral-600 dark:text-slate-400">
               Mostrando {((page - 1) * limit) + 1} a {Math.min(page * limit, total)} de {total} campanhas
             </div>
             <div className="flex items-center gap-2">
@@ -537,30 +537,30 @@ const Campaigns: React.FC = () => {
                   setLimit(Number(e.target.value));
                   setPage(1);
                 }}
-                className="px-2 py-1 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="px-2 py-1 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 <option value={25}>25</option>
                 <option value={50}>50</option>
                 <option value={100}>100</option>
                 <option value={200}>200</option>
               </select>
-              <span className="text-sm text-neutral-600">por página</span>
+              <span className="text-sm text-neutral-600 dark:text-slate-400">por página</span>
             </div>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] border border-neutral-300 rounded-md hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] border border-neutral-300 dark:border-slate-600 rounded-md hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <ChevronLeft size={20} />
               </button>
-              <span className="text-sm text-neutral-600 px-2">
+              <span className="text-sm text-neutral-600 dark:text-slate-400 px-2">
                 Página {page} de {totalPages}
               </span>
               <button
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
-                className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] border border-neutral-300 rounded-md hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] border border-neutral-300 dark:border-slate-600 rounded-md hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <ChevronRight size={20} />
               </button>
@@ -571,9 +571,9 @@ const Campaigns: React.FC = () => {
         {/* Modal Nova Campanha */}
         {showModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-            <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
               <div className="p-6">
-                <h2 className="text-2xl font-bold text-neutral-900 mb-4">
+                <h2 className="text-2xl font-bold text-neutral-900 dark:text-slate-100 mb-4">
                   Nova Campanha de Email
                 </h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
@@ -600,7 +600,7 @@ const Campaigns: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                       Nome da Campanha *
                     </label>
                     <input
@@ -614,7 +614,7 @@ const Campaigns: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                       Assunto do Email *
                     </label>
                     <input
@@ -628,7 +628,7 @@ const Campaigns: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                       Corpo do Email (HTML) *
                     </label>
                     <textarea
@@ -639,7 +639,7 @@ const Campaigns: React.FC = () => {
                       placeholder="<h1>Olá!</h1><p>Sua mensagem aqui...</p>"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md font-mono text-sm min-h-[44px]"
                     />
-                    <p className="text-xs text-neutral-500 mt-1">
+                    <p className="text-xs text-neutral-500 dark:text-slate-400 mt-1">
                       Você pode usar HTML para formatar o email
                     </p>
                   </div>
@@ -651,7 +651,7 @@ const Campaigns: React.FC = () => {
                     </label>
 
                     {/* Tipo de destinatário: Clientes ou Leads */}
-                    <div className="flex gap-4 mb-4 p-3 bg-white rounded-md border border-info-200">
+                    <div className="flex gap-4 mb-4 p-3 bg-white dark:bg-slate-800 rounded-md border border-info-200">
                       <label className="flex items-center gap-2 cursor-pointer">
                         <input
                           type="radio"
@@ -754,7 +754,7 @@ const Campaigns: React.FC = () => {
                         setShowModal(false);
                         resetForm();
                       }}
-                      className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 bg-white hover:bg-neutral-50 text-neutral-700 font-medium rounded-lg transition-all duration-200"
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 text-neutral-700 dark:text-slate-300 font-medium rounded-lg transition-all duration-200"
                     >
                       Cancelar
                     </button>
@@ -774,20 +774,20 @@ const Campaigns: React.FC = () => {
         {/* Modal Visualizar */}
         {showViewModal && selectedCampaign && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-            <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+            <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
               <div className="p-6">
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <h2 className="text-2xl font-bold text-neutral-900">
+                    <h2 className="text-2xl font-bold text-neutral-900 dark:text-slate-100">
                       {selectedCampaign.name}
                     </h2>
-                    <p className="text-neutral-600 mt-1">
+                    <p className="text-neutral-600 dark:text-slate-400 mt-1">
                       {selectedCampaign.subject}
                     </p>
                   </div>
                   <button
                     onClick={() => setShowViewModal(false)}
-                    className="text-neutral-500 hover:text-neutral-600"
+                    className="text-neutral-500 dark:text-slate-400 hover:text-neutral-600 dark:text-slate-400"
                   >
                     ✕
                   </button>
@@ -796,7 +796,7 @@ const Campaigns: React.FC = () => {
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <p className="text-sm text-neutral-600">Status</p>
+                      <p className="text-sm text-neutral-600 dark:text-slate-400">Status</p>
                       <span
                         className={`inline-block px-3 py-1 text-sm font-medium rounded-full mt-1 ${
                           statusColors[selectedCampaign.status]
@@ -806,19 +806,19 @@ const Campaigns: React.FC = () => {
                       </span>
                     </div>
                     <div>
-                      <p className="text-sm text-neutral-600">Total Destinatários</p>
-                      <p className="text-lg font-semibold text-neutral-900">
+                      <p className="text-sm text-neutral-600 dark:text-slate-400">Total Destinatários</p>
+                      <p className="text-lg font-semibold text-neutral-900 dark:text-slate-100">
                         {selectedCampaign.totalRecipients}
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm text-neutral-600">Enviados</p>
+                      <p className="text-sm text-neutral-600 dark:text-slate-400">Enviados</p>
                       <p className="text-lg font-semibold text-success-600">
                         {selectedCampaign.sentCount}
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm text-neutral-600">Falhas</p>
+                      <p className="text-sm text-neutral-600 dark:text-slate-400">Falhas</p>
                       <p className="text-lg font-semibold text-red-600">
                         {selectedCampaign.failedCount}
                       </p>
@@ -826,11 +826,11 @@ const Campaigns: React.FC = () => {
                   </div>
 
                   <div className="border-t border-gray-200 pt-4">
-                    <p className="text-sm font-medium text-neutral-700 mb-2">
+                    <p className="text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2">
                       Prévia do Email:
                     </p>
                     <div
-                      className="border border-gray-300 rounded p-4 bg-neutral-50"
+                      className="border border-gray-300 rounded p-4 bg-neutral-50 dark:bg-slate-700"
                       dangerouslySetInnerHTML={{
                         __html: DOMPurify.sanitize(selectedCampaign.body, {
                           ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'p', 'br', 'a', 'img', 'h1', 'h2', 'h3', 'h4', 'ul', 'ol', 'li', 'div', 'span', 'table', 'tr', 'td', 'th', 'thead', 'tbody', 'hr'],
@@ -844,7 +844,7 @@ const Campaigns: React.FC = () => {
                 <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-gray-200">
                   <button
                     onClick={() => setShowViewModal(false)}
-                    className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 bg-white hover:bg-neutral-50 text-neutral-700 font-medium rounded-lg transition-all duration-200"
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 text-neutral-700 dark:text-slate-300 font-medium rounded-lg transition-all duration-200"
                   >
                     Fechar
                   </button>

@@ -155,11 +155,11 @@ export default function Tags() {
           {/* Header */}
           <div className="mb-6 flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-neutral-800 flex items-center gap-2">
+              <h1 className="text-2xl font-bold text-neutral-800 dark:text-slate-200 flex items-center gap-2">
                 <Tag size={28} className="text-primary-600" />
                 Gerenciar Tags
               </h1>
-              <p className="text-neutral-600 mt-2">
+              <p className="text-neutral-600 dark:text-slate-400 mt-2">
                 Crie e gerencie tags para categorizar seus clientes e leads
               </p>
             </div>
@@ -182,12 +182,12 @@ export default function Tags() {
 
           {/* Tags Table */}
           {tags.length === 0 ? (
-            <div className="bg-white rounded-lg shadow-md p-8 text-center">
+            <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md p-8 text-center">
               <Tag size={48} className="mx-auto text-neutral-300 mb-4" />
-              <h3 className="text-lg font-medium text-neutral-700 mb-2">
+              <h3 className="text-lg font-medium text-neutral-700 dark:text-slate-300 mb-2">
                 Nenhuma tag cadastrada
               </h3>
-              <p className="text-neutral-500 mb-4">
+              <p className="text-neutral-500 dark:text-slate-400 mb-4">
                 Crie sua primeira tag para começar a categorizar clientes e leads
               </p>
               <button
@@ -199,28 +199,28 @@ export default function Tags() {
               </button>
             </div>
           ) : (
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+            <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md overflow-hidden">
               <table className="w-full">
-                <thead className="bg-neutral-50 border-b border-neutral-200">
+                <thead className="bg-neutral-50 dark:bg-slate-700 border-b border-neutral-200 dark:border-slate-700">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 dark:text-slate-400 uppercase tracking-wider">
                       Tag
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 dark:text-slate-400 uppercase tracking-wider">
                       Cor
                     </th>
-                    <th className="px-6 py-3 text-center text-xs font-semibold text-neutral-600 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-center text-xs font-semibold text-neutral-600 dark:text-slate-400 uppercase tracking-wider">
                       Clientes
                     </th>
-                    <th className="px-6 py-3 text-center text-xs font-semibold text-neutral-600 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-center text-xs font-semibold text-neutral-600 dark:text-slate-400 uppercase tracking-wider">
                       Leads
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-semibold text-neutral-600 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-right text-xs font-semibold text-neutral-600 dark:text-slate-400 uppercase tracking-wider">
                       Ações
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-neutral-200">
+                <tbody className="divide-y divide-neutral-200 dark:divide-slate-700">
                   {tags.map((tag, index) => (
                     <tr key={tag.id} className={index % 2 === 0 ? 'bg-white' : 'bg-neutral-50'}>
                       <td className="px-6 py-4">
@@ -237,20 +237,20 @@ export default function Tags() {
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
                           <div
-                            className="w-6 h-6 rounded border border-neutral-300"
+                            className="w-6 h-6 rounded border border-neutral-300 dark:border-slate-600"
                             style={{ backgroundColor: tag.color }}
                           />
-                          <span className="text-sm text-neutral-600">{tag.color}</span>
+                          <span className="text-sm text-neutral-600 dark:text-slate-400">{tag.color}</span>
                         </div>
                       </td>
                       <td className="px-6 py-4 text-center">
-                        <div className="flex items-center justify-center gap-1 text-neutral-600">
+                        <div className="flex items-center justify-center gap-1 text-neutral-600 dark:text-slate-400">
                           <Users size={16} />
                           <span>{tag._count?.clients || 0}</span>
                         </div>
                       </td>
                       <td className="px-6 py-4 text-center">
-                        <div className="flex items-center justify-center gap-1 text-neutral-600">
+                        <div className="flex items-center justify-center gap-1 text-neutral-600 dark:text-slate-400">
                           <UserCheck size={16} />
                           <span>{tag._count?.leads || 0}</span>
                         </div>
@@ -259,7 +259,7 @@ export default function Tags() {
                         <div className="flex items-center justify-end gap-2">
                           <button
                             onClick={() => handleOpenModal(tag)}
-                            className="p-2 text-neutral-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+                            className="p-2 text-neutral-600 dark:text-slate-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
                             title="Editar"
                           >
                             <Edit2 size={18} />
@@ -274,7 +274,7 @@ export default function Tags() {
                               </button>
                               <button
                                 onClick={() => setDeleteConfirm(null)}
-                                className="px-2 py-1 text-xs bg-neutral-200 text-neutral-700 rounded hover:bg-neutral-300"
+                                className="px-2 py-1 text-xs bg-neutral-200 text-neutral-700 dark:text-slate-300 rounded hover:bg-neutral-300"
                               >
                                 Cancelar
                               </button>
@@ -282,7 +282,7 @@ export default function Tags() {
                           ) : (
                             <button
                               onClick={() => setDeleteConfirm(tag.id)}
-                              className="p-2 text-neutral-600 hover:text-error-600 hover:bg-error-50 rounded-lg transition-colors"
+                              className="p-2 text-neutral-600 dark:text-slate-400 hover:text-error-600 hover:bg-error-50 rounded-lg transition-colors"
                               title="Excluir"
                             >
                               <Trash2 size={18} />
@@ -299,8 +299,8 @@ export default function Tags() {
 
           {/* Pagination */}
           {totalPages > 0 && (
-            <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-4 bg-white rounded-lg shadow-md p-4">
-              <div className="flex items-center gap-2 text-sm text-neutral-600">
+            <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-4 bg-white dark:bg-slate-800 rounded-lg shadow-md p-4">
+              <div className="flex items-center gap-2 text-sm text-neutral-600 dark:text-slate-400">
                 <span>Mostrando {((page - 1) * limit) + 1} a {Math.min(page * limit, total)} de {total} tags</span>
                 <select
                   value={limit}
@@ -308,7 +308,7 @@ export default function Tags() {
                     setLimit(Number(e.target.value));
                     setPage(1);
                   }}
-                  className="ml-2 px-2 py-1 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="ml-2 px-2 py-1 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
                   <option value={25}>25</option>
                   <option value={50}>50</option>
@@ -322,7 +322,7 @@ export default function Tags() {
                 <button
                   onClick={() => setPage(p => Math.max(1, p - 1))}
                   disabled={page === 1}
-                  className="p-2 border border-neutral-300 rounded-md hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="p-2 border border-neutral-300 dark:border-slate-600 rounded-md hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <ChevronLeft size={20} />
                 </button>
@@ -358,7 +358,7 @@ export default function Tags() {
                 <button
                   onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                   disabled={page === totalPages}
-                  className="p-2 border border-neutral-300 rounded-md hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="p-2 border border-neutral-300 dark:border-slate-600 rounded-md hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <ChevronRight size={20} />
                 </button>
@@ -369,16 +369,16 @@ export default function Tags() {
           {/* Modal Create/Edit */}
           {showModal && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-              <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
-                <div className="p-6 border-b border-neutral-200">
-                  <h2 className="text-xl font-semibold text-neutral-800">
+              <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-md mx-4">
+                <div className="p-6 border-b border-neutral-200 dark:border-slate-700">
+                  <h2 className="text-xl font-semibold text-neutral-800 dark:text-slate-200">
                     {editingTag ? 'Editar Tag' : 'Nova Tag'}
                   </h2>
                 </div>
                 <form onSubmit={handleSubmit} className="p-6">
                   {/* Name */}
                   <div className="mb-4">
-                    <label className="block text-sm font-medium text-neutral-700 mb-2">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2">
                       Nome da Tag *
                     </label>
                     <input
@@ -386,7 +386,7 @@ export default function Tags() {
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       placeholder="Ex: VIP, Trabalhista, Urgente..."
-                      className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                      className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       maxLength={50}
                       required
                     />
@@ -394,7 +394,7 @@ export default function Tags() {
 
                   {/* Color */}
                   <div className="mb-6">
-                    <label className="block text-sm font-medium text-neutral-700 mb-2">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2">
                       Cor
                     </label>
                     <div className="grid grid-cols-5 gap-2 mb-3">
@@ -418,7 +418,7 @@ export default function Tags() {
                         type="color"
                         value={formData.color}
                         onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-                        className="w-10 h-10 rounded border border-neutral-300 cursor-pointer"
+                        className="w-10 h-10 rounded border border-neutral-300 dark:border-slate-600 cursor-pointer"
                       />
                       <input
                         type="text"
@@ -426,17 +426,17 @@ export default function Tags() {
                         onChange={(e) => setFormData({ ...formData, color: e.target.value })}
                         placeholder="#3B82F6"
                         pattern="^#[0-9A-Fa-f]{6}$"
-                        className="flex-1 px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className="flex-1 px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                       />
                     </div>
                   </div>
 
                   {/* Preview */}
                   <div className="mb-6">
-                    <label className="block text-sm font-medium text-neutral-700 mb-2">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2">
                       Preview
                     </label>
-                    <div className="p-4 bg-neutral-50 rounded-lg">
+                    <div className="p-4 bg-neutral-50 dark:bg-slate-700 rounded-lg">
                       <span
                         className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"
                         style={{
@@ -454,7 +454,7 @@ export default function Tags() {
                     <button
                       type="button"
                       onClick={handleCloseModal}
-                      className="flex-1 px-4 py-2 border border-neutral-300 text-neutral-700 rounded-lg hover:bg-neutral-50 transition-colors"
+                      className="flex-1 px-4 py-2 border border-neutral-300 dark:border-slate-600 text-neutral-700 dark:text-slate-300 rounded-lg hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 transition-colors"
                     >
                       Cancelar
                     </button>

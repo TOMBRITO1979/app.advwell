@@ -15,7 +15,11 @@ import {
   AlertCircle,
   CheckCircle2,
   Clock,
-  Building2
+  Building2,
+  Scale,
+  UserCheck,
+  AlertTriangle,
+  Briefcase
 } from 'lucide-react';
 import api from '../services/api';
 import toast from 'react-hot-toast';
@@ -62,7 +66,62 @@ interface TaskStats {
   byPriority: { priority: string; count: number }[];
 }
 
-type ReportType = 'clients' | 'cases' | 'financial' | 'tasks';
+// Interfaces para relatórios avançados
+interface CaseAdvancedStats {
+  totalCases: number;
+  byPhase: { phase: string; count: number }[];
+  byRite: { rite: string; count: number }[];
+  withDeadline: {
+    total: number;
+    completed: number;
+    pending: number;
+    overdue: number;
+    cases: {
+      id: string;
+      processNumber: string;
+      deadline: string;
+      client: string;
+      court: string;
+    }[];
+  };
+  byLawyer: { id: string; name: string; count: number }[];
+  withoutMovement180Days: {
+    total: number;
+    cases: {
+      id: string;
+      processNumber: string;
+      lastSyncedAt: string | null;
+      court: string;
+      subject: string;
+      client: string;
+      lawyer: string;
+    }[];
+  };
+}
+
+interface PnjAdversesStats {
+  totalPnjs: number;
+  topAdverses: {
+    name: string;
+    document: string | null;
+    processCount: number;
+    processes: string[];
+  }[];
+  withoutMovement180Days: {
+    total: number;
+    pnjs: {
+      id: string;
+      number: string;
+      title: string;
+      lastMovement: string | null;
+      lastMovementDescription: string;
+      client: string;
+      defendants: string[];
+    }[];
+  };
+}
+
+type ReportType = 'clients' | 'cases' | 'financial' | 'tasks' | 'casesAdvanced' | 'pnjAdverses';
 
 const Reports: React.FC = () => {
   const [activeReport, setActiveReport] = useState<ReportType>('clients');
@@ -81,6 +140,8 @@ const Reports: React.FC = () => {
   const [caseStats, setCaseStats] = useState<CaseStats | null>(null);
   const [financialStats, setFinancialStats] = useState<FinancialStats | null>(null);
   const [taskStats, setTaskStats] = useState<TaskStats | null>(null);
+  const [caseAdvancedStats, setCaseAdvancedStats] = useState<CaseAdvancedStats | null>(null);
+  const [pnjAdversesStats, setPnjAdversesStats] = useState<PnjAdversesStats | null>(null);
 
   // Lists for filters (reserved for future use)
   const [, setClients] = useState<any[]>([]);
@@ -115,6 +176,12 @@ const Reports: React.FC = () => {
         case 'tasks':
           await loadTaskReport();
           break;
+        case 'casesAdvanced':
+          await loadCaseAdvancedReport();
+          break;
+        case 'pnjAdverses':
+          await loadPnjAdversesReport();
+          break;
       }
     } catch (error: any) {
       console.error('Error loading report:', error);
@@ -138,7 +205,6 @@ const Reports: React.FC = () => {
       const now = new Date();
       const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
-      // Calculate stats
       const stats: ClientStats = {
         total: clientsData.length,
         activeClients: clientsData.filter((c: any) => c.cases && c.cases.length > 0).length,
@@ -146,7 +212,6 @@ const Reports: React.FC = () => {
         topCities: [],
       };
 
-      // Count by city
       const cityCounts: Record<string, number> = {};
       clientsData.forEach((c: any) => {
         if (c.city) {
@@ -178,7 +243,6 @@ const Reports: React.FC = () => {
 
       const casesData = response.data.data || [];
 
-      // Calculate stats
       const stats: CaseStats = {
         total: casesData.length,
         active: casesData.filter((c: any) => c.status === 'ACTIVE' || c.status === 'EM_ANDAMENTO').length,
@@ -187,7 +251,6 @@ const Reports: React.FC = () => {
         byMonth: [],
       };
 
-      // Count by phase
       const phaseCounts: Record<string, number> = {};
       casesData.forEach((c: any) => {
         const phase = c.phase || 'Não definida';
@@ -199,7 +262,6 @@ const Reports: React.FC = () => {
         .sort((a, b) => b.count - a.count)
         .slice(0, 10);
 
-      // Count by month
       const monthCounts: Record<string, number> = {};
       casesData.forEach((c: any) => {
         const date = new Date(c.createdAt);
@@ -221,7 +283,6 @@ const Reports: React.FC = () => {
 
   const loadFinancialReport = async () => {
     try {
-      // Load accounts payable
       const payableResponse = await api.get('/accounts-payable', {
         params: {
           limit: 1000,
@@ -230,7 +291,6 @@ const Reports: React.FC = () => {
         }
       });
 
-      // Load financial (receivable)
       const receivableResponse = await api.get('/financial', {
         params: {
           limit: 1000,
@@ -252,7 +312,6 @@ const Reports: React.FC = () => {
         byMonth: [],
       };
 
-      // Group by month
       const monthData: Record<string, { income: number; expense: number }> = {};
 
       receivables.forEach((r: any) => {
@@ -307,7 +366,6 @@ const Reports: React.FC = () => {
         byPriority: [],
       };
 
-      // Count by priority
       const priorityCounts: Record<string, number> = {};
       tasksData.forEach((t: any) => {
         priorityCounts[t.priority] = (priorityCounts[t.priority] || 0) + 1;
@@ -319,6 +377,26 @@ const Reports: React.FC = () => {
       setTaskStats(stats);
     } catch (error) {
       console.error('Error loading task report:', error);
+      throw error;
+    }
+  };
+
+  const loadCaseAdvancedReport = async () => {
+    try {
+      const response = await api.get('/reports/cases/advanced');
+      setCaseAdvancedStats(response.data.data);
+    } catch (error) {
+      console.error('Error loading advanced case report:', error);
+      throw error;
+    }
+  };
+
+  const loadPnjAdversesReport = async () => {
+    try {
+      const response = await api.get('/reports/pnj/adverses');
+      setPnjAdversesStats(response.data.data);
+    } catch (error) {
+      console.error('Error loading PNJ adverses report:', error);
       throw error;
     }
   };
@@ -382,6 +460,51 @@ const Reports: React.FC = () => {
         csvContent += `Atrasadas,${taskStats.overdue}\n`;
         filename = 'relatorio_tarefas.csv';
         break;
+
+      case 'casesAdvanced':
+        if (!caseAdvancedStats) return;
+        csvContent = 'RELATÓRIO AVANÇADO DE PROCESSOS\n\n';
+        csvContent += 'POR FASE\nFase,Quantidade\n';
+        caseAdvancedStats.byPhase.forEach(p => {
+          csvContent += `${p.phase},${p.count}\n`;
+        });
+        csvContent += '\nPOR RITO\nRito,Quantidade\n';
+        caseAdvancedStats.byRite.forEach(r => {
+          csvContent += `${r.rite},${r.count}\n`;
+        });
+        csvContent += '\nPOR ADVOGADO\nAdvogado,Quantidade\n';
+        caseAdvancedStats.byLawyer.forEach(l => {
+          csvContent += `${l.name},${l.count}\n`;
+        });
+        csvContent += '\nCOM PRAZO\n';
+        csvContent += `Total,${caseAdvancedStats.withDeadline.total}\n`;
+        csvContent += `Cumpridos,${caseAdvancedStats.withDeadline.completed}\n`;
+        csvContent += `Pendentes,${caseAdvancedStats.withDeadline.pending}\n`;
+        csvContent += `Vencidos,${caseAdvancedStats.withDeadline.overdue}\n`;
+        csvContent += '\nSEM MOVIMENTO 180 DIAS\n';
+        csvContent += `Total,${caseAdvancedStats.withoutMovement180Days.total}\n`;
+        csvContent += 'Número,Tribunal,Cliente,Advogado\n';
+        caseAdvancedStats.withoutMovement180Days.cases.forEach(c => {
+          csvContent += `${c.processNumber},${c.court || ''},${c.client},${c.lawyer}\n`;
+        });
+        filename = 'relatorio_processos_avancado.csv';
+        break;
+
+      case 'pnjAdverses':
+        if (!pnjAdversesStats) return;
+        csvContent = 'RELATÓRIO PNJ / ADVERSOS\n\n';
+        csvContent += 'TOP 15 ADVERSOS\nNome,CPF/CNPJ,Qtd Processos\n';
+        pnjAdversesStats.topAdverses.forEach(a => {
+          csvContent += `${a.name},${a.document || ''},${a.processCount}\n`;
+        });
+        csvContent += '\nPNJs SEM MOVIMENTO 180 DIAS\n';
+        csvContent += `Total,${pnjAdversesStats.withoutMovement180Days.total}\n`;
+        csvContent += 'Número,Título,Cliente,Último Movimento\n';
+        pnjAdversesStats.withoutMovement180Days.pnjs.forEach(p => {
+          csvContent += `${p.number},${p.title},${p.client},${p.lastMovementDescription}\n`;
+        });
+        filename = 'relatorio_pnj_adversos.csv';
+        break;
     }
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -392,11 +515,18 @@ const Reports: React.FC = () => {
     toast.success('Relatório exportado!');
   };
 
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return 'Nunca';
+    return new Date(dateString).toLocaleDateString('pt-BR');
+  };
+
   const reportTabs = [
     { id: 'clients' as ReportType, label: 'Clientes', icon: Users },
     { id: 'cases' as ReportType, label: 'Processos', icon: FileText },
+    { id: 'casesAdvanced' as ReportType, label: 'Processos Avançado', icon: Scale },
     { id: 'financial' as ReportType, label: 'Financeiro', icon: DollarSign },
     { id: 'tasks' as ReportType, label: 'Tarefas', icon: CheckCircle2 },
+    { id: 'pnjAdverses' as ReportType, label: 'PNJ / Adversos', icon: Briefcase },
   ];
 
   const renderClientReport = () => {
@@ -404,7 +534,6 @@ const Reports: React.FC = () => {
 
     return (
       <div className="space-y-6">
-        {/* Stats cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 shadow-sm">
             <div className="flex items-center justify-between">
@@ -443,7 +572,6 @@ const Reports: React.FC = () => {
           </div>
         </div>
 
-        {/* Top Cities */}
         <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 shadow-sm">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4 flex items-center gap-2">
             <Building2 className="w-5 h-5" />
@@ -484,7 +612,6 @@ const Reports: React.FC = () => {
 
     return (
       <div className="space-y-6">
-        {/* Stats cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 shadow-sm">
             <div className="flex items-center justify-between">
@@ -523,7 +650,6 @@ const Reports: React.FC = () => {
           </div>
         </div>
 
-        {/* By Phase */}
         <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 shadow-sm">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4">Processos por Fase</h3>
           {caseStats.byPhase.length > 0 ? (
@@ -560,7 +686,6 @@ const Reports: React.FC = () => {
 
     return (
       <div className="space-y-6">
-        {/* Stats cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 shadow-sm">
             <div className="flex items-center justify-between">
@@ -619,7 +744,6 @@ const Reports: React.FC = () => {
           </div>
         </div>
 
-        {/* Balance */}
         <div className={`rounded-xl p-6 border shadow-sm ${
           balance >= 0
             ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
@@ -670,7 +794,6 @@ const Reports: React.FC = () => {
 
     return (
       <div className="space-y-6">
-        {/* Stats cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 shadow-sm">
             <div className="flex items-center justify-between">
@@ -721,7 +844,6 @@ const Reports: React.FC = () => {
           </div>
         </div>
 
-        {/* Completion Rate */}
         <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 shadow-sm">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4">Taxa de Conclusão</h3>
           <div className="flex items-center gap-4">
@@ -759,7 +881,6 @@ const Reports: React.FC = () => {
           </div>
         </div>
 
-        {/* By Priority */}
         <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 shadow-sm">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4">Tarefas por Prioridade</h3>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -772,6 +893,402 @@ const Reports: React.FC = () => {
               </div>
             ))}
           </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderCaseAdvancedReport = () => {
+    if (!caseAdvancedStats) return null;
+
+    return (
+      <div className="space-y-6">
+        {/* Cards de resumo */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500 dark:text-slate-400">Total Processos Ativos</p>
+                <p className="text-3xl font-bold text-gray-900 dark:text-slate-100 mt-1">{caseAdvancedStats.totalCases}</p>
+              </div>
+              <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-xl">
+                <Scale className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500 dark:text-slate-400">Com Prazo Definido</p>
+                <p className="text-3xl font-bold text-amber-600 dark:text-amber-400 mt-1">{caseAdvancedStats.withDeadline.total}</p>
+              </div>
+              <div className="p-3 bg-amber-100 dark:bg-amber-900/30 rounded-xl">
+                <Calendar className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500 dark:text-slate-400">Prazos Vencidos</p>
+                <p className="text-3xl font-bold text-red-600 dark:text-red-400 mt-1">{caseAdvancedStats.withDeadline.overdue}</p>
+              </div>
+              <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-xl">
+                <AlertCircle className="w-6 h-6 text-red-600 dark:text-red-400" />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500 dark:text-slate-400">Sem Movimento 180d</p>
+                <p className="text-3xl font-bold text-orange-600 dark:text-orange-400 mt-1">{caseAdvancedStats.withoutMovement180Days.total}</p>
+              </div>
+              <div className="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-xl">
+                <AlertTriangle className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Por Fase e Por Rito lado a lado */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Por Fase */}
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 shadow-sm">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4 flex items-center gap-2">
+              <FileText className="w-5 h-5" />
+              Por Fase
+            </h3>
+            {caseAdvancedStats.byPhase.length > 0 ? (
+              <div className="space-y-3 max-h-64 overflow-y-auto">
+                {caseAdvancedStats.byPhase.map((phase) => (
+                  <div key={phase.phase} className="flex items-center gap-3">
+                    <div className="flex-1">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-gray-700 dark:text-slate-300 text-sm">{phase.phase}</span>
+                        <span className="text-gray-500 dark:text-slate-400 text-sm font-medium">{phase.count}</span>
+                      </div>
+                      <div className="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-2">
+                        <div
+                          className="bg-blue-500 h-2 rounded-full"
+                          style={{ width: `${(phase.count / caseAdvancedStats.totalCases) * 100}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500 dark:text-slate-400 text-center py-4">Nenhum dado disponível</p>
+            )}
+          </div>
+
+          {/* Por Rito */}
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 shadow-sm">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4 flex items-center gap-2">
+              <Scale className="w-5 h-5" />
+              Por Rito
+            </h3>
+            {caseAdvancedStats.byRite.length > 0 ? (
+              <div className="space-y-3 max-h-64 overflow-y-auto">
+                {caseAdvancedStats.byRite.map((rite) => (
+                  <div key={rite.rite} className="flex items-center gap-3">
+                    <div className="flex-1">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-gray-700 dark:text-slate-300 text-sm">{rite.rite}</span>
+                        <span className="text-gray-500 dark:text-slate-400 text-sm font-medium">{rite.count}</span>
+                      </div>
+                      <div className="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-2">
+                        <div
+                          className="bg-purple-500 h-2 rounded-full"
+                          style={{ width: `${(rite.count / caseAdvancedStats.totalCases) * 100}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500 dark:text-slate-400 text-center py-4">Nenhum dado disponível</p>
+            )}
+          </div>
+        </div>
+
+        {/* Por Advogado Responsável */}
+        <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 shadow-sm">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4 flex items-center gap-2">
+            <UserCheck className="w-5 h-5" />
+            Por Advogado Responsável
+          </h3>
+          {caseAdvancedStats.byLawyer.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {caseAdvancedStats.byLawyer.map((lawyer, index) => (
+                <div key={lawyer.id} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-slate-700/50 rounded-lg">
+                  <span className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 text-sm font-medium flex items-center justify-center">
+                    {index + 1}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900 dark:text-slate-100 truncate">{lawyer.name}</p>
+                    <p className="text-xs text-gray-500 dark:text-slate-400">{lawyer.count} processos</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500 dark:text-slate-400 text-center py-4">Nenhum dado disponível</p>
+          )}
+        </div>
+
+        {/* Processos com Prazo */}
+        <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 shadow-sm">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4 flex items-center gap-2">
+            <Calendar className="w-5 h-5" />
+            Processos com Prazo Definido
+          </h3>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+            <div className="text-center p-3 bg-gray-50 dark:bg-slate-700/50 rounded-lg">
+              <p className="text-2xl font-bold text-gray-900 dark:text-slate-100">{caseAdvancedStats.withDeadline.total}</p>
+              <p className="text-xs text-gray-500 dark:text-slate-400">Total</p>
+            </div>
+            <div className="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+              <p className="text-2xl font-bold text-green-600 dark:text-green-400">{caseAdvancedStats.withDeadline.completed}</p>
+              <p className="text-xs text-gray-500 dark:text-slate-400">Cumpridos</p>
+            </div>
+            <div className="text-center p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
+              <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">{caseAdvancedStats.withDeadline.pending}</p>
+              <p className="text-xs text-gray-500 dark:text-slate-400">Pendentes</p>
+            </div>
+            <div className="text-center p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
+              <p className="text-2xl font-bold text-red-600 dark:text-red-400">{caseAdvancedStats.withDeadline.overdue}</p>
+              <p className="text-xs text-gray-500 dark:text-slate-400">Vencidos</p>
+            </div>
+          </div>
+          {caseAdvancedStats.withDeadline.cases.length > 0 && (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-200 dark:border-slate-700">
+                    <th className="text-left py-2 px-2 text-gray-500 dark:text-slate-400 font-medium">Processo</th>
+                    <th className="text-left py-2 px-2 text-gray-500 dark:text-slate-400 font-medium">Prazo</th>
+                    <th className="text-left py-2 px-2 text-gray-500 dark:text-slate-400 font-medium">Cliente</th>
+                    <th className="text-left py-2 px-2 text-gray-500 dark:text-slate-400 font-medium">Tribunal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {caseAdvancedStats.withDeadline.cases.slice(0, 10).map((c) => (
+                    <tr key={c.id} className="border-b border-gray-100 dark:border-slate-700/50">
+                      <td className="py-2 px-2 text-gray-900 dark:text-slate-100 font-mono text-xs">{c.processNumber}</td>
+                      <td className="py-2 px-2">
+                        <span className={`px-2 py-1 rounded text-xs ${
+                          new Date(c.deadline) < new Date()
+                            ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+                            : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400'
+                        }`}>
+                          {formatDate(c.deadline)}
+                        </span>
+                      </td>
+                      <td className="py-2 px-2 text-gray-600 dark:text-slate-300">{c.client}</td>
+                      <td className="py-2 px-2 text-gray-500 dark:text-slate-400 text-xs">{c.court || '-'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        {/* Processos sem Movimento 180 dias */}
+        <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-orange-200 dark:border-orange-800 shadow-sm">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4 flex items-center gap-2">
+            <AlertTriangle className="w-5 h-5 text-orange-500" />
+            Processos sem Movimento (180 dias)
+            <span className="ml-2 px-2 py-0.5 text-xs bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 rounded-full">
+              {caseAdvancedStats.withoutMovement180Days.total} processos
+            </span>
+          </h3>
+          {caseAdvancedStats.withoutMovement180Days.cases.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-200 dark:border-slate-700">
+                    <th className="text-left py-2 px-2 text-gray-500 dark:text-slate-400 font-medium">Processo</th>
+                    <th className="text-left py-2 px-2 text-gray-500 dark:text-slate-400 font-medium">Última Sync</th>
+                    <th className="text-left py-2 px-2 text-gray-500 dark:text-slate-400 font-medium">Tribunal</th>
+                    <th className="text-left py-2 px-2 text-gray-500 dark:text-slate-400 font-medium">Cliente</th>
+                    <th className="text-left py-2 px-2 text-gray-500 dark:text-slate-400 font-medium">Advogado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {caseAdvancedStats.withoutMovement180Days.cases.map((c) => (
+                    <tr key={c.id} className="border-b border-gray-100 dark:border-slate-700/50 hover:bg-gray-50 dark:hover:bg-slate-700/30">
+                      <td className="py-2 px-2 text-gray-900 dark:text-slate-100 font-mono text-xs">{c.processNumber}</td>
+                      <td className="py-2 px-2">
+                        <span className="px-2 py-1 rounded text-xs bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400">
+                          {formatDate(c.lastSyncedAt)}
+                        </span>
+                      </td>
+                      <td className="py-2 px-2 text-gray-500 dark:text-slate-400 text-xs">{c.court || '-'}</td>
+                      <td className="py-2 px-2 text-gray-600 dark:text-slate-300">{c.client}</td>
+                      <td className="py-2 px-2 text-gray-500 dark:text-slate-400">{c.lawyer}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className="text-gray-500 dark:text-slate-400 text-center py-4">Nenhum processo sem movimento nos últimos 180 dias</p>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const renderPnjAdversesReport = () => {
+    if (!pnjAdversesStats) return null;
+
+    return (
+      <div className="space-y-6">
+        {/* Cards de resumo */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500 dark:text-slate-400">Total PNJs Ativos</p>
+                <p className="text-3xl font-bold text-gray-900 dark:text-slate-100 mt-1">{pnjAdversesStats.totalPnjs}</p>
+              </div>
+              <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-xl">
+                <Briefcase className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500 dark:text-slate-400">Adversos Identificados</p>
+                <p className="text-3xl font-bold text-purple-600 dark:text-purple-400 mt-1">{pnjAdversesStats.topAdverses.length}</p>
+              </div>
+              <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-xl">
+                <Users className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500 dark:text-slate-400">Sem Movimento 180d</p>
+                <p className="text-3xl font-bold text-orange-600 dark:text-orange-400 mt-1">{pnjAdversesStats.withoutMovement180Days.total}</p>
+              </div>
+              <div className="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-xl">
+                <AlertTriangle className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Top 15 Adversos */}
+        <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 shadow-sm">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4 flex items-center gap-2">
+            <Users className="w-5 h-5" />
+            Top 15 Adversos com Mais Processos
+          </h3>
+          {pnjAdversesStats.topAdverses.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-200 dark:border-slate-700">
+                    <th className="text-left py-2 px-2 text-gray-500 dark:text-slate-400 font-medium">#</th>
+                    <th className="text-left py-2 px-2 text-gray-500 dark:text-slate-400 font-medium">Nome</th>
+                    <th className="text-left py-2 px-2 text-gray-500 dark:text-slate-400 font-medium">CPF/CNPJ</th>
+                    <th className="text-center py-2 px-2 text-gray-500 dark:text-slate-400 font-medium">Processos</th>
+                    <th className="text-left py-2 px-2 text-gray-500 dark:text-slate-400 font-medium">Números</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pnjAdversesStats.topAdverses.map((adv, index) => (
+                    <tr key={index} className="border-b border-gray-100 dark:border-slate-700/50 hover:bg-gray-50 dark:hover:bg-slate-700/30">
+                      <td className="py-2 px-2">
+                        <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
+                          index < 3
+                            ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400'
+                            : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-slate-400'
+                        }`}>
+                          {index + 1}
+                        </span>
+                      </td>
+                      <td className="py-2 px-2 text-gray-900 dark:text-slate-100 font-medium">{adv.name}</td>
+                      <td className="py-2 px-2 text-gray-500 dark:text-slate-400 font-mono text-xs">{adv.document || '-'}</td>
+                      <td className="py-2 px-2 text-center">
+                        <span className="px-2 py-1 rounded bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 font-bold">
+                          {adv.processCount}
+                        </span>
+                      </td>
+                      <td className="py-2 px-2 text-gray-500 dark:text-slate-400 text-xs">
+                        {adv.processes.slice(0, 3).join(', ')}
+                        {adv.processes.length > 3 && ` +${adv.processes.length - 3}`}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className="text-gray-500 dark:text-slate-400 text-center py-4">Nenhum adverso encontrado</p>
+          )}
+        </div>
+
+        {/* PNJs sem Movimento 180 dias */}
+        <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-orange-200 dark:border-orange-800 shadow-sm">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4 flex items-center gap-2">
+            <AlertTriangle className="w-5 h-5 text-orange-500" />
+            PNJs sem Movimento (180 dias)
+            <span className="ml-2 px-2 py-0.5 text-xs bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 rounded-full">
+              {pnjAdversesStats.withoutMovement180Days.total} processos
+            </span>
+          </h3>
+          {pnjAdversesStats.withoutMovement180Days.pnjs.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-200 dark:border-slate-700">
+                    <th className="text-left py-2 px-2 text-gray-500 dark:text-slate-400 font-medium">Número</th>
+                    <th className="text-left py-2 px-2 text-gray-500 dark:text-slate-400 font-medium">Título</th>
+                    <th className="text-left py-2 px-2 text-gray-500 dark:text-slate-400 font-medium">Último Movimento</th>
+                    <th className="text-left py-2 px-2 text-gray-500 dark:text-slate-400 font-medium">Cliente</th>
+                    <th className="text-left py-2 px-2 text-gray-500 dark:text-slate-400 font-medium">Réus</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pnjAdversesStats.withoutMovement180Days.pnjs.map((pnj) => (
+                    <tr key={pnj.id} className="border-b border-gray-100 dark:border-slate-700/50 hover:bg-gray-50 dark:hover:bg-slate-700/30">
+                      <td className="py-2 px-2 text-gray-900 dark:text-slate-100 font-mono text-xs">{pnj.number}</td>
+                      <td className="py-2 px-2 text-gray-600 dark:text-slate-300 max-w-xs truncate">{pnj.title}</td>
+                      <td className="py-2 px-2">
+                        <div className="flex flex-col">
+                          <span className="px-2 py-1 rounded text-xs bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 inline-block w-fit">
+                            {formatDate(pnj.lastMovement)}
+                          </span>
+                          <span className="text-xs text-gray-400 dark:text-slate-500 mt-1 truncate max-w-[150px]">
+                            {pnj.lastMovementDescription}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="py-2 px-2 text-gray-500 dark:text-slate-400">{pnj.client}</td>
+                      <td className="py-2 px-2 text-gray-500 dark:text-slate-400 text-xs">
+                        {pnj.defendants.join(', ') || '-'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className="text-gray-500 dark:text-slate-400 text-center py-4">Nenhum PNJ sem movimento nos últimos 180 dias</p>
+          )}
         </div>
       </div>
     );
@@ -818,7 +1335,7 @@ const Reports: React.FC = () => {
                 key={tab.id}
                 onClick={() => {
                   setActiveReport(tab.id);
-                  loadReportData();
+                  setTimeout(() => loadReportData(), 0);
                 }}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
                   activeReport === tab.id
@@ -833,52 +1350,54 @@ const Reports: React.FC = () => {
           })}
         </div>
 
-        {/* Filters */}
-        <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm">
-          <button
-            onClick={() => setFiltersOpen(!filtersOpen)}
-            className="w-full flex items-center justify-between p-4 text-left"
-          >
-            <span className="flex items-center gap-2 font-medium text-gray-900 dark:text-slate-100">
-              <Filter className="w-5 h-5" />
-              Filtros
-            </span>
-            {filtersOpen ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-          </button>
+        {/* Filters - only show for reports that use date filters */}
+        {(activeReport === 'clients' || activeReport === 'cases' || activeReport === 'financial' || activeReport === 'tasks') && (
+          <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm">
+            <button
+              onClick={() => setFiltersOpen(!filtersOpen)}
+              className="w-full flex items-center justify-between p-4 text-left"
+            >
+              <span className="flex items-center gap-2 font-medium text-gray-900 dark:text-slate-100">
+                <Filter className="w-5 h-5" />
+                Filtros
+              </span>
+              {filtersOpen ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+            </button>
 
-          {filtersOpen && (
-            <div className="p-4 pt-0 border-t border-gray-200 dark:border-slate-700">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Data Início</label>
-                  <input
-                    type="date"
-                    value={filters.startDate}
-                    onChange={(e) => handleFilterChange('startDate', e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Data Fim</label>
-                  <input
-                    type="date"
-                    value={filters.endDate}
-                    onChange={(e) => handleFilterChange('endDate', e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100"
-                  />
-                </div>
-                <div className="flex items-end">
-                  <button
-                    onClick={handleApplyFilters}
-                    className="w-full px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors"
-                  >
-                    Aplicar Filtros
-                  </button>
+            {filtersOpen && (
+              <div className="p-4 pt-0 border-t border-gray-200 dark:border-slate-700">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Data Início</label>
+                    <input
+                      type="date"
+                      value={filters.startDate}
+                      onChange={(e) => handleFilterChange('startDate', e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Data Fim</label>
+                    <input
+                      type="date"
+                      value={filters.endDate}
+                      onChange={(e) => handleFilterChange('endDate', e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100"
+                    />
+                  </div>
+                  <div className="flex items-end">
+                    <button
+                      onClick={handleApplyFilters}
+                      className="w-full px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors"
+                    >
+                      Aplicar Filtros
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
 
         {/* Report content */}
         {loading ? (
@@ -891,6 +1410,8 @@ const Reports: React.FC = () => {
             {activeReport === 'cases' && renderCaseReport()}
             {activeReport === 'financial' && renderFinancialReport()}
             {activeReport === 'tasks' && renderTaskReport()}
+            {activeReport === 'casesAdvanced' && renderCaseAdvancedReport()}
+            {activeReport === 'pnjAdverses' && renderPnjAdversesReport()}
           </>
         )}
       </div>

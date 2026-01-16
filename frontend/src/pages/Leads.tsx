@@ -531,14 +531,14 @@ const Leads: React.FC = () => {
       <div className="space-y-4 sm:space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-neutral-900 mb-3 sm:mb-4">Leads</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-slate-100 mb-3 sm:mb-4">Leads</h1>
 
           {/* Stats Cards */}
           {stats && (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3 mb-4">
-              <div className="bg-white rounded-lg p-3 shadow-sm border border-neutral-200">
-                <p className="text-2xl font-bold text-neutral-900">{stats.total}</p>
-                <p className="text-xs text-neutral-500">Total</p>
+              <div className="bg-white dark:bg-slate-800 rounded-lg p-3 shadow-sm border border-neutral-200 dark:border-slate-700">
+                <p className="text-2xl font-bold text-neutral-900 dark:text-slate-100">{stats.total}</p>
+                <p className="text-xs text-neutral-500 dark:text-slate-400">Total</p>
               </div>
               <div className="bg-blue-50 rounded-lg p-3 shadow-sm border border-blue-200">
                 <p className="text-2xl font-bold text-blue-700">{stats.byStatus.NOVO}</p>
@@ -556,9 +556,9 @@ const Leads: React.FC = () => {
                 <p className="text-2xl font-bold text-green-700">{stats.byStatus.CONVERTIDO}</p>
                 <p className="text-xs text-green-600">Convertidos</p>
               </div>
-              <div className="bg-neutral-50 rounded-lg p-3 shadow-sm border border-neutral-200">
+              <div className="bg-neutral-50 dark:bg-slate-700 rounded-lg p-3 shadow-sm border border-neutral-200 dark:border-slate-700">
                 <p className="text-2xl font-bold text-primary-700">{stats.conversionRate}%</p>
-                <p className="text-xs text-neutral-500">Taxa Conv.</p>
+                <p className="text-xs text-neutral-500 dark:text-slate-400">Taxa Conv.</p>
               </div>
             </div>
           )}
@@ -617,23 +617,23 @@ const Leads: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 p-4">
           {/* Search and Filter */}
           <div className="flex flex-col sm:flex-row gap-3 mb-4">
             <div className="flex items-center gap-2 flex-1">
-              <Search size={20} className="text-neutral-400" />
+              <Search size={20} className="text-neutral-400 dark:text-slate-500" />
               <input
                 type="text"
                 placeholder="Buscar por nome, telefone ou email..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="flex-1 px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 min-h-[44px]"
+                className="flex-1 px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 min-h-[44px]"
               />
             </div>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+              className="px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
             >
               <option value="ALL">Todos os Status</option>
               <option value="NOVO">Novo</option>
@@ -646,10 +646,10 @@ const Leads: React.FC = () => {
 
           {/* Expanded Filters */}
           {showFilters && (
-            <div className="bg-neutral-50 rounded-lg p-4 mb-4 border border-neutral-200">
+            <div className="bg-neutral-50 dark:bg-slate-700 rounded-lg p-4 mb-4 border border-neutral-200 dark:border-slate-700">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                     <Calendar size={14} className="inline mr-1" />
                     Data Início
                   </label>
@@ -657,11 +657,11 @@ const Leads: React.FC = () => {
                     type="date"
                     value={dateFrom}
                     onChange={(e) => setDateFrom(e.target.value)}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                     <Calendar size={14} className="inline mr-1" />
                     Data Fim
                   </label>
@@ -669,17 +669,17 @@ const Leads: React.FC = () => {
                     type="date"
                     value={dateTo}
                     onChange={(e) => setDateTo(e.target.value)}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                     Tag
                   </label>
                   <select
                     value={tagFilter}
                     onChange={(e) => setTagFilter(e.target.value)}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   >
                     <option value="">Todas as Tags</option>
                     {tags.map((tag) => (
@@ -692,15 +692,15 @@ const Leads: React.FC = () => {
                 <div className="flex items-end">
                   <button
                     onClick={clearFilters}
-                    className="w-full px-4 py-2 text-sm font-medium text-neutral-600 bg-white border border-neutral-300 rounded-md hover:bg-neutral-50 min-h-[44px]"
+                    className="w-full px-4 py-2 text-sm font-medium text-neutral-600 dark:text-slate-400 bg-white dark:bg-slate-800 border border-neutral-300 dark:border-slate-600 rounded-md hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 min-h-[44px]"
                   >
                     Limpar Filtros
                   </button>
                 </div>
               </div>
               {hasActiveFilters && (
-                <div className="mt-3 pt-3 border-t border-neutral-200">
-                  <p className="text-sm text-neutral-600">
+                <div className="mt-3 pt-3 border-t border-neutral-200 dark:border-slate-700">
+                  <p className="text-sm text-neutral-600 dark:text-slate-400">
                     <strong>Filtros ativos:</strong>{' '}
                     {statusFilter !== 'ALL' && <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs mr-2">Status: {statusColors[statusFilter as LeadStatus]?.label || statusFilter}</span>}
                     {tagFilter && <span className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded text-xs mr-2">Tag: {tags.find(t => t.id === tagFilter)?.name}</span>}
@@ -713,9 +713,9 @@ const Leads: React.FC = () => {
           )}
 
           {loading ? (
-            <p className="text-center py-8 text-neutral-600">Carregando...</p>
+            <p className="text-center py-8 text-neutral-600 dark:text-slate-400">Carregando...</p>
           ) : leads.length === 0 ? (
-            <p className="text-center py-8 text-neutral-600">
+            <p className="text-center py-8 text-neutral-600 dark:text-slate-400">
               {search || statusFilter !== 'ALL'
                 ? 'Nenhum lead encontrado para sua busca'
                 : 'Nenhum lead cadastrado'}
@@ -758,40 +758,40 @@ const Leads: React.FC = () => {
               {/* Desktop Table View */}
               <div className="desktop-table-view overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-neutral-50">
+                  <thead className="bg-neutral-50 dark:bg-slate-700">
                     <tr>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                         Nome
                       </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                         Telefone
                       </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                         Email
                       </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                         Status
                       </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                         Origem
                       </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                         Tags
                       </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                         Data
                       </th>
-                      <th className="px-4 py-3 text-center text-sm font-semibold text-neutral-900 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                         Ações
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-neutral-200 bg-white">
+                  <tbody className="divide-y divide-neutral-200 dark:divide-slate-700 bg-white dark:bg-slate-800">
                     {leads.map((lead) => (
-                      <tr key={lead.id} className="odd:bg-white even:bg-neutral-50 hover:bg-success-100 transition-colors">
-                        <td className="px-4 py-3 text-sm font-medium text-neutral-900">{lead.name}</td>
-                        <td className="px-4 py-3 text-sm text-neutral-600">{lead.phone || '-'}</td>
-                        <td className="px-4 py-3 text-sm text-neutral-600">{lead.email || '-'}</td>
+                      <tr key={lead.id} className="odd:bg-white dark:bg-slate-800 even:bg-neutral-50 dark:bg-slate-700 hover:bg-success-100 transition-colors">
+                        <td className="px-4 py-3 text-sm font-medium text-neutral-900 dark:text-slate-100">{lead.name}</td>
+                        <td className="px-4 py-3 text-sm text-neutral-600 dark:text-slate-400">{lead.phone || '-'}</td>
+                        <td className="px-4 py-3 text-sm text-neutral-600 dark:text-slate-400">{lead.email || '-'}</td>
                         <td className="px-4 py-3 text-sm">
                           <span
                             className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[lead.status].bg} ${statusColors[lead.status].text}`}
@@ -799,10 +799,10 @@ const Leads: React.FC = () => {
                             {statusColors[lead.status].label}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-sm text-neutral-600">
+                        <td className="px-4 py-3 text-sm text-neutral-600 dark:text-slate-400">
                           {sourceLabels[lead.source]}
                         </td>
-                        <td className="px-4 py-3 text-sm text-neutral-600">
+                        <td className="px-4 py-3 text-sm text-neutral-600 dark:text-slate-400">
                           {lead.leadTags && lead.leadTags.length > 0 ? (
                             <div className="flex flex-wrap gap-1">
                               {lead.leadTags.map((lt) => (
@@ -813,7 +813,7 @@ const Leads: React.FC = () => {
                             '-'
                           )}
                         </td>
-                        <td className="px-4 py-3 text-sm text-neutral-600">
+                        <td className="px-4 py-3 text-sm text-neutral-600 dark:text-slate-400">
                           {formatDateDisplay(lead.createdAt)}
                         </td>
                         <td className="px-4 py-3 text-sm text-center">
@@ -863,30 +863,30 @@ const Leads: React.FC = () => {
           {/* Pagination */}
           {total > 0 && (
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 px-4">
-              <div className="text-sm text-neutral-600">
+              <div className="text-sm text-neutral-600 dark:text-slate-400">
                 Mostrando {(page - 1) * limit + 1} - {Math.min(page * limit, total)} de {total} leads
               </div>
               <div className="flex items-center gap-2">
-                <select value={limit} onChange={(e) => { setLimit(Number(e.target.value)); setPage(1); }} className="px-2 py-1 text-sm border border-neutral-300 rounded-lg">
+                <select value={limit} onChange={(e) => { setLimit(Number(e.target.value)); setPage(1); }} className="px-2 py-1 text-sm border border-neutral-300 dark:border-slate-600 rounded-lg">
                   <option value={25}>25 por página</option>
                   <option value={50}>50 por página</option>
                   <option value={100}>100 por página</option>
                   <option value={200}>200 por página</option>
                 </select>
-                <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="inline-flex items-center gap-1 px-3 py-2 text-sm text-neutral-600 hover:bg-neutral-100 rounded-lg disabled:opacity-50">
+                <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="inline-flex items-center gap-1 px-3 py-2 text-sm text-neutral-600 dark:text-slate-400 hover:bg-neutral-100 dark:hover:bg-slate-600 rounded-lg disabled:opacity-50">
                   <ChevronLeft className="w-4 h-4" /> Anterior
                 </button>
                 <div className="flex items-center gap-1">
                   {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                     let pageNum = totalPages <= 5 ? i + 1 : page <= 3 ? i + 1 : page >= totalPages - 2 ? totalPages - 4 + i : page - 2 + i;
                     return (
-                      <button key={pageNum} onClick={() => setPage(pageNum)} className={`px-3 py-1 text-sm rounded-lg ${page === pageNum ? 'bg-primary-600 text-white' : 'text-neutral-600 hover:bg-neutral-100'}`}>
+                      <button key={pageNum} onClick={() => setPage(pageNum)} className={`px-3 py-1 text-sm rounded-lg ${page === pageNum ? 'bg-primary-600 text-white' : 'text-neutral-600 dark:text-slate-400 hover:bg-neutral-100'}`}>
                         {pageNum}
                       </button>
                     );
                   })}
                 </div>
-                <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="inline-flex items-center gap-1 px-3 py-2 text-sm text-neutral-600 hover:bg-neutral-100 rounded-lg disabled:opacity-50">
+                <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="inline-flex items-center gap-1 px-3 py-2 text-sm text-neutral-600 dark:text-slate-400 hover:bg-neutral-100 dark:hover:bg-slate-600 rounded-lg disabled:opacity-50">
                   Próximo <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
@@ -900,7 +900,7 @@ const Leads: React.FC = () => {
         <div className="modal-overlay">
           <div className="modal-container">
             <div className="modal-header">
-              <h2 className="text-lg sm:text-xl font-bold text-neutral-900">
+              <h2 className="text-lg sm:text-xl font-bold text-neutral-900 dark:text-slate-100">
                 {editMode ? 'Editar Lead' : 'Novo Lead'}
               </h2>
               <button
@@ -910,7 +910,7 @@ const Leads: React.FC = () => {
                   setSelectedLead(null);
                   resetForm();
                 }}
-                className="p-2 text-neutral-400 hover:text-neutral-600 rounded-lg hover:bg-neutral-100"
+                className="p-2 text-neutral-400 dark:text-slate-500 hover:text-neutral-600 dark:text-slate-400 rounded-lg hover:bg-neutral-100 dark:hover:bg-slate-600"
               >
                 <X size={24} />
               </button>
@@ -919,7 +919,7 @@ const Leads: React.FC = () => {
             <form onSubmit={handleSubmit} className="modal-body">
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                     Nome <span className="text-error-500">*</span>
                   </label>
                   <input
@@ -927,13 +927,13 @@ const Leads: React.FC = () => {
                     required
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                       Telefone <span className="text-error-500">*</span>
                     </label>
                     <input
@@ -942,25 +942,25 @@ const Leads: React.FC = () => {
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                       placeholder="(00) 00000-0000"
-                      className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                      className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                       Email
                     </label>
                     <input
                       type="email"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                      className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                       Status
                     </label>
                     <select
@@ -968,7 +968,7 @@ const Leads: React.FC = () => {
                       onChange={(e) =>
                         setFormData({ ...formData, status: e.target.value as LeadStatus })
                       }
-                      className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                      className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                     >
                       <option value="NOVO">Novo</option>
                       <option value="CONTATADO">Contatado</option>
@@ -977,7 +977,7 @@ const Leads: React.FC = () => {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                       Origem
                     </label>
                     <select
@@ -985,7 +985,7 @@ const Leads: React.FC = () => {
                       onChange={(e) =>
                         setFormData({ ...formData, source: e.target.value as LeadSource })
                       }
-                      className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                      className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                     >
                       <option value="WHATSAPP">WhatsApp</option>
                       <option value="TELEFONE">Telefone</option>
@@ -998,7 +998,7 @@ const Leads: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                     Motivo do Contato / Resumo
                   </label>
                   <textarea
@@ -1006,12 +1006,12 @@ const Leads: React.FC = () => {
                     onChange={(e) => setFormData({ ...formData, contactReason: e.target.value })}
                     rows={3}
                     placeholder="Descreva o motivo do contato ou um resumo do atendimento..."
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                     Observações
                   </label>
                   <textarea
@@ -1019,12 +1019,12 @@ const Leads: React.FC = () => {
                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                     rows={3}
                     placeholder="Observações adicionais..."
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                     Tags
                   </label>
                   <TagSelector
@@ -1035,7 +1035,7 @@ const Leads: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-neutral-200">
+              <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-neutral-200 dark:border-slate-700">
                 <button
                   type="button"
                   onClick={() => {
@@ -1044,7 +1044,7 @@ const Leads: React.FC = () => {
                     setSelectedLead(null);
                     resetForm();
                   }}
-                  className="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-white border border-neutral-300 hover:bg-neutral-50 text-neutral-700 rounded-lg font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200 min-h-[44px]"
+                  className="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-white dark:bg-slate-800 border border-neutral-300 dark:border-slate-600 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 text-neutral-700 dark:text-slate-300 rounded-lg font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200 min-h-[44px]"
                 >
                   Cancelar
                 </button>
@@ -1065,13 +1065,13 @@ const Leads: React.FC = () => {
         <div className="modal-overlay">
           <div className="modal-container sm:max-w-2xl">
             <div className="modal-header">
-              <h2 className="text-lg sm:text-xl font-bold text-neutral-900">Detalhes do Lead</h2>
+              <h2 className="text-lg sm:text-xl font-bold text-neutral-900 dark:text-slate-100">Detalhes do Lead</h2>
               <button
                 onClick={() => {
                   setShowDetailsModal(false);
                   setSelectedLead(null);
                 }}
-                className="p-2 text-neutral-400 hover:text-neutral-600 rounded-lg hover:bg-neutral-100"
+                className="p-2 text-neutral-400 dark:text-slate-500 hover:text-neutral-600 dark:text-slate-400 rounded-lg hover:bg-neutral-100 dark:hover:bg-slate-600"
               >
                 <X size={24} />
               </button>
@@ -1085,22 +1085,22 @@ const Leads: React.FC = () => {
                 >
                   {statusColors[selectedLead.status].label}
                 </span>
-                <span className="text-sm text-neutral-500">
+                <span className="text-sm text-neutral-500 dark:text-slate-400">
                   Origem: {sourceLabels[selectedLead.source]}
                 </span>
               </div>
 
               {/* Dados do Lead */}
               <div>
-                <h3 className="text-lg font-semibold text-neutral-900 mb-3">Dados do Lead</h3>
-                <div className="bg-neutral-50 rounded-lg p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <h3 className="text-lg font-semibold text-neutral-900 dark:text-slate-100 mb-3">Dados do Lead</h3>
+                <div className="bg-neutral-50 dark:bg-slate-700 rounded-lg p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm font-medium text-neutral-500">Nome</p>
-                    <p className="text-sm text-neutral-900 mt-1">{selectedLead.name}</p>
+                    <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">Nome</p>
+                    <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">{selectedLead.name}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-500">Telefone</p>
-                    <p className="text-sm text-neutral-900 mt-1 flex items-center gap-2">
+                    <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">Telefone</p>
+                    <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1 flex items-center gap-2">
                       {selectedLead.phone || '-'}
                       {selectedLead.phone && (
                         <a
@@ -1116,8 +1116,8 @@ const Leads: React.FC = () => {
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-500">Email</p>
-                    <p className="text-sm text-neutral-900 mt-1 flex items-center gap-2">
+                    <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">Email</p>
+                    <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1 flex items-center gap-2">
                       {selectedLead.email || '-'}
                       {selectedLead.email && (
                         <a
@@ -1131,8 +1131,8 @@ const Leads: React.FC = () => {
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-500">Data de Cadastro</p>
-                    <p className="text-sm text-neutral-900 mt-1">
+                    <p className="text-sm font-medium text-neutral-500 dark:text-slate-400">Data de Cadastro</p>
+                    <p className="text-sm text-neutral-900 dark:text-slate-100 mt-1">
                       {formatDateTimeDisplay(selectedLead.createdAt)}
                     </p>
                   </div>
@@ -1142,9 +1142,9 @@ const Leads: React.FC = () => {
               {/* Motivo do Contato */}
               {selectedLead.contactReason && (
                 <div>
-                  <h3 className="text-lg font-semibold text-neutral-900 mb-3">Motivo do Contato</h3>
-                  <div className="bg-neutral-50 rounded-lg p-4">
-                    <p className="text-sm text-neutral-900 whitespace-pre-wrap">
+                  <h3 className="text-lg font-semibold text-neutral-900 dark:text-slate-100 mb-3">Motivo do Contato</h3>
+                  <div className="bg-neutral-50 dark:bg-slate-700 rounded-lg p-4">
+                    <p className="text-sm text-neutral-900 dark:text-slate-100 whitespace-pre-wrap">
                       {selectedLead.contactReason}
                     </p>
                   </div>
@@ -1154,9 +1154,9 @@ const Leads: React.FC = () => {
               {/* Observações */}
               {selectedLead.notes && (
                 <div>
-                  <h3 className="text-lg font-semibold text-neutral-900 mb-3">Observações</h3>
-                  <div className="bg-neutral-50 rounded-lg p-4">
-                    <p className="text-sm text-neutral-900 whitespace-pre-wrap">
+                  <h3 className="text-lg font-semibold text-neutral-900 dark:text-slate-100 mb-3">Observações</h3>
+                  <div className="bg-neutral-50 dark:bg-slate-700 rounded-lg p-4">
+                    <p className="text-sm text-neutral-900 dark:text-slate-100 whitespace-pre-wrap">
                       {selectedLead.notes}
                     </p>
                   </div>
@@ -1166,7 +1166,7 @@ const Leads: React.FC = () => {
               {/* Info de Conversão */}
               {selectedLead.status === 'CONVERTIDO' && selectedLead.convertedToClient && (
                 <div>
-                  <h3 className="text-lg font-semibold text-neutral-900 mb-3 flex items-center gap-2">
+                  <h3 className="text-lg font-semibold text-neutral-900 dark:text-slate-100 mb-3 flex items-center gap-2">
                     <Check size={20} className="text-green-600" />
                     Convertido para Cliente
                   </h3>
@@ -1188,7 +1188,7 @@ const Leads: React.FC = () => {
                   setShowDetailsModal(false);
                   setSelectedLead(null);
                 }}
-                className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2 bg-white border border-neutral-300 hover:bg-neutral-50 text-neutral-700 rounded-lg font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200 min-h-[44px]"
+                className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-neutral-300 dark:border-slate-600 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 text-neutral-700 dark:text-slate-300 rounded-lg font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200 min-h-[44px]"
               >
                 Fechar
               </button>
@@ -1226,7 +1226,7 @@ const Leads: React.FC = () => {
         <div className="modal-overlay">
           <div className="modal-container">
             <div className="modal-header">
-              <h2 className="text-lg sm:text-xl font-bold text-neutral-900">
+              <h2 className="text-lg sm:text-xl font-bold text-neutral-900 dark:text-slate-100">
                 Converter Lead para Cliente
               </h2>
               <button
@@ -1234,7 +1234,7 @@ const Leads: React.FC = () => {
                   setShowConvertModal(false);
                   resetConvertForm();
                 }}
-                className="p-2 text-neutral-400 hover:text-neutral-600 rounded-lg hover:bg-neutral-100"
+                className="p-2 text-neutral-400 dark:text-slate-500 hover:text-neutral-600 dark:text-slate-400 rounded-lg hover:bg-neutral-100 dark:hover:bg-slate-600"
               >
                 <X size={24} />
               </button>
@@ -1263,13 +1263,13 @@ const Leads: React.FC = () => {
               </div>
 
               <div className="space-y-4">
-                <p className="text-sm text-neutral-600">
+                <p className="text-sm text-neutral-600 dark:text-slate-400">
                   Complete os dados adicionais para criar o cliente:
                 </p>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                       Tipo de Pessoa
                     </label>
                     <select
@@ -1280,14 +1280,14 @@ const Leads: React.FC = () => {
                           personType: e.target.value as 'FISICA' | 'JURIDICA',
                         })
                       }
-                      className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                      className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                     >
                       <option value="FISICA">Pessoa Física</option>
                       <option value="JURIDICA">Pessoa Jurídica</option>
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                       {convertFormData.personType === 'FISICA' ? 'CPF' : 'CNPJ'}
                     </label>
                     <input
@@ -1301,7 +1301,7 @@ const Leads: React.FC = () => {
                           ? '000.000.000-00'
                           : '00.000.000/0000-00'
                       }
-                      className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                      className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                     />
                   </div>
                 </div>
@@ -1309,7 +1309,7 @@ const Leads: React.FC = () => {
                 {convertFormData.personType === 'FISICA' && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                         RG
                       </label>
                       <input
@@ -1318,11 +1318,11 @@ const Leads: React.FC = () => {
                         onChange={(e) =>
                           setConvertFormData({ ...convertFormData, rg: e.target.value })
                         }
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                         Data de Nascimento
                       </label>
                       <input
@@ -1331,11 +1331,11 @@ const Leads: React.FC = () => {
                         onChange={(e) =>
                           setConvertFormData({ ...convertFormData, birthDate: e.target.value })
                         }
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                         Estado Civil
                       </label>
                       <select
@@ -1343,7 +1343,7 @@ const Leads: React.FC = () => {
                         onChange={(e) =>
                           setConvertFormData({ ...convertFormData, maritalStatus: e.target.value })
                         }
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       >
                         <option value="">Selecione...</option>
                         <option value="Solteiro(a)">Solteiro(a)</option>
@@ -1354,7 +1354,7 @@ const Leads: React.FC = () => {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                         Profissão
                       </label>
                       <input
@@ -1363,14 +1363,14 @@ const Leads: React.FC = () => {
                         onChange={(e) =>
                           setConvertFormData({ ...convertFormData, profession: e.target.value })
                         }
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
                   </div>
                 )}
 
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                     Endereço
                   </label>
                   <input
@@ -1380,13 +1380,13 @@ const Leads: React.FC = () => {
                       setConvertFormData({ ...convertFormData, address: e.target.value })
                     }
                     placeholder="Rua, número, complemento"
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                       Cidade
                     </label>
                     <input
@@ -1395,11 +1395,11 @@ const Leads: React.FC = () => {
                       onChange={(e) =>
                         setConvertFormData({ ...convertFormData, city: e.target.value })
                       }
-                      className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                      className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                       Estado
                     </label>
                     <select
@@ -1407,7 +1407,7 @@ const Leads: React.FC = () => {
                       onChange={(e) =>
                         setConvertFormData({ ...convertFormData, state: e.target.value })
                       }
-                      className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                      className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                     >
                       <option value="">UF</option>
                       {['AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'].map(
@@ -1420,7 +1420,7 @@ const Leads: React.FC = () => {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                       CEP
                     </label>
                     <input
@@ -1430,13 +1430,13 @@ const Leads: React.FC = () => {
                         setConvertFormData({ ...convertFormData, zipCode: e.target.value })
                       }
                       placeholder="00000-000"
-                      className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                      className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                     Observações Adicionais
                   </label>
                   <textarea
@@ -1446,19 +1446,19 @@ const Leads: React.FC = () => {
                     }
                     rows={2}
                     placeholder="Observações adicionais para o cadastro do cliente..."
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-neutral-200">
+              <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-neutral-200 dark:border-slate-700">
                 <button
                   type="button"
                   onClick={() => {
                     setShowConvertModal(false);
                     resetConvertForm();
                   }}
-                  className="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-white border border-neutral-300 hover:bg-neutral-50 text-neutral-700 rounded-lg font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200 min-h-[44px]"
+                  className="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-white dark:bg-slate-800 border border-neutral-300 dark:border-slate-600 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 text-neutral-700 dark:text-slate-300 rounded-lg font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200 min-h-[44px]"
                 >
                   Cancelar
                 </button>
@@ -1490,7 +1490,7 @@ const Leads: React.FC = () => {
         <div className="modal-overlay">
           <div className="modal-container sm:max-w-md">
             <div className="modal-header">
-              <h2 className="text-lg sm:text-xl font-bold text-neutral-900">
+              <h2 className="text-lg sm:text-xl font-bold text-neutral-900 dark:text-slate-100">
                 Consultar Telefone
               </h2>
               <button
@@ -1499,20 +1499,20 @@ const Leads: React.FC = () => {
                   setPhoneToCheck('');
                   setPhoneCheckResult(null);
                 }}
-                className="p-2 text-neutral-400 hover:text-neutral-600 rounded-lg hover:bg-neutral-100"
+                className="p-2 text-neutral-400 dark:text-slate-500 hover:text-neutral-600 dark:text-slate-400 rounded-lg hover:bg-neutral-100 dark:hover:bg-slate-600"
               >
                 <X size={24} />
               </button>
             </div>
 
             <div className="modal-body">
-              <p className="text-sm text-neutral-600 mb-4">
+              <p className="text-sm text-neutral-600 dark:text-slate-400 mb-4">
                 Digite o número de telefone para verificar se já é cliente ou lead cadastrado.
               </p>
 
               <form onSubmit={handleCheckPhone} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                     Telefone
                   </label>
                   <input
@@ -1520,7 +1520,7 @@ const Leads: React.FC = () => {
                     value={phoneToCheck}
                     onChange={(e) => setPhoneToCheck(e.target.value)}
                     placeholder="(00) 00000-0000"
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   />
                 </div>
 
@@ -1642,9 +1642,9 @@ const Leads: React.FC = () => {
       {/* Modal de Resultados da Importação */}
       {showImportResults && importResults && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-lg max-h-[80vh] overflow-hidden">
-            <div className="p-4 border-b flex items-center justify-between bg-neutral-50">
-              <h3 className="text-lg font-semibold text-neutral-900">Resultado da Importação</h3>
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20-xl w-full max-w-lg max-h-[80vh] overflow-hidden">
+            <div className="p-4 border-b flex items-center justify-between bg-neutral-50 dark:bg-slate-700">
+              <h3 className="text-lg font-semibold text-neutral-900 dark:text-slate-100">Resultado da Importação</h3>
               <button
                 onClick={() => setShowImportResults(false)}
                 className="p-2 hover:bg-neutral-200 rounded-lg transition-colors"
@@ -1667,12 +1667,12 @@ const Leads: React.FC = () => {
 
               {importResults.errors.length > 0 && (
                 <div>
-                  <h4 className="font-medium text-neutral-900 mb-2">Detalhes dos erros:</h4>
-                  <div className="bg-neutral-50 rounded-lg p-3 space-y-2 max-h-48 overflow-y-auto">
+                  <h4 className="font-medium text-neutral-900 dark:text-slate-100 mb-2">Detalhes dos erros:</h4>
+                  <div className="bg-neutral-50 dark:bg-slate-700 rounded-lg p-3 space-y-2 max-h-48 overflow-y-auto">
                     {importResults.errors.map((err, idx) => (
-                      <div key={idx} className="text-sm bg-white p-2 rounded border border-neutral-200">
+                      <div key={idx} className="text-sm bg-white dark:bg-slate-800 p-2 rounded border border-neutral-200 dark:border-slate-700">
                         <span className="font-medium">Linha {err.line}</span>
-                        {err.identifier && <span className="text-neutral-500"> ({err.identifier})</span>}
+                        {err.identifier && <span className="text-neutral-500 dark:text-slate-400"> ({err.identifier})</span>}
                         <span className="text-red-600">: {err.error}</span>
                       </div>
                     ))}
@@ -1691,7 +1691,7 @@ const Leads: React.FC = () => {
               </div>
             </div>
 
-            <div className="p-4 border-t bg-neutral-50">
+            <div className="p-4 border-t bg-neutral-50 dark:bg-slate-700">
               <button
                 onClick={() => setShowImportResults(false)}
                 className="w-full px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium"
