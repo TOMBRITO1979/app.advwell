@@ -196,58 +196,58 @@ const MyData: React.FC = () => {
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
             <Shield className="w-8 h-8 text-primary-600" />
-            <h1 className="text-2xl font-bold text-neutral-800">Meus Dados</h1>
+            <h1 className="text-2xl font-bold text-neutral-800 dark:text-slate-200">Meus Dados</h1>
           </div>
-          <p className="text-neutral-600">
+          <p className="text-neutral-600 dark:text-slate-400">
             Gerencie seus dados pessoais e exerca seus direitos conforme a LGPD
           </p>
         </div>
 
         {/* Personal Data Section */}
-        <div className="bg-white rounded-lg shadow-sm border border-neutral-200 mb-4 overflow-hidden">
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm dark:shadow-slate-700/20 border border-neutral-200 dark:border-slate-700 dark:border-slate-700 mb-4 overflow-hidden">
           <button
             onClick={() => toggleSection('personal')}
-            className="w-full flex items-center justify-between px-6 py-4 hover:bg-neutral-50 transition-colors"
+            className="w-full flex items-center justify-between px-6 py-4 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 transition-colors"
           >
             <div className="flex items-center gap-3">
               <User className="w-5 h-5 text-primary-600" />
-              <span className="font-semibold text-neutral-800">Dados Pessoais</span>
+              <span className="font-semibold text-neutral-800 dark:text-slate-200">Dados Pessoais</span>
             </div>
             {expandedSection === 'personal' ? (
-              <ChevronUp className="w-5 h-5 text-neutral-400" />
+              <ChevronUp className="w-5 h-5 text-neutral-400 dark:text-slate-500" />
             ) : (
-              <ChevronDown className="w-5 h-5 text-neutral-400" />
+              <ChevronDown className="w-5 h-5 text-neutral-400 dark:text-slate-500" />
             )}
           </button>
           {expandedSection === 'personal' && userData && (
-            <div className="px-6 pb-6 border-t border-neutral-100">
+            <div className="px-6 pb-6 border-t border-neutral-100 dark:border-slate-600">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div>
-                  <label className="text-sm text-neutral-500">Nome</label>
-                  <p className="font-medium text-neutral-800">{userData.user.name}</p>
+                  <label className="text-sm text-neutral-500 dark:text-slate-400">Nome</label>
+                  <p className="font-medium text-neutral-800 dark:text-slate-200">{userData.user.name}</p>
                 </div>
                 <div>
-                  <label className="text-sm text-neutral-500">Email</label>
-                  <p className="font-medium text-neutral-800">{userData.user.email}</p>
+                  <label className="text-sm text-neutral-500 dark:text-slate-400">Email</label>
+                  <p className="font-medium text-neutral-800 dark:text-slate-200">{userData.user.email}</p>
                 </div>
                 <div>
-                  <label className="text-sm text-neutral-500">Funcao</label>
-                  <p className="font-medium text-neutral-800">{userData.user.role}</p>
+                  <label className="text-sm text-neutral-500 dark:text-slate-400">Funcao</label>
+                  <p className="font-medium text-neutral-800 dark:text-slate-200">{userData.user.role}</p>
                 </div>
                 <div>
-                  <label className="text-sm text-neutral-500">Cadastrado em</label>
-                  <p className="font-medium text-neutral-800">
+                  <label className="text-sm text-neutral-500 dark:text-slate-400">Cadastrado em</label>
+                  <p className="font-medium text-neutral-800 dark:text-slate-200">
                     {formatDate(userData.user.createdAt)}
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm text-neutral-500">Empresa</label>
-                  <p className="font-medium text-neutral-800">{userData.company.name}</p>
+                  <label className="text-sm text-neutral-500 dark:text-slate-400">Empresa</label>
+                  <p className="font-medium text-neutral-800 dark:text-slate-200">{userData.company.name}</p>
                 </div>
                 {userData.company.cnpj && (
                   <div>
-                    <label className="text-sm text-neutral-500">CNPJ</label>
-                    <p className="font-medium text-neutral-800">{userData.company.cnpj}</p>
+                    <label className="text-sm text-neutral-500 dark:text-slate-400">CNPJ</label>
+                    <p className="font-medium text-neutral-800 dark:text-slate-200">{userData.company.cnpj}</p>
                   </div>
                 )}
               </div>
@@ -256,43 +256,43 @@ const MyData: React.FC = () => {
         </div>
 
         {/* Statistics Section */}
-        <div className="bg-white rounded-lg shadow-sm border border-neutral-200 mb-4 overflow-hidden">
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm dark:shadow-slate-700/20 border border-neutral-200 dark:border-slate-700 dark:border-slate-700 mb-4 overflow-hidden">
           <button
             onClick={() => toggleSection('statistics')}
-            className="w-full flex items-center justify-between px-6 py-4 hover:bg-neutral-50 transition-colors"
+            className="w-full flex items-center justify-between px-6 py-4 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 transition-colors"
           >
             <div className="flex items-center gap-3">
               <Database className="w-5 h-5 text-primary-600" />
-              <span className="font-semibold text-neutral-800">Dados Armazenados</span>
+              <span className="font-semibold text-neutral-800 dark:text-slate-200">Dados Armazenados</span>
             </div>
             {expandedSection === 'statistics' ? (
-              <ChevronUp className="w-5 h-5 text-neutral-400" />
+              <ChevronUp className="w-5 h-5 text-neutral-400 dark:text-slate-500" />
             ) : (
-              <ChevronDown className="w-5 h-5 text-neutral-400" />
+              <ChevronDown className="w-5 h-5 text-neutral-400 dark:text-slate-500" />
             )}
           </button>
           {expandedSection === 'statistics' && userData && (
-            <div className="px-6 pb-6 border-t border-neutral-100">
+            <div className="px-6 pb-6 border-t border-neutral-100 dark:border-slate-600">
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
-                <div className="bg-neutral-50 rounded-lg p-4 text-center">
+                <div className="bg-neutral-50 dark:bg-slate-700 rounded-lg p-4 text-center">
                   <p className="text-2xl font-bold text-primary-600">{userData.statistics.totalClients}</p>
-                  <p className="text-sm text-neutral-600">Clientes</p>
+                  <p className="text-sm text-neutral-600 dark:text-slate-400">Clientes</p>
                 </div>
-                <div className="bg-neutral-50 rounded-lg p-4 text-center">
+                <div className="bg-neutral-50 dark:bg-slate-700 rounded-lg p-4 text-center">
                   <p className="text-2xl font-bold text-primary-600">{userData.statistics.totalCases}</p>
-                  <p className="text-sm text-neutral-600">Processos</p>
+                  <p className="text-sm text-neutral-600 dark:text-slate-400">Processos</p>
                 </div>
-                <div className="bg-neutral-50 rounded-lg p-4 text-center">
+                <div className="bg-neutral-50 dark:bg-slate-700 rounded-lg p-4 text-center">
                   <p className="text-2xl font-bold text-primary-600">{userData.statistics.totalDocuments}</p>
-                  <p className="text-sm text-neutral-600">Documentos</p>
+                  <p className="text-sm text-neutral-600 dark:text-slate-400">Documentos</p>
                 </div>
-                <div className="bg-neutral-50 rounded-lg p-4 text-center">
+                <div className="bg-neutral-50 dark:bg-slate-700 rounded-lg p-4 text-center">
                   <p className="text-2xl font-bold text-primary-600">{userData.statistics.totalFinancialRecords}</p>
-                  <p className="text-sm text-neutral-600">Registros Financeiros</p>
+                  <p className="text-sm text-neutral-600 dark:text-slate-400">Registros Financeiros</p>
                 </div>
-                <div className="bg-neutral-50 rounded-lg p-4 text-center">
+                <div className="bg-neutral-50 dark:bg-slate-700 rounded-lg p-4 text-center">
                   <p className="text-2xl font-bold text-primary-600">{userData.statistics.totalScheduleEvents}</p>
-                  <p className="text-sm text-neutral-600">Eventos na Agenda</p>
+                  <p className="text-sm text-neutral-600 dark:text-slate-400">Eventos na Agenda</p>
                 </div>
               </div>
             </div>
@@ -300,42 +300,42 @@ const MyData: React.FC = () => {
         </div>
 
         {/* Consents Section */}
-        <div className="bg-white rounded-lg shadow-sm border border-neutral-200 mb-4 overflow-hidden">
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm dark:shadow-slate-700/20 border border-neutral-200 dark:border-slate-700 dark:border-slate-700 mb-4 overflow-hidden">
           <button
             onClick={() => toggleSection('consents')}
-            className="w-full flex items-center justify-between px-6 py-4 hover:bg-neutral-50 transition-colors"
+            className="w-full flex items-center justify-between px-6 py-4 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 transition-colors"
           >
             <div className="flex items-center gap-3">
               <Lock className="w-5 h-5 text-primary-600" />
-              <span className="font-semibold text-neutral-800">Meus Consentimentos</span>
+              <span className="font-semibold text-neutral-800 dark:text-slate-200">Meus Consentimentos</span>
               <span className="bg-primary-100 text-primary-700 text-xs px-2 py-0.5 rounded-full">
                 {consents.filter(c => !c.revokedAt).length} ativos
               </span>
             </div>
             {expandedSection === 'consents' ? (
-              <ChevronUp className="w-5 h-5 text-neutral-400" />
+              <ChevronUp className="w-5 h-5 text-neutral-400 dark:text-slate-500" />
             ) : (
-              <ChevronDown className="w-5 h-5 text-neutral-400" />
+              <ChevronDown className="w-5 h-5 text-neutral-400 dark:text-slate-500" />
             )}
           </button>
           {expandedSection === 'consents' && (
-            <div className="px-6 pb-6 border-t border-neutral-100">
+            <div className="px-6 pb-6 border-t border-neutral-100 dark:border-slate-600">
               {consents.length === 0 ? (
-                <p className="text-neutral-500 mt-4">Nenhum consentimento registrado</p>
+                <p className="text-neutral-500 dark:text-slate-400 mt-4">Nenhum consentimento registrado</p>
               ) : (
                 <div className="space-y-3 mt-4">
                   {consents.map((consent) => (
                     <div
                       key={consent.id}
                       className={`flex items-center justify-between p-4 rounded-lg ${
-                        consent.revokedAt ? 'bg-neutral-100' : 'bg-success-50'
+                        consent.revokedAt ? 'bg-neutral-100 dark:bg-slate-600' : 'bg-success-50'
                       }`}
                     >
                       <div>
-                        <p className="font-medium text-neutral-800">
+                        <p className="font-medium text-neutral-800 dark:text-slate-200">
                           {getConsentTypeLabel(consent.consentType)}
                         </p>
-                        <p className="text-sm text-neutral-500">
+                        <p className="text-sm text-neutral-500 dark:text-slate-400">
                           Versao {consent.version} - Aceito em {formatDate(consent.consentedAt)}
                           {consent.revokedAt && (
                             <span className="text-danger-600">
@@ -361,14 +361,14 @@ const MyData: React.FC = () => {
         </div>
 
         {/* Requests Section */}
-        <div className="bg-white rounded-lg shadow-sm border border-neutral-200 mb-4 overflow-hidden">
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm dark:shadow-slate-700/20 border border-neutral-200 dark:border-slate-700 dark:border-slate-700 mb-4 overflow-hidden">
           <button
             onClick={() => toggleSection('requests')}
-            className="w-full flex items-center justify-between px-6 py-4 hover:bg-neutral-50 transition-colors"
+            className="w-full flex items-center justify-between px-6 py-4 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 transition-colors"
           >
             <div className="flex items-center gap-3">
               <FileText className="w-5 h-5 text-primary-600" />
-              <span className="font-semibold text-neutral-800">Minhas Solicitacoes</span>
+              <span className="font-semibold text-neutral-800 dark:text-slate-200">Minhas Solicitacoes</span>
               {requests.filter(r => r.status === 'PENDING' || r.status === 'IN_PROGRESS').length > 0 && (
                 <span className="bg-warning-100 text-warning-700 text-xs px-2 py-0.5 rounded-full">
                   {requests.filter(r => r.status === 'PENDING' || r.status === 'IN_PROGRESS').length} em andamento
@@ -376,33 +376,33 @@ const MyData: React.FC = () => {
               )}
             </div>
             {expandedSection === 'requests' ? (
-              <ChevronUp className="w-5 h-5 text-neutral-400" />
+              <ChevronUp className="w-5 h-5 text-neutral-400 dark:text-slate-500" />
             ) : (
-              <ChevronDown className="w-5 h-5 text-neutral-400" />
+              <ChevronDown className="w-5 h-5 text-neutral-400 dark:text-slate-500" />
             )}
           </button>
           {expandedSection === 'requests' && (
-            <div className="px-6 pb-6 border-t border-neutral-100">
+            <div className="px-6 pb-6 border-t border-neutral-100 dark:border-slate-600">
               {requests.length === 0 ? (
-                <p className="text-neutral-500 mt-4">Nenhuma solicitacao realizada</p>
+                <p className="text-neutral-500 dark:text-slate-400 mt-4">Nenhuma solicitacao realizada</p>
               ) : (
                 <div className="space-y-3 mt-4">
                   {requests.map((request) => (
-                    <div key={request.id} className="border border-neutral-200 rounded-lg p-4">
+                    <div key={request.id} className="border border-neutral-200 dark:border-slate-700 rounded-lg p-4">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="font-medium text-neutral-800">
+                        <span className="font-medium text-neutral-800 dark:text-slate-200">
                           {getRequestTypeLabel(request.requestType)}
                         </span>
                         {getStatusBadge(request.status)}
                       </div>
-                      <p className="text-sm text-neutral-500 mb-2">
+                      <p className="text-sm text-neutral-500 dark:text-slate-400 mb-2">
                         Solicitado em {formatDate(request.requestedAt)}
                         {request.completedAt && (
                           <span> | Concluído em {formatDate(request.completedAt)}</span>
                         )}
                       </p>
                       {request.description && (
-                        <p className="text-sm text-neutral-600 mb-2">{request.description}</p>
+                        <p className="text-sm text-neutral-600 dark:text-slate-400 mb-2">{request.description}</p>
                       )}
                       {request.notes && (
                         <p className="text-sm text-primary-600 mb-2">
@@ -434,20 +434,20 @@ const MyData: React.FC = () => {
         </div>
 
         {/* Actions Section */}
-        <div className="bg-white rounded-lg shadow-sm border border-neutral-200 p-6">
-          <h2 className="font-semibold text-neutral-800 mb-4">Acoes Disponiveis</h2>
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm dark:shadow-slate-700/20 border border-neutral-200 dark:border-slate-700 dark:border-slate-700 p-6">
+          <h2 className="font-semibold text-neutral-800 dark:text-slate-200 mb-4">Acoes Disponiveis</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <button
               onClick={() => {
                 setRequestType('ACCESS');
                 setShowRequestModal(true);
               }}
-              className="flex items-center gap-3 p-4 border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors text-left"
+              className="flex items-center gap-3 p-4 border border-neutral-200 dark:border-slate-700 rounded-lg hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 transition-colors text-left"
             >
               <Eye className="w-5 h-5 text-primary-600" />
               <div>
-                <p className="font-medium text-neutral-800">Acessar Meus Dados</p>
-                <p className="text-sm text-neutral-500">Solicitar copia completa</p>
+                <p className="font-medium text-neutral-800 dark:text-slate-200">Acessar Meus Dados</p>
+                <p className="text-sm text-neutral-500 dark:text-slate-400">Solicitar copia completa</p>
               </div>
             </button>
             <button
@@ -455,12 +455,12 @@ const MyData: React.FC = () => {
                 setRequestType('CORRECTION');
                 setShowRequestModal(true);
               }}
-              className="flex items-center gap-3 p-4 border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors text-left"
+              className="flex items-center gap-3 p-4 border border-neutral-200 dark:border-slate-700 rounded-lg hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 transition-colors text-left"
             >
               <Edit3 className="w-5 h-5 text-primary-600" />
               <div>
-                <p className="font-medium text-neutral-800">Corrigir Dados</p>
-                <p className="text-sm text-neutral-500">Solicitar correcao</p>
+                <p className="font-medium text-neutral-800 dark:text-slate-200">Corrigir Dados</p>
+                <p className="text-sm text-neutral-500 dark:text-slate-400">Solicitar correcao</p>
               </div>
             </button>
             <button
@@ -468,12 +468,12 @@ const MyData: React.FC = () => {
                 setRequestType('PORTABILITY');
                 setShowRequestModal(true);
               }}
-              className="flex items-center gap-3 p-4 border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors text-left"
+              className="flex items-center gap-3 p-4 border border-neutral-200 dark:border-slate-700 rounded-lg hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 transition-colors text-left"
             >
               <Download className="w-5 h-5 text-primary-600" />
               <div>
-                <p className="font-medium text-neutral-800">Portabilidade</p>
-                <p className="text-sm text-neutral-500">Exportar dados</p>
+                <p className="font-medium text-neutral-800 dark:text-slate-200">Portabilidade</p>
+                <p className="text-sm text-neutral-500 dark:text-slate-400">Exportar dados</p>
               </div>
             </button>
             <button
@@ -495,19 +495,19 @@ const MyData: React.FC = () => {
         {/* Request Modal */}
         {showRequestModal && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-            <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto my-4">
-              <h3 className="text-lg font-semibold text-neutral-800 mb-4">
+            <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl dark:shadow-slate-900/50 max-w-md w-full p-6 max-h-[90vh] overflow-y-auto my-4">
+              <h3 className="text-lg font-semibold text-neutral-800 dark:text-slate-200 mb-4">
                 Nova Solicitacao LGPD
               </h3>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-2">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2">
                     Tipo de Solicitacao
                   </label>
                   <select
                     value={requestType}
                     onChange={(e) => setRequestType(e.target.value)}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   >
                     <option value="">Selecione...</option>
                     <option value="ACCESS">Acesso aos Dados</option>
@@ -518,7 +518,7 @@ const MyData: React.FC = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-2">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2">
                     Descricao (opcional)
                   </label>
                   <textarea
@@ -526,7 +526,7 @@ const MyData: React.FC = () => {
                     onChange={(e) => setRequestDescription(e.target.value)}
                     rows={3}
                     placeholder="Descreva sua solicitacao..."
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   />
                 </div>
                 {requestType === 'DELETION' && (
@@ -547,7 +547,7 @@ const MyData: React.FC = () => {
                     setRequestType('');
                     setRequestDescription('');
                   }}
-                  className="flex-1 px-4 py-2 border border-neutral-300 text-neutral-700 rounded-lg hover:bg-neutral-50 transition-colors"
+                  className="flex-1 px-4 py-2 border border-neutral-300 dark:border-slate-600 text-neutral-700 dark:text-slate-300 rounded-lg hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 transition-colors"
                 >
                   Cancelar
                 </button>

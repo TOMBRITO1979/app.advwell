@@ -95,7 +95,7 @@ interface Announcement {
 }
 
 const priorityOptions = [
-  { value: 'LOW', label: 'Baixa', color: 'bg-gray-100 text-gray-700', icon: CheckCircle },
+  { value: 'LOW', label: 'Baixa', color: 'bg-gray-100 text-gray-700 dark:text-slate-300', icon: CheckCircle },
   { value: 'NORMAL', label: 'Normal', color: 'bg-blue-100 text-blue-700', icon: Info },
   { value: 'HIGH', label: 'Alta', color: 'bg-orange-100 text-orange-700', icon: AlertCircle },
   { value: 'URGENT', label: 'Urgente', color: 'bg-red-100 text-red-700', icon: AlertTriangle },
@@ -437,8 +437,8 @@ export default function Announcements() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Portal do Cliente</h1>
-            <p className="text-gray-500">Gerencie os avisos e mensagens do portal do cliente</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Portal do Cliente</h1>
+            <p className="text-gray-500 dark:text-slate-400">Gerencie os avisos e mensagens do portal do cliente</p>
           </div>
           {activeTab === 'avisos' && (
             <button
@@ -467,7 +467,7 @@ export default function Announcements() {
             className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
               activeTab === 'avisos'
                 ? 'border-green-600 text-green-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
+                : 'border-transparent text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:text-slate-300'
             }`}
           >
             <div className="flex items-center gap-2">
@@ -480,7 +480,7 @@ export default function Announcements() {
             className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
               activeTab === 'mensagens'
                 ? 'border-green-600 text-green-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
+                : 'border-transparent text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:text-slate-300'
             }`}
           >
             <div className="flex items-center gap-2">
@@ -498,7 +498,7 @@ export default function Announcements() {
             className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
               activeTab === 'documentos'
                 ? 'border-green-600 text-green-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
+                : 'border-transparent text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:text-slate-300'
             }`}
           >
             <div className="flex items-center gap-2">
@@ -527,7 +527,7 @@ export default function Announcements() {
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   filter === item.value
                     ? 'bg-green-600 text-white'
-                    : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+                    : 'bg-white text-gray-600 dark:text-slate-400 hover:bg-gray-100 border border-gray-200'
                 }`}
               >
                 {item.label}
@@ -547,8 +547,8 @@ export default function Announcements() {
             ) : filteredAnnouncements.length === 0 ? (
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
             <Megaphone className="mx-auto h-16 w-16 text-gray-300 mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhum aviso</h3>
-            <p className="text-gray-500 mb-4">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-slate-100 mb-2">Nenhum aviso</h3>
+            <p className="text-gray-500 dark:text-slate-400 mb-4">
               Crie avisos para informar seus clientes sobre novidades e atualizações.
             </p>
             <button
@@ -581,7 +581,7 @@ export default function Announcements() {
                         <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
                           announcement.active
                             ? 'bg-green-100 text-green-700'
-                            : 'bg-gray-100 text-gray-600'
+                            : 'bg-gray-100 text-gray-600 dark:text-slate-400'
                         }`}>
                           {announcement.active ? 'Ativo' : 'Inativo'}
                         </span>
@@ -603,16 +603,16 @@ export default function Announcements() {
                           )}
                         </span>
                       </div>
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-2">
                         {announcement.title}
                       </h3>
                       <div
-                        className="text-gray-600 text-sm line-clamp-2 mb-3"
+                        className="text-gray-600 dark:text-slate-400 text-sm line-clamp-2 mb-3"
                         dangerouslySetInnerHTML={{
                           __html: DOMPurify.sanitize(announcement.content.substring(0, 200))
                         }}
                       />
-                      <div className="flex items-center gap-4 text-sm text-gray-500">
+                      <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-slate-400">
                         <span className="flex items-center gap-1">
                           <Calendar size={14} />
                           {format(new Date(announcement.publishedAt), "dd/MM/yyyy", { locale: ptBR })}
@@ -629,7 +629,7 @@ export default function Announcements() {
                       <button
                         onClick={() => handleToggle(announcement.id)}
                         className={`p-2 rounded-lg hover:bg-gray-100 ${
-                          announcement.active ? 'text-green-600' : 'text-gray-400'
+                          announcement.active ? 'text-green-600' : 'text-gray-400 dark:text-slate-500'
                         }`}
                         title={announcement.active ? 'Desativar' : 'Ativar'}
                       >
@@ -637,7 +637,7 @@ export default function Announcements() {
                       </button>
                       <button
                         onClick={() => openModal(announcement)}
-                        className="p-2 rounded-lg hover:bg-gray-100 text-gray-600"
+                        className="p-2 rounded-lg hover:bg-gray-100 text-gray-600 dark:text-slate-400"
                         title="Editar"
                       >
                         <Edit2 size={20} />
@@ -660,7 +660,7 @@ export default function Announcements() {
             {/* Pagination */}
             {total > 0 && (
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white rounded-xl shadow-sm border border-gray-100 px-6 py-4">
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-600 dark:text-slate-400">
                   Mostrando {((page - 1) * limit) + 1} a {Math.min(page * limit, total)} de {total} avisos
                 </p>
                 <div className="flex items-center gap-2">
@@ -677,7 +677,7 @@ export default function Announcements() {
                     <option value={100}>100</option>
                     <option value={200}>200</option>
                   </select>
-                  <span className="text-sm text-gray-600">por página</span>
+                  <span className="text-sm text-gray-600 dark:text-slate-400">por página</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <button
@@ -709,10 +709,10 @@ export default function Announcements() {
             {/* New Message Form */}
             {showNewMessageForm && (
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Nova Mensagem</h2>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4">Nova Mensagem</h2>
                 <form onSubmit={handleSendNewMessage} className="space-y-4">
                   <div className="relative">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
                       Cliente *
                     </label>
                     <input
@@ -737,7 +737,7 @@ export default function Announcements() {
                               setNewMessageClientId(client.id);
                               setNewMessageClientSearch(client.name);
                             }}
-                            className="w-full px-4 py-2 text-left hover:bg-gray-100 text-sm text-gray-700"
+                            className="w-full px-4 py-2 text-left hover:bg-gray-100 text-sm text-gray-700 dark:text-slate-300"
                           >
                             {client.name}
                           </button>
@@ -751,14 +751,14 @@ export default function Announcements() {
                           setNewMessageClientId('');
                           setNewMessageClientSearch('');
                         }}
-                        className="absolute right-3 top-8 text-gray-400 hover:text-gray-600"
+                        className="absolute right-3 top-8 text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:text-slate-400"
                       >
                         <X size={16} />
                       </button>
                     )}
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
                       Assunto (opcional)
                     </label>
                     <input
@@ -770,7 +770,7 @@ export default function Announcements() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
                       Mensagem *
                     </label>
                     <textarea
@@ -786,7 +786,7 @@ export default function Announcements() {
                     <button
                       type="button"
                       onClick={() => setShowNewMessageForm(false)}
-                      className="px-4 py-2 text-gray-700 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg hover:bg-gray-50 transition-colors"
+                      className="px-4 py-2 text-gray-700 dark:text-slate-300 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg hover:bg-gray-50 transition-colors"
                     >
                       Cancelar
                     </button>
@@ -806,7 +806,7 @@ export default function Announcements() {
             {/* Filter */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
               <div className="flex items-center gap-2">
-                <Search size={20} className="text-gray-400" />
+                <Search size={20} className="text-gray-400 dark:text-slate-500" />
                 <input
                   type="text"
                   placeholder="Filtrar por nome do cliente..."
@@ -817,7 +817,7 @@ export default function Announcements() {
                 {messagesFilter && (
                   <button
                     onClick={() => setMessagesFilter('')}
-                    className="p-2 text-gray-400 hover:text-gray-600"
+                    className="p-2 text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:text-slate-400"
                   >
                     <X size={18} />
                   </button>
@@ -833,8 +833,8 @@ export default function Announcements() {
             ) : messages.length === 0 ? (
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
                 <MessageCircle className="mx-auto h-16 w-16 text-gray-300 mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhuma mensagem</h3>
-                <p className="text-gray-500 mb-4">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-slate-100 mb-2">Nenhuma mensagem</h3>
+                <p className="text-gray-500 dark:text-slate-400 mb-4">
                   Quando seus clientes enviarem mensagens pelo portal, elas aparecerão aqui.
                 </p>
               </div>
@@ -877,11 +877,11 @@ export default function Announcements() {
                               </span>
                             )}
                             {message.subject && (
-                              <span className="font-medium text-gray-900">{message.subject}</span>
+                              <span className="font-medium text-gray-900 dark:text-slate-100">{message.subject}</span>
                             )}
                           </div>
-                          <p className="text-gray-600 text-sm line-clamp-2">{message.content}</p>
-                          <div className="flex items-center gap-2 mt-2 text-xs text-gray-500">
+                          <p className="text-gray-600 dark:text-slate-400 text-sm line-clamp-2">{message.content}</p>
+                          <div className="flex items-center gap-2 mt-2 text-xs text-gray-500 dark:text-slate-400">
                             <Clock size={12} />
                             <span>{formatMessageDate(message.createdAt)}</span>
                             {message.replies && message.replies.length > 0 && (
@@ -893,9 +893,9 @@ export default function Announcements() {
                         </div>
                         <div className="ml-4">
                           {expandedMessage === message.id ? (
-                            <ChevronUp className="text-gray-400" size={20} />
+                            <ChevronUp className="text-gray-400 dark:text-slate-500" size={20} />
                           ) : (
-                            <ChevronDown className="text-gray-400" size={20} />
+                            <ChevronDown className="text-gray-400 dark:text-slate-500" size={20} />
                           )}
                         </div>
                       </div>
@@ -906,7 +906,7 @@ export default function Announcements() {
                       <div className="border-t border-gray-200">
                         {/* Full Message Content */}
                         <div className="p-4 bg-gray-50">
-                          <p className="text-gray-800 whitespace-pre-wrap">{message.content}</p>
+                          <p className="text-gray-800 dark:text-slate-200 whitespace-pre-wrap">{message.content}</p>
                         </div>
 
                         {/* Replies */}
@@ -931,11 +931,11 @@ export default function Announcements() {
                                   >
                                     {reply.sender === 'CLIENT' ? message.client?.name : reply.creator?.name || 'Escritório'}
                                   </span>
-                                  <span className="text-xs text-gray-500">
+                                  <span className="text-xs text-gray-500 dark:text-slate-400">
                                     {formatMessageDate(reply.createdAt)}
                                   </span>
                                 </div>
-                                <p className="text-gray-800 text-sm whitespace-pre-wrap">{reply.content}</p>
+                                <p className="text-gray-800 dark:text-slate-200 text-sm whitespace-pre-wrap">{reply.content}</p>
                               </div>
                             ))}
                           </div>
@@ -977,7 +977,7 @@ export default function Announcements() {
             {/* Filter */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
               <div className="flex items-center gap-2">
-                <Search size={20} className="text-gray-400" />
+                <Search size={20} className="text-gray-400 dark:text-slate-500" />
                 <input
                   type="text"
                   placeholder="Filtrar por nome do cliente..."
@@ -988,7 +988,7 @@ export default function Announcements() {
                 {documentsFilter && (
                   <button
                     onClick={() => setDocumentsFilter('')}
-                    className="p-2 text-gray-400 hover:text-gray-600"
+                    className="p-2 text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:text-slate-400"
                   >
                     <X size={18} />
                   </button>
@@ -1003,8 +1003,8 @@ export default function Announcements() {
             ) : clientDocuments.length === 0 ? (
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
                 <FileText className="mx-auto h-16 w-16 text-gray-300 mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhum documento</h3>
-                <p className="text-gray-500 mb-4">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-slate-100 mb-2">Nenhum documento</h3>
+                <p className="text-gray-500 dark:text-slate-400 mb-4">
                   Quando seus clientes enviarem documentos pelo portal, eles aparecerão aqui.
                 </p>
               </div>
@@ -1038,11 +1038,11 @@ export default function Announcements() {
                               </span>
                             )}
                           </div>
-                          <h3 className="font-medium text-gray-900 mb-1">{doc.name}</h3>
+                          <h3 className="font-medium text-gray-900 dark:text-slate-100 mb-1">{doc.name}</h3>
                           {doc.description && (
-                            <p className="text-gray-600 text-sm mb-2">{doc.description}</p>
+                            <p className="text-gray-600 dark:text-slate-400 text-sm mb-2">{doc.description}</p>
                           )}
-                          <div className="flex items-center gap-4 text-xs text-gray-500">
+                          <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-slate-400">
                             <span>{formatFileSize(doc.fileSize)}</span>
                             <span>{doc.fileType}</span>
                             <span className="flex items-center gap-1">
@@ -1087,7 +1087,7 @@ export default function Announcements() {
               </div>
               <form onSubmit={handleSubmit} className="p-6 space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">
                     Título *
                   </label>
                   <input
@@ -1100,7 +1100,7 @@ export default function Announcements() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">
                     Conteúdo *
                   </label>
                   <textarea
@@ -1114,7 +1114,7 @@ export default function Announcements() {
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">
                       Prioridade
                     </label>
                     <select
@@ -1130,7 +1130,7 @@ export default function Announcements() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">
                       Data de Expiração (opcional)
                     </label>
                     <input
@@ -1142,7 +1142,7 @@ export default function Announcements() {
                   </div>
                 </div>
                 <div className="relative">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">
                     Destinatário
                   </label>
                   <input
@@ -1168,7 +1168,7 @@ export default function Announcements() {
                             setFormData({ ...formData, clientId: client.id });
                             setClientSearchText(client.name);
                           }}
-                          className="w-full px-4 py-2 text-left hover:bg-gray-100 text-sm text-gray-700"
+                          className="w-full px-4 py-2 text-left hover:bg-gray-100 text-sm text-gray-700 dark:text-slate-300"
                         >
                           {client.name}
                         </button>
@@ -1182,12 +1182,12 @@ export default function Announcements() {
                         setFormData({ ...formData, clientId: '' });
                         setClientSearchText('');
                       }}
-                      className="absolute right-3 top-10 text-gray-400 hover:text-gray-600"
+                      className="absolute right-3 top-10 text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:text-slate-400"
                     >
                       <X size={16} />
                     </button>
                   )}
-                  <p className="mt-1 text-xs text-gray-500">
+                  <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
                     {formData.clientId ? 'Cliente selecionado - clique no X para limpar' : 'Deixe vazio para enviar a todos os clientes'}
                   </p>
                 </div>
@@ -1199,7 +1199,7 @@ export default function Announcements() {
                     onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
                     className="w-4 h-4 text-green-600 border-gray-300 dark:border-slate-600 rounded focus:ring-green-500"
                   />
-                  <label htmlFor="active" className="text-sm text-gray-700">
+                  <label htmlFor="active" className="text-sm text-gray-700 dark:text-slate-300">
                     Publicar imediatamente (aviso ativo)
                   </label>
                 </div>
@@ -1207,7 +1207,7 @@ export default function Announcements() {
                   <button
                     type="button"
                     onClick={closeModal}
-                    className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                    className="px-4 py-2 text-gray-600 dark:text-slate-400 hover:bg-gray-100 rounded-lg"
                   >
                     Cancelar
                   </button>

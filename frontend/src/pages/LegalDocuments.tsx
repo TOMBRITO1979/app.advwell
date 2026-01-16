@@ -535,7 +535,7 @@ const LegalDocuments: React.FC = () => {
       <div className="space-y-4 sm:space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-neutral-900 mb-3 sm:mb-4">
+          <h1 className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-slate-100 mb-3 sm:mb-4">
             Documentos Jurídicos
           </h1>
 
@@ -553,13 +553,13 @@ const LegalDocuments: React.FC = () => {
         {/* Busca */}
         <div className="bg-white rounded-lg shadow p-4">
           <div className="flex items-center gap-2">
-            <Search size={20} className="text-neutral-400" />
+            <Search size={20} className="text-neutral-400 dark:text-slate-500" />
             <input
               type="text"
               placeholder="Buscar por título, conteúdo ou cliente..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="flex-1 px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 min-h-[44px]"
+              className="flex-1 px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 min-h-[44px]"
             />
           </div>
         </div>
@@ -567,9 +567,9 @@ const LegalDocuments: React.FC = () => {
         {/* Lista de Documentos */}
         <div className="bg-white rounded-lg shadow">
           {loading ? (
-            <p className="text-center py-8 text-neutral-600">Carregando...</p>
+            <p className="text-center py-8 text-neutral-600 dark:text-slate-400">Carregando...</p>
           ) : documents.length === 0 ? (
-            <p className="text-center py-8 text-neutral-600">
+            <p className="text-center py-8 text-neutral-600 dark:text-slate-400">
               {search ? 'Nenhum documento encontrado' : 'Nenhum documento cadastrado'}
             </p>
           ) : (
@@ -595,51 +595,51 @@ const LegalDocuments: React.FC = () => {
               {/* Desktop Table View */}
               <div className="desktop-table-view overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-neutral-50">
+                  <thead className="bg-neutral-50 dark:bg-slate-700">
                     <tr>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                         Título
                       </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                         Parte (Cliente)
                       </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                         Data
                       </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                         Assinante
                       </th>
-                      <th className="px-4 py-3 text-center text-sm font-semibold text-neutral-900 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                         Ações
                       </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-neutral-200 bg-white">
                     {documents.map((doc) => (
-                      <tr key={doc.id} className="odd:bg-white even:bg-neutral-50 hover:bg-success-100 transition-colors">
+                      <tr key={doc.id} className="odd:bg-white dark:odd:bg-slate-800 even:bg-neutral-50 dark:bg-slate-700 dark:even:bg-slate-700/50 hover:bg-success-100 dark:hover:bg-success-900/30 transition-colors">
                         <td className="px-4 py-3 text-sm">
                           <div className="flex items-center gap-2">
                             <FileText size={18} className="text-primary-600" />
-                            <span className="font-medium text-neutral-900">{doc.title}</span>
+                            <span className="font-medium text-neutral-900 dark:text-slate-100">{doc.title}</span>
                           </div>
                         </td>
-                        <td className="px-4 py-3 text-sm text-neutral-600">
+                        <td className="px-4 py-3 text-sm text-neutral-600 dark:text-slate-400">
                           {doc.client ? (
                             <div>
                               <p className="font-medium">{doc.client.name}</p>
                               {doc.client.cpf && (
-                                <p className="text-xs text-neutral-500">{doc.client.cpf}</p>
+                                <p className="text-xs text-neutral-500 dark:text-slate-400">{doc.client.cpf}</p>
                               )}
                             </div>
                           ) : (
-                            <span className="text-neutral-400">-</span>
+                            <span className="text-neutral-400 dark:text-slate-500">-</span>
                           )}
                         </td>
-                        <td className="px-4 py-3 text-sm text-neutral-600">
+                        <td className="px-4 py-3 text-sm text-neutral-600 dark:text-slate-400">
                           {formatDate(doc.documentDate)}
                         </td>
-                        <td className="px-4 py-3 text-sm text-neutral-600">
-                          {doc.signer?.name || <span className="text-neutral-400">-</span>}
+                        <td className="px-4 py-3 text-sm text-neutral-600 dark:text-slate-400">
+                          {doc.signer?.name || <span className="text-neutral-400 dark:text-slate-500">-</span>}
                         </td>
                         <td className="px-4 py-3 text-sm text-center">
                           <div className="flex items-center justify-center gap-1">
@@ -685,7 +685,7 @@ const LegalDocuments: React.FC = () => {
         {/* Pagination */}
         {total > 0 && (
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white rounded-lg shadow px-4 py-3">
-            <span className="text-sm text-neutral-600">
+            <span className="text-sm text-neutral-600 dark:text-slate-400">
               Mostrando {((page - 1) * limit) + 1} a {Math.min(page * limit, total)} de {total} documentos
             </span>
             <div className="flex items-center gap-2">
@@ -695,30 +695,30 @@ const LegalDocuments: React.FC = () => {
                   setLimit(Number(e.target.value));
                   setPage(1);
                 }}
-                className="px-2 py-1 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="px-2 py-1 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 <option value={25}>25</option>
                 <option value={50}>50</option>
                 <option value={100}>100</option>
                 <option value={200}>200</option>
               </select>
-              <span className="text-sm text-neutral-600">por página</span>
+              <span className="text-sm text-neutral-600 dark:text-slate-400">por página</span>
             </div>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="inline-flex items-center justify-center p-2 min-h-[40px] min-w-[40px] border border-neutral-300 rounded-md hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="inline-flex items-center justify-center p-2 min-h-[40px] min-w-[40px] border border-neutral-300 dark:border-slate-600 rounded-md hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <ChevronLeft size={18} />
               </button>
-              <span className="text-sm text-neutral-700 px-3">
+              <span className="text-sm text-neutral-700 dark:text-slate-300 px-3">
                 Página {page} de {Math.ceil(total / limit)}
               </span>
               <button
                 onClick={() => setPage(p => Math.min(Math.ceil(total / limit), p + 1))}
                 disabled={page >= Math.ceil(total / limit)}
-                className="inline-flex items-center justify-center p-2 min-h-[40px] min-w-[40px] border border-neutral-300 rounded-md hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="inline-flex items-center justify-center p-2 min-h-[40px] min-w-[40px] border border-neutral-300 dark:border-slate-600 rounded-md hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <ChevronRight size={18} />
               </button>
@@ -731,8 +731,8 @@ const LegalDocuments: React.FC = () => {
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
           <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-neutral-200 px-6 py-4 flex justify-between items-center">
-              <h2 className="text-xl font-bold text-neutral-900">
+            <div className="sticky top-0 bg-white border-b border-neutral-200 dark:border-slate-700 px-6 py-4 flex justify-between items-center">
+              <h2 className="text-xl font-bold text-neutral-900 dark:text-slate-100">
                 {editMode ? 'Editar Documento' : 'Novo Documento'}
               </h2>
               <button
@@ -740,7 +740,7 @@ const LegalDocuments: React.FC = () => {
                   setShowModal(false);
                   resetForm();
                 }}
-                className="text-neutral-400 hover:text-neutral-600"
+                className="text-neutral-400 dark:text-slate-500 hover:text-neutral-600 dark:text-slate-400"
               >
                 <X size={24} />
               </button>
@@ -750,7 +750,7 @@ const LegalDocuments: React.FC = () => {
               <div className="space-y-4">
                 {/* Título */}
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                     <FileText size={16} className="inline mr-1" />
                     Título do Documento *
                   </label>
@@ -759,21 +759,21 @@ const LegalDocuments: React.FC = () => {
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                     placeholder="Ex: Recibo de Honorários, Procuração, Contrato de Prestação de Serviços..."
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                     required
                   />
                 </div>
 
                 {/* Seleção de Processo e Partes */}
-                <div className="border border-neutral-200 rounded-lg p-4 bg-neutral-50">
-                  <label className="block text-sm font-medium text-neutral-700 mb-3">
+                <div className="border border-neutral-200 dark:border-slate-700 rounded-lg p-4 bg-neutral-50 dark:bg-slate-700">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-3">
                     <Scale size={16} className="inline mr-1" />
                     Partes do Processo
                   </label>
 
                   {/* Busca e Seletor de Processo */}
                   <div className="mb-3 relative">
-                    <label className="block text-xs font-medium text-neutral-600 mb-1">
+                    <label className="block text-xs font-medium text-neutral-600 dark:text-slate-400 mb-1">
                       Buscar Processo
                     </label>
                     <input
@@ -781,11 +781,11 @@ const LegalDocuments: React.FC = () => {
                       value={caseSearchText}
                       onChange={(e) => setCaseSearchText(e.target.value)}
                       placeholder="Digite nº processo, nome do cliente ou assunto..."
-                      className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                      className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                     />
                     {/* Suggestions dropdown - only shows when typing */}
                     {caseSearchText.trim() && filteredCases.length > 0 && (
-                      <div className="absolute z-50 w-full mt-1 bg-white border border-neutral-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                      <div className="absolute z-50 w-full mt-1 bg-white border border-neutral-300 dark:border-slate-600 rounded-md shadow-lg max-h-48 overflow-y-auto">
                         {filteredCases.slice(0, 10).map((caseItem) => (
                           <button
                             key={caseItem.id}
@@ -795,10 +795,10 @@ const LegalDocuments: React.FC = () => {
                               setCaseSearchText(`${caseItem.processNumber} - ${caseItem.subject?.substring(0, 30)}`);
                               loadCaseParts(caseItem.id);
                             }}
-                            className="w-full px-3 py-2 text-left hover:bg-neutral-100 text-sm text-neutral-700 border-b border-neutral-100 last:border-b-0"
+                            className="w-full px-3 py-2 text-left hover:bg-neutral-100 text-sm text-neutral-700 dark:text-slate-300 border-b border-neutral-100 last:border-b-0"
                           >
                             <div className="font-medium">{caseItem.processNumber}</div>
-                            <div className="text-xs text-neutral-500">
+                            <div className="text-xs text-neutral-500 dark:text-slate-400">
                               {caseItem.subject?.substring(0, 50)}
                               {caseItem.client?.name && ` - ${caseItem.client.name}`}
                             </div>
@@ -815,7 +815,7 @@ const LegalDocuments: React.FC = () => {
                           setCaseParts([]);
                           setSelectedPartIds([]);
                         }}
-                        className="absolute right-2 top-7 text-neutral-400 hover:text-neutral-600"
+                        className="absolute right-2 top-7 text-neutral-400 dark:text-slate-500 hover:text-neutral-600 dark:text-slate-400"
                       >
                         <X size={16} />
                       </button>
@@ -824,16 +824,16 @@ const LegalDocuments: React.FC = () => {
 
                   {/* Lista de Partes com Checkbox */}
                   {loadingParts ? (
-                    <p className="text-sm text-neutral-500">Carregando partes...</p>
+                    <p className="text-sm text-neutral-500 dark:text-slate-400">Carregando partes...</p>
                   ) : caseParts.length > 0 ? (
                     <div className="space-y-2 mb-3">
-                      <label className="block text-xs font-medium text-neutral-600 mb-1">
+                      <label className="block text-xs font-medium text-neutral-600 dark:text-slate-400 mb-1">
                         Selecione as partes para incluir a qualificação
                       </label>
                       {caseParts.map((part) => (
                         <label
                           key={part.id}
-                          className="flex items-start gap-3 p-2 border border-neutral-200 rounded-md bg-white cursor-pointer hover:bg-neutral-50"
+                          className="flex items-start gap-3 p-2 border border-neutral-200 dark:border-slate-700 rounded-md bg-white cursor-pointer hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700"
                         >
                           <input
                             type="checkbox"
@@ -849,12 +849,12 @@ const LegalDocuments: React.FC = () => {
                           />
                           <div className="flex-1">
                             <div className="flex items-center gap-2">
-                              <span className="font-medium text-neutral-900">{part.name}</span>
+                              <span className="font-medium text-neutral-900 dark:text-slate-100">{part.name}</span>
                               <span className="text-xs px-2 py-0.5 bg-primary-100 text-primary-700 rounded-full">
                                 {CASE_PART_TYPE_LABELS[part.type] || part.type}
                               </span>
                             </div>
-                            <div className="text-xs text-neutral-500 mt-1">
+                            <div className="text-xs text-neutral-500 dark:text-slate-400 mt-1">
                               {[
                                 part.email && `${part.email}`, // Nacionalidade
                                 part.civilStatus,
@@ -867,11 +867,11 @@ const LegalDocuments: React.FC = () => {
                       ))}
                     </div>
                   ) : selectedCaseId ? (
-                    <p className="text-sm text-neutral-500 mb-3">
+                    <p className="text-sm text-neutral-500 dark:text-slate-400 mb-3">
                       Nenhuma parte cadastrada neste processo.
                     </p>
                   ) : (
-                    <p className="text-sm text-neutral-500 mb-3">
+                    <p className="text-sm text-neutral-500 dark:text-slate-400 mb-3">
                       Selecione um processo para ver as partes disponíveis.
                     </p>
                   )}
@@ -886,14 +886,14 @@ const LegalDocuments: React.FC = () => {
                     <Users size={16} className="inline mr-1" />
                     Inserir Qualificação das Partes Selecionadas ({selectedPartIds.length})
                   </button>
-                  <p className="text-xs text-neutral-500 mt-2">
+                  <p className="text-xs text-neutral-500 dark:text-slate-400 mt-2">
                     Substitui [QUALIFICAÇÃO] ou [PARTES] no documento, ou copia para área de transferência.
                   </p>
                 </div>
 
                 {/* Conteúdo */}
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                     Texto do Documento
                   </label>
                   <RichTextEditor
@@ -905,12 +905,12 @@ const LegalDocuments: React.FC = () => {
                 </div>
 
                 {/* Toggle para Data e Assinante */}
-                <div className="flex items-center justify-between p-3 bg-neutral-50 rounded-lg border border-neutral-200">
+                <div className="flex items-center justify-between p-3 bg-neutral-50 dark:bg-slate-700 rounded-lg border border-neutral-200 dark:border-slate-700">
                   <div className="flex items-center gap-2">
-                    <PenTool size={18} className="text-neutral-600" />
+                    <PenTool size={18} className="text-neutral-600 dark:text-slate-400" />
                     <div>
-                      <span className="text-sm font-medium text-neutral-700">Assinatura do Sistema</span>
-                      <p className="text-xs text-neutral-500">
+                      <span className="text-sm font-medium text-neutral-700 dark:text-slate-300">Assinatura do Sistema</span>
+                      <p className="text-xs text-neutral-500 dark:text-slate-400">
                         {includeSignature
                           ? 'Data e assinante serão adicionados ao PDF'
                           : 'Desativado (use quando a IA já gerou as linhas de assinatura)'}
@@ -936,7 +936,7 @@ const LegalDocuments: React.FC = () => {
                 {includeSignature && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                         <Calendar size={16} className="inline mr-1" />
                         Data do Documento
                       </label>
@@ -944,19 +944,19 @@ const LegalDocuments: React.FC = () => {
                         type="date"
                         value={formData.documentDate}
                         onChange={(e) => setFormData({ ...formData, documentDate: e.target.value })}
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                         <PenTool size={16} className="inline mr-1" />
                         Profissional Assinante
                       </label>
                       <select
                         value={formData.signerId}
                         onChange={(e) => setFormData({ ...formData, signerId: e.target.value })}
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       >
                         <option value="">Selecione o assinante...</option>
                         {users.map((user) => (
@@ -972,7 +972,7 @@ const LegalDocuments: React.FC = () => {
               </div>
 
               {/* Botões de IA */}
-              <div className="flex flex-wrap items-center gap-2 mt-4 pt-4 border-t border-neutral-200">
+              <div className="flex flex-wrap items-center gap-2 mt-4 pt-4 border-t border-neutral-200 dark:border-slate-700">
                 <button
                   type="button"
                   onClick={handleGenerateWithAI}
@@ -994,11 +994,11 @@ const LegalDocuments: React.FC = () => {
 
                 {/* Indicador de tokens usados */}
                 {lastTokenUsage && (
-                  <div className="ml-auto flex items-center gap-2 text-xs text-neutral-500 bg-neutral-100 px-3 py-1.5 rounded-full">
+                  <div className="ml-auto flex items-center gap-2 text-xs text-neutral-500 dark:text-slate-400 bg-neutral-100 px-3 py-1.5 rounded-full">
                     <Sparkles size={12} className="text-purple-500" />
                     <span>
                       <strong>{lastTokenUsage.totalTokens.toLocaleString()}</strong> tokens
-                      <span className="hidden sm:inline text-neutral-400 ml-1">
+                      <span className="hidden sm:inline text-neutral-400 dark:text-slate-500 ml-1">
                         ({lastTokenUsage.promptTokens.toLocaleString()} + {lastTokenUsage.completionTokens.toLocaleString()})
                       </span>
                     </span>
@@ -1014,7 +1014,7 @@ const LegalDocuments: React.FC = () => {
                     setShowModal(false);
                     resetForm();
                   }}
-                  className="px-4 py-2 border border-neutral-300 rounded-md text-neutral-700 hover:bg-neutral-50 transition-colors min-h-[44px]"
+                  className="px-4 py-2 border border-neutral-300 dark:border-slate-600 rounded-md text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 transition-colors min-h-[44px]"
                 >
                   Cancelar
                 </button>
@@ -1034,17 +1034,17 @@ const LegalDocuments: React.FC = () => {
       {showReviewModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
           <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-neutral-200 px-6 py-4 flex justify-between items-center">
+            <div className="sticky top-0 bg-white border-b border-neutral-200 dark:border-slate-700 px-6 py-4 flex justify-between items-center">
               <div className="flex items-center gap-2">
                 <Sparkles size={24} className="text-primary-600" />
-                <h2 className="text-xl font-bold text-neutral-900">Revisão com IA</h2>
+                <h2 className="text-xl font-bold text-neutral-900 dark:text-slate-100">Revisão com IA</h2>
               </div>
               <button
                 onClick={() => {
                   setShowReviewModal(false);
                   setReviewResult(null);
                 }}
-                className="text-neutral-400 hover:text-neutral-600"
+                className="text-neutral-400 dark:text-slate-500 hover:text-neutral-600 dark:text-slate-400"
               >
                 <X size={24} />
               </button>
@@ -1052,7 +1052,7 @@ const LegalDocuments: React.FC = () => {
 
             <div className="p-6">
               {selectedDocument && (
-                <p className="text-sm text-neutral-600 mb-4">
+                <p className="text-sm text-neutral-600 dark:text-slate-400 mb-4">
                   Documento: <span className="font-medium">{selectedDocument.title}</span>
                 </p>
               )}
@@ -1060,8 +1060,8 @@ const LegalDocuments: React.FC = () => {
               {reviewLoading ? (
                 <div className="flex flex-col items-center justify-center py-12">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mb-4"></div>
-                  <p className="text-neutral-600">Analisando documento com IA...</p>
-                  <p className="text-sm text-neutral-500 mt-2">Isso pode levar alguns segundos</p>
+                  <p className="text-neutral-600 dark:text-slate-400">Analisando documento com IA...</p>
+                  <p className="text-sm text-neutral-500 dark:text-slate-400 mt-2">Isso pode levar alguns segundos</p>
                 </div>
               ) : reviewResult ? (
                 <div className="space-y-4">
@@ -1074,7 +1074,7 @@ const LegalDocuments: React.FC = () => {
                           <li key={index} className="text-sm">
                             <span className="font-medium text-red-700">[{erro.tipo}]</span>
                             <span className="text-red-600 line-through ml-2">"{erro.original}"</span>
-                            <span className="text-neutral-500 mx-2">→</span>
+                            <span className="text-neutral-500 dark:text-slate-400 mx-2">→</span>
                             <span className="text-success-600 font-medium">"{erro.correcao}"</span>
                           </li>
                         ))}
@@ -1101,9 +1101,9 @@ const LegalDocuments: React.FC = () => {
 
                   {/* Texto corrigido (se houver erros) */}
                   {reviewResult.review?.erros && reviewResult.review.erros.length > 0 && reviewResult.review?.textoCorrigido && (
-                    <div className="bg-neutral-50 border border-neutral-200 rounded-lg p-4">
-                      <h3 className="font-semibold text-neutral-800 mb-3">Texto Corrigido</h3>
-                      <pre className="whitespace-pre-wrap text-sm text-neutral-700 font-sans max-h-60 overflow-y-auto">
+                    <div className="bg-neutral-50 dark:bg-slate-700 border border-neutral-200 dark:border-slate-700 rounded-lg p-4">
+                      <h3 className="font-semibold text-neutral-800 dark:text-slate-200 mb-3">Texto Corrigido</h3>
+                      <pre className="whitespace-pre-wrap text-sm text-neutral-700 dark:text-slate-300 font-sans max-h-60 overflow-y-auto">
                         {reviewResult.review.textoCorrigido}
                       </pre>
                     </div>
@@ -1111,9 +1111,9 @@ const LegalDocuments: React.FC = () => {
 
                   {/* Fallback: se a IA retornou texto não parseado */}
                   {reviewResult.review?.reviewText && (
-                    <div className="bg-neutral-50 border border-neutral-200 rounded-lg p-4">
-                      <h3 className="font-semibold text-neutral-800 mb-3">Análise da IA</h3>
-                      <pre className="whitespace-pre-wrap text-sm text-neutral-700 font-sans">
+                    <div className="bg-neutral-50 dark:bg-slate-700 border border-neutral-200 dark:border-slate-700 rounded-lg p-4">
+                      <h3 className="font-semibold text-neutral-800 dark:text-slate-200 mb-3">Análise da IA</h3>
+                      <pre className="whitespace-pre-wrap text-sm text-neutral-700 dark:text-slate-300 font-sans">
                         {reviewResult.review.reviewText}
                       </pre>
                     </div>
@@ -1122,13 +1122,13 @@ const LegalDocuments: React.FC = () => {
               ) : null}
 
               {/* Botões de ação */}
-              <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-neutral-200">
+              <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-neutral-200 dark:border-slate-700">
                 <button
                   onClick={() => {
                     setShowReviewModal(false);
                     setReviewResult(null);
                   }}
-                  className="px-4 py-2 border border-neutral-300 text-neutral-700 rounded-md hover:bg-neutral-50 transition-colors min-h-[44px]"
+                  className="px-4 py-2 border border-neutral-300 dark:border-slate-600 text-neutral-700 dark:text-slate-300 rounded-md hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 transition-colors min-h-[44px]"
                 >
                   Fechar
                 </button>

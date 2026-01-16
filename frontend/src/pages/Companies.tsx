@@ -344,7 +344,7 @@ const Companies: React.FC = () => {
   const getRoleBadge = (role: string) => {
     const badges = {
       ADMIN: 'bg-primary-100 text-primary-800',
-      USER: 'bg-neutral-100 text-neutral-800',
+      USER: 'bg-neutral-100 text-neutral-800 dark:text-slate-200',
       SUPER_ADMIN: 'bg-primary-100 text-primary-800',
     };
     const labels = {
@@ -610,7 +610,7 @@ const Companies: React.FC = () => {
     <Layout>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-neutral-900">Empresas</h1>
+          <h1 className="text-2xl font-bold text-neutral-900 dark:text-slate-100">Empresas</h1>
           <button
             onClick={handleNewCompany}
             className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-success-100 text-success-700 border border-success-200 hover:bg-success-200 font-medium rounded-lg transition-all duration-200"
@@ -620,9 +620,9 @@ const Companies: React.FC = () => {
           </button>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 p-4">
           <div className="flex items-center gap-2 mb-4">
-            <Search size={20} className="text-neutral-400" />
+            <Search size={20} className="text-neutral-400 dark:text-slate-500" />
             <input
               type="text"
               placeholder="Buscar empresas..."
@@ -635,7 +635,7 @@ const Companies: React.FC = () => {
           {loading ? (
             <p className="text-center py-4">Carregando...</p>
           ) : companies.length === 0 ? (
-            <p className="text-center py-4 text-neutral-600">Nenhuma empresa encontrada</p>
+            <p className="text-center py-4 text-neutral-600 dark:text-slate-400">Nenhuma empresa encontrada</p>
           ) : (
             <>
               {/* Mobile Card View */}
@@ -667,33 +667,33 @@ const Companies: React.FC = () => {
               {/* Desktop Table View */}
               <div className="desktop-table-view overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-neutral-50">
+                <thead className="bg-neutral-50 dark:bg-slate-700">
                   <tr>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">
                       Empresa
                     </th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">
                       Assinatura
                     </th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">
                       Estatísticas
                     </th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">
                       Status
                     </th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">
                       Ações
                     </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-neutral-200">
                   {companies.map((company) => (
-                    <tr key={company.id} className="odd:bg-white even:bg-neutral-50 hover:bg-success-100 transition-colors">
+                    <tr key={company.id} className="odd:bg-white dark:odd:bg-slate-800 even:bg-neutral-50 dark:bg-slate-700 dark:even:bg-slate-700/50 hover:bg-success-100 transition-colors">
                       <td className="px-4 py-3 text-sm">
                         <div>
-                          <p className="font-medium text-neutral-900">{company.name}</p>
-                          {company.cnpj && <p className="text-xs text-neutral-500">CNPJ: {company.cnpj}</p>}
-                          <p className="text-xs text-neutral-400">Criada em {formatDate(company.createdAt)}</p>
+                          <p className="font-medium text-neutral-900 dark:text-slate-100">{company.name}</p>
+                          {company.cnpj && <p className="text-xs text-neutral-500 dark:text-slate-400">CNPJ: {company.cnpj}</p>}
+                          <p className="text-xs text-neutral-400 dark:text-slate-500">Criada em {formatDate(company.createdAt)}</p>
                         </div>
                       </td>
                       <td className="px-4 py-3 text-sm">
@@ -702,7 +702,7 @@ const Companies: React.FC = () => {
                             {getSubscriptionBadge(company.subscriptionStatus)}
                             {getPlanBadge(company.subscriptionPlan)}
                           </div>
-                          <div className="text-xs text-neutral-500">
+                          <div className="text-xs text-neutral-500 dark:text-slate-400">
                             {company.subscriptionStatus === 'TRIAL' && company.trialEndsAt && (
                               <span className="flex items-center gap-1">
                                 <Clock size={12} />
@@ -715,18 +715,18 @@ const Companies: React.FC = () => {
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-sm text-neutral-600">
+                      <td className="px-4 py-3 text-sm text-neutral-600 dark:text-slate-400">
                         <div className="flex items-center gap-4">
                           <div className="flex items-center gap-1" title="Usuários">
-                            <Users size={14} className="text-neutral-400" />
+                            <Users size={14} className="text-neutral-400 dark:text-slate-500" />
                             <span>{company._count.users}</span>
                           </div>
                           <div className="flex items-center gap-1" title="Clientes">
-                            <Building2 size={14} className="text-neutral-400" />
+                            <Building2 size={14} className="text-neutral-400 dark:text-slate-500" />
                             <span>{company._count.clients}</span>
                           </div>
                           <div className="flex items-center gap-1" title="Processos">
-                            <FileText size={14} className="text-neutral-400" />
+                            <FileText size={14} className="text-neutral-400 dark:text-slate-500" />
                             <span>{company._count.cases}</span>
                           </div>
                         </div>
@@ -808,9 +808,9 @@ const Companies: React.FC = () => {
       {/* Modal Criar/Editar Empresa */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-neutral-200 px-6 py-4 flex justify-between items-center min-h-[44px]">
-              <h2 className="text-xl font-bold text-neutral-900">
+          <div className="bg-white dark:bg-slate-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white dark:bg-slate-800 border-b border-neutral-200 dark:border-slate-700 dark:border-slate-700 px-6 py-4 flex justify-between items-center min-h-[44px]">
+              <h2 className="text-xl font-bold text-neutral-900 dark:text-slate-100">
                 {editMode ? 'Editar Empresa' : 'Nova Empresa'}
               </h2>
               <button
@@ -820,7 +820,7 @@ const Companies: React.FC = () => {
                   setSelectedCompany(null);
                   resetForm();
                 }}
-                className="text-neutral-400 hover:text-neutral-600 transition-colors"
+                className="text-neutral-400 dark:text-slate-500 hover:text-neutral-600 dark:text-slate-400 transition-colors"
               >
                 <X size={24} />
               </button>
@@ -830,12 +830,12 @@ const Companies: React.FC = () => {
               {!editMode ? (
                 <>
                   {/* Formulário de Criação */}
-                  <div className="border-b border-neutral-200 pb-4">
-                    <h3 className="text-lg font-semibold text-neutral-900 mb-3">Dados da Empresa</h3>
+                  <div className="border-b border-neutral-200 dark:border-slate-700 pb-4">
+                    <h3 className="text-lg font-semibold text-neutral-900 dark:text-slate-100 mb-3">Dados da Empresa</h3>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-neutral-700">Nome da Empresa *</label>
+                        <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300">Nome da Empresa *</label>
                         <input
                           type="text"
                           required
@@ -845,7 +845,7 @@ const Companies: React.FC = () => {
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-neutral-700">CNPJ</label>
+                        <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300">CNPJ</label>
                         <input
                           type="text"
                           value={formData.cnpj}
@@ -856,7 +856,7 @@ const Companies: React.FC = () => {
                     </div>
 
                     <div className="mt-4">
-                      <label className="block text-sm font-medium text-neutral-700">Email da Empresa *</label>
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300">Email da Empresa *</label>
                       <input
                         type="email"
                         required
@@ -868,11 +868,11 @@ const Companies: React.FC = () => {
                   </div>
 
                   <div>
-                    <h3 className="text-lg font-semibold text-neutral-900 mb-3">Administrador da Empresa</h3>
+                    <h3 className="text-lg font-semibold text-neutral-900 dark:text-slate-100 mb-3">Administrador da Empresa</h3>
 
                     <div className="space-y-4">
                       <div>
-                        <label className="block text-sm font-medium text-neutral-700">Nome do Admin *</label>
+                        <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300">Nome do Admin *</label>
                         <input
                           type="text"
                           required
@@ -883,7 +883,7 @@ const Companies: React.FC = () => {
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-neutral-700">Email do Admin *</label>
+                        <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300">Email do Admin *</label>
                         <input
                           type="email"
                           required
@@ -894,7 +894,7 @@ const Companies: React.FC = () => {
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-neutral-700">Senha do Admin *</label>
+                        <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300">Senha do Admin *</label>
                         <input
                           type="password"
                           required
@@ -911,7 +911,7 @@ const Companies: React.FC = () => {
                   {/* Formulário de Edição */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700">Nome da Empresa *</label>
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300">Nome da Empresa *</label>
                       <input
                         type="text"
                         required
@@ -921,7 +921,7 @@ const Companies: React.FC = () => {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700">CNPJ</label>
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300">CNPJ</label>
                       <input
                         type="text"
                         value={editFormData.cnpj}
@@ -958,7 +958,7 @@ const Companies: React.FC = () => {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700">Email *</label>
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300">Email *</label>
                       <input
                         type="email"
                         required
@@ -968,7 +968,7 @@ const Companies: React.FC = () => {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700">Telefone</label>
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300">Telefone</label>
                       <input
                         type="text"
                         value={editFormData.phone}
@@ -979,7 +979,7 @@ const Companies: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700">Endereço</label>
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300">Endereço</label>
                     <input
                       type="text"
                       value={editFormData.address}
@@ -990,7 +990,7 @@ const Companies: React.FC = () => {
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700">Cidade</label>
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300">Cidade</label>
                       <input
                         type="text"
                         value={editFormData.city}
@@ -999,7 +999,7 @@ const Companies: React.FC = () => {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700">Estado</label>
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300">Estado</label>
                       <input
                         type="text"
                         value={editFormData.state}
@@ -1008,7 +1008,7 @@ const Companies: React.FC = () => {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700">CEP</label>
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300">CEP</label>
                       <input
                         type="text"
                         value={editFormData.zipCode}
@@ -1026,14 +1026,14 @@ const Companies: React.FC = () => {
                       onChange={(e) => setEditFormData({ ...editFormData, active: e.target.checked })}
                       className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-neutral-300 rounded"
                     />
-                    <label htmlFor="active" className="text-sm font-medium text-neutral-700">
+                    <label htmlFor="active" className="text-sm font-medium text-neutral-700 dark:text-slate-300">
                       Empresa Ativa
                     </label>
                   </div>
                 </>
               )}
 
-              <div className="flex justify-end gap-3 pt-6 border-t border-neutral-200">
+              <div className="flex justify-end gap-3 pt-6 border-t border-neutral-200 dark:border-slate-700">
                 <button
                   type="button"
                   onClick={() => {
@@ -1042,7 +1042,7 @@ const Companies: React.FC = () => {
                     setSelectedCompany(null);
                     resetForm();
                   }}
-                  className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 bg-white hover:bg-neutral-50 text-neutral-700 font-medium rounded-lg transition-all duration-200"
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 dark:border-slate-600 bg-white dark:bg-slate-700 hover:bg-neutral-50 dark:hover:bg-slate-600 dark:bg-slate-700 text-neutral-700 dark:text-slate-300 font-medium rounded-lg transition-all duration-200"
                 >
                   Cancelar
                 </button>
@@ -1061,16 +1061,16 @@ const Companies: React.FC = () => {
       {/* Modal de Confirmação de Exclusão */}
       {showDeleteModal && selectedCompany && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
-          <div className="bg-white rounded-lg max-w-md w-full p-6 max-h-[90vh] overflow-y-auto my-4">
+          <div className="bg-white dark:bg-slate-800 rounded-lg max-w-md w-full p-6 max-h-[90vh] overflow-y-auto my-4">
             <div className="flex items-center justify-center w-12 h-12 mx-auto bg-error-100 rounded-full mb-4">
               <Trash2 className="text-error-600" size={24} />
             </div>
 
-            <h3 className="text-lg font-semibold text-neutral-900 text-center mb-2">
+            <h3 className="text-lg font-semibold text-neutral-900 dark:text-slate-100 text-center mb-2">
               Deletar Empresa?
             </h3>
 
-            <p className="text-sm text-neutral-600 text-center mb-4">
+            <p className="text-sm text-neutral-600 dark:text-slate-400 text-center mb-4">
               Você está prestes a deletar a empresa <strong>{selectedCompany.name}</strong>.
             </p>
 
@@ -1093,7 +1093,7 @@ const Companies: React.FC = () => {
                   setShowDeleteModal(false);
                   setSelectedCompany(null);
                 }}
-                className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 bg-white hover:bg-neutral-50 text-neutral-700 font-medium rounded-lg transition-all duration-200"
+                className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 dark:border-slate-600 bg-white dark:bg-slate-700 hover:bg-neutral-50 dark:hover:bg-slate-600 dark:bg-slate-700 text-neutral-700 dark:text-slate-300 font-medium rounded-lg transition-all duration-200"
               >
                 Cancelar
               </button>
@@ -1111,21 +1111,21 @@ const Companies: React.FC = () => {
       {/* Modal de Gerenciamento de Usuários */}
       {showUsersModal && selectedCompany && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
-          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-neutral-200 px-6 py-4 flex justify-between items-center">
+          <div className="bg-white dark:bg-slate-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white dark:bg-slate-800 border-b border-neutral-200 dark:border-slate-700 dark:border-slate-700 px-6 py-4 flex justify-between items-center">
               <div>
-                <h2 className="text-xl font-bold text-neutral-900">Usuários da Empresa</h2>
-                <p className="text-sm text-neutral-600 mt-1">{selectedCompany.name}</p>
+                <h2 className="text-xl font-bold text-neutral-900 dark:text-slate-100">Usuários da Empresa</h2>
+                <p className="text-sm text-neutral-600 dark:text-slate-400 mt-1">{selectedCompany.name}</p>
                 {usersData && (
                   <div className="flex gap-4 mt-2">
-                    <span className="text-xs text-neutral-600">
+                    <span className="text-xs text-neutral-600 dark:text-slate-400">
                       <strong>{usersData.breakdown.admin}</strong> Admin(s)
                     </span>
-                    <span className="text-xs text-neutral-600">
+                    <span className="text-xs text-neutral-600 dark:text-slate-400">
                       <strong>{usersData.breakdown.user}</strong> Usuário(s)
                     </span>
                     {usersData.breakdown.superAdmin > 0 && (
-                      <span className="text-xs text-neutral-600">
+                      <span className="text-xs text-neutral-600 dark:text-slate-400">
                         <strong>{usersData.breakdown.superAdmin}</strong> Super Admin(s)
                       </span>
                     )}
@@ -1138,7 +1138,7 @@ const Companies: React.FC = () => {
                   setSelectedCompany(null);
                   setUsersData(null);
                 }}
-                className="text-neutral-400 hover:text-neutral-600 transition-colors"
+                className="text-neutral-400 dark:text-slate-500 hover:text-neutral-600 dark:text-slate-400 transition-colors"
               >
                 <X size={24} />
               </button>
@@ -1146,36 +1146,36 @@ const Companies: React.FC = () => {
 
             <div className="p-6">
               {loadingUsers ? (
-                <p className="text-center py-8 text-neutral-600">Carregando usuários...</p>
+                <p className="text-center py-8 text-neutral-600 dark:text-slate-400">Carregando usuários...</p>
               ) : usersData && usersData.users.length > 0 ? (
                 <div className="overflow-x-auto">
                   <table className="w-full">
-                    <thead className="bg-neutral-50">
+                    <thead className="bg-neutral-50 dark:bg-slate-700">
                       <tr>
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
+                        <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">
                           Nome
                         </th>
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
+                        <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">
                           Email
                         </th>
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
+                        <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">
                           Função
                         </th>
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 uppercase">
+                        <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">
                           Status
                         </th>
-                        <th className="px-4 py-3 text-center text-sm font-semibold text-neutral-900 uppercase">
+                        <th className="px-4 py-3 text-center text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">
                           Ações
                         </th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-neutral-200">
                       {usersData.users.map((user) => (
-                        <tr key={user.id} className="odd:bg-white even:bg-neutral-50 hover:bg-success-100 transition-colors">
-                          <td className="px-4 py-3 text-sm font-medium text-neutral-900">
+                        <tr key={user.id} className="odd:bg-white dark:odd:bg-slate-800 even:bg-neutral-50 dark:bg-slate-700 dark:even:bg-slate-700/50 hover:bg-success-100 transition-colors">
+                          <td className="px-4 py-3 text-sm font-medium text-neutral-900 dark:text-slate-100">
                             {user.name}
                           </td>
-                          <td className="px-4 py-3 text-sm text-neutral-600">
+                          <td className="px-4 py-3 text-sm text-neutral-600 dark:text-slate-400">
                             {user.email}
                           </td>
                           <td className="px-4 py-3 text-sm">
@@ -1203,7 +1203,7 @@ const Companies: React.FC = () => {
                               </button>
                             )}
                             {user.role === 'SUPER_ADMIN' && (
-                              <span className="text-xs text-neutral-400 italic">Protegido</span>
+                              <span className="text-xs text-neutral-400 dark:text-slate-500 italic">Protegido</span>
                             )}
                           </td>
                         </tr>
@@ -1212,7 +1212,7 @@ const Companies: React.FC = () => {
                   </table>
                 </div>
               ) : (
-                <p className="text-center py-8 text-neutral-600">Nenhum usuário encontrado</p>
+                <p className="text-center py-8 text-neutral-600 dark:text-slate-400">Nenhum usuário encontrado</p>
               )}
             </div>
           </div>
@@ -1222,11 +1222,11 @@ const Companies: React.FC = () => {
       {/* Modal de Gerenciamento de Assinatura */}
       {showSubscriptionModal && selectedCompany && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
-          <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto my-4">
-            <div className="sticky top-0 bg-white border-b border-neutral-200 px-6 py-4 flex justify-between items-center">
+          <div className="bg-white dark:bg-slate-800 rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto my-4">
+            <div className="sticky top-0 bg-white dark:bg-slate-800 border-b border-neutral-200 dark:border-slate-700 dark:border-slate-700 px-6 py-4 flex justify-between items-center">
               <div>
-                <h2 className="text-xl font-bold text-neutral-900">Gerenciar Assinatura</h2>
-                <p className="text-sm text-neutral-600 mt-1">{selectedCompany.name}</p>
+                <h2 className="text-xl font-bold text-neutral-900 dark:text-slate-100">Gerenciar Assinatura</h2>
+                <p className="text-sm text-neutral-600 dark:text-slate-400 mt-1">{selectedCompany.name}</p>
               </div>
               <button
                 onClick={() => {
@@ -1235,7 +1235,7 @@ const Companies: React.FC = () => {
                   setLastPaymentData(null);
                   setStorageMetrics(null);
                 }}
-                className="text-neutral-400 hover:text-neutral-600 transition-colors"
+                className="text-neutral-400 dark:text-slate-500 hover:text-neutral-600 dark:text-slate-400 transition-colors"
               >
                 <X size={24} />
               </button>
@@ -1243,7 +1243,7 @@ const Companies: React.FC = () => {
 
             <form onSubmit={handleUpdateSubscription} className="p-6 space-y-4">
               {/* Info atual */}
-              <div className="bg-neutral-50 p-4 rounded-lg space-y-2 text-sm">
+              <div className="bg-neutral-50 dark:bg-slate-700 p-4 rounded-lg space-y-2 text-sm">
                 <p><strong>Status atual:</strong> {selectedCompany.subscriptionStatus || 'Nenhum'}</p>
                 <p><strong>Plano atual:</strong> {selectedCompany.subscriptionPlan || 'Nenhum'}</p>
                 <p><strong>Processos:</strong> {selectedCompany._count.cases} / {selectedCompany.casesLimit || 'ilimitado'}</p>
@@ -1292,7 +1292,7 @@ const Companies: React.FC = () => {
               )}
 
               <div>
-                <label className="block text-sm font-medium text-neutral-700">Status da Assinatura</label>
+                <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300">Status da Assinatura</label>
                 <select
                   value={subscriptionForm.subscriptionStatus}
                   onChange={(e) => setSubscriptionForm({ ...subscriptionForm, subscriptionStatus: e.target.value as any })}
@@ -1307,7 +1307,7 @@ const Companies: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-neutral-700">Plano</label>
+                <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300">Plano</label>
                 <select
                   value={subscriptionForm.subscriptionPlan}
                   onChange={(e) => {
@@ -1339,7 +1339,7 @@ const Companies: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-neutral-700">Limite de Processos</label>
+                <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300">Limite de Processos</label>
                 <input
                   type="number"
                   min="0"
@@ -1347,11 +1347,11 @@ const Companies: React.FC = () => {
                   onChange={(e) => setSubscriptionForm({ ...subscriptionForm, casesLimit: parseInt(e.target.value) || 0 })}
                   className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md min-h-[44px]"
                 />
-                <p className="text-xs text-neutral-500 mt-1">Deixe 0 para ilimitado</p>
+                <p className="text-xs text-neutral-500 dark:text-slate-400 mt-1">Deixe 0 para ilimitado</p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-neutral-700">Limite de Monitoramento (Publicações/mês)</label>
+                <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300">Limite de Monitoramento (Publicações/mês)</label>
                 <input
                   type="number"
                   min="0"
@@ -1359,11 +1359,11 @@ const Companies: React.FC = () => {
                   onChange={(e) => setSubscriptionForm({ ...subscriptionForm, monitoringLimit: parseInt(e.target.value) || 0 })}
                   className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md min-h-[44px]"
                 />
-                <p className="text-xs text-neutral-500 mt-1">Quantidade de publicações que podem ser importadas por mês via monitoramento OAB. Deixe 0 para ilimitado.</p>
+                <p className="text-xs text-neutral-500 dark:text-slate-400 mt-1">Quantidade de publicações que podem ser importadas por mês via monitoramento OAB. Deixe 0 para ilimitado.</p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-neutral-700">Limite de Armazenamento</label>
+                <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300">Limite de Armazenamento</label>
                 <select
                   value={subscriptionForm.storageLimit}
                   onChange={(e) => setSubscriptionForm({ ...subscriptionForm, storageLimit: e.target.value })}
@@ -1411,7 +1411,7 @@ const Companies: React.FC = () => {
                 )}
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t border-neutral-200">
+              <div className="flex justify-end gap-3 pt-4 border-t border-neutral-200 dark:border-slate-700">
                 <button
                   type="button"
                   onClick={() => {
@@ -1420,7 +1420,7 @@ const Companies: React.FC = () => {
                     setLastPaymentData(null);
                     setStorageMetrics(null);
                   }}
-                  className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 bg-white hover:bg-neutral-50 text-neutral-700 font-medium rounded-lg transition-all duration-200"
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 dark:border-slate-600 bg-white dark:bg-slate-700 hover:bg-neutral-50 dark:hover:bg-slate-600 dark:bg-slate-700 text-neutral-700 dark:text-slate-300 font-medium rounded-lg transition-all duration-200"
                 >
                   Cancelar
                 </button>
@@ -1440,14 +1440,14 @@ const Companies: React.FC = () => {
       {/* Modal de Compartilhamento de IA */}
       {showAIShareModal && selectedCompany && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto my-4">
-            <div className="sticky top-0 bg-white border-b border-neutral-200 px-6 py-4 flex justify-between items-center">
+          <div className="bg-white dark:bg-slate-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto my-4">
+            <div className="sticky top-0 bg-white dark:bg-slate-800 border-b border-neutral-200 dark:border-slate-700 dark:border-slate-700 px-6 py-4 flex justify-between items-center">
               <div>
-                <h2 className="text-xl font-bold text-neutral-900 flex items-center gap-2">
+                <h2 className="text-xl font-bold text-neutral-900 dark:text-slate-100 flex items-center gap-2">
                   <Brain size={24} className="text-purple-600" />
                   Compartilhar Tokens de IA
                 </h2>
-                <p className="text-sm text-neutral-600 mt-1">{selectedCompany.name}</p>
+                <p className="text-sm text-neutral-600 dark:text-slate-400 mt-1">{selectedCompany.name}</p>
               </div>
               <button
                 onClick={() => {
@@ -1457,7 +1457,7 @@ const Companies: React.FC = () => {
                   setAvailableClients([]);
                   setEditingShare(null);
                 }}
-                className="text-neutral-400 hover:text-neutral-600 transition-colors"
+                className="text-neutral-400 dark:text-slate-500 hover:text-neutral-600 dark:text-slate-400 transition-colors"
               >
                 <X size={24} />
               </button>
@@ -1473,12 +1473,12 @@ const Companies: React.FC = () => {
               </div>
 
               {/* Formulário para novo compartilhamento */}
-              <form onSubmit={handleCreateShare} className="bg-neutral-50 rounded-lg p-4 space-y-4">
-                <h3 className="text-sm font-semibold text-neutral-900">Novo Compartilhamento</h3>
+              <form onSubmit={handleCreateShare} className="bg-neutral-50 dark:bg-slate-700 rounded-lg p-4 space-y-4">
+                <h3 className="text-sm font-semibold text-neutral-900 dark:text-slate-100">Novo Compartilhamento</h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700">Empresa Cliente</label>
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300">Empresa Cliente</label>
                     <select
                       value={aiShareForm.clientCompanyId}
                       onChange={(e) => setAIShareForm({ ...aiShareForm, clientCompanyId: e.target.value })}
@@ -1494,7 +1494,7 @@ const Companies: React.FC = () => {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-neutral-700">Limite de Tokens</label>
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300">Limite de Tokens</label>
                     <input
                       type="number"
                       min="1000"
@@ -1521,14 +1521,14 @@ const Companies: React.FC = () => {
 
               {/* Lista de compartilhamentos */}
               <div>
-                <h3 className="text-sm font-semibold text-neutral-900 mb-3">
+                <h3 className="text-sm font-semibold text-neutral-900 dark:text-slate-100 mb-3">
                   Compartilhamentos Ativos ({aiShares.length})
                 </h3>
 
                 {loadingAIShares ? (
-                  <p className="text-center py-4 text-neutral-600">Carregando...</p>
+                  <p className="text-center py-4 text-neutral-600 dark:text-slate-400">Carregando...</p>
                 ) : aiShares.length === 0 ? (
-                  <p className="text-center py-4 text-neutral-500 bg-neutral-50 rounded-lg">
+                  <p className="text-center py-4 text-neutral-500 dark:text-slate-400 bg-neutral-50 dark:bg-slate-700 rounded-lg">
                     Nenhum compartilhamento configurado
                   </p>
                 ) : (
@@ -1540,27 +1540,27 @@ const Companies: React.FC = () => {
                       return (
                         <div
                           key={share.id}
-                          className={`border rounded-lg p-4 ${share.enabled ? 'border-neutral-200 bg-white' : 'border-neutral-200 bg-neutral-50 opacity-75'}`}
+                          className={`border rounded-lg p-4 ${share.enabled ? 'border-neutral-200 dark:border-slate-700 bg-white' : 'border-neutral-200 dark:border-slate-700 bg-neutral-50 dark:bg-slate-700 opacity-75'}`}
                         >
                           <div className="flex items-start justify-between gap-4">
                             <div className="flex-1">
                               <div className="flex items-center gap-2">
-                                <span className="font-medium text-neutral-900">
+                                <span className="font-medium text-neutral-900 dark:text-slate-100">
                                   {share.clientCompany?.name || 'Empresa'}
                                 </span>
                                 {!share.enabled && (
-                                  <span className="px-2 py-0.5 text-xs bg-neutral-200 text-neutral-600 rounded-full">
+                                  <span className="px-2 py-0.5 text-xs bg-neutral-200 text-neutral-600 dark:text-slate-400 rounded-full">
                                     Desativado
                                   </span>
                                 )}
                               </div>
-                              <p className="text-xs text-neutral-500 mt-1">
+                              <p className="text-xs text-neutral-500 dark:text-slate-400 mt-1">
                                 {share.clientCompany?.email}
                               </p>
 
                               {/* Progress bar */}
                               <div className="mt-3">
-                                <div className="flex justify-between text-xs text-neutral-600 mb-1">
+                                <div className="flex justify-between text-xs text-neutral-600 dark:text-slate-400 mb-1">
                                   <span>{share.tokensUsed.toLocaleString()} usados</span>
                                   <span>{share.tokenLimit.toLocaleString()} limite</span>
                                 </div>
@@ -1570,7 +1570,7 @@ const Companies: React.FC = () => {
                                     style={{ width: `${usagePercent}%` }}
                                   />
                                 </div>
-                                <p className="text-xs text-neutral-500 mt-1">
+                                <p className="text-xs text-neutral-500 dark:text-slate-400 mt-1">
                                   {usagePercent}% utilizado ({(share.tokenLimit - share.tokensUsed).toLocaleString()} restantes)
                                 </p>
                               </div>
@@ -1579,7 +1579,7 @@ const Companies: React.FC = () => {
                               {isEditing && (
                                 <div className="mt-4 p-3 bg-purple-50 rounded-lg space-y-3">
                                   <div>
-                                    <label className="block text-xs font-medium text-neutral-700 mb-1">
+                                    <label className="block text-xs font-medium text-neutral-700 dark:text-slate-300 mb-1">
                                       Novo Limite
                                     </label>
                                     <input
@@ -1599,7 +1599,7 @@ const Companies: React.FC = () => {
                                       onChange={(e) => setEditingShare({ ...editingShare, enabled: e.target.checked })}
                                       className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-neutral-300 rounded"
                                     />
-                                    <label htmlFor={`enabled-${share.id}`} className="text-sm text-neutral-700">
+                                    <label htmlFor={`enabled-${share.id}`} className="text-sm text-neutral-700 dark:text-slate-300">
                                       Habilitado
                                     </label>
                                   </div>
@@ -1607,7 +1607,7 @@ const Companies: React.FC = () => {
                                     <button
                                       type="button"
                                       onClick={() => setEditingShare(null)}
-                                      className="px-3 py-1.5 text-sm text-neutral-600 hover:bg-neutral-100 rounded-md"
+                                      className="px-3 py-1.5 text-sm text-neutral-600 dark:text-slate-400 hover:bg-neutral-100 rounded-md"
                                     >
                                       Cancelar
                                     </button>
@@ -1664,14 +1664,14 @@ const Companies: React.FC = () => {
       {/* Modal de Configuração do Chatwell */}
       {showChatwellModal && selectedCompany && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
-          <div className="bg-white rounded-lg max-w-lg w-full max-h-[90vh] overflow-y-auto my-4">
-            <div className="sticky top-0 bg-white border-b border-neutral-200 px-6 py-4 flex justify-between items-center">
+          <div className="bg-white dark:bg-slate-800 rounded-lg max-w-lg w-full max-h-[90vh] overflow-y-auto my-4">
+            <div className="sticky top-0 bg-white dark:bg-slate-800 border-b border-neutral-200 dark:border-slate-700 dark:border-slate-700 px-6 py-4 flex justify-between items-center">
               <div>
-                <h2 className="text-xl font-bold text-neutral-900 flex items-center gap-2">
+                <h2 className="text-xl font-bold text-neutral-900 dark:text-slate-100 flex items-center gap-2">
                   <MessageCircle size={24} className="text-green-600" />
                   Configurar Chatwell
                 </h2>
-                <p className="text-sm text-neutral-600 mt-1">{selectedCompany.name}</p>
+                <p className="text-sm text-neutral-600 dark:text-slate-400 mt-1">{selectedCompany.name}</p>
               </div>
               <button
                 onClick={() => {
@@ -1679,7 +1679,7 @@ const Companies: React.FC = () => {
                   setSelectedCompany(null);
                   setChatwellConfig(null);
                 }}
-                className="text-neutral-400 hover:text-neutral-600 transition-colors"
+                className="text-neutral-400 dark:text-slate-500 hover:text-neutral-600 dark:text-slate-400 transition-colors"
               >
                 <X size={24} />
               </button>
@@ -1687,7 +1687,7 @@ const Companies: React.FC = () => {
 
             {loadingChatwell ? (
               <div className="p-6 text-center">
-                <p className="text-neutral-600">Carregando configuração...</p>
+                <p className="text-neutral-600 dark:text-slate-400">Carregando configuração...</p>
               </div>
             ) : (
               <form onSubmit={handleSaveChatwell} className="p-6 space-y-4">
@@ -1701,10 +1701,10 @@ const Companies: React.FC = () => {
 
                 {/* Status atual */}
                 {chatwellConfig && (
-                  <div className="bg-neutral-50 p-3 rounded-lg text-sm space-y-1">
+                  <div className="bg-neutral-50 dark:bg-slate-700 p-3 rounded-lg text-sm space-y-1">
                     <p>
                       <strong>Status:</strong>{' '}
-                      <span className={chatwellConfig.enabled ? 'text-green-600' : 'text-neutral-500'}>
+                      <span className={chatwellConfig.enabled ? 'text-green-600' : 'text-neutral-500 dark:text-slate-400'}>
                         {chatwellConfig.enabled ? 'Habilitado' : 'Desabilitado'}
                       </span>
                     </p>
@@ -1727,14 +1727,14 @@ const Companies: React.FC = () => {
                       }`}
                     />
                   </button>
-                  <span className="text-sm font-medium text-neutral-700">
+                  <span className="text-sm font-medium text-neutral-700 dark:text-slate-300">
                     {chatwellForm.enabled ? 'Chatwell Habilitado' : 'Chatwell Desabilitado'}
                   </span>
                 </div>
 
                 {/* URL */}
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700">URL do Chatwell</label>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300">URL do Chatwell</label>
                   <input
                     type="url"
                     placeholder="https://chat.advwell.pro"
@@ -1742,7 +1742,7 @@ const Companies: React.FC = () => {
                     onChange={(e) => setChatwellForm({ ...chatwellForm, url: e.target.value })}
                     className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md min-h-[44px] focus:ring-green-500 focus:border-green-500"
                   />
-                  <p className="text-xs text-neutral-500 mt-1">
+                  <p className="text-xs text-neutral-500 dark:text-slate-400 mt-1">
                     URL do Chatwell. Use um subdomínio do mesmo domínio (ex: chat.advwell.pro) para que o login persista.
                   </p>
                 </div>
@@ -1756,7 +1756,7 @@ const Companies: React.FC = () => {
                   </p>
                 </div>
 
-                <div className="flex justify-end gap-3 pt-4 border-t border-neutral-200">
+                <div className="flex justify-end gap-3 pt-4 border-t border-neutral-200 dark:border-slate-700">
                   <button
                     type="button"
                     onClick={() => {
@@ -1764,7 +1764,7 @@ const Companies: React.FC = () => {
                       setSelectedCompany(null);
                       setChatwellConfig(null);
                     }}
-                    className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 bg-white hover:bg-neutral-50 text-neutral-700 font-medium rounded-lg transition-all duration-200"
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] border border-neutral-300 dark:border-slate-600 bg-white dark:bg-slate-700 hover:bg-neutral-50 dark:hover:bg-slate-600 dark:bg-slate-700 text-neutral-700 dark:text-slate-300 font-medium rounded-lg transition-all duration-200"
                   >
                     Cancelar
                   </button>

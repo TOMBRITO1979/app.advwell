@@ -173,8 +173,8 @@ export default function Tags() {
           </div>
 
           {/* Info Box */}
-          <div className="mb-6 bg-info-50 border border-info-200 rounded-lg p-4">
-            <p className="text-info-800 text-sm">
+          <div className="mb-6 bg-info-50 dark:bg-info-900/30 border border-info-200 dark:border-info-700 rounded-lg p-4">
+            <p className="text-info-800 dark:text-info-300 text-sm">
               As tags permitem categorizar clientes e leads de forma padronizada.
               Cada tag pode ter uma cor personalizada para facilitar a identificação visual.
             </p>
@@ -222,7 +222,7 @@ export default function Tags() {
                 </thead>
                 <tbody className="divide-y divide-neutral-200 dark:divide-slate-700">
                   {tags.map((tag, index) => (
-                    <tr key={tag.id} className={index % 2 === 0 ? 'bg-white' : 'bg-neutral-50'}>
+                    <tr key={tag.id} className={index % 2 === 0 ? 'bg-white dark:bg-slate-800' : 'bg-neutral-50 dark:bg-slate-700/50'}>
                       <td className="px-6 py-4">
                         <span
                           className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"
@@ -346,7 +346,7 @@ export default function Tags() {
                         className={`px-3 py-1 rounded-md text-sm ${
                           page === pageNum
                             ? 'bg-primary-600 text-white'
-                            : 'border border-neutral-300 hover:bg-neutral-50'
+                            : 'border border-neutral-300 dark:border-slate-600 hover:bg-neutral-50 dark:hover:bg-slate-700'
                         }`}
                       >
                         {pageNum}
