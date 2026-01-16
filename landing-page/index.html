@@ -652,9 +652,9 @@
 
         .pricing-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 32px;
-            max-width: 1000px;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 20px;
+            max-width: 1300px;
             margin: 0 auto;
         }
 
@@ -733,6 +733,80 @@
         .pricing-card .btn {
             width: 100%;
             justify-content: center;
+        }
+
+        /* Pricing Comparison Table */
+        .pricing-comparison {
+            margin-top: 64px;
+            overflow-x: auto;
+        }
+
+        .pricing-comparison h3 {
+            text-align: center;
+            font-size: 1.5rem;
+            margin-bottom: 32px;
+            color: var(--secondary);
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            min-width: 800px;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 16px 12px;
+            text-align: center;
+            border-bottom: 1px solid var(--gray-200);
+            font-size: 14px;
+        }
+
+        .comparison-table th {
+            background: var(--secondary);
+            color: white;
+            font-weight: 600;
+        }
+
+        .comparison-table th.popular-header {
+            background: var(--primary);
+        }
+
+        .comparison-table td:first-child {
+            text-align: left;
+            font-weight: 500;
+            color: var(--secondary);
+            background: var(--gray-50);
+        }
+
+        .comparison-table tr:hover td {
+            background: rgba(76, 175, 80, 0.05);
+        }
+
+        .comparison-table tr:hover td:first-child {
+            background: var(--gray-100);
+        }
+
+        .comparison-table .check {
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .comparison-table .x {
+            color: var(--gray-400);
+        }
+
+        .comparison-table .category-row td {
+            background: var(--gray-100) !important;
+            font-weight: 700;
+            color: var(--secondary);
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.5px;
         }
 
         /* Testimonials */
@@ -907,12 +981,24 @@
             }
 
             .pricing-grid {
-                grid-template-columns: 1fr;
-                max-width: 400px;
+                grid-template-columns: repeat(3, 1fr);
+                max-width: 900px;
             }
 
             .pricing-card.popular {
                 transform: none;
+            }
+
+            .pricing-card {
+                padding: 30px 20px;
+            }
+
+            .pricing-card h3 {
+                font-size: 1.1rem;
+            }
+
+            .pricing-card .price {
+                font-size: 1.5rem;
             }
         }
 
@@ -953,6 +1039,11 @@
 
             .modules-grid {
                 grid-template-columns: repeat(2, 1fr);
+            }
+
+            .pricing-grid {
+                grid-template-columns: 1fr;
+                max-width: 350px;
             }
 
             .testimonials-grid {
@@ -1407,57 +1498,383 @@
                 <p class="section-subtitle">Escolha o plano ideal para o tamanho do seu escritorio</p>
             </div>
             <div class="pricing-grid">
+                <!-- Plano Grátis -->
+                <div class="pricing-card">
+                    <h3>Gratis</h3>
+                    <p style="color: var(--gray-500);">Para comecar</p>
+                    <div class="price">
+                        R$0<span>/mes</span>
+                        <small>Sem cartao de credito</small>
+                    </div>
+                    <ul class="pricing-features">
+                        <li><i data-lucide="check"></i> Ate 50 processos</li>
+                        <li><i data-lucide="check"></i> 1 usuario</li>
+                        <li><i data-lucide="check"></i> 1 GB armazenamento</li>
+                        <li><i data-lucide="check"></i> Agenda e Kanban</li>
+                        <li><i data-lucide="check"></i> Controle financeiro</li>
+                        <li><i data-lucide="check"></i> Relatorios PDF/CSV</li>
+                    </ul>
+                    <a href="https://app.advwell.pro/register" class="btn btn-secondary">Comecar Gratis</a>
+                </div>
+
+                <!-- Plano Starter -->
                 <div class="pricing-card">
                     <h3>Starter</h3>
                     <p style="color: var(--gray-500);">Para advogados autonomos</p>
                     <div class="price">
-                        R$97<span>/mes</span>
-                        <small>ou R$970/ano (2 meses gratis)</small>
+                        R$99<span>/mes</span>
+                        <small>ou R$990/ano (2 meses gratis)</small>
                     </div>
                     <ul class="pricing-features">
-                        <li><i data-lucide="check"></i> Ate 100 processos</li>
-                        <li><i data-lucide="check"></i> 1 usuario</li>
+                        <li><i data-lucide="check"></i> Ate 150 processos</li>
+                        <li><i data-lucide="check"></i> 3 usuarios</li>
+                        <li><i data-lucide="check"></i> 5 GB armazenamento</li>
+                        <li><i data-lucide="check"></i> 100 consultas OAB/mes</li>
+                        <li><i data-lucide="check"></i> Campanhas email/WhatsApp</li>
                         <li><i data-lucide="check"></i> Integracao DataJud</li>
-                        <li><i data-lucide="check"></i> Portal do Cliente</li>
-                        <li><i data-lucide="check"></i> Suporte por email</li>
                     </ul>
-                    <a href="#cta" class="btn btn-secondary">Comecar Gratis</a>
+                    <a href="https://app.advwell.pro/register" class="btn btn-secondary">Comecar Gratis</a>
                 </div>
+
+                <!-- Plano Profissional - Mais Popular -->
                 <div class="pricing-card popular">
                     <span class="popular-badge">Mais Popular</span>
-                    <h3>Professional</h3>
+                    <h3>Profissional</h3>
                     <p style="color: var(--gray-500);">Para escritorios em crescimento</p>
                     <div class="price">
-                        R$197<span>/mes</span>
-                        <small>ou R$1.970/ano (2 meses gratis)</small>
+                        R$299<span>/mes</span>
+                        <small>ou R$2.990/ano (2 meses gratis)</small>
+                    </div>
+                    <ul class="pricing-features">
+                        <li><i data-lucide="check"></i> Ate 500 processos</li>
+                        <li><i data-lucide="check"></i> 8 usuarios</li>
+                        <li><i data-lucide="check"></i> 15 GB armazenamento</li>
+                        <li><i data-lucide="check"></i> 500 consultas OAB/mes</li>
+                        <li><i data-lucide="check"></i> Tudo do Starter</li>
+                        <li><i data-lucide="check"></i> Suporte prioritario</li>
+                    </ul>
+                    <a href="https://app.advwell.pro/register" class="btn btn-primary">Comecar Gratis</a>
+                </div>
+
+                <!-- Plano Escritório -->
+                <div class="pricing-card">
+                    <h3>Escritorio</h3>
+                    <p style="color: var(--gray-500);">Para escritorios consolidados</p>
+                    <div class="price">
+                        R$499<span>/mes</span>
+                        <small>ou R$4.990/ano (2 meses gratis)</small>
                     </div>
                     <ul class="pricing-features">
                         <li><i data-lucide="check"></i> Processos ilimitados</li>
-                        <li><i data-lucide="check"></i> Ate 5 usuarios</li>
-                        <li><i data-lucide="check"></i> Monitoramento OAB</li>
-                        <li><i data-lucide="check"></i> Campanhas de Marketing</li>
-                        <li><i data-lucide="check"></i> Google Calendar</li>
-                        <li><i data-lucide="check"></i> Suporte prioritario</li>
+                        <li><i data-lucide="check"></i> 15 usuarios</li>
+                        <li><i data-lucide="check"></i> 30 GB armazenamento</li>
+                        <li><i data-lucide="check"></i> 1.000 consultas OAB/mes</li>
+                        <li><i data-lucide="check"></i> Portal do Cliente</li>
+                        <li><i data-lucide="check"></i> Tudo do Profissional</li>
                     </ul>
-                    <a href="#cta" class="btn btn-primary">Comecar Gratis</a>
+                    <a href="https://app.advwell.pro/register" class="btn btn-secondary">Comecar Gratis</a>
                 </div>
+
+                <!-- Plano Enterprise -->
                 <div class="pricing-card">
                     <h3>Enterprise</h3>
                     <p style="color: var(--gray-500);">Para grandes escritorios</p>
                     <div class="price">
-                        R$397<span>/mes</span>
-                        <small>ou R$3.970/ano (2 meses gratis)</small>
+                        R$899<span>/mes</span>
+                        <small>ou R$8.990/ano (2 meses gratis)</small>
                     </div>
                     <ul class="pricing-features">
-                        <li><i data-lucide="check"></i> Tudo do Professional</li>
-                        <li><i data-lucide="check"></i> Usuarios ilimitados</li>
-                        <li><i data-lucide="check"></i> WhatsApp API</li>
+                        <li><i data-lucide="check"></i> Processos ilimitados</li>
+                        <li><i data-lucide="check"></i> 30 usuarios</li>
+                        <li><i data-lucide="check"></i> 60 GB armazenamento</li>
+                        <li><i data-lucide="check"></i> 2.000 consultas OAB/mes</li>
                         <li><i data-lucide="check"></i> IA para documentos</li>
-                        <li><i data-lucide="check"></i> API personalizada</li>
-                        <li><i data-lucide="check"></i> Gerente de conta</li>
+                        <li><i data-lucide="check"></i> Chatwell + Suporte VIP</li>
                     </ul>
-                    <a href="#cta" class="btn btn-secondary">Falar com Vendas</a>
+                    <a href="https://app.advwell.pro/register" class="btn btn-secondary">Falar com Vendas</a>
                 </div>
+            </div>
+
+            <!-- Tabela de Comparação -->
+            <div class="pricing-comparison">
+                <h3>Comparativo Completo de Funcionalidades</h3>
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Funcionalidade</th>
+                            <th>Gratis</th>
+                            <th>Starter</th>
+                            <th class="popular-header">Profissional</th>
+                            <th>Escritorio</th>
+                            <th>Enterprise</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Limites -->
+                        <tr class="category-row">
+                            <td colspan="6">Limites</td>
+                        </tr>
+                        <tr>
+                            <td>Processos Judiciais</td>
+                            <td>50</td>
+                            <td>150</td>
+                            <td>500</td>
+                            <td>Ilimitado</td>
+                            <td>Ilimitado</td>
+                        </tr>
+                        <tr>
+                            <td>Usuarios</td>
+                            <td>1</td>
+                            <td>3</td>
+                            <td>8</td>
+                            <td>15</td>
+                            <td>30</td>
+                        </tr>
+                        <tr>
+                            <td>Armazenamento em nuvem</td>
+                            <td>1 GB</td>
+                            <td>5 GB</td>
+                            <td>15 GB</td>
+                            <td>30 GB</td>
+                            <td>60 GB</td>
+                        </tr>
+                        <tr>
+                            <td>Monitoramento OAB (consultas/mes)</td>
+                            <td class="x">—</td>
+                            <td>100</td>
+                            <td>500</td>
+                            <td>1.000</td>
+                            <td>2.000</td>
+                        </tr>
+
+                        <!-- Gestão de Processos -->
+                        <tr class="category-row">
+                            <td colspan="6">Gestao de Processos</td>
+                        </tr>
+                        <tr>
+                            <td>Cadastro de Processos Judiciais</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                        </tr>
+                        <tr>
+                            <td>Processos nao Judiciais (PNJ)</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                        </tr>
+                        <tr>
+                            <td>Sincronizacao DataJud (CNJ)</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                        </tr>
+                        <tr>
+                            <td>Notificacao de atualizacoes</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                        </tr>
+                        <tr>
+                            <td>Importacao/Exportacao CSV</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                        </tr>
+
+                        <!-- Agenda e Tarefas -->
+                        <tr class="category-row">
+                            <td colspan="6">Agenda e Tarefas</td>
+                        </tr>
+                        <tr>
+                            <td>Agenda categorizada por tipo/usuario</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                        </tr>
+                        <tr>
+                            <td>Kanban de Tarefas</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                        </tr>
+                        <tr>
+                            <td>Controle de Prazos com notificacoes</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                        </tr>
+                        <tr>
+                            <td>Notificacao por email de eventos</td>
+                            <td class="x">—</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                        </tr>
+
+                        <!-- Clientes e Leads -->
+                        <tr class="category-row">
+                            <td colspan="6">Clientes e Leads</td>
+                        </tr>
+                        <tr>
+                            <td>Cadastro de Clientes, Adversos, Advogados</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                        </tr>
+                        <tr>
+                            <td>Controle de Leads e Analytics</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                        </tr>
+                        <tr>
+                            <td>Portal do Cliente (subdominio)</td>
+                            <td class="x">—</td>
+                            <td class="x">—</td>
+                            <td class="x">—</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                        </tr>
+
+                        <!-- Financeiro -->
+                        <tr class="category-row">
+                            <td colspan="6">Financeiro</td>
+                        </tr>
+                        <tr>
+                            <td>Controle Financeiro por processo/cliente</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                        </tr>
+                        <tr>
+                            <td>Contas a Pagar</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                        </tr>
+                        <tr>
+                            <td>Relatorios PDF e planilhas</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                        </tr>
+
+                        <!-- Documentos -->
+                        <tr class="category-row">
+                            <td colspan="6">Documentos</td>
+                        </tr>
+                        <tr>
+                            <td>Editor de textos e documentos</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                        </tr>
+                        <tr>
+                            <td>IA para criacao/revisao de documentos</td>
+                            <td class="x">—</td>
+                            <td class="x">—</td>
+                            <td class="x">—</td>
+                            <td class="x">—</td>
+                            <td class="check">✓</td>
+                        </tr>
+
+                        <!-- Marketing -->
+                        <tr class="category-row">
+                            <td colspan="6">Marketing e Comunicacao</td>
+                        </tr>
+                        <tr>
+                            <td>Campanhas de Email e WhatsApp</td>
+                            <td class="x">—</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                        </tr>
+                        <tr>
+                            <td>Chatwell (atendimento multicanal)</td>
+                            <td class="x">—</td>
+                            <td class="x">—</td>
+                            <td class="x">—</td>
+                            <td class="x">—</td>
+                            <td class="check">✓</td>
+                        </tr>
+                        <tr>
+                            <td>WhatsApp compartilhado para times</td>
+                            <td class="x">—</td>
+                            <td class="x">—</td>
+                            <td class="x">—</td>
+                            <td class="x">—</td>
+                            <td class="check">✓</td>
+                        </tr>
+
+                        <!-- Suporte -->
+                        <tr class="category-row">
+                            <td colspan="6">Suporte e Extras</td>
+                        </tr>
+                        <tr>
+                            <td>Modo escuro</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                        </tr>
+                        <tr>
+                            <td>Suporte prioritario</td>
+                            <td class="x">—</td>
+                            <td class="x">—</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                        </tr>
+                        <tr>
+                            <td>Suporte via WhatsApp</td>
+                            <td class="x">—</td>
+                            <td class="x">—</td>
+                            <td class="x">—</td>
+                            <td class="x">—</td>
+                            <td class="check">✓</td>
+                        </tr>
+                        <tr>
+                            <td>Treinamento ao vivo</td>
+                            <td class="x">—</td>
+                            <td class="x">—</td>
+                            <td class="x">—</td>
+                            <td class="x">—</td>
+                            <td class="check">✓</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </section>
