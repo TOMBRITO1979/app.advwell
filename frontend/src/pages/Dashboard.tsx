@@ -334,33 +334,33 @@ const Dashboard: React.FC = () => {
               <Clock className="text-primary-600" size={20} />
               Prazos Próximos
             </h2>
-            <p className="text-xs sm:text-sm text-neutral-600 mb-2 sm:mb-4">Próximos 15 dias</p>
+            <p className="text-xs sm:text-sm text-neutral-600 dark:text-slate-400 mb-2 sm:mb-4">Próximos 15 dias</p>
             <div className="space-y-2 sm:space-y-3 max-h-[250px] overflow-y-auto">
               {upcomingDeadlines.length === 0 ? (
-                <p className="text-neutral-500 text-sm text-center py-8">
+                <p className="text-neutral-500 dark:text-slate-400 text-sm text-center py-8">
                   Nenhum prazo próximo
                 </p>
               ) : (
                 upcomingDeadlines.map((deadline) => (
                   <div
                     key={deadline.id}
-                    className="flex items-start justify-between p-2 sm:p-3 bg-neutral-50 rounded-lg hover:bg-neutral-100 transition-colors"
+                    className="flex items-start justify-between p-2 sm:p-3 bg-neutral-50 dark:bg-slate-700 rounded-lg hover:bg-neutral-100 dark:hover:bg-slate-600 transition-colors"
                   >
                     <div className="flex-1 min-w-0 mr-2">
-                      <p className="font-medium text-neutral-800 text-sm truncate">{deadline.title}</p>
-                      <p className="text-xs sm:text-sm text-neutral-600 truncate">
+                      <p className="font-medium text-neutral-800 dark:text-slate-200 text-sm truncate">{deadline.title}</p>
+                      <p className="text-xs sm:text-sm text-neutral-600 dark:text-slate-400 truncate">
                         {deadline.clientName}
                       </p>
-                      <p className="text-xs text-neutral-500 mt-1">
+                      <p className="text-xs text-neutral-500 dark:text-slate-400 mt-1">
                         {formatDate(deadline.date)}
                       </p>
                     </div>
                     <div className={`flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full flex-shrink-0 ${
                       deadline.daysUntil <= 3
-                        ? 'bg-red-100 text-red-700'
+                        ? 'bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-400'
                         : deadline.daysUntil <= 7
-                        ? 'bg-yellow-100 text-yellow-700'
-                        : 'bg-success-100 text-success-700'
+                        ? 'bg-yellow-100 dark:bg-yellow-900/50 text-yellow-700 dark:text-yellow-400'
+                        : 'bg-success-100 dark:bg-success-900/50 text-success-700 dark:text-success-400'
                     }`}>
                       <span className="text-xs font-bold">{deadline.daysUntil}d</span>
                     </div>
