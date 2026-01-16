@@ -39,6 +39,8 @@ interface Case {
   phase?: string;
   nature?: string;
   rite?: string;
+  comarca?: string;
+  vara?: string;
   distributionDate?: string;
   // Campos MTD 1.2
   numeroBoletimOcorrencia?: string;
@@ -196,6 +198,8 @@ const Cases: React.FC = () => {
     phase: '',
     nature: '',
     rite: '',
+    comarca: '',
+    vara: '',
     distributionDate: '',
   });
 
@@ -509,6 +513,8 @@ const Cases: React.FC = () => {
       phase: '',
       nature: '',
       rite: '',
+      comarca: '',
+      vara: '',
       distributionDate: '',
     });
     setParts([]);
@@ -948,6 +954,8 @@ const Cases: React.FC = () => {
         phase: caseDetail.phase || '',
         nature: caseDetail.nature || '',
         rite: caseDetail.rite || '',
+        comarca: caseDetail.comarca || '',
+        vara: caseDetail.vara || '',
         distributionDate: caseDetail.distributionDate ? caseDetail.distributionDate.split('T')[0] : '',
       });
 
@@ -1679,6 +1687,28 @@ const Cases: React.FC = () => {
                     <option value="Sumaríssimo">Sumaríssimo</option>
                     <option value="Especial">Especial</option>
                   </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Comarca</label>
+                  <input
+                    type="text"
+                    value={formData.comarca}
+                    onChange={(e) => setFormData({ ...formData, comarca: e.target.value })}
+                    placeholder="Ex: São Paulo, Campinas"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Vara</label>
+                  <input
+                    type="text"
+                    value={formData.vara}
+                    onChange={(e) => setFormData({ ...formData, vara: e.target.value })}
+                    placeholder="Ex: 1ª Vara Cível, 2ª Vara Criminal"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                  />
                 </div>
 
                 <div>

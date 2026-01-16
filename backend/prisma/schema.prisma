@@ -458,6 +458,8 @@ model Case {
   phase                 String?    // Fase do processo (ex: Inicial, Instrução, Sentença)
   nature                String?    // Natureza do processo (ex: Cível, Trabalhista, Criminal)
   rite                  String?    // Rito processual (ex: Ordinário, Sumário, Sumaríssimo)
+  comarca               String?    // Comarca do processo (ex: São Paulo, Campinas)
+  vara                  String?    // Vara do processo (ex: 1ª Vara Cível, 2ª Vara Criminal)
   distributionDate      DateTime?  @map("distribution_date") // Data de distribuição do processo
 
   // Campos MTD 1.2 - DataJud
