@@ -27,12 +27,12 @@ interface DropdownPosition {
 }
 
 const variantStyles: Record<string, string> = {
-  default: 'text-neutral-700 hover:bg-neutral-100',
-  primary: 'text-primary-700 hover:bg-primary-50',
-  success: 'text-success-700 hover:bg-success-50',
-  warning: 'text-warning-700 hover:bg-warning-50',
-  danger: 'text-error-700 hover:bg-error-50',
-  info: 'text-info-700 hover:bg-info-50',
+  default: 'text-neutral-700 dark:text-slate-300 hover:bg-neutral-100 dark:hover:bg-slate-700',
+  primary: 'text-primary-700 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/30',
+  success: 'text-success-700 dark:text-success-400 hover:bg-success-50 dark:hover:bg-success-900/30',
+  warning: 'text-warning-700 dark:text-warning-400 hover:bg-warning-50 dark:hover:bg-warning-900/30',
+  danger: 'text-error-700 dark:text-error-400 hover:bg-error-50 dark:hover:bg-error-900/30',
+  info: 'text-info-700 dark:text-info-400 hover:bg-info-50 dark:hover:bg-info-900/30',
 };
 
 const ActionsDropdown: React.FC<ActionsDropdownProps> = ({
@@ -138,7 +138,7 @@ const ActionsDropdown: React.FC<ActionsDropdownProps> = ({
         zIndex: 9999,
         ...position,
       }}
-      className="min-w-[180px] bg-white border border-neutral-200 rounded-lg shadow-lg py-1"
+      className="min-w-[180px] bg-white dark:bg-slate-800 border border-neutral-200 dark:border-slate-700 rounded-lg shadow-lg dark:shadow-slate-900/50 py-1"
     >
       {visibleActions.map((action, index) => (
         <button
@@ -170,7 +170,7 @@ const ActionsDropdown: React.FC<ActionsDropdownProps> = ({
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         disabled={disabled}
-        className={`inline-flex items-center justify-center ${sizeClasses} font-medium text-neutral-700 bg-white border border-neutral-300 rounded-lg hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed transition-colors`}
+        className={`inline-flex items-center justify-center ${sizeClasses} font-medium text-neutral-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-neutral-300 dark:border-slate-600 rounded-lg hover:bg-neutral-50 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1 dark:focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors`}
       >
         <MoreVertical size={iconSize} />
         <span className="hidden sm:inline">{label}</span>
