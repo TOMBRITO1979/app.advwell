@@ -436,7 +436,7 @@ const Hearings: React.FC = () => {
           </div>
 
           {/* Toggle de Visualização */}
-          <div className="flex bg-neutral-100 rounded-lg p-1">
+          <div className="flex bg-neutral-100 dark:bg-slate-700 rounded-lg p-1">
             <button
               onClick={() => setViewMode('list')}
               className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
@@ -623,12 +623,12 @@ const Hearings: React.FC = () => {
                       .map((hearing) => (
                         <tr
                           key={hearing.id}
-                          className={`hover:bg-neutral-50 cursor-pointer border-l-4 ${
+                          className={`hover:bg-neutral-50 dark:hover:bg-slate-700 cursor-pointer border-l-4 ${
                             hearing.priority === 'URGENTE' ? 'border-l-red-500' :
                             hearing.priority === 'ALTA' ? 'border-l-orange-500' :
                             hearing.priority === 'MEDIA' ? 'border-l-yellow-500' :
                             'border-l-green-500'
-                          } ${hearing.completed ? 'bg-neutral-50 opacity-60' : ''}`}
+                          } ${hearing.completed ? 'bg-neutral-50 dark:bg-slate-700 opacity-60' : ''}`}
                           onClick={() => handleEditClick(hearing)}
                         >
                           <td className="px-4 py-3 whitespace-nowrap">
@@ -768,7 +768,7 @@ const Hearings: React.FC = () => {
                             className={`px-3 py-1 text-sm rounded-lg ${
                               page === pageNum
                                 ? 'bg-primary-600 text-white'
-                                : 'text-neutral-600 dark:text-slate-400 hover:bg-neutral-100'
+                                : 'text-neutral-600 dark:text-slate-400 hover:bg-neutral-100 dark:hover:bg-slate-600'
                             }`}
                           >
                             {pageNum}
@@ -794,21 +794,21 @@ const Hearings: React.FC = () => {
           /* Visualização Semanal - Calendário */
           <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 overflow-hidden">
             {/* Cabeçalho dos dias da semana */}
-            <div className="grid grid-cols-7 border-b">
+            <div className="grid grid-cols-7 border-b border-neutral-200 dark:border-slate-700">
               {getWeekDays().map((day, index) => (
                 <div
                   key={index}
-                  className={`p-3 text-center border-r last:border-r-0 ${
-                    isToday(day) ? 'bg-primary-50' : ''
+                  className={`p-3 text-center border-r border-neutral-200 dark:border-slate-700 last:border-r-0 ${
+                    isToday(day) ? 'bg-primary-50 dark:bg-primary-900/30' : 'bg-neutral-50 dark:bg-slate-700'
                   }`}
                 >
                   <div className={`text-xs uppercase font-medium ${
-                    isToday(day) ? 'text-primary-600' : 'text-neutral-500'
+                    isToday(day) ? 'text-primary-600 dark:text-primary-400' : 'text-neutral-500 dark:text-slate-400'
                   }`}>
                     {formatWeekDay(day)}
                   </div>
                   <div className={`text-2xl font-bold mt-1 ${
-                    isToday(day) ? 'text-primary-600' : 'text-neutral-800'
+                    isToday(day) ? 'text-primary-600 dark:text-primary-400' : 'text-neutral-800 dark:text-slate-200'
                   }`}>
                     {formatDayNumber(day)}
                   </div>
@@ -830,13 +830,13 @@ const Hearings: React.FC = () => {
                 return (
                   <div
                     key={dayIndex}
-                    className={`border-r last:border-r-0 p-2 ${
-                      isToday(day) ? 'bg-primary-50/30' : ''
+                    className={`border-r border-neutral-200 dark:border-slate-700 last:border-r-0 p-2 ${
+                      isToday(day) ? 'bg-primary-50/30 dark:bg-primary-900/20' : ''
                     }`}
                   >
                     <div className="space-y-2 max-h-[500px] overflow-y-auto">
                       {dayHearings.length === 0 ? (
-                        <div className="text-center py-4 text-neutral-300">
+                        <div className="text-center py-4 text-neutral-300 dark:text-slate-600">
                           <Calendar size={20} className="mx-auto opacity-50" />
                         </div>
                       ) : (
@@ -844,7 +844,7 @@ const Hearings: React.FC = () => {
                           <div
                             key={hearing.id}
                             onClick={() => handleEditClick(hearing)}
-                            className={`p-2 rounded-lg border-l-4 cursor-pointer hover:shadow-md transition-all text-xs ${
+                            className={`p-2 rounded-lg border-l-4 cursor-pointer hover:shadow-md transition-all text-xs bg-white dark:bg-slate-800 border border-neutral-200 dark:border-slate-600 ${
                               priorityColors[hearing.priority || 'MEDIA']
                             }`}
                           >

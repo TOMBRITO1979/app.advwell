@@ -653,8 +653,8 @@ const Schedule: React.FC = () => {
               onClick={() => setViewMode('table')}
               className={`flex items-center gap-2 px-3 py-2 min-h-[44px] transition-colors ${
                 viewMode === 'table'
-                  ? 'bg-neutral-200 text-neutral-800'
-                  : 'bg-white dark:bg-slate-800 text-neutral-600 hover:bg-neutral-50'
+                  ? 'bg-neutral-200 dark:bg-slate-600 text-neutral-800 dark:text-slate-100'
+                  : 'bg-white dark:bg-slate-800 text-neutral-600 dark:text-slate-400 hover:bg-neutral-50 dark:hover:bg-slate-700'
               }`}
               title="Visualização em Tabela"
             >
@@ -663,10 +663,10 @@ const Schedule: React.FC = () => {
             </button>
             <button
               onClick={() => setViewMode('calendar')}
-              className={`flex items-center gap-2 px-3 py-2 min-h-[44px] transition-colors border-l border-neutral-200 ${
+              className={`flex items-center gap-2 px-3 py-2 min-h-[44px] transition-colors border-l border-neutral-200 dark:border-slate-700 ${
                 viewMode === 'calendar'
-                  ? 'bg-neutral-200 text-neutral-800'
-                  : 'bg-white dark:bg-slate-800 text-neutral-600 hover:bg-neutral-50'
+                  ? 'bg-neutral-200 dark:bg-slate-600 text-neutral-800 dark:text-slate-100'
+                  : 'bg-white dark:bg-slate-800 text-neutral-600 dark:text-slate-400 hover:bg-neutral-50 dark:hover:bg-slate-700'
               }`}
               title="Visualização em Calendário"
             >
