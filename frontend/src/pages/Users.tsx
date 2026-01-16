@@ -251,7 +251,7 @@ const Users: React.FC = () => {
               placeholder="Buscar usuários..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="flex-1 px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 min-h-[44px]"
+              className="flex-1 px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 min-h-[44px]"
             />
           </div>
 
@@ -369,7 +369,7 @@ const Users: React.FC = () => {
                     setLimit(Number(e.target.value));
                     setPage(1);
                   }}
-                  className="px-2 py-1 border border-neutral-300 dark:border-slate-600 rounded-md text-sm min-h-[36px]"
+                  className="px-2 py-1 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md text-sm min-h-[36px]"
                 >
                   <option value={25}>25</option>
                   <option value={50}>50</option>
@@ -382,7 +382,7 @@ const Users: React.FC = () => {
                 <button
                   onClick={() => setPage(page - 1)}
                   disabled={page <= 1}
-                  className="inline-flex items-center justify-center p-2 min-h-[36px] min-w-[36px] border border-neutral-300 dark:border-slate-600 rounded-md text-neutral-600 dark:text-slate-400 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="inline-flex items-center justify-center p-2 min-h-[36px] min-w-[36px] bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md text-neutral-600 dark:text-slate-400 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   <ChevronLeft size={18} />
                 </button>
@@ -418,7 +418,7 @@ const Users: React.FC = () => {
                 <button
                   onClick={() => setPage(page + 1)}
                   disabled={page >= totalPages}
-                  className="inline-flex items-center justify-center p-2 min-h-[36px] min-w-[36px] border border-neutral-300 dark:border-slate-600 rounded-md text-neutral-600 dark:text-slate-400 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="inline-flex items-center justify-center p-2 min-h-[36px] min-w-[36px] bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md text-neutral-600 dark:text-slate-400 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   <ChevronRight size={18} />
                 </button>
@@ -462,7 +462,7 @@ const Users: React.FC = () => {
                       required
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="mt-1 block w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md min-h-[44px]"
+                      className="mt-1 block w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md min-h-[44px]"
                     />
                   </div>
 
@@ -473,7 +473,7 @@ const Users: React.FC = () => {
                       required
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="mt-1 block w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md min-h-[44px]"
+                      className="mt-1 block w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md min-h-[44px]"
                     />
                   </div>
 
@@ -485,7 +485,7 @@ const Users: React.FC = () => {
                         required
                         value={formData.password}
                         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                        className="mt-1 block w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md min-h-[44px]"
+                        className="mt-1 block w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md min-h-[44px]"
                       />
                     </div>
                   )}
@@ -541,7 +541,7 @@ const Users: React.FC = () => {
                             <select
                               value={permission.resource}
                               onChange={(e) => handlePermissionChange(index, 'resource', e.target.value)}
-                              className="block w-full px-2 py-1 text-sm border border-neutral-300 dark:border-slate-600 rounded-md min-h-[44px]"
+                              className="block w-full px-2 py-1 text-sm bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md min-h-[44px]"
                             >
                               {AVAILABLE_RESOURCES.map((res) => (
                                 <option key={res.value} value={res.value}>
@@ -617,7 +617,7 @@ const Users: React.FC = () => {
                     setSelectedUser(null);
                     resetForm();
                   }}
-                  className="px-6 py-2 border border-neutral-300 dark:border-slate-600 rounded-md text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 transition-colors min-h-[44px]"
+                  className="px-6 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 transition-colors min-h-[44px]"
                 >
                   Cancelar
                 </button>

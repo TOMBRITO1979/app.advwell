@@ -618,13 +618,13 @@ const Financial: React.FC = () => {
                 placeholder="Buscar por descrição ou cliente..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="flex-1 px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100 placeholder-neutral-400 dark:placeholder-slate-500"
+                className="flex-1 px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100 placeholder-neutral-400 dark:placeholder-slate-500"
               />
             </div>
 
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 px-4 py-2 border border-neutral-300 dark:border-slate-600 rounded-md hover:bg-neutral-50 dark:hover:bg-slate-700 transition-colors min-h-[44px] text-neutral-700 dark:text-slate-300"
+              className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md hover:bg-neutral-50 dark:hover:bg-slate-700 transition-colors min-h-[44px] text-neutral-700 dark:text-slate-300"
             >
               <Filter size={20} />
               <span>Filtros</span>
@@ -642,7 +642,7 @@ const Financial: React.FC = () => {
                     placeholder="Filtrar por descrição..."
                     value={filterDescription}
                     onChange={(e) => setFilterDescription(e.target.value)}
-                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100 placeholder-neutral-400 dark:placeholder-slate-500"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100 placeholder-neutral-400 dark:placeholder-slate-500"
                   />
                 </div>
                 <div>
@@ -654,7 +654,7 @@ const Financial: React.FC = () => {
                     placeholder="R$ 0,00"
                     value={filterValueMin}
                     onChange={(e) => setFilterValueMin(e.target.value)}
-                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100 placeholder-neutral-400 dark:placeholder-slate-500"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100 placeholder-neutral-400 dark:placeholder-slate-500"
                   />
                 </div>
                 <div>
@@ -666,7 +666,7 @@ const Financial: React.FC = () => {
                     placeholder="R$ 999.999,99"
                     value={filterValueMax}
                     onChange={(e) => setFilterValueMax(e.target.value)}
-                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100 placeholder-neutral-400 dark:placeholder-slate-500"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100 placeholder-neutral-400 dark:placeholder-slate-500"
                   />
                 </div>
               </div>
@@ -679,7 +679,7 @@ const Financial: React.FC = () => {
                     type="date"
                     value={filterStartDate}
                     onChange={(e) => setFilterStartDate(e.target.value)}
-                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100"
                   />
                 </div>
 
@@ -689,7 +689,7 @@ const Financial: React.FC = () => {
                     type="date"
                     value={filterEndDate}
                     onChange={(e) => setFilterEndDate(e.target.value)}
-                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100"
                   />
                 </div>
 
@@ -698,7 +698,7 @@ const Financial: React.FC = () => {
                   <select
                     value={filterType}
                     onChange={(e) => setFilterType(e.target.value)}
-                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100"
                   >
                     <option value="">Todos</option>
                     <option value="INCOME">Receitas</option>
@@ -711,7 +711,7 @@ const Financial: React.FC = () => {
                   <select
                     value={filterStatus}
                     onChange={(e) => setFilterStatus(e.target.value)}
-                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100"
                   >
                     <option value="">Todos</option>
                     <option value="PAID">Pago</option>
@@ -729,7 +729,7 @@ const Financial: React.FC = () => {
                   <select
                     value={filterClientId}
                     onChange={(e) => setFilterClientId(e.target.value)}
-                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100"
                   >
                     <option value="">Todos</option>
                     {clients.map((client) => (
@@ -746,7 +746,7 @@ const Financial: React.FC = () => {
                     placeholder="Digite o número do processo..."
                     value={filterCaseNumber}
                     onChange={(e) => setFilterCaseNumber(e.target.value)}
-                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100 placeholder-neutral-400 dark:placeholder-slate-500"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100 placeholder-neutral-400 dark:placeholder-slate-500"
                   />
                 </div>
                 <div>
@@ -754,7 +754,7 @@ const Financial: React.FC = () => {
                   <select
                     value={filterCostCenterId}
                     onChange={(e) => setFilterCostCenterId(e.target.value)}
-                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100"
                   >
                     <option value="">Todos</option>
                     {costCenters.map((cc) => (
@@ -986,7 +986,7 @@ const Financial: React.FC = () => {
                   setLimit(Number(e.target.value));
                   setPage(1);
                 }}
-                className="ml-2 px-2 py-1 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100"
+                className="ml-2 px-2 py-1 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100"
               >
                 <option value={25}>25</option>
                 <option value={50}>50</option>
@@ -999,7 +999,7 @@ const Financial: React.FC = () => {
               <button
                 onClick={() => setPage(page - 1)}
                 disabled={page === 1}
-                className="p-2 border border-neutral-300 dark:border-slate-600 rounded-md hover:bg-neutral-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-neutral-700 dark:text-slate-300"
+                className="p-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md hover:bg-neutral-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-neutral-700 dark:text-slate-300"
               >
                 <ChevronLeft size={20} />
               </button>
@@ -1035,7 +1035,7 @@ const Financial: React.FC = () => {
               <button
                 onClick={() => setPage(page + 1)}
                 disabled={page === totalPages}
-                className="p-2 border border-neutral-300 dark:border-slate-600 rounded-md hover:bg-neutral-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-neutral-700 dark:text-slate-300"
+                className="p-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md hover:bg-neutral-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-neutral-700 dark:text-slate-300"
               >
                 <ChevronRight size={20} />
               </button>
@@ -1120,7 +1120,7 @@ const Financial: React.FC = () => {
                       }
                       setFormData({ ...formData, clientId: '' });
                     }}
-                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100 placeholder-neutral-400 dark:placeholder-slate-500"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100 placeholder-neutral-400 dark:placeholder-slate-500"
                   />
                   {showClientSuggestions && filteredClients.length > 0 && (
                     <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md shadow-lg max-h-60 overflow-y-auto">
@@ -1157,7 +1157,7 @@ const Financial: React.FC = () => {
                       }
                       setFormData({ ...formData, caseId: '' });
                     }}
-                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100 placeholder-neutral-400 dark:placeholder-slate-500"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100 placeholder-neutral-400 dark:placeholder-slate-500"
                   />
                   {showCaseSuggestions && filteredCases.length > 0 && (
                     <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md shadow-lg max-h-60 overflow-y-auto">
@@ -1204,7 +1204,7 @@ const Financial: React.FC = () => {
                   <select
                     value={formData.costCenterId}
                     onChange={(e) => setFormData({ ...formData, costCenterId: e.target.value })}
-                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100"
                   >
                     <option value="">Selecione um centro de custo</option>
                     {costCenters
@@ -1232,7 +1232,7 @@ const Financial: React.FC = () => {
                     placeholder="Ex: Honorários advocatícios, Custas processuais..."
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100 placeholder-neutral-400 dark:placeholder-slate-500"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100 placeholder-neutral-400 dark:placeholder-slate-500"
                   />
                 </div>
 
@@ -1250,7 +1250,7 @@ const Financial: React.FC = () => {
                       placeholder="0,00"
                       value={formData.amount}
                       onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                      className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100 placeholder-neutral-400 dark:placeholder-slate-500"
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100 placeholder-neutral-400 dark:placeholder-slate-500"
                     />
                   </div>
 
@@ -1264,7 +1264,7 @@ const Financial: React.FC = () => {
                       required
                       value={formData.date}
                       onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                      className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100"
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100"
                     />
                   </div>
                 </div>
@@ -1277,7 +1277,7 @@ const Financial: React.FC = () => {
                   <select
                     value={formData.status}
                     onChange={(e) => setFormData({ ...formData, status: e.target.value as 'PAID' | 'PENDING' | 'CANCELLED' | 'PARTIAL' })}
-                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100"
                   >
                     <option value="PENDING">Pendente</option>
                     <option value="PAID">Pago</option>
@@ -1314,7 +1314,7 @@ const Financial: React.FC = () => {
                           placeholder="Ex: 12"
                           value={formData.installmentCount}
                           onChange={(e) => setFormData({ ...formData, installmentCount: e.target.value })}
-                          className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100 placeholder-neutral-400 dark:placeholder-slate-500"
+                          className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100 placeholder-neutral-400 dark:placeholder-slate-500"
                         />
                         <p className="text-xs text-neutral-500 dark:text-slate-400 mt-1">Mínimo: 2 parcelas</p>
                       </div>
@@ -1329,7 +1329,7 @@ const Financial: React.FC = () => {
                           placeholder="Ex: 30"
                           value={formData.installmentInterval}
                           onChange={(e) => setFormData({ ...formData, installmentInterval: e.target.value })}
-                          className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100 placeholder-neutral-400 dark:placeholder-slate-500"
+                          className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100 placeholder-neutral-400 dark:placeholder-slate-500"
                         />
                         <p className="text-xs text-neutral-500 dark:text-slate-400 mt-1">Padrão: 30 dias (mensal)</p>
                       </div>

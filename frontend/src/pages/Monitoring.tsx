@@ -702,13 +702,13 @@ const Monitoring: React.FC = () => {
                       placeholder="Buscar por nome ou número da OAB..."
                       value={searchOab}
                       onChange={(e) => setSearchOab(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                     />
                   </div>
                   <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
-                    className="px-4 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="px-4 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   >
                     <option value="">Todos os Status</option>
                     <option value="ACTIVE">Ativo</option>
@@ -796,7 +796,7 @@ const Monitoring: React.FC = () => {
                         setSearchPublication(e.target.value);
                         setPublicationPage(1);
                       }}
-                      className="w-full pl-10 pr-4 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                     />
                   </div>
                   <select
@@ -805,7 +805,7 @@ const Monitoring: React.FC = () => {
                       setSelectedOabFilter(e.target.value);
                       setPublicationPage(1);
                     }}
-                    className="px-4 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="px-4 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   >
                     <option value="">Todas as OABs</option>
                     {oabs.map((oab) => (
@@ -820,7 +820,7 @@ const Monitoring: React.FC = () => {
                       setImportedFilter(e.target.value);
                       setPublicationPage(1);
                     }}
-                    className="px-4 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="px-4 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   >
                     <option value="">Todos</option>
                     <option value="false">Pendentes</option>
@@ -905,14 +905,14 @@ const Monitoring: React.FC = () => {
                           <button
                             onClick={() => setPublicationPage((p) => Math.max(1, p - 1))}
                             disabled={publicationPage === 1}
-                            className="p-2 border border-neutral-300 dark:border-slate-600 rounded-lg hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="p-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-lg hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             <ChevronLeft size={16} />
                           </button>
                           <button
                             onClick={() => setPublicationPage((p) => Math.min(publicationTotalPages, p + 1))}
                             disabled={publicationPage === publicationTotalPages}
-                            className="p-2 border border-neutral-300 dark:border-slate-600 rounded-lg hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="p-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-lg hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             <ChevronRight size={16} />
                           </button>
@@ -1056,7 +1056,7 @@ const Monitoring: React.FC = () => {
                   <select
                     value={selectedLawyerId}
                     onChange={(e) => handleSelectLawyer(e.target.value)}
-                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   >
                     <option value="">-- Digitar manualmente --</option>
                     {lawyers.map((lawyer) => (
@@ -1080,7 +1080,7 @@ const Monitoring: React.FC = () => {
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   disabled={!!selectedLawyerId}
-                  className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-neutral-100"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-neutral-100"
                   placeholder="Nome completo"
                 />
               </div>
@@ -1094,7 +1094,7 @@ const Monitoring: React.FC = () => {
                     value={formData.oab}
                     onChange={(e) => setFormData({ ...formData, oab: e.target.value })}
                     disabled={editMode || !!selectedLawyerId}
-                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-neutral-100"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-neutral-100"
                     placeholder="123456"
                   />
                 </div>
@@ -1106,7 +1106,7 @@ const Monitoring: React.FC = () => {
                     value={formData.oabState}
                     onChange={(e) => setFormData({ ...formData, oabState: e.target.value })}
                     disabled={editMode || !!selectedLawyerId}
-                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-neutral-100"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-neutral-100"
                   >
                     {BRAZILIAN_STATES.map((state) => (
                       <option key={state} value={state}>
@@ -1132,7 +1132,7 @@ const Monitoring: React.FC = () => {
             <div className="flex justify-end gap-3 p-4 border-t">
               <button
                 onClick={handleCloseOabModal}
-                className="px-4 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 transition-colors"
+                className="px-4 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-lg hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 transition-colors"
               >
                 Cancelar
               </button>
@@ -1200,7 +1200,7 @@ const Monitoring: React.FC = () => {
             <div className="flex justify-end gap-3 p-4 border-t">
               <button
                 onClick={() => setShowPublicationModal(false)}
-                className="px-4 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 transition-colors"
+                className="px-4 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-lg hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 transition-colors"
               >
                 Fechar
               </button>
@@ -1242,7 +1242,7 @@ const Monitoring: React.FC = () => {
                 <select
                   value={consultaOabId}
                   onChange={(e) => setConsultaOabId(e.target.value)}
-                  className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
                   <option value="">Selecione uma OAB</option>
                   {oabs
@@ -1285,7 +1285,7 @@ const Monitoring: React.FC = () => {
             <div className="flex justify-end gap-3 p-4 border-t">
               <button
                 onClick={() => setShowConsultaModal(false)}
-                className="px-4 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 transition-colors"
+                className="px-4 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-lg hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 transition-colors"
               >
                 Cancelar
               </button>

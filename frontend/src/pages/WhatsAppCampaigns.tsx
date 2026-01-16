@@ -690,7 +690,7 @@ const WhatsAppCampaigns: React.FC = () => {
                   setLimit(Number(e.target.value));
                   setPage(1);
                 }}
-                className="px-2 py-1 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="px-2 py-1 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 <option value={25}>25</option>
                 <option value={50}>50</option>
@@ -741,7 +741,7 @@ const WhatsAppCampaigns: React.FC = () => {
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       placeholder="Ex: Promoção Janeiro"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md min-h-[44px]"
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-md min-h-[44px]"
                     />
                   </div>
 
@@ -758,7 +758,7 @@ const WhatsAppCampaigns: React.FC = () => {
                         parseTemplateVariables(e.target.value);
                         setRecipients([]); // Clear recipients when template changes
                       }}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md min-h-[44px]"
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-md min-h-[44px]"
                     >
                       <option value="">Selecione um template aprovado</option>
                       {templates.map((template) => (
@@ -1010,7 +1010,7 @@ const WhatsAppCampaigns: React.FC = () => {
                       max={500}
                       value={importFilter.limit}
                       onChange={(e) => setImportFilter({ ...importFilter, limit: parseInt(e.target.value) || 500 })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md min-h-[44px]"
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-md min-h-[44px]"
                     />
                     <p className="text-xs text-neutral-500 dark:text-slate-400 mt-1">Máximo 500</p>
                   </div>

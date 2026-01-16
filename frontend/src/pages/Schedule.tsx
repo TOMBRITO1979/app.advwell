@@ -735,7 +735,7 @@ const Schedule: React.FC = () => {
               placeholder="Buscar por título, cliente, telefone ou advogado..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+              className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
             />
           </div>
 
@@ -743,7 +743,7 @@ const Schedule: React.FC = () => {
           <select
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+            className="px-4 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
           >
             <option value="">Todos os tipos</option>
             <option value="COMPROMISSO">Compromisso</option>
@@ -757,7 +757,7 @@ const Schedule: React.FC = () => {
           <select
             value={filterCompleted}
             onChange={(e) => setFilterCompleted(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+            className="px-4 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
           >
             <option value="">Todos os status</option>
             <option value="false">Pendentes</option>
@@ -966,7 +966,7 @@ const Schedule: React.FC = () => {
                         setLimit(Number(e.target.value));
                         setPage(1);
                       }}
-                      className="px-2 py-1 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      className="px-2 py-1 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                     >
                       <option value={25}>25</option>
                       <option value={50}>50</option>
@@ -1216,7 +1216,7 @@ const Schedule: React.FC = () => {
                     required
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                     placeholder="Ex: Reunião com cliente"
                   />
                 </div>
@@ -1230,7 +1230,7 @@ const Schedule: React.FC = () => {
                     required
                     value={formData.type}
                     onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   >
                     <option value="COMPROMISSO">Compromisso</option>
                     <option value="TAREFA">Tarefa</option>
@@ -1250,7 +1250,7 @@ const Schedule: React.FC = () => {
                     required
                     value={formData.priority}
                     onChange={(e) => setFormData({ ...formData, priority: e.target.value as any })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   >
                     <option value="BAIXA">🟢 Baixa</option>
                     <option value="MEDIA">🟡 Média</option>
@@ -1306,7 +1306,7 @@ const Schedule: React.FC = () => {
                       placeholder="Digite o nome ou CPF do cliente..."
                     />
                     {showClientSuggestions && clientSuggestions.length > 0 && (
-                      <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-800 border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                      <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-md shadow-lg max-h-60 overflow-y-auto">
                         {clientSuggestions.map((client) => (
                           <div
                             key={client.id}
@@ -1373,7 +1373,7 @@ const Schedule: React.FC = () => {
                       placeholder={selectedClient ? 'Selecione ou digite para buscar...' : 'Selecione um cliente primeiro...'}
                     />
                     {showCaseSuggestions && caseSuggestions.length > 0 && (
-                      <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-800 border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                      <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-md shadow-lg max-h-60 overflow-y-auto">
                         {caseSuggestions.map((caseItem) => (
                           <div
                             key={caseItem.id}
@@ -1391,7 +1391,7 @@ const Schedule: React.FC = () => {
                       </div>
                     )}
                     {selectedClient && caseSuggestions.length === 0 && !selectedCase && showCaseSuggestions && (
-                      <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-800 border border-gray-300 rounded-md shadow-lg p-3 text-sm text-neutral-500 dark:text-slate-400">
+                      <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-md shadow-lg p-3 text-sm text-neutral-500 dark:text-slate-400">
                         Nenhum processo vinculado a este cliente
                       </div>
                     )}
@@ -1428,7 +1428,7 @@ const Schedule: React.FC = () => {
                       </button>
                     </div>
                   </div>
-                  <div className="border border-gray-300 rounded-md p-3 max-h-48 overflow-y-auto space-y-2 bg-white dark:bg-slate-800">
+                  <div className="bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-md p-3 max-h-48 overflow-y-auto space-y-2 bg-white dark:bg-slate-800">
                     {companyUsers.length === 0 ? (
                       <p className="text-sm text-neutral-500 dark:text-slate-400 text-center py-2">Nenhum usuário disponível</p>
                     ) : (
@@ -1447,7 +1447,7 @@ const Schedule: React.FC = () => {
                                 setSelectedUserIds(selectedUserIds.filter(id => id !== user.id));
                               }
                             }}
-                            className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                            className="w-4 h-4 text-primary-600 border-gray-300 dark:border-slate-600 rounded focus:ring-primary-500"
                           />
                           <div className="flex-1">
                             <span className="text-sm font-medium text-neutral-900 dark:text-slate-100">{user.name}</span>
@@ -1475,7 +1475,7 @@ const Schedule: React.FC = () => {
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                     placeholder="Detalhes adicionais..."
                   />
                 </div>
@@ -1674,7 +1674,7 @@ const Schedule: React.FC = () => {
                   type="file"
                   accept=".csv"
                   onChange={(e) => setImportFile(e.target.files?.[0] || null)}
-                  className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
                 {importFile && (
                   <p className="mt-2 text-sm text-neutral-600 dark:text-slate-400">

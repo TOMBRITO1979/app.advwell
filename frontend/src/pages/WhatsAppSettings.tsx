@@ -189,10 +189,10 @@ const WhatsAppSettings: React.FC = () => {
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-neutral-900">
+            <h1 className="text-3xl font-bold text-neutral-900 dark:text-slate-100">
               Configuração WhatsApp
             </h1>
-            <p className="text-neutral-600 mt-1">
+            <p className="text-neutral-600 dark:text-slate-400 mt-1">
               Configure a integração com WhatsApp Business API para campanhas e lembretes
             </p>
           </div>
@@ -229,12 +229,12 @@ const WhatsAppSettings: React.FC = () => {
         </div>
 
         {/* Formulário */}
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* IDs */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-2">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2">
                   <Phone size={16} className="inline mr-2" />
                   Phone Number ID *
                 </label>
@@ -244,14 +244,14 @@ const WhatsAppSettings: React.FC = () => {
                   value={formData.phoneNumberId}
                   onChange={(e) => setFormData({ ...formData, phoneNumberId: e.target.value })}
                   placeholder="123456789012345"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 min-h-[44px]"
+                  className="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-green-500 min-h-[44px]"
                 />
-                <p className="text-xs text-neutral-500 mt-1">
+                <p className="text-xs text-neutral-500 dark:text-slate-400 mt-1">
                   ID do número de telefone no Meta Business
                 </p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-2">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2">
                   <Building2 size={16} className="inline mr-2" />
                   Business Account ID *
                 </label>
@@ -261,9 +261,9 @@ const WhatsAppSettings: React.FC = () => {
                   value={formData.businessAccountId}
                   onChange={(e) => setFormData({ ...formData, businessAccountId: e.target.value })}
                   placeholder="987654321098765"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 min-h-[44px]"
+                  className="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-green-500 min-h-[44px]"
                 />
-                <p className="text-xs text-neutral-500 mt-1">
+                <p className="text-xs text-neutral-500 dark:text-slate-400 mt-1">
                   ID da conta WhatsApp Business (WABA)
                 </p>
               </div>
@@ -271,7 +271,7 @@ const WhatsAppSettings: React.FC = () => {
 
             {/* Token */}
             <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-2">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2">
                 <Key size={16} className="inline mr-2" />
                 Access Token {hasConfig ? '' : '*'}
               </label>
@@ -281,16 +281,16 @@ const WhatsAppSettings: React.FC = () => {
                 onChange={(e) => setFormData({ ...formData, accessToken: e.target.value })}
                 placeholder={hasConfig ? 'Deixe em branco para manter o atual' : 'Token de acesso permanente da Meta'}
                 rows={3}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 font-mono text-sm"
+                className="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-green-500 font-mono text-sm"
               />
-              <p className="text-xs text-neutral-500 mt-1">
+              <p className="text-xs text-neutral-500 dark:text-slate-400 mt-1">
                 Token criptografado com AES-256. Nunca é exposto após salvo.
               </p>
             </div>
 
             {/* Webhook Token */}
             <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-2">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2">
                 <Shield size={16} className="inline mr-2" />
                 Webhook Verify Token (opcional)
               </label>
@@ -300,7 +300,7 @@ const WhatsAppSettings: React.FC = () => {
                   value={formData.webhookVerifyToken}
                   onChange={(e) => setFormData({ ...formData, webhookVerifyToken: e.target.value })}
                   placeholder="Token para verificação do webhook"
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 min-h-[44px]"
+                  className="flex-1 px-4 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-green-500 min-h-[44px]"
                 />
                 <button
                   type="button"
@@ -308,12 +308,12 @@ const WhatsAppSettings: React.FC = () => {
                     const token = 'advwell_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
                     setFormData({ ...formData, webhookVerifyToken: token });
                   }}
-                  className="px-4 py-2 bg-neutral-100 text-neutral-700 hover:bg-neutral-200 rounded-md transition-colors whitespace-nowrap"
+                  className="px-4 py-2 bg-neutral-100 text-neutral-700 dark:text-slate-300 hover:bg-neutral-200 rounded-md transition-colors whitespace-nowrap"
                 >
                   Gerar Token
                 </button>
               </div>
-              <p className="text-xs text-neutral-500 mt-1">
+              <p className="text-xs text-neutral-500 dark:text-slate-400 mt-1">
                 Use este token ao configurar o webhook no Meta Business. Clique em "Gerar Token" para criar um automaticamente.
               </p>
             </div>
@@ -372,7 +372,7 @@ const WhatsAppSettings: React.FC = () => {
               <div>
                 <span className="text-blue-700 font-medium">1. URL de Callback:</span>
                 <div className="flex items-center gap-2 mt-1">
-                  <code className="bg-white px-3 py-2 rounded border text-xs flex-1 font-mono">
+                  <code className="bg-white dark:bg-slate-800 px-3 py-2 rounded border text-xs flex-1 font-mono">
                     https://api.advwell.pro/api/whatsapp-webhook
                   </code>
                   <button
@@ -390,7 +390,7 @@ const WhatsAppSettings: React.FC = () => {
               <div>
                 <span className="text-blue-700 font-medium">2. Token de Verificação:</span>
                 <div className="flex items-center gap-2 mt-1">
-                  <code className="bg-white px-3 py-2 rounded border text-xs flex-1 font-mono">
+                  <code className="bg-white dark:bg-slate-800 px-3 py-2 rounded border text-xs flex-1 font-mono">
                     {formData.webhookVerifyToken || '(configure acima e salve)'}
                   </code>
                   {formData.webhookVerifyToken && (
@@ -422,9 +422,9 @@ const WhatsAppSettings: React.FC = () => {
 
         {/* Templates */}
         {hasConfig && (
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 p-6">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-neutral-900">
+              <h2 className="text-xl font-semibold text-neutral-900 dark:text-slate-100">
                 Templates de Mensagem
               </h2>
               <button
@@ -438,27 +438,27 @@ const WhatsAppSettings: React.FC = () => {
             </div>
 
             {loadingTemplates ? (
-              <div className="text-center py-8 text-neutral-500">
+              <div className="text-center py-8 text-neutral-500 dark:text-slate-400">
                 Carregando templates...
               </div>
             ) : templates.length === 0 ? (
-              <div className="text-center py-8 text-neutral-500">
+              <div className="text-center py-8 text-neutral-500 dark:text-slate-400">
                 Nenhum template encontrado. Clique em "Sincronizar da Meta" para importar.
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-neutral-50">
+                  <thead className="bg-neutral-50 dark:bg-slate-700">
                     <tr>
-                      <th className="px-4 py-3 text-left text-sm font-medium text-neutral-700">Nome</th>
-                      <th className="px-4 py-3 text-left text-sm font-medium text-neutral-700">Categoria</th>
-                      <th className="px-4 py-3 text-left text-sm font-medium text-neutral-700">Idioma</th>
-                      <th className="px-4 py-3 text-left text-sm font-medium text-neutral-700">Status</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-neutral-700 dark:text-slate-300">Nome</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-neutral-700 dark:text-slate-300">Categoria</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-neutral-700 dark:text-slate-300">Idioma</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-neutral-700 dark:text-slate-300">Status</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-neutral-200">
+                  <tbody className="divide-y divide-neutral-200 dark:divide-slate-700">
                     {templates.map((template) => (
-                      <tr key={template.id} className="odd:bg-white even:bg-neutral-50 hover:bg-success-100 transition-colors">
+                      <tr key={template.id} className="odd:bg-white dark:bg-slate-800 even:bg-neutral-50 dark:bg-slate-700 hover:bg-success-100 transition-colors">
                         <td className="px-4 py-3">
                           <code className="text-sm bg-neutral-100 px-2 py-1 rounded">
                             {template.name}
@@ -469,7 +469,7 @@ const WhatsAppSettings: React.FC = () => {
                             {template.category}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-sm text-neutral-600">
+                        <td className="px-4 py-3 text-sm text-neutral-600 dark:text-slate-400">
                           {template.language}
                         </td>
                         <td className="px-4 py-3">
@@ -487,11 +487,11 @@ const WhatsAppSettings: React.FC = () => {
         )}
 
         {/* Dicas */}
-        <div className="bg-neutral-50 rounded-lg p-4">
-          <h3 className="font-semibold text-neutral-900 mb-3">
+        <div className="bg-neutral-50 dark:bg-slate-700 rounded-lg p-4">
+          <h3 className="font-semibold text-neutral-900 dark:text-slate-100 mb-3">
             Dicas Importantes
           </h3>
-          <ul className="text-sm text-neutral-600 space-y-2">
+          <ul className="text-sm text-neutral-600 dark:text-slate-400 space-y-2">
             <li className="flex items-start gap-2">
               <span className="text-green-500">•</span>
               <span>Templates precisam ser aprovados pela Meta antes do uso (24-48h)</span>

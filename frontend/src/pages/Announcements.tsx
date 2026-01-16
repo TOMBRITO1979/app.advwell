@@ -725,10 +725,10 @@ export default function Announcements() {
                         }
                       }}
                       placeholder="Digite para buscar cliente..."
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      className="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                     />
                     {newMessageClientSearch.trim() && !newMessageClientId && (
-                      <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                      <div className="absolute z-50 w-full mt-1 bg-white bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg shadow-lg max-h-48 overflow-y-auto">
                         {clients.filter(c => c.name.toLowerCase().includes(newMessageClientSearch.toLowerCase())).slice(0, 10).map((client) => (
                           <button
                             key={client.id}
@@ -766,7 +766,7 @@ export default function Announcements() {
                       value={newMessageSubject}
                       onChange={(e) => setNewMessageSubject(e.target.value)}
                       placeholder="Ex: Atualização do seu processo"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      className="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                     />
                   </div>
                   <div>
@@ -779,14 +779,14 @@ export default function Announcements() {
                       placeholder="Digite sua mensagem..."
                       rows={4}
                       required
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      className="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                     />
                   </div>
                   <div className="flex justify-end gap-3">
                     <button
                       type="button"
                       onClick={() => setShowNewMessageForm(false)}
-                      className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                      className="px-4 py-2 text-gray-700 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg hover:bg-gray-50 transition-colors"
                     >
                       Cancelar
                     </button>
@@ -812,7 +812,7 @@ export default function Announcements() {
                   placeholder="Filtrar por nome do cliente..."
                   value={messagesFilter}
                   onChange={(e) => setMessagesFilter(e.target.value)}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="flex-1 px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 />
                 {messagesFilter && (
                   <button
@@ -951,7 +951,7 @@ export default function Announcements() {
                               }
                               placeholder="Digite sua resposta..."
                               rows={2}
-                              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
+                              className="flex-1 px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
                             />
                             <button
                               onClick={() => handleSendReply(message.id, message.client?.id)}
@@ -983,7 +983,7 @@ export default function Announcements() {
                   placeholder="Filtrar por nome do cliente..."
                   value={documentsFilter}
                   onChange={(e) => setDocumentsFilter(e.target.value)}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="flex-1 px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 />
                 {documentsFilter && (
                   <button
@@ -1095,7 +1095,7 @@ export default function Announcements() {
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                     placeholder="Título do aviso"
                   />
                 </div>
@@ -1108,7 +1108,7 @@ export default function Announcements() {
                     onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                     required
                     rows={5}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                     placeholder="Conteúdo do aviso..."
                   />
                 </div>
@@ -1120,7 +1120,7 @@ export default function Announcements() {
                     <select
                       value={formData.priority}
                       onChange={(e) => setFormData({ ...formData, priority: e.target.value as any })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      className="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                     >
                       {priorityOptions.map((opt) => (
                         <option key={opt.value} value={opt.value}>
@@ -1137,7 +1137,7 @@ export default function Announcements() {
                       type="date"
                       value={formData.expiresAt}
                       onChange={(e) => setFormData({ ...formData, expiresAt: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      className="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                     />
                   </div>
                 </div>
@@ -1155,11 +1155,11 @@ export default function Announcements() {
                       }
                     }}
                     placeholder="Digite para buscar cliente ou deixe vazio para todos..."
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   />
                   {/* Suggestions dropdown - only shows when typing */}
                   {clientSearchText.trim() && filteredClients.length > 0 && !formData.clientId && (
-                    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                    <div className="absolute z-50 w-full mt-1 bg-white bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg shadow-lg max-h-48 overflow-y-auto">
                       {filteredClients.map((client) => (
                         <button
                           key={client.id}
@@ -1197,7 +1197,7 @@ export default function Announcements() {
                     id="active"
                     checked={formData.active}
                     onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
-                    className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                    className="w-4 h-4 text-green-600 border-gray-300 dark:border-slate-600 rounded focus:ring-green-500"
                   />
                   <label htmlFor="active" className="text-sm text-gray-700">
                     Publicar imediatamente (aviso ativo)

@@ -156,7 +156,7 @@ export default function GoogleCalendarSettings() {
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Google Calendar</h1>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
+      <div className="bg-white dark:bg-slate-800 dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
         {/* Status da Conexao */}
         <div className="p-6 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">

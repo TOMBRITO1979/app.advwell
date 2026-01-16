@@ -81,10 +81,10 @@ const BackupSettings: React.FC = () => {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-neutral-900">
+            <h1 className="text-3xl font-bold text-neutral-900 dark:text-slate-100">
               Email de Backup
             </h1>
-            <p className="text-neutral-600 mt-1">
+            <p className="text-neutral-600 dark:text-slate-400 mt-1">
               Configure o envio automatico de backup dos seus dados
             </p>
           </div>
@@ -112,10 +112,10 @@ const BackupSettings: React.FC = () => {
         </div>
 
         {/* Formulario */}
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-2">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2">
                 Email para receber os backups
               </label>
               <input
@@ -123,9 +123,9 @@ const BackupSettings: React.FC = () => {
                 value={backupEmail}
                 onChange={(e) => setBackupEmail(e.target.value)}
                 placeholder="seu-email@exemplo.com"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                className="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-primary-500 min-h-[44px]"
               />
-              <p className="text-sm text-neutral-500 mt-2">
+              <p className="text-sm text-neutral-500 dark:text-slate-400 mt-2">
                 Deixe em branco para desativar o backup automatico
               </p>
             </div>
@@ -154,22 +154,22 @@ const BackupSettings: React.FC = () => {
         </div>
 
         {/* Info adicional */}
-        <div className="bg-neutral-50 rounded-lg p-4">
-          <h3 className="font-semibold text-neutral-900 mb-3">
+        <div className="bg-neutral-50 dark:bg-slate-700 rounded-lg p-4">
+          <h3 className="font-semibold text-neutral-900 dark:text-slate-100 mb-3">
             Por que fazer backup?
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
-            <div className="bg-white p-3 rounded">
-              <div className="font-medium text-neutral-900">Seguranca</div>
-              <div className="text-neutral-600">Tenha uma copia dos seus dados sempre a mao</div>
+            <div className="bg-white dark:bg-slate-800 p-3 rounded">
+              <div className="font-medium text-neutral-900 dark:text-slate-100">Seguranca</div>
+              <div className="text-neutral-600 dark:text-slate-400">Tenha uma copia dos seus dados sempre a mao</div>
             </div>
-            <div className="bg-white p-3 rounded">
-              <div className="font-medium text-neutral-900">Praticidade</div>
-              <div className="text-neutral-600">Receba automaticamente sem precisar lembrar</div>
+            <div className="bg-white dark:bg-slate-800 p-3 rounded">
+              <div className="font-medium text-neutral-900 dark:text-slate-100">Praticidade</div>
+              <div className="text-neutral-600 dark:text-slate-400">Receba automaticamente sem precisar lembrar</div>
             </div>
-            <div className="bg-white p-3 rounded">
-              <div className="font-medium text-neutral-900">Compatibilidade</div>
-              <div className="text-neutral-600">CSV funciona em qualquer programa de planilhas</div>
+            <div className="bg-white dark:bg-slate-800 p-3 rounded">
+              <div className="font-medium text-neutral-900 dark:text-slate-100">Compatibilidade</div>
+              <div className="text-neutral-600 dark:text-slate-400">CSV funciona em qualquer programa de planilhas</div>
             </div>
           </div>
         </div>

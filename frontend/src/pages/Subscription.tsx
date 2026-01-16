@@ -166,7 +166,7 @@ export default function Subscription() {
         </div>
 
       {/* Status Card */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-200 p-6">
         <div className="flex items-start justify-between">
           <div>
             <h2 className="text-lg font-medium text-gray-900">Status da Assinatura</h2>
@@ -188,7 +188,7 @@ export default function Subscription() {
           {info.hasStripeSubscription && (
             <button
               onClick={handleManageBilling}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg hover:bg-gray-50"
             >
               <CreditCard className="h-4 w-4" />
               Gerenciar Pagamento
@@ -281,7 +281,7 @@ export default function Subscription() {
       </div>
 
       {/* Plans */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-200 p-6">
         <h2 className="text-lg font-medium text-gray-900 mb-6">Escolha seu Plano</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -361,7 +361,7 @@ export default function Subscription() {
       </div>
 
       {/* FAQ */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-200 p-6">
         <h2 className="text-lg font-medium text-gray-900 mb-4">Perguntas Frequentes</h2>
         <div className="space-y-4">
           <div>

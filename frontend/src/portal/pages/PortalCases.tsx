@@ -135,7 +135,7 @@ export default function PortalCases() {
         {activeTab === 'judicial' && (
           <>
             {filteredCases.length === 0 ? (
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
+              <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 p-12 text-center">
                 <Briefcase className="mx-auto h-16 w-16 text-gray-300 mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhum processo judicial encontrado</h3>
                 <p className="text-gray-500">
@@ -153,7 +153,7 @@ export default function PortalCases() {
                     <Link
                       key={caseItem.id}
                       to={`/portal/cases/${caseItem.id}`}
-                      className="block bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all"
+                      className="block bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all"
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1 min-w-0">
@@ -202,7 +202,7 @@ export default function PortalCases() {
         {activeTab === 'pnj' && (
           <>
             {filteredPNJs.length === 0 ? (
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
+              <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 p-12 text-center">
                 <FileText className="mx-auto h-16 w-16 text-gray-300 mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhum processo não judicial encontrado</h3>
                 <p className="text-gray-500">
@@ -220,7 +220,7 @@ export default function PortalCases() {
                     <Link
                       key={pnj.id}
                       to={`/portal/pnjs/${pnj.id}`}
-                      className="block bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all"
+                      className="block bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all"
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1 min-w-0">

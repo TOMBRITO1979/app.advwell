@@ -54,7 +54,7 @@ export default function PortalAnnouncements() {
 
         {/* Announcements list */}
         {announcements.length === 0 ? (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
+          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 p-12 text-center">
             <Megaphone className="mx-auto h-16 w-16 text-gray-300 mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhum aviso</h3>
             <p className="text-gray-500">Não há avisos do escritório no momento.</p>

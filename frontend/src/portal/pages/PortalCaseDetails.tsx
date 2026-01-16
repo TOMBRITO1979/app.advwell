@@ -150,7 +150,7 @@ export default function PortalCaseDetails() {
         {activeTab === 'details' ? (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Case info */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Informações do Processo</h2>
               <div className="space-y-4">
                 <div>
@@ -187,7 +187,7 @@ export default function PortalCaseDetails() {
             </div>
 
             {/* Parties */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Partes do Processo</h2>
               {caseDetails.parts.length > 0 ? (
                 <div className="space-y-4">
@@ -228,7 +228,7 @@ export default function PortalCaseDetails() {
           </div>
         ) : (
           /* Movements tab */
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100">
+          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100">
             {movements.length > 0 ? (
               <div className="divide-y divide-gray-100">
                 {movements.map((movement, index) => (

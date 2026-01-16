@@ -53,7 +53,7 @@ export default function PortalCompany() {
         </div>
 
         {/* Company card */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           {/* Header with logo */}
           <div className="bg-gradient-to-r from-green-600 to-green-700 p-8">
             <div className="flex items-center gap-6">
@@ -61,10 +61,10 @@ export default function PortalCompany() {
                 <img
                   src={company.logo}
                   alt={company.name}
-                  className="w-20 h-20 rounded-xl object-cover bg-white"
+                  className="w-20 h-20 rounded-xl object-cover bg-white dark:bg-slate-800"
                 />
               ) : (
-                <div className="w-20 h-20 bg-white/20 rounded-xl flex items-center justify-center">
+                <div className="w-20 h-20 bg-white dark:bg-slate-800/20 rounded-xl flex items-center justify-center">
                   <Building2 className="text-white" size={40} />
                 </div>
               )}

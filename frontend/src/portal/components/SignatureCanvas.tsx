@@ -115,7 +115,7 @@ export default function SignatureCanvas({ onSave, onCancel, loading = false }: S
         </div>
 
         <div className="p-4">
-          <div className="border-2 border-dashed border-gray-300 rounded-lg overflow-hidden bg-white">
+          <div className="border-2 border-dashed border-gray-300 dark:border-slate-600 rounded-lg overflow-hidden bg-white">
             <canvas
               ref={canvasRef}
               className="w-full h-48 touch-none cursor-crosshair"
@@ -136,14 +136,14 @@ export default function SignatureCanvas({ onSave, onCancel, loading = false }: S
         <div className="p-4 border-t bg-gray-50 flex gap-3">
           <button
             onClick={clearCanvas}
-            className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg font-medium text-sm hover:bg-gray-50 transition-colors"
+            className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 bg-white border border-gray-300 dark:border-slate-600 text-gray-700 rounded-lg font-medium text-sm hover:bg-gray-50 transition-colors"
           >
             <RotateCcw size={18} />
             Limpar
           </button>
           <button
             onClick={onCancel}
-            className="flex-1 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg font-medium text-sm hover:bg-gray-50 transition-colors"
+            className="flex-1 px-4 py-2 bg-white border border-gray-300 dark:border-slate-600 text-gray-700 rounded-lg font-medium text-sm hover:bg-gray-50 transition-colors"
           >
             Cancelar
           </button>

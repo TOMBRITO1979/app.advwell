@@ -462,7 +462,7 @@ const CostCenters: React.FC = () => {
                     id="active"
                     checked={formData.active}
                     onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
-                    className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                    className="w-4 h-4 text-primary-600 border-gray-300 dark:border-slate-600 rounded focus:ring-primary-500"
                   />
                   <label htmlFor="active" className="text-sm text-gray-700 dark:text-slate-300">
                     Centro de custo ativo

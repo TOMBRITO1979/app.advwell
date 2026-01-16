@@ -196,7 +196,7 @@ const Settings: React.FC = () => {
                     value={settings.name}
                     onChange={handleChange}
                     required
-                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   />
                 </div>
 
@@ -210,7 +210,7 @@ const Settings: React.FC = () => {
                     value={settings.email}
                     onChange={handleChange}
                     required
-                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   />
                 </div>
 
@@ -224,7 +224,7 @@ const Settings: React.FC = () => {
                     value={settings.phone || ''}
                     onChange={handleChange}
                     placeholder="(00) 0000-0000"
-                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   />
                 </div>
 
@@ -238,7 +238,7 @@ const Settings: React.FC = () => {
                     value={settings.logo || ''}
                     onChange={handleChange}
                     placeholder="https://exemplo.com/logo.png"
-                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   />
                 </div>
               </div>
@@ -261,7 +261,7 @@ const Settings: React.FC = () => {
                     value={settings.address || ''}
                     onChange={handleChange}
                     placeholder="Rua, Avenida, número"
-                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   />
                 </div>
 
@@ -275,7 +275,7 @@ const Settings: React.FC = () => {
                     value={settings.city || ''}
                     onChange={handleChange}
                     placeholder="Ex: São Paulo"
-                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   />
                 </div>
 
@@ -290,7 +290,7 @@ const Settings: React.FC = () => {
                     onChange={handleChange}
                     placeholder="Ex: SP"
                     maxLength={2}
-                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 uppercase min-h-[44px]"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 uppercase min-h-[44px]"
                     style={{ textTransform: 'uppercase' }}
                   />
                 </div>
@@ -305,7 +305,7 @@ const Settings: React.FC = () => {
                     value={settings.zipCode || ''}
                     onChange={handleChange}
                     placeholder="00000-000"
-                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   />
                 </div>
               </div>
@@ -332,7 +332,7 @@ const Settings: React.FC = () => {
                     value={settings.dpoName || ''}
                     onChange={handleChange}
                     placeholder="Nome completo do responsavel"
-                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   />
                 </div>
 
@@ -346,7 +346,7 @@ const Settings: React.FC = () => {
                     value={settings.dpoEmail || ''}
                     onChange={handleChange}
                     placeholder="dpo@seuescritorio.com.br"
-                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   />
                 </div>
               </div>
@@ -403,7 +403,7 @@ const Settings: React.FC = () => {
                       type={showApiKey ? 'text' : 'password'}
                       readOnly
                       value={apiKey || 'Nenhuma API Key gerada'}
-                      className="w-full px-3 py-2 pr-10 border border-neutral-300 dark:border-slate-600 rounded-md bg-neutral-50 dark:bg-slate-700 text-neutral-700 dark:text-slate-300 font-mono text-sm min-h-[44px]"
+                      className="w-full px-3 py-2 pr-10 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md bg-neutral-50 dark:bg-slate-700 text-neutral-700 dark:text-slate-300 font-mono text-sm min-h-[44px]"
                     />
                     <button
                       type="button"
@@ -498,7 +498,7 @@ const Settings: React.FC = () => {
                         type="text"
                         readOnly
                         value={embedUrl}
-                        className="flex-1 px-3 py-1.5 border border-neutral-300 dark:border-slate-600 rounded-md bg-neutral-50 dark:bg-slate-700 text-neutral-700 dark:text-slate-300 font-mono text-xs"
+                        className="flex-1 px-3 py-1.5 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md bg-neutral-50 dark:bg-slate-700 text-neutral-700 dark:text-slate-300 font-mono text-xs"
                       />
                       <button
                         type="button"
@@ -587,7 +587,7 @@ const Settings: React.FC = () => {
                 value={confirmName}
                 onChange={(e) => setConfirmName(e.target.value)}
                 placeholder="Digite o nome da empresa"
-                className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 min-h-[44px]"
+                className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 min-h-[44px]"
               />
             </div>
 

@@ -1124,13 +1124,13 @@ const Cases: React.FC = () => {
                 placeholder="Buscar (numero, assunto, partes, advogado)..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="flex-1 px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 min-h-[44px]"
+                className="flex-1 px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 min-h-[44px]"
               />
             </div>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full sm:w-auto px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 min-h-[44px]"
+              className="w-full sm:w-auto px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 min-h-[44px]"
             >
               <option value="">Todos os Status</option>
               <option value="PENDENTE">Pendente</option>
@@ -1147,28 +1147,28 @@ const Cases: React.FC = () => {
               placeholder="Demandante..."
               value={demandanteFilter}
               onChange={(e) => setDemandanteFilter(e.target.value)}
-              className="flex-1 min-w-[150px] px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm"
+              className="flex-1 min-w-[150px] px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm"
             />
             <input
               type="text"
               placeholder="Demandado..."
               value={demandadoFilter}
               onChange={(e) => setDemandadoFilter(e.target.value)}
-              className="flex-1 min-w-[150px] px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm"
+              className="flex-1 min-w-[150px] px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm"
             />
             <input
               type="text"
               placeholder="Advogado..."
               value={lawyerFilter}
               onChange={(e) => setLawyerFilter(e.target.value)}
-              className="flex-1 min-w-[150px] px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm"
+              className="flex-1 min-w-[150px] px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm"
             />
             <input
               type="text"
               placeholder="OAB..."
               value={oabFilter}
               onChange={(e) => setOabFilter(e.target.value)}
-              className="flex-1 min-w-[100px] px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm"
+              className="flex-1 min-w-[100px] px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm"
             />
             {(demandanteFilter || demandadoFilter || lawyerFilter || oabFilter) && (
               <button
@@ -1363,7 +1363,7 @@ const Cases: React.FC = () => {
                         setLimit(Number(e.target.value));
                         setPage(1);
                       }}
-                      className="px-2 py-1 text-sm border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      className="px-2 py-1 text-sm bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                     >
                       <option value={25}>25 por página</option>
                       <option value={50}>50 por página</option>
@@ -1460,10 +1460,10 @@ const Cases: React.FC = () => {
                     onChange={(e) => setFormData({ ...formData, demandante: e.target.value })}
                     onFocus={() => setShowDemandanteDropdown(true)}
                     onBlur={() => setTimeout(() => setShowDemandanteDropdown(false), 200)}
-                    className="mt-1 block w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="mt-1 block w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   />
                   {showDemandanteDropdown && filteredDemandantes.length > 0 && (
-                    <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-800 border border-neutral-300 dark:border-slate-600 rounded-md shadow-lg max-h-60 overflow-auto">
+                    <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md shadow-lg max-h-60 overflow-auto">
                       {filteredDemandantes.map((item) => (
                         <div
                           key={`${item.type}-${item.id}`}
@@ -1534,10 +1534,10 @@ const Cases: React.FC = () => {
                     onChange={(e) => setFormData({ ...formData, demandado: e.target.value })}
                     onFocus={() => setShowDemandadoDropdown(true)}
                     onBlur={() => setTimeout(() => setShowDemandadoDropdown(false), 200)}
-                    className="mt-1 block w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="mt-1 block w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   />
                   {showDemandadoDropdown && filteredDemandados.length > 0 && (
-                    <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-800 border border-neutral-300 dark:border-slate-600 rounded-md shadow-lg max-h-60 overflow-auto">
+                    <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md shadow-lg max-h-60 overflow-auto">
                       {filteredDemandados.map((item) => (
                         <div
                           key={`${item.type}-${item.id}`}
@@ -1575,7 +1575,7 @@ const Cases: React.FC = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, processNumber: e.target.value })
                   }
-                  className="mt-1 block w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md min-h-[44px]"
+                  className="mt-1 block w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md min-h-[44px]"
                   disabled={editMode}
                 />
                 <p className="text-xs text-neutral-500 dark:text-slate-400 mt-1">
@@ -1590,7 +1590,7 @@ const Cases: React.FC = () => {
                     type="text"
                     value={formData.court}
                     onChange={(e) => setFormData({ ...formData, court: e.target.value })}
-                    className="mt-1 block w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md min-h-[44px]"
+                    className="mt-1 block w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md min-h-[44px]"
                   />
                 </div>
                 <div>
@@ -1600,7 +1600,7 @@ const Cases: React.FC = () => {
                     step="0.01"
                     value={formData.value}
                     onChange={(e) => setFormData({ ...formData, value: e.target.value })}
-                    className="mt-1 block w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md min-h-[44px]"
+                    className="mt-1 block w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md min-h-[44px]"
                   />
                 </div>
               </div>
@@ -1611,7 +1611,7 @@ const Cases: React.FC = () => {
                   type="text"
                   value={formData.subject}
                   onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                  className="mt-1 block w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md min-h-[44px]"
+                  className="mt-1 block w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md min-h-[44px]"
                 />
               </div>
 
@@ -1621,7 +1621,7 @@ const Cases: React.FC = () => {
                   <select
                     value={formData.status}
                     onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   >
                     <option value="PENDENTE">Pendente</option>
                     <option value="ACTIVE">Ativo</option>
@@ -1635,7 +1635,7 @@ const Cases: React.FC = () => {
                   <select
                     value={formData.phase}
                     onChange={(e) => setFormData({ ...formData, phase: e.target.value })}
-                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   >
                     <option value="">Selecione...</option>
                     <option value="Inicial">Inicial</option>
@@ -1652,7 +1652,7 @@ const Cases: React.FC = () => {
                   <select
                     value={formData.nature}
                     onChange={(e) => setFormData({ ...formData, nature: e.target.value })}
-                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   >
                     <option value="">Selecione...</option>
                     <option value="Cível">Cível</option>
@@ -1671,7 +1671,7 @@ const Cases: React.FC = () => {
                   <select
                     value={formData.rite}
                     onChange={(e) => setFormData({ ...formData, rite: e.target.value })}
-                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   >
                     <option value="">Selecione...</option>
                     <option value="Ordinário">Ordinário</option>
@@ -1706,7 +1706,7 @@ const Cases: React.FC = () => {
                   <select
                     value={formData.deadlineResponsibleId}
                     onChange={(e) => setFormData({ ...formData, deadlineResponsibleId: e.target.value })}
-                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   >
                     <option value="">Nenhum</option>
                     {users.map((user) => (
@@ -1722,7 +1722,7 @@ const Cases: React.FC = () => {
                   <select
                     value={formData.lawyerId}
                     onChange={(e) => setFormData({ ...formData, lawyerId: e.target.value })}
-                    className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   >
                     <option value="">Selecione...</option>
                     {lawyers.map((lawyer) => (
@@ -1741,7 +1741,7 @@ const Cases: React.FC = () => {
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                   rows={4}
                   placeholder="Observações adicionais sobre o processo..."
-                  className="mt-1 block w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md min-h-[44px]"
+                  className="mt-1 block w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md min-h-[44px]"
                 />
               </div>
 
@@ -1752,7 +1752,7 @@ const Cases: React.FC = () => {
                   value={formData.linkProcesso}
                   onChange={(e) => setFormData({ ...formData, linkProcesso: e.target.value })}
                   placeholder="https://www.tjrj.jus.br/..."
-                  className="mt-1 block w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md min-h-[44px]"
+                  className="mt-1 block w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md min-h-[44px]"
                 />
                 <p className="mt-1 text-xs text-neutral-500 dark:text-slate-400">URL do processo no site do tribunal</p>
               </div>
@@ -1764,7 +1764,7 @@ const Cases: React.FC = () => {
                   onChange={(e) => setFormData({ ...formData, informarCliente: e.target.value })}
                   rows={3}
                   placeholder="Digite aqui o texto explicativo do andamento que será informado ao cliente..."
-                  className="mt-1 block w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md min-h-[44px]"
+                  className="mt-1 block w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md min-h-[44px]"
                 />
                 <p className="mt-1 text-xs text-neutral-500 dark:text-slate-400">Este texto será exibido ao visualizar o andamento para o cliente</p>
               </div>
@@ -1840,7 +1840,7 @@ const Cases: React.FC = () => {
                             setPartEntitySearchText('');
                             setShowPartEntitySuggestions(false);
                           }}
-                          className="block w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                          className="block w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                         >
                           <option value="DEMANDANTE">Demandante (Cliente)</option>
                           <option value="DEMANDADO">Demandado (Adverso)</option>
@@ -1871,7 +1871,7 @@ const Cases: React.FC = () => {
                             partFormData.type === 'DEMANDADO' ? 'adverso' :
                             'advogado'
                           }...`}
-                          className="block w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                          className="block w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                         />
                         {showPartEntitySuggestions && filteredPartEntities.length > 0 && (
                           <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-800 border border-neutral-200 dark:border-slate-700 rounded-md shadow-lg max-h-48 overflow-y-auto">
@@ -1906,7 +1906,7 @@ const Cases: React.FC = () => {
                           setPartEntitySearchText('');
                           setShowPartEntitySuggestions(false);
                         }}
-                        className="px-3 py-1.5 text-sm border border-neutral-300 dark:border-slate-600 rounded-md text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 min-h-[44px]"
+                        className="px-3 py-1.5 text-sm bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 min-h-[44px]"
                       >
                         Cancelar
                       </button>
@@ -1985,7 +1985,7 @@ const Cases: React.FC = () => {
                         type="text"
                         value={witnessFormData.name}
                         onChange={(e) => setWitnessFormData({ ...witnessFormData, name: e.target.value })}
-                        className="block w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="block w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
 
@@ -1995,7 +1995,7 @@ const Cases: React.FC = () => {
                         type="text"
                         value={witnessFormData.address}
                         onChange={(e) => setWitnessFormData({ ...witnessFormData, address: e.target.value })}
-                        className="block w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                        className="block w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>
 
@@ -2006,7 +2006,7 @@ const Cases: React.FC = () => {
                           type="text"
                           value={witnessFormData.phone}
                           onChange={(e) => setWitnessFormData({ ...witnessFormData, phone: e.target.value })}
-                          className="block w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                          className="block w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                         />
                       </div>
                       <div>
@@ -2015,7 +2015,7 @@ const Cases: React.FC = () => {
                           type="text"
                           value={witnessFormData.mobile}
                           onChange={(e) => setWitnessFormData({ ...witnessFormData, mobile: e.target.value })}
-                          className="block w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                          className="block w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                         />
                       </div>
                     </div>
@@ -2028,7 +2028,7 @@ const Cases: React.FC = () => {
                           setEditingWitnessIndex(null);
                           setWitnessFormData({ name: '', address: '', phone: '', mobile: '' });
                         }}
-                        className="px-3 py-1.5 text-sm border border-neutral-300 dark:border-slate-600 rounded-md text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 min-h-[44px]"
+                        className="px-3 py-1.5 text-sm bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 min-h-[44px]"
                       >
                         Cancelar
                       </button>
@@ -2053,7 +2053,7 @@ const Cases: React.FC = () => {
                     setSelectedCase(null);
                     resetForm();
                   }}
-                  className="px-6 py-2 border border-neutral-300 dark:border-slate-600 rounded-md text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 transition-colors min-h-[44px]"
+                  className="px-6 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 transition-colors min-h-[44px]"
                 >
                   Cancelar
                 </button>
@@ -2647,7 +2647,7 @@ const Cases: React.FC = () => {
                 <select
                   value={editingPart.type}
                   onChange={(e) => setEditingPart({ ...editingPart, type: e.target.value as 'AUTOR' | 'REU' | 'REPRESENTANTE_LEGAL' })}
-                  className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                 >
                   <option value="AUTOR">Demandante</option>
                   <option value="REU">Demandado</option>
@@ -2664,7 +2664,7 @@ const Cases: React.FC = () => {
                   type="text"
                   value={editingPart.name}
                   onChange={(e) => setEditingPart({ ...editingPart, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   required
                 />
               </div>
@@ -2678,7 +2678,7 @@ const Cases: React.FC = () => {
                   type="text"
                   value={editingPart.cpfCnpj || ''}
                   onChange={(e) => setEditingPart({ ...editingPart, cpfCnpj: e.target.value })}
-                  className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                 />
               </div>
 
@@ -2691,7 +2691,7 @@ const Cases: React.FC = () => {
                   type="text"
                   value={editingPart.rg || ''}
                   onChange={(e) => setEditingPart({ ...editingPart, rg: e.target.value })}
-                  className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                 />
               </div>
 
@@ -2704,7 +2704,7 @@ const Cases: React.FC = () => {
                   type="date"
                   value={editingPart.birthDate ? editingPart.birthDate.split('T')[0] : ''}
                   onChange={(e) => setEditingPart({ ...editingPart, birthDate: e.target.value })}
-                  className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                 />
               </div>
 
@@ -2718,7 +2718,7 @@ const Cases: React.FC = () => {
                   value={editingPart.phone || ''}
                   onChange={(e) => setEditingPart({ ...editingPart, phone: e.target.value })}
                   placeholder={editingPart.type === 'REPRESENTANTE_LEGAL' ? 'Ex: RG 12.345.678-9' : editingPart.type === 'REU' ? 'Ex: OAB, CRECI, etc.' : ''}
-                  className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                 />
               </div>
 
@@ -2734,7 +2734,7 @@ const Cases: React.FC = () => {
                       value={editingPart.email || ''}
                       onChange={(e) => setEditingPart({ ...editingPart, email: e.target.value })}
                       placeholder="Ex: Brasileiro(a)"
-                      className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                     />
                   </div>
 
@@ -2746,7 +2746,7 @@ const Cases: React.FC = () => {
                       type="text"
                       value={editingPart.civilStatus || ''}
                       onChange={(e) => setEditingPart({ ...editingPart, civilStatus: e.target.value })}
-                      className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                     />
                   </div>
 
@@ -2758,7 +2758,7 @@ const Cases: React.FC = () => {
                       type="text"
                       value={editingPart.profession || ''}
                       onChange={(e) => setEditingPart({ ...editingPart, profession: e.target.value })}
-                      className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                     />
                   </div>
                 </>
@@ -2772,7 +2772,7 @@ const Cases: React.FC = () => {
                 <textarea
                   value={editingPart.address || ''}
                   onChange={(e) => setEditingPart({ ...editingPart, address: e.target.value })}
-                  className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   rows={2}
                 />
               </div>
@@ -2785,7 +2785,7 @@ const Cases: React.FC = () => {
                   setShowEditPartModal(false);
                   setEditingPart(null);
                 }}
-                className="px-6 py-2 border border-neutral-300 dark:border-slate-600 rounded-md text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 transition-colors min-h-[44px]"
+                className="px-6 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 transition-colors min-h-[44px]"
               >
                 Cancelar
               </button>
@@ -2997,7 +2997,7 @@ const Cases: React.FC = () => {
               <div className="mt-6 flex justify-end">
                 <button
                   onClick={() => setShowAndamentoModal(false)}
-                  className="px-4 py-2 bg-neutral-100 text-neutral-700 dark:text-slate-300 border border-neutral-300 dark:border-slate-600 rounded-lg hover:bg-neutral-200 transition-colors min-h-[44px]"
+                  className="px-4 py-2 bg-neutral-100 text-neutral-700 dark:text-slate-300 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-lg hover:bg-neutral-200 transition-colors min-h-[44px]"
                 >
                   Fechar
                 </button>

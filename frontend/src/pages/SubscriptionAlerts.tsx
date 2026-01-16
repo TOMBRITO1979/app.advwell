@@ -84,7 +84,7 @@ const SubscriptionAlerts: React.FC = () => {
   const renderCompanyList = (companies: CompanyAlert[], emptyMessage: string) => {
     if (companies.length === 0) {
       return (
-        <p className="text-sm text-neutral-500 py-4 text-center">{emptyMessage}</p>
+        <p className="text-sm text-neutral-500 dark:text-slate-400 py-4 text-center">{emptyMessage}</p>
       );
     }
 
@@ -93,15 +93,15 @@ const SubscriptionAlerts: React.FC = () => {
         {companies.map((company) => (
           <div
             key={company.id}
-            className="py-3 px-4 hover:bg-neutral-50 cursor-pointer transition-colors"
+            className="py-3 px-4 hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 cursor-pointer transition-colors"
             onClick={goToCompanies}
           >
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
               <div className="min-w-0">
-                <p className="font-medium text-neutral-900 truncate">{company.name}</p>
-                <p className="text-sm text-neutral-500 truncate">{company.email}</p>
+                <p className="font-medium text-neutral-900 dark:text-slate-100 truncate">{company.name}</p>
+                <p className="text-sm text-neutral-500 dark:text-slate-400 truncate">{company.email}</p>
               </div>
-              <div className="flex flex-wrap items-center gap-3 text-sm text-neutral-600">
+              <div className="flex flex-wrap items-center gap-3 text-sm text-neutral-600 dark:text-slate-400">
                 <div className="flex items-center gap-1" title="Usuários">
                   <Users size={14} className="text-neutral-400 flex-shrink-0" />
                   <span>{company._count.users}</span>
@@ -111,7 +111,7 @@ const SubscriptionAlerts: React.FC = () => {
                   <span>{company._count.cases}</span>
                 </div>
                 {company.trialEndsAt && (
-                  <div className="flex items-center gap-1 text-xs text-neutral-500">
+                  <div className="flex items-center gap-1 text-xs text-neutral-500 dark:text-slate-400">
                     <Clock size={12} className="flex-shrink-0" />
                     <span className="whitespace-nowrap">Trial: {formatDate(company.trialEndsAt)}</span>
                   </div>
@@ -138,7 +138,7 @@ const SubscriptionAlerts: React.FC = () => {
       <div className="flex items-center gap-2">
         {icon}
         <span className="font-semibold">{title}</span>
-        <span className="px-2 py-0.5 bg-white bg-opacity-50 rounded-full text-sm font-medium">
+        <span className="px-2 py-0.5 bg-white dark:bg-slate-800 bg-opacity-50 rounded-full text-sm font-medium">
           {count}
         </span>
       </div>
@@ -152,7 +152,7 @@ const SubscriptionAlerts: React.FC = () => {
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
-            <p className="mt-4 text-neutral-600">Carregando alertas...</p>
+            <p className="mt-4 text-neutral-600 dark:text-slate-400">Carregando alertas...</p>
           </div>
         </div>
       </Layout>
@@ -165,8 +165,8 @@ const SubscriptionAlerts: React.FC = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-neutral-900">Alertas de Assinatura</h1>
-            <p className="text-neutral-600 mt-1">Acompanhe empresas com problemas de assinatura</p>
+            <h1 className="text-2xl font-bold text-neutral-900 dark:text-slate-100">Alertas de Assinatura</h1>
+            <p className="text-neutral-600 dark:text-slate-400 mt-1">Acompanhe empresas com problemas de assinatura</p>
           </div>
           <button
             onClick={loadAlerts}
@@ -201,12 +201,12 @@ const SubscriptionAlerts: React.FC = () => {
               </div>
               <p className="text-3xl font-bold text-yellow-800 mt-2">{data.summary.expiredSubscriptions}</p>
             </div>
-            <div className="bg-neutral-100 border border-neutral-300 rounded-lg p-4">
-              <div className="flex items-center gap-2 text-neutral-700">
+            <div className="bg-neutral-100 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-lg p-4">
+              <div className="flex items-center gap-2 text-neutral-700 dark:text-slate-300">
                 <XCircle size={20} />
                 <span className="text-sm font-medium">Canceladas</span>
               </div>
-              <p className="text-3xl font-bold text-neutral-800 mt-2">{data.summary.cancelledSubscriptions}</p>
+              <p className="text-3xl font-bold text-neutral-800 dark:text-slate-200 mt-2">{data.summary.cancelledSubscriptions}</p>
             </div>
           </div>
         )}
@@ -229,7 +229,7 @@ const SubscriptionAlerts: React.FC = () => {
           <div className="space-y-4">
             {/* Expiring Today */}
             {data.summary.expiringTrials > 0 && (
-              <div className="bg-white rounded-lg shadow overflow-hidden">
+              <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 overflow-hidden">
                 <SectionHeader
                   title="Trial Expirando Hoje"
                   count={data.summary.expiringTrials}
@@ -246,7 +246,7 @@ const SubscriptionAlerts: React.FC = () => {
 
             {/* Expired Trials */}
             {data.summary.expiredTrials > 0 && (
-              <div className="bg-white rounded-lg shadow overflow-hidden">
+              <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 overflow-hidden">
                 <SectionHeader
                   title="Trial Expirado"
                   count={data.summary.expiredTrials}
@@ -263,7 +263,7 @@ const SubscriptionAlerts: React.FC = () => {
 
             {/* Expired Subscriptions */}
             {data.summary.expiredSubscriptions > 0 && (
-              <div className="bg-white rounded-lg shadow overflow-hidden">
+              <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 overflow-hidden">
                 <SectionHeader
                   title="Assinatura Expirada"
                   count={data.summary.expiredSubscriptions}
@@ -280,12 +280,12 @@ const SubscriptionAlerts: React.FC = () => {
 
             {/* Cancelled Subscriptions */}
             {data.summary.cancelledSubscriptions > 0 && (
-              <div className="bg-white rounded-lg shadow overflow-hidden">
+              <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 overflow-hidden">
                 <SectionHeader
                   title="Assinatura Cancelada"
                   count={data.summary.cancelledSubscriptions}
                   icon={<XCircle size={20} />}
-                  color="bg-neutral-200 text-neutral-800"
+                  color="bg-neutral-200 text-neutral-800 dark:text-slate-200"
                   sectionKey="cancelledSubscriptions"
                 />
                 {expandedSections.cancelledSubscriptions && renderCompanyList(

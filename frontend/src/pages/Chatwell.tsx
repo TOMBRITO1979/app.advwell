@@ -67,9 +67,9 @@ const Chatwell: React.FC = () => {
   if (loading) {
     return (
       <Layout>
-        <div className="flex flex-col items-center justify-center h-[calc(100vh-120px)] bg-neutral-50">
+        <div className="flex flex-col items-center justify-center h-[calc(100vh-120px)] bg-neutral-50 dark:bg-slate-700">
           <Loader2 className="w-12 h-12 text-green-600 animate-spin mb-4" />
-          <p className="text-neutral-600">Carregando Chatwell...</p>
+          <p className="text-neutral-600 dark:text-slate-400">Carregando Chatwell...</p>
         </div>
       </Layout>
     );
@@ -79,16 +79,16 @@ const Chatwell: React.FC = () => {
   if (error || !config?.enabled) {
     return (
       <Layout>
-        <div className="flex flex-col items-center justify-center h-[calc(100vh-120px)] bg-neutral-50 px-4">
-          <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full text-center">
+        <div className="flex flex-col items-center justify-center h-[calc(100vh-120px)] bg-neutral-50 dark:bg-slate-700 px-4">
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow-lg p-8 max-w-md w-full text-center">
             <div className="w-16 h-16 mx-auto mb-4 bg-yellow-100 rounded-full flex items-center justify-center">
               <AlertCircle className="w-8 h-8 text-yellow-600" />
             </div>
-            <h2 className="text-xl font-bold text-neutral-900 mb-2">Chatwell Indisponível</h2>
-            <p className="text-neutral-600 mb-6">{error || 'O acesso ao Chatwell não está disponível no momento.'}</p>
+            <h2 className="text-xl font-bold text-neutral-900 dark:text-slate-100 mb-2">Chatwell Indisponível</h2>
+            <p className="text-neutral-600 dark:text-slate-400 mb-6">{error || 'O acesso ao Chatwell não está disponível no momento.'}</p>
             <button
               onClick={() => window.history.back()}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-neutral-100 text-neutral-700 border border-neutral-200 hover:bg-neutral-200 font-medium rounded-lg transition-all duration-200"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-neutral-100 text-neutral-700 dark:text-slate-300 border border-neutral-200 dark:border-slate-700 hover:bg-neutral-200 font-medium rounded-lg transition-all duration-200"
             >
               Voltar
             </button>
@@ -106,22 +106,22 @@ const Chatwell: React.FC = () => {
     return (
       <div className="fixed inset-0 z-50 bg-neutral-100 flex flex-col">
         {/* Header minimalista */}
-        <div className="bg-white border-b border-neutral-200 px-4 py-2 flex items-center justify-between">
+        <div className="bg-white dark:bg-slate-800 border-b border-neutral-200 dark:border-slate-700 px-4 py-2 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <MessageCircle className="w-5 h-5 text-green-600" />
-            <span className="font-medium text-neutral-900">Chatwell</span>
+            <span className="font-medium text-neutral-900 dark:text-slate-100">Chatwell</span>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={openInNewTab}
-              className="inline-flex items-center justify-center p-2 text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 rounded-md transition-colors"
+              className="inline-flex items-center justify-center p-2 text-neutral-500 dark:text-slate-400 hover:text-neutral-700 dark:text-slate-300 hover:bg-neutral-100 dark:hover:bg-slate-600 rounded-md transition-colors"
               title="Abrir em nova aba"
             >
               <ExternalLink size={18} />
             </button>
             <button
               onClick={toggleFullscreen}
-              className="inline-flex items-center justify-center p-2 text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 rounded-md transition-colors"
+              className="inline-flex items-center justify-center p-2 text-neutral-500 dark:text-slate-400 hover:text-neutral-700 dark:text-slate-300 hover:bg-neutral-100 dark:hover:bg-slate-600 rounded-md transition-colors"
               title="Sair da tela cheia"
             >
               <Minimize2 size={18} />
@@ -140,7 +140,7 @@ const Chatwell: React.FC = () => {
             />
           ) : (
             <div className="flex items-center justify-center h-full">
-              <p className="text-neutral-500">URL do Chatwell não configurada</p>
+              <p className="text-neutral-500 dark:text-slate-400">URL do Chatwell não configurada</p>
             </div>
           )}
         </div>
@@ -153,25 +153,25 @@ const Chatwell: React.FC = () => {
     <Layout>
       <div className="h-[calc(100vh-120px)] bg-neutral-100 flex flex-col -m-6">
         {/* Header minimalista */}
-        <div className="bg-white border-b border-neutral-200 px-4 py-2 flex items-center justify-between">
+        <div className="bg-white dark:bg-slate-800 border-b border-neutral-200 dark:border-slate-700 px-4 py-2 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <MessageCircle className="w-5 h-5 text-green-600" />
-            <span className="font-medium text-neutral-900">Chatwell</span>
-            <span className="text-xs text-neutral-500 ml-2">
+            <span className="font-medium text-neutral-900 dark:text-slate-100">Chatwell</span>
+            <span className="text-xs text-neutral-500 dark:text-slate-400 ml-2">
               (Faça login uma vez - a sessão será mantida)
             </span>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={openInNewTab}
-              className="inline-flex items-center justify-center p-2 text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 rounded-md transition-colors"
+              className="inline-flex items-center justify-center p-2 text-neutral-500 dark:text-slate-400 hover:text-neutral-700 dark:text-slate-300 hover:bg-neutral-100 dark:hover:bg-slate-600 rounded-md transition-colors"
               title="Abrir em nova aba"
             >
               <ExternalLink size={18} />
             </button>
             <button
               onClick={toggleFullscreen}
-              className="inline-flex items-center justify-center p-2 text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 rounded-md transition-colors"
+              className="inline-flex items-center justify-center p-2 text-neutral-500 dark:text-slate-400 hover:text-neutral-700 dark:text-slate-300 hover:bg-neutral-100 dark:hover:bg-slate-600 rounded-md transition-colors"
               title="Tela cheia"
             >
               <Maximize2 size={18} />
@@ -190,7 +190,7 @@ const Chatwell: React.FC = () => {
             />
           ) : (
             <div className="flex items-center justify-center h-full">
-              <p className="text-neutral-500">URL do Chatwell não configurada</p>
+              <p className="text-neutral-500 dark:text-slate-400">URL do Chatwell não configurada</p>
             </div>
           )}
         </div>

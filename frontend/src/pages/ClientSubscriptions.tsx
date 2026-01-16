@@ -234,7 +234,7 @@ export default function ClientSubscriptions() {
       {/* Summary Cards */}
       {reports && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white rounded-lg shadow p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 p-4">
             <div className="flex items-center gap-3">
               <Users className="w-8 h-8 text-green-600" />
               <div>
@@ -243,7 +243,7 @@ export default function ClientSubscriptions() {
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-lg shadow p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 p-4">
             <div className="flex items-center gap-3">
               <AlertTriangle className="w-8 h-8 text-red-600" />
               <div>
@@ -252,7 +252,7 @@ export default function ClientSubscriptions() {
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-lg shadow p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 p-4">
             <div className="flex items-center gap-3">
               <TrendingUp className="w-8 h-8 text-blue-600" />
               <div>
@@ -263,7 +263,7 @@ export default function ClientSubscriptions() {
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-lg shadow p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 p-4">
             <div className="flex items-center gap-3">
               <TrendingUp className="w-8 h-8 text-purple-600" />
               <div>
@@ -376,7 +376,7 @@ export default function ClientSubscriptions() {
           </div>
 
           {/* Desktop Table View */}
-          <div className="desktop-table-view bg-white rounded-lg shadow overflow-hidden">
+          <div className="desktop-table-view bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 overflow-hidden">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
@@ -470,7 +470,7 @@ export default function ClientSubscriptions() {
               </div>
             ) : (
               plans.map((plan) => (
-                <div key={plan.id} className="bg-white rounded-lg shadow p-6">
+                <div key={plan.id} className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 p-6">
                   <div className="flex justify-between items-start mb-4">
                     <div>
                       <h3 className="text-lg font-bold text-gray-900">{plan.name}</h3>
@@ -509,7 +509,7 @@ export default function ClientSubscriptions() {
         <div className="space-y-6">
           {/* Delinquent Clients */}
           {reports.delinquentClients.length > 0 && (
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 p-6">
               <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
                 <AlertTriangle className="w-5 h-5 text-red-600" />
                 Clientes Inadimplentes
@@ -534,7 +534,7 @@ export default function ClientSubscriptions() {
           )}
 
           {/* Monthly Revenue Chart (Simple Table) */}
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 p-6">
             <h3 className="text-lg font-bold text-gray-900 mb-4">Receita Mensal (Ultimos 12 meses)</h3>
             <div className="overflow-x-auto">
               <table className="min-w-full">
@@ -565,7 +565,7 @@ export default function ClientSubscriptions() {
       {/* New Plan Modal */}
       {showNewPlanModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto my-4">
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto my-4">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold text-gray-900">Novo Plano</h2>
               <button onClick={() => setShowNewPlanModal(false)}>
@@ -579,7 +579,7 @@ export default function ClientSubscriptions() {
                   type="text"
                   value={planForm.name}
                   onChange={(e) => setPlanForm({ ...planForm, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg"
                   required
                 />
               </div>
@@ -588,7 +588,7 @@ export default function ClientSubscriptions() {
                 <textarea
                   value={planForm.description}
                   onChange={(e) => setPlanForm({ ...planForm, description: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg"
                   rows={2}
                 />
               </div>
@@ -600,7 +600,7 @@ export default function ClientSubscriptions() {
                   min="0.01"
                   value={planForm.price}
                   onChange={(e) => setPlanForm({ ...planForm, price: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg"
                   required
                 />
               </div>
@@ -609,7 +609,7 @@ export default function ClientSubscriptions() {
                 <select
                   value={planForm.interval}
                   onChange={(e) => setPlanForm({ ...planForm, interval: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg"
                 >
                   <option value="MONTHLY">Mensal</option>
                   <option value="QUARTERLY">Trimestral</option>
@@ -620,7 +620,7 @@ export default function ClientSubscriptions() {
                 <button
                   type="button"
                   onClick={() => setShowNewPlanModal(false)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  className="px-4 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg hover:bg-gray-50"
                 >
                   Cancelar
                 </button>
@@ -639,7 +639,7 @@ export default function ClientSubscriptions() {
       {/* New Subscription Modal */}
       {showNewSubscriptionModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto my-4">
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto my-4">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold text-gray-900">Nova Assinatura</h2>
               <button onClick={() => setShowNewSubscriptionModal(false)}>
@@ -656,7 +656,7 @@ export default function ClientSubscriptions() {
                     value={searchText}
                     onChange={(e) => setSearchText(e.target.value)}
                     placeholder="Buscar cliente..."
-                    className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg"
+                    className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg"
                   />
                 </div>
                 {searchText && (
@@ -685,7 +685,7 @@ export default function ClientSubscriptions() {
                 <select
                   value={subscriptionForm.servicePlanId}
                   onChange={(e) => setSubscriptionForm({ ...subscriptionForm, servicePlanId: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg"
                   required
                 >
                   <option value="">Selecione um plano</option>
@@ -703,7 +703,7 @@ export default function ClientSubscriptions() {
                 <button
                   type="button"
                   onClick={() => setShowNewSubscriptionModal(false)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  className="px-4 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg hover:bg-gray-50"
                 >
                   Cancelar
                 </button>

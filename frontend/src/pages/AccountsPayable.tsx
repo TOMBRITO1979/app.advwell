@@ -359,19 +359,19 @@ const AccountsPayable: React.FC = () => {
                 placeholder="Fornecedor..."
                 value={filterSupplier}
                 onChange={(e) => setFilterSupplier(e.target.value)}
-                className="flex-1 min-w-[150px] px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm"
+                className="flex-1 min-w-[150px] px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm"
               />
               <input
                 type="text"
                 placeholder="Descrição..."
                 value={filterDescription}
                 onChange={(e) => setFilterDescription(e.target.value)}
-                className="flex-1 min-w-[150px] px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm"
+                className="flex-1 min-w-[150px] px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm"
               />
               <select
                 value={filterCategory}
                 onChange={(e) => setFilterCategory(e.target.value)}
-                className="flex-1 min-w-[150px] px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm bg-white dark:bg-slate-800"
+                className="flex-1 min-w-[150px] px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm bg-white dark:bg-slate-800"
               >
                 <option value="">Todas Categorias</option>
                 {categories.map((cat) => (
@@ -381,7 +381,7 @@ const AccountsPayable: React.FC = () => {
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
-                className="flex-1 min-w-[120px] px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm bg-white dark:bg-slate-800"
+                className="flex-1 min-w-[120px] px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm bg-white dark:bg-slate-800"
               >
                 <option value="">Todos Status</option>
                 <option value="PENDING">Pendente</option>
@@ -399,7 +399,7 @@ const AccountsPayable: React.FC = () => {
                   type="date"
                   value={filterDateFrom}
                   onChange={(e) => setFilterDateFrom(e.target.value)}
-                  className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm"
                 />
               </div>
               <div className="flex-1 min-w-[140px]">
@@ -408,7 +408,7 @@ const AccountsPayable: React.FC = () => {
                   type="date"
                   value={filterDateTo}
                   onChange={(e) => setFilterDateTo(e.target.value)}
-                  className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm"
                 />
               </div>
               <div className="flex-1 min-w-[120px]">
@@ -418,7 +418,7 @@ const AccountsPayable: React.FC = () => {
                   placeholder="R$ 0,00"
                   value={filterValueMin}
                   onChange={(e) => setFilterValueMin(e.target.value)}
-                  className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm"
                 />
               </div>
               <div className="flex-1 min-w-[120px]">
@@ -428,7 +428,7 @@ const AccountsPayable: React.FC = () => {
                   placeholder="R$ 0,00"
                   value={filterValueMax}
                   onChange={(e) => setFilterValueMax(e.target.value)}
-                  className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] text-sm"
                 />
               </div>
               {/* Botão limpar filtros */}
@@ -614,7 +614,7 @@ const AccountsPayable: React.FC = () => {
                     setLimit(Number(e.target.value));
                     setPage(1);
                   }}
-                  className="px-2 py-1 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="px-2 py-1 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
                   <option value={25}>25</option>
                   <option value={50}>50</option>
@@ -679,7 +679,7 @@ const AccountsPayable: React.FC = () => {
                         type="date"
                         value={statementFilters.startDate}
                         onChange={(e) => setStatementFilters({ ...statementFilters, startDate: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md min-h-[44px]"
+                        className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-md min-h-[44px]"
                         required
                       />
                     </div>
@@ -691,7 +691,7 @@ const AccountsPayable: React.FC = () => {
                         type="date"
                         value={statementFilters.endDate}
                         onChange={(e) => setStatementFilters({ ...statementFilters, endDate: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md min-h-[44px]"
+                        className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-md min-h-[44px]"
                         required
                       />
                     </div>
@@ -702,7 +702,7 @@ const AccountsPayable: React.FC = () => {
                       <select
                         value={statementFilters.category}
                         onChange={(e) => setStatementFilters({ ...statementFilters, category: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md min-h-[44px]"
+                        className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-md min-h-[44px]"
                       >
                         <option value="">Todas as Categorias</option>
                         {categories.map((cat) => (
@@ -856,7 +856,7 @@ const AccountsPayable: React.FC = () => {
                       required
                       value={formData.supplier}
                       onChange={(e) => setFormData({ ...formData, supplier: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md min-h-[44px]"
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-md min-h-[44px]"
                     />
                   </div>
                   <div>
@@ -868,7 +868,7 @@ const AccountsPayable: React.FC = () => {
                       required
                       value={formData.description}
                       onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md min-h-[44px]"
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-md min-h-[44px]"
                     />
                   </div>
                   <div>
@@ -881,7 +881,7 @@ const AccountsPayable: React.FC = () => {
                       step="0.01"
                       value={formData.amount}
                       onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md min-h-[44px]"
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-md min-h-[44px]"
                     />
                   </div>
                   <div>
@@ -893,7 +893,7 @@ const AccountsPayable: React.FC = () => {
                       required
                       value={formData.dueDate}
                       onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md min-h-[44px]"
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-md min-h-[44px]"
                     />
                   </div>
                   <div>
@@ -904,7 +904,7 @@ const AccountsPayable: React.FC = () => {
                       type="text"
                       value={formData.category}
                       onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md min-h-[44px]"
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-md min-h-[44px]"
                       placeholder="Ex: Aluguel, Salários..."
                     />
                   </div>
@@ -917,7 +917,7 @@ const AccountsPayable: React.FC = () => {
                         id="isRecurring"
                         checked={formData.isRecurring}
                         onChange={(e) => setFormData({ ...formData, isRecurring: e.target.checked, recurrencePeriod: e.target.checked ? 'DAYS_30' : '' })}
-                        className="w-4 h-4 text-success-600 border-gray-300 rounded focus:ring-green-500"
+                        className="w-4 h-4 text-success-600 border-gray-300 dark:border-slate-600 rounded focus:ring-green-500"
                       />
                       <label htmlFor="isRecurring" className="ml-2 text-sm font-medium text-neutral-700 dark:text-slate-300">
                         Conta Recorrente (criar automaticamente ao pagar)
@@ -933,7 +933,7 @@ const AccountsPayable: React.FC = () => {
                           required={formData.isRecurring}
                           value={formData.recurrencePeriod}
                           onChange={(e) => setFormData({ ...formData, recurrencePeriod: e.target.value })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md min-h-[44px]"
+                          className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-md min-h-[44px]"
                         >
                           <option value="">Selecione o período</option>
                           <option value="DAYS_7">A cada 7 dias (semanal)</option>

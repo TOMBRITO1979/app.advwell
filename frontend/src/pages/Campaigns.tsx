@@ -537,7 +537,7 @@ const Campaigns: React.FC = () => {
                   setLimit(Number(e.target.value));
                   setPage(1);
                 }}
-                className="px-2 py-1 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="px-2 py-1 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 <option value={25}>25</option>
                 <option value={50}>50</option>
@@ -550,7 +550,7 @@ const Campaigns: React.FC = () => {
               <button
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] border border-neutral-300 dark:border-slate-600 rounded-md hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <ChevronLeft size={20} />
               </button>
@@ -560,7 +560,7 @@ const Campaigns: React.FC = () => {
               <button
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
-                className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] border border-neutral-300 dark:border-slate-600 rounded-md hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <ChevronRight size={20} />
               </button>
@@ -609,7 +609,7 @@ const Campaigns: React.FC = () => {
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       placeholder="Ex: Promoção Black Friday"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md min-h-[44px]"
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-md min-h-[44px]"
                     />
                   </div>
 
@@ -623,7 +623,7 @@ const Campaigns: React.FC = () => {
                       value={formData.subject}
                       onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                       placeholder="Ex: Desconto de 50% para você!"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md min-h-[44px]"
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-md min-h-[44px]"
                     />
                   </div>
 
@@ -637,7 +637,7 @@ const Campaigns: React.FC = () => {
                       onChange={(e) => setFormData({ ...formData, body: e.target.value })}
                       rows={10}
                       placeholder="<h1>Olá!</h1><p>Sua mensagem aqui...</p>"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md font-mono text-sm min-h-[44px]"
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-md font-mono text-sm min-h-[44px]"
                     />
                     <p className="text-xs text-neutral-500 dark:text-slate-400 mt-1">
                       Você pode usar HTML para formatar o email
@@ -830,7 +830,7 @@ const Campaigns: React.FC = () => {
                       Prévia do Email:
                     </p>
                     <div
-                      className="border border-gray-300 rounded p-4 bg-neutral-50 dark:bg-slate-700"
+                      className="bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded p-4 bg-neutral-50 dark:bg-slate-700"
                       dangerouslySetInnerHTML={{
                         __html: DOMPurify.sanitize(selectedCampaign.body, {
                           ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'p', 'br', 'a', 'img', 'h1', 'h2', 'h3', 'h4', 'ul', 'ol', 'li', 'div', 'span', 'table', 'tr', 'td', 'th', 'thead', 'tbody', 'hr'],

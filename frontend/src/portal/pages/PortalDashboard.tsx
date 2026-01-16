@@ -57,7 +57,7 @@ export default function PortalDashboard() {
           {stats.map((stat, index) => {
             const Icon = stat.icon;
             return (
-              <div key={index} className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+              <div key={index} className="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 border border-gray-100">
                 <div className="flex items-center gap-4">
                   <div className={`${stat.color} p-3 rounded-lg`}>
                     <Icon className="text-white" size={24} />
@@ -74,7 +74,7 @@ export default function PortalDashboard() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Recent Movements */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100">
+          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100">
             <div className="p-6 border-b border-gray-100 flex items-center justify-between">
               <h2 className="text-lg font-semibold text-gray-900">Últimas Movimentações</h2>
               <Link
@@ -110,7 +110,7 @@ export default function PortalDashboard() {
           </div>
 
           {/* Announcements preview */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100">
+          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100">
             <div className="p-6 border-b border-gray-100 flex items-center justify-between">
               <h2 className="text-lg font-semibold text-gray-900">Avisos do Escritório</h2>
               <Link
@@ -142,7 +142,7 @@ export default function PortalDashboard() {
         </div>
 
         {/* Quick access */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Acesso Rápido</h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <Link

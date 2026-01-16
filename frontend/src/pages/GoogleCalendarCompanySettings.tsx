@@ -110,10 +110,10 @@ const GoogleCalendarCompanySettings: React.FC = () => {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">
+            <h1 className="text-3xl font-bold text-neutral-900 dark:text-slate-100 dark:text-white">
               Configuracao Google Calendar
             </h1>
-            <p className="text-neutral-600 dark:text-neutral-400 mt-1">
+            <p className="text-neutral-600 dark:text-slate-400 dark:text-neutral-400 mt-1">
               Configure as credenciais OAuth para integracao com Google Calendar
             </p>
           </div>
@@ -149,8 +149,8 @@ const GoogleCalendarCompanySettings: React.FC = () => {
         </div>
 
         {/* URI de Redirecionamento */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-          <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+        <div className="bg-white dark:bg-slate-800 dark:bg-gray-800 rounded-lg shadow dark:shadow-slate-700/20 p-4">
+          <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 dark:text-neutral-300 mb-2">
             URI de Redirecionamento (copie para o Google Console)
           </label>
           <div className="flex items-center gap-2">
@@ -158,12 +158,12 @@ const GoogleCalendarCompanySettings: React.FC = () => {
               type="text"
               readOnly
               value={redirectUri}
-              className="flex-1 px-4 py-2 bg-neutral-100 dark:bg-gray-700 border border-neutral-300 dark:border-gray-600 rounded-md text-neutral-700 dark:text-neutral-300"
+              className="flex-1 px-4 py-2 bg-neutral-100 dark:bg-gray-700 border border-neutral-300 dark:border-slate-600 dark:border-gray-600 rounded-md text-neutral-700 dark:text-slate-300 dark:text-neutral-300"
             />
             <button
               type="button"
               onClick={copyRedirectUri}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-neutral-100 dark:bg-gray-700 hover:bg-neutral-200 dark:hover:bg-gray-600 text-neutral-700 dark:text-neutral-300 rounded-md transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-neutral-100 dark:bg-gray-700 hover:bg-neutral-200 dark:hover:bg-gray-600 text-neutral-700 dark:text-slate-300 dark:text-neutral-300 rounded-md transition-colors"
             >
               {copied ? <Check size={18} /> : <Copy size={18} />}
               {copied ? 'Copiado!' : 'Copiar'}
@@ -172,11 +172,11 @@ const GoogleCalendarCompanySettings: React.FC = () => {
         </div>
 
         {/* Formulario */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-slate-800 dark:bg-gray-800 rounded-lg shadow dark:shadow-slate-700/20 p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Client ID */}
             <div>
-              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 dark:text-neutral-300 mb-2">
                 Client ID *
               </label>
               <input
@@ -185,13 +185,13 @@ const GoogleCalendarCompanySettings: React.FC = () => {
                 value={formData.clientId}
                 onChange={(e) => setFormData({ ...formData, clientId: e.target.value })}
                 placeholder="xxxxxxxxxxxxx.apps.googleusercontent.com"
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white min-h-[44px]"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white min-h-[44px]"
               />
             </div>
 
             {/* Client Secret */}
             <div>
-              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 dark:text-neutral-300 mb-2">
                 Client Secret {hasConfig ? '' : '*'}
               </label>
               <input
@@ -200,13 +200,13 @@ const GoogleCalendarCompanySettings: React.FC = () => {
                 value={formData.clientSecret}
                 onChange={(e) => setFormData({ ...formData, clientSecret: e.target.value })}
                 placeholder={hasConfig ? 'Deixe em branco para manter o atual' : 'GOCSPX-xxxxxxxxxxxxx'}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white min-h-[44px]"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white min-h-[44px]"
               />
             </div>
 
             {/* Redirect URI personalizado */}
             <div>
-              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 dark:text-neutral-300 mb-2">
                 URI de Redirecionamento (opcional)
               </label>
               <input
@@ -214,9 +214,9 @@ const GoogleCalendarCompanySettings: React.FC = () => {
                 value={formData.redirectUri}
                 onChange={(e) => setFormData({ ...formData, redirectUri: e.target.value })}
                 placeholder="Deixe em branco para usar o padrao"
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white min-h-[44px]"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white min-h-[44px]"
               />
-              <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+              <p className="text-xs text-neutral-500 dark:text-slate-400 dark:text-neutral-400 mt-1">
                 Use apenas se precisar de um URI diferente do padrao
               </p>
             </div>
@@ -228,9 +228,9 @@ const GoogleCalendarCompanySettings: React.FC = () => {
                 id="isActive"
                 checked={formData.isActive}
                 onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                className="w-5 h-5 rounded border-gray-300 dark:border-slate-600 text-blue-600 focus:ring-blue-500"
               />
-              <label htmlFor="isActive" className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+              <label htmlFor="isActive" className="text-sm font-medium text-neutral-700 dark:text-slate-300 dark:text-neutral-300">
                 Integracao ativa
               </label>
             </div>
@@ -259,11 +259,11 @@ const GoogleCalendarCompanySettings: React.FC = () => {
         </div>
 
         {/* Informacoes */}
-        <div className="bg-neutral-50 dark:bg-gray-750 rounded-lg p-4">
-          <h3 className="font-semibold text-neutral-900 dark:text-white mb-3">
+        <div className="bg-neutral-50 dark:bg-slate-700 dark:bg-gray-750 rounded-lg p-4">
+          <h3 className="font-semibold text-neutral-900 dark:text-slate-100 dark:text-white mb-3">
             Informacoes importantes
           </h3>
-          <ul className="text-sm text-neutral-600 dark:text-neutral-400 space-y-2">
+          <ul className="text-sm text-neutral-600 dark:text-slate-400 dark:text-neutral-400 space-y-2">
             <li>
               <strong>Scopes necessarios:</strong> Apenas <code className="bg-neutral-200 dark:bg-gray-700 px-1 rounded">calendar.events</code> (criar/editar eventos)
             </li>

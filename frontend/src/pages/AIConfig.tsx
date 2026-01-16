@@ -254,7 +254,7 @@ const AIConfigPage: React.FC = () => {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
-          <div className="text-neutral-500">Carregando...</div>
+          <div className="text-neutral-500 dark:text-slate-400">Carregando...</div>
         </div>
       </Layout>
     );
@@ -267,11 +267,11 @@ const AIConfigPage: React.FC = () => {
       <div className="p-6">
         <div className="max-w-4xl mx-auto">
           <div className="mb-6">
-            <h1 className="text-2xl font-bold text-neutral-800 flex items-center gap-2">
+            <h1 className="text-2xl font-bold text-neutral-800 dark:text-slate-200 flex items-center gap-2">
               <Bot className="h-7 w-7 text-primary-600" />
               Configuração de Inteligência Artificial
             </h1>
-            <p className="text-neutral-600 mt-2">
+            <p className="text-neutral-600 dark:text-slate-400 mt-2">
               Configure a IA para gerar resumos automáticos dos andamentos processuais em linguagem simples.
             </p>
           </div>
@@ -292,24 +292,24 @@ const AIConfigPage: React.FC = () => {
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md p-6">
+          <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-800 rounded-lg shadow-md p-6">
             {/* Provider Selection */}
             <div className="mb-6">
-              <h2 className="text-lg font-semibold text-neutral-700 mb-4 flex items-center gap-2">
+              <h2 className="text-lg font-semibold text-neutral-700 dark:text-slate-300 mb-4 flex items-center gap-2">
                 <Bot className="h-5 w-5" />
                 Provedor de IA
               </h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-2">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2">
                     Provedor *
                   </label>
                   <select
                     name="provider"
                     value={config.provider}
                     onChange={handleProviderChange}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                     required
                   >
                     <option value="openai">OpenAI (GPT-4, GPT-4o)</option>
@@ -317,20 +317,20 @@ const AIConfigPage: React.FC = () => {
                     <option value="anthropic">Anthropic Claude</option>
                     <option value="groq">Groq (Muito rápido)</option>
                   </select>
-                  <p className="text-xs text-neutral-500 mt-1">
+                  <p className="text-xs text-neutral-500 dark:text-slate-400 mt-1">
                     Escolha o provedor de IA que você deseja usar
                   </p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-2">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2">
                     Modelo *
                   </label>
                   <select
                     name="model"
                     value={config.model}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                     required
                   >
                     {currentModels.map((model) => (
@@ -339,7 +339,7 @@ const AIConfigPage: React.FC = () => {
                       </option>
                     ))}
                   </select>
-                  <p className="text-xs text-neutral-500 mt-1">
+                  <p className="text-xs text-neutral-500 dark:text-slate-400 mt-1">
                     Modelos recomendados têm melhor custo-benefício
                   </p>
                 </div>
@@ -348,7 +348,7 @@ const AIConfigPage: React.FC = () => {
 
             {/* API Key */}
             <div className="mb-6">
-              <label className="block text-sm font-medium text-neutral-700 mb-2">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2">
                 API Key {!hasConfig && '*'}
               </label>
 
@@ -369,17 +369,17 @@ const AIConfigPage: React.FC = () => {
                   onChange={(e) => setApiKey(e.target.value)}
                   placeholder={hasConfig ? 'Digite aqui SOMENTE para alterar a API Key' : 'Cole sua API Key aqui'}
                   required={!hasConfig}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                 />
                 <button
                   type="button"
                   onClick={() => setShowApiKey(!showApiKey)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-neutral-500 hover:text-neutral-700"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-neutral-500 dark:text-slate-400 hover:text-neutral-700 dark:text-slate-300"
                 >
                   {showApiKey ? '🙈' : '👁️'}
                 </button>
               </div>
-              <p className="text-xs text-neutral-500 mt-1">
+              <p className="text-xs text-neutral-500 dark:text-slate-400 mt-1">
                 {hasConfig ? (
                   '🔒 Deixe em branco para manter a API Key atual. Digite apenas se quiser alterar.'
                 ) : (
@@ -395,12 +395,12 @@ const AIConfigPage: React.FC = () => {
 
             {/* Toggles */}
             <div className="mb-6 space-y-4">
-              <div className="flex items-center justify-between p-4 bg-neutral-50 rounded-lg">
+              <div className="flex items-center justify-between p-4 bg-neutral-50 dark:bg-slate-700 rounded-lg">
                 <div>
-                  <label className="text-sm font-medium text-neutral-700">
+                  <label className="text-sm font-medium text-neutral-700 dark:text-slate-300">
                     IA Ativada
                   </label>
-                  <p className="text-xs text-neutral-500">
+                  <p className="text-xs text-neutral-500 dark:text-slate-400">
                     Ative ou desative o uso da IA temporariamente
                   </p>
                 </div>
@@ -409,16 +409,16 @@ const AIConfigPage: React.FC = () => {
                   name="enabled"
                   checked={config.enabled}
                   onChange={handleChange}
-                  className="h-5 w-5 text-primary-600 focus:ring-primary-500 border-neutral-300 rounded"
+                  className="h-5 w-5 text-primary-600 focus:ring-primary-500 border-neutral-300 dark:border-slate-600 rounded"
                 />
               </div>
 
-              <div className="flex items-center justify-between p-4 bg-neutral-50 rounded-lg">
+              <div className="flex items-center justify-between p-4 bg-neutral-50 dark:bg-slate-700 rounded-lg">
                 <div>
-                  <label className="text-sm font-medium text-neutral-700">
+                  <label className="text-sm font-medium text-neutral-700 dark:text-slate-300">
                     Resumo Automático
                   </label>
-                  <p className="text-xs text-neutral-500">
+                  <p className="text-xs text-neutral-500 dark:text-slate-400">
                     Gera resumo automaticamente ao sincronizar processos
                   </p>
                 </div>
@@ -427,7 +427,7 @@ const AIConfigPage: React.FC = () => {
                   name="autoSummarize"
                   checked={config.autoSummarize}
                   onChange={handleChange}
-                  className="h-5 w-5 text-primary-600 focus:ring-primary-500 border-neutral-300 rounded"
+                  className="h-5 w-5 text-primary-600 focus:ring-primary-500 border-neutral-300 dark:border-slate-600 rounded"
                 />
               </div>
             </div>
@@ -503,16 +503,16 @@ const AIConfigPage: React.FC = () => {
 
           {/* Token Usage Statistics */}
           {hasConfig && (
-            <div className="mt-6 bg-white rounded-lg shadow-md p-6">
+            <div className="mt-6 bg-white dark:bg-slate-800 rounded-lg shadow-md p-6">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-neutral-700 flex items-center gap-2">
+                <h2 className="text-lg font-semibold text-neutral-700 dark:text-slate-300 flex items-center gap-2">
                   <BarChart3 className="h-5 w-5" />
                   Uso de Tokens
                 </h2>
                 <select
                   value={usagePeriod}
                   onChange={(e) => setUsagePeriod(e.target.value as '7' | '30' | '90')}
-                  className="px-3 py-1.5 border border-neutral-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="px-3 py-1.5 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
                   <option value="7">Últimos 7 dias</option>
                   <option value="30">Últimos 30 dias</option>
@@ -528,30 +528,30 @@ const AIConfigPage: React.FC = () => {
                 <div className="space-y-6">
                   {/* Summary Cards */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="bg-neutral-50 rounded-lg p-4">
-                      <div className="flex items-center gap-2 text-neutral-600 text-sm mb-1">
+                    <div className="bg-neutral-50 dark:bg-slate-700 rounded-lg p-4">
+                      <div className="flex items-center gap-2 text-neutral-600 dark:text-slate-400 text-sm mb-1">
                         <Coins className="h-4 w-4" />
                         Total de Tokens
                       </div>
-                      <div className="text-2xl font-bold text-neutral-800">
+                      <div className="text-2xl font-bold text-neutral-800 dark:text-slate-200">
                         {formatNumber(tokenUsage.totals.totalTokens)}
                       </div>
                     </div>
-                    <div className="bg-neutral-50 rounded-lg p-4">
-                      <div className="text-neutral-600 text-sm mb-1">Tokens de Entrada</div>
-                      <div className="text-xl font-semibold text-neutral-700">
+                    <div className="bg-neutral-50 dark:bg-slate-700 rounded-lg p-4">
+                      <div className="text-neutral-600 dark:text-slate-400 text-sm mb-1">Tokens de Entrada</div>
+                      <div className="text-xl font-semibold text-neutral-700 dark:text-slate-300">
                         {formatNumber(tokenUsage.totals.promptTokens)}
                       </div>
                     </div>
-                    <div className="bg-neutral-50 rounded-lg p-4">
-                      <div className="text-neutral-600 text-sm mb-1">Tokens de Saída</div>
-                      <div className="text-xl font-semibold text-neutral-700">
+                    <div className="bg-neutral-50 dark:bg-slate-700 rounded-lg p-4">
+                      <div className="text-neutral-600 dark:text-slate-400 text-sm mb-1">Tokens de Saída</div>
+                      <div className="text-xl font-semibold text-neutral-700 dark:text-slate-300">
                         {formatNumber(tokenUsage.totals.completionTokens)}
                       </div>
                     </div>
-                    <div className="bg-neutral-50 rounded-lg p-4">
-                      <div className="text-neutral-600 text-sm mb-1">Operações</div>
-                      <div className="text-xl font-semibold text-neutral-700">
+                    <div className="bg-neutral-50 dark:bg-slate-700 rounded-lg p-4">
+                      <div className="text-neutral-600 dark:text-slate-400 text-sm mb-1">Operações</div>
+                      <div className="text-xl font-semibold text-neutral-700 dark:text-slate-300">
                         {formatNumber(tokenUsage.totals.operationCount)}
                       </div>
                     </div>
@@ -560,15 +560,15 @@ const AIConfigPage: React.FC = () => {
                   {/* Operation Breakdown */}
                   {Object.keys(tokenUsage.operationBreakdown).length > 0 && (
                     <div>
-                      <h3 className="text-sm font-medium text-neutral-600 mb-3">Por Tipo de Operação</h3>
+                      <h3 className="text-sm font-medium text-neutral-600 dark:text-slate-400 mb-3">Por Tipo de Operação</h3>
                       <div className="space-y-2">
                         {Object.entries(tokenUsage.operationBreakdown).map(([operation, data]) => (
-                          <div key={operation} className="flex items-center justify-between p-3 bg-neutral-50 rounded-lg">
+                          <div key={operation} className="flex items-center justify-between p-3 bg-neutral-50 dark:bg-slate-700 rounded-lg">
                             <div>
-                              <span className="font-medium text-neutral-700">{getOperationLabel(operation)}</span>
-                              <span className="text-neutral-500 text-sm ml-2">({data.count} {data.count === 1 ? 'vez' : 'vezes'})</span>
+                              <span className="font-medium text-neutral-700 dark:text-slate-300">{getOperationLabel(operation)}</span>
+                              <span className="text-neutral-500 dark:text-slate-400 text-sm ml-2">({data.count} {data.count === 1 ? 'vez' : 'vezes'})</span>
                             </div>
-                            <span className="font-mono text-sm text-neutral-600">
+                            <span className="font-mono text-sm text-neutral-600 dark:text-slate-400">
                               {formatNumber(data.totalTokens)} tokens
                             </span>
                           </div>
@@ -580,11 +580,11 @@ const AIConfigPage: React.FC = () => {
                   {/* Recent Operations */}
                   {tokenUsage.recentOperations.length > 0 && (
                     <div>
-                      <h3 className="text-sm font-medium text-neutral-600 mb-3">Operações Recentes</h3>
+                      <h3 className="text-sm font-medium text-neutral-600 dark:text-slate-400 mb-3">Operações Recentes</h3>
                       <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                           <thead>
-                            <tr className="text-left text-neutral-500 border-b">
+                            <tr className="text-left text-neutral-500 dark:text-slate-400 border-b">
                               <th className="pb-2 font-medium">Data</th>
                               <th className="pb-2 font-medium">Operação</th>
                               <th className="pb-2 font-medium text-right">Tokens</th>
@@ -593,7 +593,7 @@ const AIConfigPage: React.FC = () => {
                           <tbody>
                             {tokenUsage.recentOperations.map((op) => (
                               <tr key={op.id} className="border-b border-neutral-100">
-                                <td className="py-2 text-neutral-600">
+                                <td className="py-2 text-neutral-600 dark:text-slate-400">
                                   {new Date(op.createdAt).toLocaleString('pt-BR', {
                                     day: '2-digit',
                                     month: '2-digit',
@@ -601,8 +601,8 @@ const AIConfigPage: React.FC = () => {
                                     minute: '2-digit',
                                   })}
                                 </td>
-                                <td className="py-2 text-neutral-700">{getOperationLabel(op.operation)}</td>
-                                <td className="py-2 text-right font-mono text-neutral-600">
+                                <td className="py-2 text-neutral-700 dark:text-slate-300">{getOperationLabel(op.operation)}</td>
+                                <td className="py-2 text-right font-mono text-neutral-600 dark:text-slate-400">
                                   {formatNumber(op.totalTokens)}
                                 </td>
                               </tr>
@@ -614,7 +614,7 @@ const AIConfigPage: React.FC = () => {
                   )}
                 </div>
               ) : (
-                <div className="text-center py-8 text-neutral-500">
+                <div className="text-center py-8 text-neutral-500 dark:text-slate-400">
                   <BarChart3 className="h-12 w-12 mx-auto mb-3 opacity-30" />
                   <p>Nenhum uso de tokens registrado no período selecionado.</p>
                   <p className="text-sm mt-1">Os dados aparecerão aqui quando você usar a IA.</p>

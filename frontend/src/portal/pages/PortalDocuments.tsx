@@ -178,7 +178,7 @@ export default function PortalDocuments() {
 
         {/* Documents List */}
         {filteredDocuments.length === 0 ? (
-          <div className="bg-white rounded-xl border p-8 text-center">
+          <div className="bg-white dark:bg-slate-800 rounded-xl border p-8 text-center">
             <FileText className="mx-auto text-gray-400 mb-4" size={48} />
             <p className="text-gray-500">Nenhum documento encontrado</p>
           </div>
@@ -309,7 +309,7 @@ export default function PortalDocuments() {
       {/* Upload Modal */}
       {showUploadModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg">
+          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xl w-full max-w-lg">
             <div className="flex justify-between items-center p-4 border-b">
               <h2 className="text-lg font-semibold text-gray-900">Enviar Documento</h2>
               <button
@@ -334,7 +334,7 @@ export default function PortalDocuments() {
                   value={uploadName}
                   onChange={(e) => setUploadName(e.target.value)}
                   placeholder="Ex: Comprovante de Residência"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500"
                 />
               </div>
 
@@ -347,7 +347,7 @@ export default function PortalDocuments() {
                   onChange={(e) => setUploadDescription(e.target.value)}
                   placeholder="Descrição do documento..."
                   rows={2}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500"
                 />
               </div>
 
@@ -359,7 +359,7 @@ export default function PortalDocuments() {
                   type="file"
                   ref={fileInputRef}
                   accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:font-medium file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:font-medium file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
                 />
                 <p className="text-xs text-gray-500 mt-1">
                   Formatos aceitos: PDF, DOC, DOCX, PNG, JPG (máx. 25MB)
@@ -374,7 +374,7 @@ export default function PortalDocuments() {
                   setUploadName('');
                   setUploadDescription('');
                 }}
-                className="flex-1 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg font-medium text-sm hover:bg-gray-50 transition-colors"
+                className="flex-1 px-4 py-2 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 text-gray-700 rounded-lg font-medium text-sm hover:bg-gray-50 transition-colors"
               >
                 Cancelar
               </button>
