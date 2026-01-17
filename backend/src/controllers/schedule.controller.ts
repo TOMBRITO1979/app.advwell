@@ -384,36 +384,54 @@ export class ScheduleController {
         }
       }
 
-      const [events, total] = await Promise.all([
-        prisma.scheduleEvent.findMany({
-          where,
-          skip,
-          take: Number(limit),
-          orderBy: { date: 'asc' },
+      const includeOptions = {
+        client: {
+          select: { id: true, name: true, cpf: true, phone: true }
+        },
+        case: {
+          select: { id: true, processNumber: true, subject: true }
+        },
+        user: {
+          select: { id: true, name: true }
+        },
+        assignedUsers: {
           include: {
-            client: {
-              select: { id: true, name: true, cpf: true, phone: true }
-            },
-            case: {
-              select: { id: true, processNumber: true, subject: true }
-            },
             user: {
-              select: { id: true, name: true }
-            },
-            assignedUsers: {
-              include: {
-                user: {
-                  select: { id: true, name: true, email: true }
-                }
-              }
+              select: { id: true, name: true, email: true }
             }
-          },
+          }
+        }
+      };
+
+      const now = new Date();
+
+      // Buscar eventos futuros (incluindo hoje) ordenados por data ASC (mais próximo primeiro)
+      const futureWhere = { ...where, date: { ...where.date, gte: now } };
+      // Buscar eventos passados ordenados por data DESC (mais recente primeiro)
+      const pastWhere = { ...where, date: { ...where.date, lt: now } };
+
+      const [futureEvents, pastEvents, total] = await Promise.all([
+        prisma.scheduleEvent.findMany({
+          where: futureWhere,
+          orderBy: { date: 'asc' },
+          include: includeOptions,
+        }),
+        prisma.scheduleEvent.findMany({
+          where: pastWhere,
+          orderBy: { date: 'desc' },
+          include: includeOptions,
         }),
         prisma.scheduleEvent.count({ where })
       ]);
 
+      // Combinar: futuros primeiro, depois passados
+      const allEvents = [...futureEvents, ...pastEvents];
+
+      // Aplicar paginação manualmente
+      const paginatedEvents = allEvents.slice(skip, skip + Number(limit));
+
       res.json({
-        data: events,
+        data: paginatedEvents,
         total,
         page: Number(page),
         limit: Number(limit),
