@@ -521,13 +521,19 @@ const Schedule: React.FC = () => {
   };
 
   const getEventsForDay = (day: Date): ScheduleEvent[] => {
-    return events.filter(event => {
+    const dayEvents = events.filter(event => {
       const eventDate = new Date(event.date);
       return (
         eventDate.getFullYear() === day.getFullYear() &&
         eventDate.getMonth() === day.getMonth() &&
         eventDate.getDate() === day.getDate()
       );
+    });
+    // Ordenar eventos do dia por horário (mais cedo primeiro)
+    return dayEvents.sort((a, b) => {
+      const timeA = new Date(a.date).getTime();
+      const timeB = new Date(b.date).getTime();
+      return timeA - timeB;
     });
   };
 
