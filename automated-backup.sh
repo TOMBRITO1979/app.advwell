@@ -2,21 +2,26 @@
 # AdvWell Automated Database Backup Script
 # Executa backup diário às 2 AM via cron
 # Mantém últimos 7 backups locais + upload para S3
+# PostgreSQL está na VPS remota: 5.78.137.1
 
 set -e
 
-# Carregar variáveis de ambiente
-if [ -f /root/advtom/.env ]; then
-    export $(grep -v '^#' /root/advtom/.env | xargs)
+# Carregar variáveis de ambiente (apenas AWS e S3)
+if [ -f /root/advwell/.env ]; then
+    export AWS_ACCESS_KEY_ID=$(grep '^AWS_ACCESS_KEY_ID=' /root/advwell/.env | cut -d'=' -f2)
+    export AWS_SECRET_ACCESS_KEY=$(grep '^AWS_SECRET_ACCESS_KEY=' /root/advwell/.env | cut -d'=' -f2)
+    export AWS_REGION=$(grep '^AWS_REGION=' /root/advwell/.env | cut -d'=' -f2)
+    export S3_BUCKET_NAME=$(grep '^S3_BUCKET_NAME=' /root/advwell/.env | cut -d'=' -f2)
 fi
 
 # Configuração
-BACKUP_DIR="/root/advtom/backups"
+BACKUP_DIR="/root/advwell/backups"
 DATE=$(date +%Y%m%d_%H%M%S)
 BACKUP_FILE="advtom_db_backup_${DATE}.sql.gz"
-LOG_FILE="/root/advtom/backups/backup.log"
+LOG_FILE="/root/advwell/backups/backup.log"
 S3_BUCKET="${S3_BUCKET_NAME:-advwell-app}"
 S3_PATH="database-backups"
+PG_VPS="5.78.137.1"
 
 # Criar diretório de backup se não existir
 mkdir -p "$BACKUP_DIR"
@@ -29,20 +34,29 @@ log() {
 log "=== AdvWell Database Backup Iniciado ==="
 log "Arquivo: $BACKUP_FILE"
 
-# Verificar se PostgreSQL está rodando
-PG_CONTAINER=$(docker ps -q -f name=advtom_postgres)
+# Verificar conexão com VPS do PostgreSQL
+log "Verificando conexão com VPS PostgreSQL ($PG_VPS)..."
+if ! ssh -o ConnectTimeout=10 -o BatchMode=yes root@$PG_VPS "echo ok" &>/dev/null; then
+    log "ERRO: Não foi possível conectar na VPS PostgreSQL ($PG_VPS)"
+    log "Verifique a conexão SSH"
+    exit 1
+fi
+log "✓ Conexão SSH com VPS PostgreSQL OK"
+
+# Verificar se container PostgreSQL está rodando na VPS remota
+PG_CONTAINER=$(ssh root@$PG_VPS "docker ps -q -f name=advwell-postgres")
 
 if [ -z "$PG_CONTAINER" ]; then
-    log "ERRO: Container PostgreSQL não encontrado!"
-    log "Verifique: docker service ls | grep postgres"
+    log "ERRO: Container PostgreSQL não encontrado na VPS remota!"
+    log "Verifique: ssh root@$PG_VPS 'docker ps'"
     exit 1
 fi
 
 log "✓ Container PostgreSQL encontrado: $PG_CONTAINER"
 
-# Criar backup do banco de dados
+# Criar backup do banco de dados via SSH
 log "Criando dump do banco de dados..."
-docker exec $PG_CONTAINER pg_dump -U postgres advtom | gzip > "$BACKUP_DIR/$BACKUP_FILE"
+ssh root@$PG_VPS "docker exec advwell-postgres pg_dump -U postgres advtom" | gzip > "$BACKUP_DIR/$BACKUP_FILE"
 
 if [ ! -f "$BACKUP_DIR/$BACKUP_FILE" ]; then
     log "ERRO: Backup não foi criado!"
@@ -67,8 +81,9 @@ if [ -n "$AWS_ACCESS_KEY_ID" ] && [ -n "$AWS_SECRET_ACCESS_KEY" ]; then
 
     # Verificar se AWS CLI está instalado
     if ! command -v aws &> /dev/null; then
-        log "Instalando AWS CLI..."
-        apt-get update -qq && apt-get install -qq -y awscli
+        log "ERRO: AWS CLI não está instalado"
+        log "Instale com: curl 'https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip' -o 'awscliv2.zip' && unzip awscliv2.zip && ./aws/install"
+        exit 1
     fi
 
     # Configurar AWS CLI

@@ -259,13 +259,47 @@ scp root@5.161.98.0:/root/advwell-backup-YYYY-MM-DD.tar.gz .
 
 ---
 
+### Backup Automático S3 (Configurado)
+
+O backup automático do banco de dados para AWS S3 está **ativo**.
+
+| Configuração | Valor |
+|--------------|-------|
+| Script | `/root/advwell/automated-backup.sh` |
+| Horário | Todo dia às 02:00 (cron) |
+| Bucket S3 | `s3://advwell-app/database-backups/` |
+| Retenção S3 | 30 dias |
+| Retenção local | 7 dias |
+| Backups locais | `/root/advwell/backups/` |
+| Log | `/root/advwell/backups/backup.log` |
+
+**Comandos úteis:**
+```bash
+# Ver log do backup
+cat /root/advwell/backups/backup.log
+
+# Executar backup manualmente
+/root/advwell/automated-backup.sh
+
+# Listar backups no S3
+export AWS_ACCESS_KEY_ID=$(grep '^AWS_ACCESS_KEY_ID=' /root/advwell/.env | cut -d'=' -f2)
+export AWS_SECRET_ACCESS_KEY=$(grep '^AWS_SECRET_ACCESS_KEY=' /root/advwell/.env | cut -d'=' -f2)
+export AWS_DEFAULT_REGION=us-east-1
+aws s3 ls s3://advwell-app/database-backups/
+
+# Ver cron configurado
+crontab -l
+```
+
+---
+
 ### Outras Opções de Backup
 
-| Tipo | Comando/Ação | Frequência Recomendada |
-|------|--------------|------------------------|
+| Tipo | Comando/Ação | Frequência |
+|------|--------------|------------|
+| **Backup S3 automático** | Cron às 02:00 | Diário (automático) |
 | **Snapshot VPS Principal** | Painel Hetzner (5.161.98.0) | Antes de mudanças na infra |
 | **Snapshot VPS PostgreSQL** | Painel Hetzner (5.78.137.1) | Semanal |
-| **Backup PostgreSQL** | Ver comando acima | Diário |
 | **Clone local** | `git clone` para máquina local | Manter atualizado |
 
 ---
