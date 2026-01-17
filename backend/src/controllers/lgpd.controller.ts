@@ -7,8 +7,8 @@ import dataExportService from '../services/data-export.service';
 
 // Versões atuais dos documentos
 const CURRENT_VERSIONS = {
-  PRIVACY_POLICY: '2.0',
-  TERMS_OF_USE: '2.0',
+  PRIVACY_POLICY: '2.1',
+  TERMS_OF_USE: '2.1',
 };
 
 // Informações da empresa
@@ -180,11 +180,11 @@ export class LGPDController {
     try {
       const policy = {
         version: CURRENT_VERSIONS.PRIVACY_POLICY,
-        lastUpdated: '2025-12-11',
+        lastUpdated: '2026-01-17',
         content: `
 # POLÍTICA DE PRIVACIDADE - ADVWELL
 
-**Última atualização:** Dezembro de 2025
+**Última atualização:** Janeiro de 2026
 **Versão:** ${CURRENT_VERSIONS.PRIVACY_POLICY}
 
 ## 1. IDENTIFICAÇÃO DO CONTROLADOR E OPERADOR
@@ -256,11 +256,47 @@ O tratamento de dados pessoais é realizado com base na Lei Geral de Proteção 
 
 Os dados podem ser compartilhados com:
 
+- **Google LLC:** Integração com Google Calendar (sincronização de agenda)
 - **DataJud/CNJ:** Sistema do Poder Judiciário para consulta de processos
 - **Amazon Web Services (AWS):** Armazenamento seguro de documentos (servidores nos EUA)
 - **Stripe, Inc.:** Processamento de pagamentos (EUA)
 - **Provedores de IA:** Quando configurado pelo usuário, para geração de resumos processuais
 - **Autoridades competentes:** Quando exigido por lei ou ordem judicial
+
+### 5.1 Uso de Dados do Google (Google API Disclosure)
+
+O AdvWell oferece integração opcional com o **Google Calendar** para sincronização de eventos e compromissos.
+
+**Escopo de acesso solicitado:**
+- Acesso para criar, editar e visualizar eventos no seu Google Calendar
+- Acesso ao seu endereço de email para identificação da conta conectada
+
+**O que acessamos:**
+- Apenas os calendários que você autorizar explicitamente
+- Eventos criados pelo AdvWell no seu calendário
+
+**Como usamos os dados:**
+- Criamos eventos no Google Calendar quando você agenda compromissos no AdvWell
+- Atualizamos eventos quando você edita compromissos
+- Removemos eventos quando você exclui compromissos
+- Seu email é usado apenas para identificar a conta conectada
+
+**Armazenamento de dados do Google:**
+- Armazenamos tokens de acesso criptografados (necessários para manter a conexão)
+- Armazenamos IDs de eventos sincronizados (para manter a sincronização)
+- Armazenamos seu email do Google (para identificar a conta)
+- **NÃO** armazenamos cópias completas dos seus dados do Google Calendar
+
+**Compartilhamento:**
+- **NÃO** compartilhamos seus dados do Google com terceiros
+- **NÃO** utilizamos seus dados do Google para publicidade ou marketing
+- **NÃO** vendemos seus dados do Google
+
+**Revogação de acesso:**
+- Você pode desconectar o Google Calendar a qualquer momento nas configurações do AdvWell
+- Você também pode revogar o acesso em: https://myaccount.google.com/permissions
+
+O uso dos dados do Google pelo AdvWell está em conformidade com a [Política de Dados de Usuário dos Serviços de API do Google](https://developers.google.com/terms/api-services-user-data-policy).
 
 ## 6. TRANSFERÊNCIA INTERNACIONAL DE DADOS
 
@@ -373,11 +409,11 @@ ${COMPANY_INFO.address}
     try {
       const terms = {
         version: CURRENT_VERSIONS.TERMS_OF_USE,
-        lastUpdated: '2025-12-11',
+        lastUpdated: '2026-01-17',
         content: `
 # TERMOS DE USO - ADVWELL
 
-**Última atualização:** Dezembro de 2025
+**Última atualização:** Janeiro de 2026
 **Versão:** ${CURRENT_VERSIONS.TERMS_OF_USE}
 
 ## 1. PARTES E ACEITAÇÃO
@@ -413,6 +449,21 @@ O AdvWell é uma plataforma SaaS (Software as a Service) desenvolvida pela ${COM
 - Finanças e honorários
 - Comunicações e campanhas
 - Integração com DataJud/CNJ
+- Integração com Google Calendar
+
+### 2.1 Integração com Google Calendar
+
+O AdvWell oferece integração opcional com o Google Calendar, permitindo:
+- Sincronização automática de compromissos e eventos
+- Criação de eventos no Google Calendar a partir do AdvWell
+- Visualização unificada da agenda
+
+**Ao ativar esta integração:**
+- Você autoriza o AdvWell a ler e escrever eventos em sua conta do Google Calendar
+- Você é responsável por garantir que tem permissão para gerenciar os dados inseridos
+- O Google LLC não é responsável pelo funcionamento do AdvWell
+- O AdvWell não é responsável por falhas ou indisponibilidades nos serviços do Google
+- Você pode revogar esta autorização a qualquer momento nas configurações do AdvWell ou em https://myaccount.google.com/permissions
 
 ## 3. CADASTRO E CONTA
 
