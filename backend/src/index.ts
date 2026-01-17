@@ -594,9 +594,9 @@ CRON_ENABLED && cron.schedule('10 0 * * *', async () => {
   }
 }, { timezone: CRON_TIMEZONE });
 
-// Cron job para monitoramento de OAB via ADVAPI - às 06:00 e 14:00 (São Paulo)
-// ADVAPI processa publicações entre 7h-21h, seg-sáb, então rodamos 2x ao dia
-CRON_ENABLED && cron.schedule('0 6,14 * * *', async () => {
+// Cron job para monitoramento de OAB via ADVAPI - às 01:00 (São Paulo)
+// ADVAPI responde 24h, então rodamos uma vez ao dia de madrugada
+CRON_ENABLED && cron.schedule('0 1 * * *', async () => {
   const { isLeader, fencingToken } = await tryBecomeLeader();
 
   if (!isLeader) {
