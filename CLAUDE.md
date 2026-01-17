@@ -162,6 +162,8 @@ Jobs processed by dedicated worker (not API replicas):
 
 **Onde está salvo:**
 - VPS PostgreSQL: `/backup/advtom_20260117.sql`
+- VPS Principal: `/root/advtom_20260117.sql`
+- Computador local: `C:\Users\Bot 02\advtom_20260117.sql`
 
 ---
 
