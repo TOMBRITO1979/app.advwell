@@ -141,43 +141,71 @@ class GoogleCalendarService {
     const oauth2Client = createOAuth2Client(credentials);
 
     // Trocar código por tokens
+    appLogger.info('Trocando código por tokens...', { companyId: stateData.companyId });
+
     const { tokens } = await oauth2Client.getToken(code);
 
-    if (!tokens.access_token || !tokens.refresh_token) {
-      throw new Error('Tokens não retornados pelo Google');
+    appLogger.info('Tokens recebidos', {
+      hasAccessToken: !!tokens.access_token,
+      hasRefreshToken: !!tokens.refresh_token,
+      hasIdToken: !!tokens.id_token,
+      scopes: tokens.scope,
+    });
+
+    if (!tokens.access_token) {
+      throw new Error('Access token não retornado pelo Google');
     }
 
     // Obter email do ID Token (mais confiável que chamar userinfo API)
     let email: string | undefined;
 
     if (tokens.id_token) {
-      // Decodificar ID Token para obter email
-      const ticket = await oauth2Client.verifyIdToken({
-        idToken: tokens.id_token,
-        audience: credentials.clientId,
-      });
-      const payload = ticket.getPayload();
-      email = payload?.email;
+      try {
+        // Decodificar ID Token para obter email
+        appLogger.info('Decodificando ID Token...');
+        const ticket = await oauth2Client.verifyIdToken({
+          idToken: tokens.id_token,
+          audience: credentials.clientId,
+        });
+        const payload = ticket.getPayload();
+        email = payload?.email;
+        appLogger.info('Email obtido do ID Token', { email });
+      } catch (idTokenError) {
+        appLogger.warn('Erro ao decodificar ID Token', idTokenError);
+      }
     }
 
     // Fallback: usar API userinfo se ID Token não tiver email
     if (!email) {
-      oauth2Client.setCredentials(tokens);
-      const oauth2 = google.oauth2({ version: 'v2', auth: oauth2Client });
-      const userInfo = await oauth2.userinfo.get();
-      email = userInfo.data.email || undefined;
+      try {
+        appLogger.info('Tentando obter email via userinfo API...');
+        oauth2Client.setCredentials(tokens);
+        const oauth2 = google.oauth2({ version: 'v2', auth: oauth2Client });
+        const userInfo = await oauth2.userinfo.get();
+        email = userInfo.data.email || undefined;
+        appLogger.info('Email obtido via userinfo API', { email });
+      } catch (userInfoError) {
+        appLogger.error('Erro ao obter email via userinfo API', userInfoError as Error);
+      }
     }
 
+    // Se ainda não tem email, usar um placeholder baseado no userId
     if (!email) {
-      throw new Error('Email não retornado pelo Google');
+      appLogger.warn('Não foi possível obter email do Google, usando placeholder');
+      email = `user-${stateData.userId.substring(0, 8)}@google-calendar.local`;
+    }
+
+    // Verificar se temos refresh_token (necessário para renovação)
+    if (!tokens.refresh_token) {
+      appLogger.warn('Refresh token não retornado - usuário pode precisar reconectar no futuro');
     }
 
     // Calcular data de expiração
     const tokenExpiry = new Date(tokens.expiry_date || Date.now() + 3600000);
 
     // Criptografar tokens antes de salvar
-    const encryptedAccessToken = encrypt(tokens.access_token);
-    const encryptedRefreshToken = encrypt(tokens.refresh_token);
+    const encryptedAccessToken = encrypt(tokens.access_token!);
+    const encryptedRefreshToken = tokens.refresh_token ? encrypt(tokens.refresh_token) : '';
 
     // Salvar ou atualizar configuração
     await prisma.googleCalendarConfig.upsert({
