@@ -6,7 +6,10 @@ import { appLogger } from '../utils/logger';
 import { ScheduleEvent, ScheduleEventType, Priority } from '@prisma/client';
 
 // Scopes necessários para Google Calendar
-const SCOPES = ['https://www.googleapis.com/auth/calendar.events'];
+const SCOPES = [
+  'https://www.googleapis.com/auth/calendar.events',
+  'https://www.googleapis.com/auth/userinfo.email',
+];
 
 // Interface para credenciais da empresa
 interface CompanyGoogleCredentials {
