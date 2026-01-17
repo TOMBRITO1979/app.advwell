@@ -154,6 +154,15 @@ Jobs processed by dedicated worker (not API replicas):
 - VPS Principal: `/root/advwell-backup-2026-01-17.tar.gz`
 - Computador local: `C:\Users\Bot 02\advwell-backup-2026-01-17.tar.gz`
 
+#### 3. Backup do Banco de Dados (PostgreSQL)
+
+| Arquivo | Data | Tamanho | Conteúdo |
+|---------|------|---------|----------|
+| `advtom_20260117.sql` | 2026-01-17 | 3.9 MB | Dump completo do banco (21.648 linhas) |
+
+**Onde está salvo:**
+- VPS PostgreSQL: `/backup/advtom_20260117.sql`
+
 ---
 
 ### Como Restaurar (Passo a Passo)
