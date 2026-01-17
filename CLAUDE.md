@@ -126,3 +126,47 @@ Jobs processed by dedicated worker (not API replicas):
 2. Create migration SQL: `backend/migrations_manual/`
 3. Apply: `cat migration.sql | ssh root@5.78.137.1 "docker exec -i advwell-postgres psql -U postgres -d advtom"`
 4. Run `npx prisma generate`
+
+## Plano de Segurança (Backup e Recuperação)
+
+**IMPORTANTE:** Antes de fazer mudanças significativas no código, SEMPRE criar um ponto de recuperação.
+
+### Tags de Backup no Git
+
+| Tag | Data | Descrição |
+|-----|------|-----------|
+| `backup-2026-01-17` | 2026-01-17 | Backup estável (commit d786f69) |
+
+**Criar nova tag de backup:**
+```bash
+git tag -a backup-YYYY-MM-DD -m "Descrição do backup"
+git push origin backup-YYYY-MM-DD
+```
+
+**Recuperar para uma tag:**
+```bash
+# Ver código em um ponto específico
+git checkout backup-YYYY-MM-DD
+
+# Voltar para main
+git checkout main
+
+# Restaurar completamente (CUIDADO - perde alterações não commitadas)
+git reset --hard backup-YYYY-MM-DD
+```
+
+### Outras Opções de Backup
+
+| Tipo | Comando/Ação | Frequência Recomendada |
+|------|--------------|------------------------|
+| **Snapshot VPS Principal** | Painel Hetzner (5.161.98.0) | Antes de mudanças na infra |
+| **Snapshot VPS PostgreSQL** | Painel Hetzner (5.78.137.1) | Semanal |
+| **Backup PostgreSQL** | `ssh root@5.78.137.1 "docker exec advwell-postgres pg_dump -U postgres advtom > /backup/advtom_$(date +%Y%m%d).sql"` | Diário |
+| **Clone local** | `git clone` para máquina local | Manter atualizado |
+
+### Procedimento Antes de Mudanças Críticas
+
+1. Criar tag de backup: `git tag -a backup-YYYY-MM-DD -m "Antes de [descrição]"`
+2. Push da tag: `git push origin backup-YYYY-MM-DD`
+3. Considerar snapshot da VPS se mudança afetar infraestrutura
+4. Backup do banco se mudança afetar schema
