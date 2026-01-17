@@ -568,9 +568,9 @@ if (!CRON_ENABLED) {
   appLogger.info('Cron jobs DISABLED via ENABLE_CRON=false', { instanceId: INSTANCE_ID });
 }
 
-// Cron job para sincronizar processos - agora usa filas
-// Executa às 00:10 (São Paulo), mas apenas no líder
-CRON_ENABLED && cron.schedule('10 0 * * *', async () => {
+// Cron job para sincronizar processos via DataJud - às 20:00 (São Paulo)
+// Executa uma vez ao dia para buscar atualizações no CNJ
+CRON_ENABLED && cron.schedule('0 20 * * *', async () => {
   const { isLeader, fencingToken } = await tryBecomeLeader();
 
   if (!isLeader) {
@@ -594,9 +594,9 @@ CRON_ENABLED && cron.schedule('10 0 * * *', async () => {
   }
 }, { timezone: CRON_TIMEZONE });
 
-// Cron job para monitoramento de OAB via ADVAPI - às 01:00 (São Paulo)
-// ADVAPI responde 24h, então rodamos uma vez ao dia de madrugada
-CRON_ENABLED && cron.schedule('0 1 * * *', async () => {
+// Cron job para monitoramento de OAB via ADVAPI - às 02:00 (São Paulo)
+// ADVAPI responde 24h, rodamos de madrugada para distribuir carga
+CRON_ENABLED && cron.schedule('0 2 * * *', async () => {
   const { isLeader, fencingToken } = await tryBecomeLeader();
 
   if (!isLeader) {
