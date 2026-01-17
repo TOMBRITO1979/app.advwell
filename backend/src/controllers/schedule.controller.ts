@@ -141,12 +141,16 @@ export class ScheduleController {
         googleMeetLink = generateGoogleMeetLink(title, startDate, finalEndDate, description || '');
       }
 
+      // Se for TAREFA, definir kanbanStatus padrão como TODO
+      const finalType = type || 'COMPROMISSO';
+      const kanbanStatusValue = finalType === 'TAREFA' ? 'TODO' : undefined;
+
       const event = await prisma.scheduleEvent.create({
         data: {
           companyId,
           title,
           description,
-          type: type || 'COMPROMISSO',
+          type: finalType,
           priority: priority || 'MEDIA',
           date: new Date(date),
           endDate: endDate ? new Date(endDate) : null,
@@ -154,6 +158,7 @@ export class ScheduleController {
           caseId: caseId || null,
           createdBy,
           googleMeetLink,
+          kanbanStatus: kanbanStatusValue,
           // Criar relações com usuários atribuídos
           assignedUsers: assignedUserIds && Array.isArray(assignedUserIds) && assignedUserIds.length > 0
             ? {
@@ -503,7 +508,7 @@ export class ScheduleController {
       const { id } = req.params;
       const companyId = req.user!.companyId;
       const {
-        title, description, type, priority, date, endDate, clientId, caseId, completed, assignedUserIds
+        title, description, type, priority, date, endDate, clientId, caseId, completed, assignedUserIds, kanbanStatus
       } = req.body;
 
       const event = await prisma.scheduleEvent.findFirst({
@@ -678,6 +683,16 @@ export class ScheduleController {
       // Guardar estado antigo para auditoria
       const oldEvent = { ...event };
 
+      // Se kanbanStatus for alterado, sincronizar com completed
+      let finalCompleted = completed;
+      if (kanbanStatus !== undefined) {
+        if (kanbanStatus === 'DONE') {
+          finalCompleted = true;
+        } else if (kanbanStatus === 'TODO' || kanbanStatus === 'IN_PROGRESS') {
+          finalCompleted = false;
+        }
+      }
+
       const updatedEvent = await prisma.scheduleEvent.update({
         where: { id },
         data: {
@@ -689,7 +704,8 @@ export class ScheduleController {
           endDate: endDate ? new Date(endDate) : null,
           clientId: clientId || null,
           caseId: caseId || null,
-          completed: completed !== undefined ? completed : undefined,
+          completed: finalCompleted !== undefined ? finalCompleted : undefined,
+          kanbanStatus: kanbanStatus || undefined,
           googleMeetLink: googleMeetLink,
         },
         include: {

@@ -793,6 +793,12 @@ enum Priority {
   URGENTE    // Urgente
 }
 
+enum KanbanStatus {
+  TODO         // A Fazer
+  IN_PROGRESS  // Em Andamento
+  DONE         // Concluído
+}
+
 // Tabela de eventos da agenda
 model ScheduleEvent {
   id          String            @id @default(uuid())
@@ -814,6 +820,7 @@ model ScheduleEvent {
 
   // Status e responsável
   completed   Boolean           @default(false)
+  kanbanStatus KanbanStatus?    // Status no Kanban (opcional, usado apenas para TAREFA)
   createdBy   String?           // Quem criou o evento
 
   // Google Meet

@@ -25,6 +25,7 @@ interface Task {
   date: string;
   priority: 'BAIXA' | 'MEDIA' | 'ALTA' | 'URGENTE';
   completed: boolean;
+  kanbanStatus?: 'TODO' | 'IN_PROGRESS' | 'DONE';
   type: string;
   client?: {
     id: string;
@@ -130,29 +131,24 @@ const TaskKanban: React.FC = () => {
 
   // Determine which column a task belongs to
   const getTaskColumn = (task: Task): 'todo' | 'in_progress' | 'done' => {
-    if (task.completed) return 'done';
-
-    // Consider task "in progress" if it was created more than 1 day ago and has a due date coming up
-    const createdDate = new Date(task.createdAt);
-    const now = new Date();
-    const daysSinceCreation = Math.floor((now.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24));
-
-    if (task.dueDate || task.date) {
-      const dueDate = new Date(task.dueDate || task.date);
-      const daysUntilDue = Math.floor((dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-
-      // If due soon (within 3 days) and been around for a while, consider in progress
-      if (daysUntilDue <= 3 && daysSinceCreation >= 1) {
-        return 'in_progress';
+    // Usar kanbanStatus se disponível
+    if (task.kanbanStatus) {
+      switch (task.kanbanStatus) {
+        case 'TODO': return 'todo';
+        case 'IN_PROGRESS': return 'in_progress';
+        case 'DONE': return 'done';
       }
     }
 
-    // If task was created recently, it's still "to do"
+    // Fallback para completed se kanbanStatus não existir
+    if (task.completed) return 'done';
     return 'todo';
   };
 
   // Filter tasks by column
   const getTasksByColumn = (columnId: 'todo' | 'in_progress' | 'done') => {
+    const now = new Date().getTime();
+
     return tasks
       .filter(task => {
         if (searchTerm && !task.title.toLowerCase().includes(searchTerm.toLowerCase())) {
@@ -164,14 +160,28 @@ const TaskKanban: React.FC = () => {
         return getTaskColumn(task) === columnId;
       })
       .sort((a, b) => {
-        // Sort by priority (URGENTE first) then by due date
+        const dateA = new Date(a.dueDate || a.date || a.createdAt).getTime();
+        const dateB = new Date(b.dueDate || b.date || b.createdAt).getTime();
+
+        // Primeiro: tarefas futuras/atuais antes de passadas
+        const isPastA = dateA < now;
+        const isPastB = dateB < now;
+
+        if (isPastA && !isPastB) return 1;  // A é passado, B não -> B vem primeiro
+        if (!isPastA && isPastB) return -1; // A não é passado, B é -> A vem primeiro
+
+        // Segundo: ordenar por prioridade (URGENTE primeiro)
         const priorityOrder = { URGENTE: 0, ALTA: 1, MEDIA: 2, BAIXA: 3 };
         const priorityDiff = priorityOrder[a.priority] - priorityOrder[b.priority];
         if (priorityDiff !== 0) return priorityDiff;
 
-        const dateA = new Date(a.dueDate || a.date || a.createdAt).getTime();
-        const dateB = new Date(b.dueDate || b.date || b.createdAt).getTime();
-        return dateA - dateB;
+        // Terceiro: dentro da mesma prioridade, ordenar por data
+        // Futuros: mais próximo primeiro (ASC)
+        // Passados: mais recente primeiro (DESC)
+        if (isPastA && isPastB) {
+          return dateB - dateA; // Passados: mais recente primeiro
+        }
+        return dateA - dateB; // Futuros: mais próximo primeiro
       });
   };
 
@@ -206,15 +216,24 @@ const TaskKanban: React.FC = () => {
     const currentColumn = getTaskColumn(draggedTask);
     if (currentColumn === targetColumn) return;
 
+    // Mapear coluna para kanbanStatus
+    const kanbanStatusMap: Record<string, string> = {
+      'todo': 'TODO',
+      'in_progress': 'IN_PROGRESS',
+      'done': 'DONE'
+    };
+
     try {
-      // Update task based on target column
-      if (targetColumn === 'done') {
-        await api.put(`/schedule/${draggedTask.id}`, { completed: true });
-        toast.success('Tarefa marcada como concluída!');
-      } else if (targetColumn === 'todo' || targetColumn === 'in_progress') {
-        await api.put(`/schedule/${draggedTask.id}`, { completed: false });
-        toast.success('Tarefa movida!');
-      }
+      await api.put(`/schedule/${draggedTask.id}`, {
+        kanbanStatus: kanbanStatusMap[targetColumn]
+      });
+
+      const columnNames: Record<string, string> = {
+        'todo': 'A Fazer',
+        'in_progress': 'Em Andamento',
+        'done': 'Concluído'
+      };
+      toast.success(`Tarefa movida para "${columnNames[targetColumn]}"!`);
 
       // Reload tasks
       await loadTasks();
@@ -259,14 +278,24 @@ const TaskKanban: React.FC = () => {
       return;
     }
 
+    // Mapear coluna para kanbanStatus
+    const kanbanStatusMap: Record<string, string> = {
+      'todo': 'TODO',
+      'in_progress': 'IN_PROGRESS',
+      'done': 'DONE'
+    };
+
     try {
-      if (targetColumn === 'done') {
-        await api.put(`/schedule/${task.id}`, { completed: true });
-        toast.success('Tarefa marcada como concluída!');
-      } else {
-        await api.put(`/schedule/${task.id}`, { completed: false });
-        toast.success('Tarefa movida!');
-      }
+      await api.put(`/schedule/${task.id}`, {
+        kanbanStatus: kanbanStatusMap[targetColumn]
+      });
+
+      const columnNames: Record<string, string> = {
+        'todo': 'A Fazer',
+        'in_progress': 'Em Andamento',
+        'done': 'Concluído'
+      };
+      toast.success(`Tarefa movida para "${columnNames[targetColumn]}"!`);
       await loadTasks();
     } catch (error) {
       console.error('Erro ao mover tarefa:', error);
