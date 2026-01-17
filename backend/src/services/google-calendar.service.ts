@@ -43,6 +43,38 @@ function getDefaultRedirectUri(): string {
   return `${apiUrl}/api/google-calendar/callback`;
 }
 
+/**
+ * Formata uma data para o formato esperado pelo Google Calendar
+ * Inclui o offset -03:00 (São Paulo) diretamente na string
+ * Formato: YYYY-MM-DDTHH:mm:ss-03:00
+ */
+function formatDateForGoogleCalendar(date: Date): string {
+  // Converter para timezone de São Paulo
+  const options: Intl.DateTimeFormatOptions = {
+    timeZone: 'America/Sao_Paulo',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  };
+
+  const parts = new Intl.DateTimeFormat('en-CA', options).formatToParts(date);
+  const getPart = (type: string) => parts.find(p => p.type === type)?.value || '00';
+
+  const year = getPart('year');
+  const month = getPart('month');
+  const day = getPart('day');
+  const hour = getPart('hour');
+  const minute = getPart('minute');
+  const second = getPart('second');
+
+  // Incluir offset de São Paulo (-03:00) diretamente
+  return `${year}-${month}-${day}T${hour}:${minute}:${second}-03:00`;
+}
+
 // Interface para representar dados de evento simplificados
 interface EventData {
   id: string;
@@ -334,15 +366,27 @@ class GoogleCalendarService {
     }
     description += '\n\n---\nEvento criado pelo AdvWell';
 
+    const startDateFormatted = formatDateForGoogleCalendar(startDate);
+    const endDateFormatted = formatDateForGoogleCalendar(endDate);
+
+    appLogger.info('Google Calendar - Preparando evento', {
+      userId,
+      eventTitle: event.title,
+      originalDate: event.date,
+      startDateUTC: startDate.toISOString(),
+      startDateFormatted,
+      endDateFormatted,
+    });
+
     const googleEvent: calendar_v3.Schema$Event = {
       summary: event.title,
       description: description.trim(),
       start: {
-        dateTime: startDate.toISOString(),
+        dateTime: startDateFormatted,
         timeZone: 'America/Sao_Paulo',
       },
       end: {
-        dateTime: endDate.toISOString(),
+        dateTime: endDateFormatted,
         timeZone: 'America/Sao_Paulo',
       },
       colorId,
@@ -358,6 +402,7 @@ class GoogleCalendarService {
         userId,
         advwellEventId: event.id,
         googleEventId: response.data.id,
+        sentDateTime: startDateFormatted,
       });
 
       return response.data.id || null;
@@ -396,11 +441,11 @@ class GoogleCalendarService {
       summary: event.title,
       description: description.trim(),
       start: {
-        dateTime: startDate.toISOString(),
+        dateTime: formatDateForGoogleCalendar(startDate),
         timeZone: 'America/Sao_Paulo',
       },
       end: {
-        dateTime: endDate.toISOString(),
+        dateTime: formatDateForGoogleCalendar(endDate),
         timeZone: 'America/Sao_Paulo',
       },
       colorId,

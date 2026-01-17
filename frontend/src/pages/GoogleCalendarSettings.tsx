@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Calendar, Link2, Unlink, RefreshCw, AlertCircle, CheckCircle2, Settings } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Calendar, Link2, Unlink, RefreshCw, AlertCircle, CheckCircle2, Settings, ArrowLeft } from 'lucide-react';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 
@@ -11,17 +12,20 @@ interface GoogleCalendarStatus {
 }
 
 export default function GoogleCalendarSettings() {
+  const navigate = useNavigate();
   const [status, setStatus] = useState<GoogleCalendarStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [connecting, setConnecting] = useState(false);
   const [disconnecting, setDisconnecting] = useState(false);
   const [configured, setConfigured] = useState(false);
+  const [justConnected, setJustConnected] = useState(false);
 
   // Verificar mensagens na URL (callback do OAuth)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('success') === 'true') {
       toast.success('Google Calendar conectado com sucesso!');
+      setJustConnected(true);
       // Limpar URL
       window.history.replaceState({}, '', '/google-calendar');
     } else if (params.get('error')) {
@@ -118,6 +122,13 @@ export default function GoogleCalendarSettings() {
     return (
       <div className="max-w-2xl mx-auto p-6">
         <div className="flex items-center gap-3 mb-6">
+          <button
+            onClick={() => navigate('/agenda')}
+            className="p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+            title="Voltar para Agenda"
+          >
+            <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+          </button>
           <Calendar className="w-8 h-8 text-blue-600" />
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Google Calendar</h1>
         </div>
@@ -151,10 +162,50 @@ export default function GoogleCalendarSettings() {
 
   return (
     <div className="max-w-2xl mx-auto p-6">
-      <div className="flex items-center gap-3 mb-6">
-        <Calendar className="w-8 h-8 text-blue-600" />
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Google Calendar</h1>
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => navigate('/agenda')}
+            className="p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+            title="Voltar para Agenda"
+          >
+            <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+          </button>
+          <Calendar className="w-8 h-8 text-blue-600" />
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Google Calendar</h1>
+        </div>
+        <button
+          onClick={() => navigate('/agenda')}
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg transition-colors"
+        >
+          Ir para Agenda
+        </button>
       </div>
+
+      {/* Mensagem de sucesso ao conectar */}
+      {justConnected && status?.connected && (
+        <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <CheckCircle2 className="w-6 h-6 text-green-600 dark:text-green-500" />
+              <div>
+                <p className="font-medium text-green-800 dark:text-green-200">
+                  Conexao realizada com sucesso!
+                </p>
+                <p className="text-sm text-green-700 dark:text-green-300">
+                  Seus eventos serao sincronizados automaticamente.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => navigate('/agenda')}
+              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white hover:bg-green-700 rounded-lg transition-colors"
+            >
+              Ir para Agenda
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md border border-gray-200 dark:border-slate-700">
         {/* Status da Conexao */}
