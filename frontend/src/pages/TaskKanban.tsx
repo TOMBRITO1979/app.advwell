@@ -251,6 +251,30 @@ const TaskKanban: React.FC = () => {
     setActionMenuOpen(null);
   };
 
+  // Move task to specific column
+  const moveTaskToColumn = async (task: Task, targetColumn: 'todo' | 'in_progress' | 'done') => {
+    const currentColumn = getTaskColumn(task);
+    if (currentColumn === targetColumn) {
+      setActionMenuOpen(null);
+      return;
+    }
+
+    try {
+      if (targetColumn === 'done') {
+        await api.put(`/schedule/${task.id}`, { completed: true });
+        toast.success('Tarefa marcada como concluída!');
+      } else {
+        await api.put(`/schedule/${task.id}`, { completed: false });
+        toast.success('Tarefa movida!');
+      }
+      await loadTasks();
+    } catch (error) {
+      console.error('Erro ao mover tarefa:', error);
+      toast.error('Erro ao mover tarefa');
+    }
+    setActionMenuOpen(null);
+  };
+
   // Check if task is overdue
   const isOverdue = (task: Task) => {
     if (task.completed) return false;
@@ -291,7 +315,31 @@ const TaskKanban: React.FC = () => {
               <MoreHorizontal className="w-4 h-4" />
             </button>
             {actionMenuOpen === task.id && (
-              <div className="absolute right-0 mt-1 w-36 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-gray-200 dark:border-slate-700 py-1 z-10">
+              <div className="absolute right-0 bottom-full mb-1 w-44 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-gray-200 dark:border-slate-700 py-1 z-10">
+                {/* Opções de mover para colunas */}
+                <div className="px-3 py-1 text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase">
+                  Mover para
+                </div>
+                {columns.map((column) => {
+                  const isCurrentColumn = getTaskColumn(task) === column.id;
+                  return (
+                    <button
+                      key={column.id}
+                      onClick={() => moveTaskToColumn(task, column.id)}
+                      disabled={isCurrentColumn}
+                      className={`w-full px-3 py-2 text-left text-sm flex items-center gap-2 ${
+                        isCurrentColumn
+                          ? 'text-gray-400 dark:text-slate-600 cursor-not-allowed'
+                          : 'hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-700 dark:text-slate-300'
+                      }`}
+                    >
+                      {column.icon}
+                      {column.title}
+                      {isCurrentColumn && <span className="ml-auto text-xs">(atual)</span>}
+                    </button>
+                  );
+                })}
+                <div className="border-t border-gray-200 dark:border-slate-700 my-1"></div>
                 <button
                   onClick={() => {
                     setSelectedTask(task);
@@ -301,12 +349,6 @@ const TaskKanban: React.FC = () => {
                   className="w-full px-3 py-2 text-left text-sm flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-700 dark:text-slate-300"
                 >
                   <Eye className="w-4 h-4" /> Ver detalhes
-                </button>
-                <button
-                  onClick={() => toggleComplete(task)}
-                  className="w-full px-3 py-2 text-left text-sm flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-700 dark:text-slate-300"
-                >
-                  <CheckCircle2 className="w-4 h-4" /> {task.completed ? 'Reabrir' : 'Concluir'}
                 </button>
                 <button
                   onClick={() => deleteTask(task.id)}
