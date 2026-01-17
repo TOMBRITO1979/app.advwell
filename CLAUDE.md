@@ -165,6 +165,17 @@ Jobs processed by dedicated worker (not API replicas):
 - VPS Principal: `/root/advtom_20260117.sql`
 - Computador local: `C:\Users\Bot 02\advtom_20260117.sql`
 
+#### 4. Snapshots Hetzner (Imagem completa das VPS)
+
+| VPS | Nome do Snapshot | Data | Conteúdo |
+|-----|------------------|------|----------|
+| Principal (5.161.98.0) | `backup-completo-2026-01-17` | 2026-01-17 | Sistema completo (SO + Docker + configs + dados) |
+| PostgreSQL (5.78.137.1) | `backup-completo-2026-01-17` | 2026-01-17 | Sistema completo (SO + PostgreSQL + dados) |
+
+**Onde está:** Painel Hetzner - https://console.hetzner.cloud/ > Servidor > Snapshots
+
+**Como restaurar:** No painel Hetzner, selecione o snapshot e clique em "Create Server" para criar uma nova VPS a partir do snapshot, ou use "Rebuild" para restaurar o servidor existente.
+
 ---
 
 ### Como Restaurar (Passo a Passo)
