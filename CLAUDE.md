@@ -131,30 +131,111 @@ Jobs processed by dedicated worker (not API replicas):
 
 **IMPORTANTE:** Antes de fazer mudanças significativas no código, SEMPRE criar um ponto de recuperação.
 
-### Tags de Backup no Git
+---
 
-| Tag | Data | Descrição |
-|-----|------|-----------|
-| `backup-2026-01-17` | 2026-01-17 | Backup estável (commit d786f69) |
-| `backup-2026-01-17-v2` | 2026-01-17 | Backup com versões sincronizadas v1.8.120/v1.8.156 (commit 82f3cb3) |
+### Backups Realizados
 
-**Criar nova tag de backup:**
+#### 1. Tags de Backup no Git (GitHub)
+
+| Tag | Data | Commit | Descrição |
+|-----|------|--------|-----------|
+| `backup-2026-01-17` | 2026-01-17 | d786f69 | Backup inicial |
+| `backup-2026-01-17-v2` | 2026-01-17 | 82f3cb3 | Backup com versões sincronizadas v1.8.120/v1.8.156 |
+
+**Onde está:** GitHub - https://github.com/TOMBRITO1979/app.advwell/tags
+
+#### 2. Backup Completo do Código (tar.gz)
+
+| Arquivo | Data | Tamanho | Conteúdo |
+|---------|------|---------|----------|
+| `advwell-backup-2026-01-17.tar.gz` | 2026-01-17 | 270 MB | Código + .env + node_modules + dist |
+
+**Onde está salvo:**
+- VPS Principal: `/root/advwell-backup-2026-01-17.tar.gz`
+- Computador local: `C:\Users\Bot 02\advwell-backup-2026-01-17.tar.gz`
+
+---
+
+### Como Restaurar (Passo a Passo)
+
+#### Cenário 1: Código quebrou mas VPS está OK
+
+```bash
+# Opção A: Voltar para tag de backup
+cd /root/advwell
+git fetch origin
+git reset --hard backup-2026-01-17-v2
+
+# Rebuild e deploy
+./deploy.sh
+```
+
+#### Cenário 2: Precisa restaurar do arquivo tar.gz
+
+```bash
+# Na VPS Principal (5.161.98.0):
+
+# 1. Backup da pasta atual (por segurança)
+mv /root/advwell /root/advwell-quebrado
+
+# 2. Extrair backup
+cd /root
+tar -xzvf advwell-backup-2026-01-17.tar.gz
+
+# 3. Rebuild e deploy
+cd /root/advwell
+./deploy.sh
+```
+
+#### Cenário 3: Restaurar do computador local para VPS
+
+```powershell
+# No computador local (PowerShell):
+scp "C:\Users\Bot 02\advwell-backup-2026-01-17.tar.gz" root@5.161.98.0:/root/
+```
+
+```bash
+# Na VPS:
+cd /root
+mv advwell advwell-quebrado
+tar -xzvf advwell-backup-2026-01-17.tar.gz
+cd advwell
+./deploy.sh
+```
+
+#### Cenário 4: Restaurar banco de dados (quando houver backup)
+
+```bash
+# Na VPS do PostgreSQL (5.78.137.1):
+docker exec -i advwell-postgres psql -U postgres -d advtom < /backup/advtom_YYYYMMDD.sql
+```
+
+---
+
+### Criar Novos Backups
+
+#### Nova tag no Git:
 ```bash
 git tag -a backup-YYYY-MM-DD -m "Descrição do backup"
 git push origin backup-YYYY-MM-DD
 ```
 
-**Recuperar para uma tag:**
+#### Novo arquivo tar.gz:
 ```bash
-# Ver código em um ponto específico
-git checkout backup-YYYY-MM-DD
-
-# Voltar para main
-git checkout main
-
-# Restaurar completamente (CUIDADO - perde alterações não commitadas)
-git reset --hard backup-YYYY-MM-DD
+tar -czvf /root/advwell-backup-YYYY-MM-DD.tar.gz -C /root advwell
 ```
+
+#### Backup do PostgreSQL:
+```bash
+ssh root@5.78.137.1 "docker exec advwell-postgres pg_dump -U postgres advtom > /backup/advtom_$(date +%Y%m%d).sql"
+```
+
+#### Baixar backup para computador local:
+```powershell
+scp root@5.161.98.0:/root/advwell-backup-YYYY-MM-DD.tar.gz .
+```
+
+---
 
 ### Outras Opções de Backup
 
@@ -162,12 +243,24 @@ git reset --hard backup-YYYY-MM-DD
 |------|--------------|------------------------|
 | **Snapshot VPS Principal** | Painel Hetzner (5.161.98.0) | Antes de mudanças na infra |
 | **Snapshot VPS PostgreSQL** | Painel Hetzner (5.78.137.1) | Semanal |
-| **Backup PostgreSQL** | `ssh root@5.78.137.1 "docker exec advwell-postgres pg_dump -U postgres advtom > /backup/advtom_$(date +%Y%m%d).sql"` | Diário |
+| **Backup PostgreSQL** | Ver comando acima | Diário |
 | **Clone local** | `git clone` para máquina local | Manter atualizado |
+
+---
 
 ### Procedimento Antes de Mudanças Críticas
 
 1. Criar tag de backup: `git tag -a backup-YYYY-MM-DD -m "Antes de [descrição]"`
 2. Push da tag: `git push origin backup-YYYY-MM-DD`
-3. Considerar snapshot da VPS se mudança afetar infraestrutura
-4. Backup do banco se mudança afetar schema
+3. Criar tar.gz se mudança for arriscada: `tar -czvf /root/advwell-backup-YYYY-MM-DD.tar.gz -C /root advwell`
+4. Considerar snapshot da VPS se mudança afetar infraestrutura
+5. Backup do banco se mudança afetar schema
+
+---
+
+### Informações de Acesso
+
+| VPS | IP | Usuário | Descrição |
+|-----|-----|---------|-----------|
+| Principal | 5.161.98.0 | root | Backend, Frontend, Redis, Traefik |
+| PostgreSQL | 5.78.137.1 | root | Banco de dados dedicado |
