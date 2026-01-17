@@ -136,6 +136,7 @@ Jobs processed by dedicated worker (not API replicas):
 | Tag | Data | Descrição |
 |-----|------|-----------|
 | `backup-2026-01-17` | 2026-01-17 | Backup estável (commit d786f69) |
+| `backup-2026-01-17-v2` | 2026-01-17 | Backup com versões sincronizadas v1.8.120/v1.8.156 (commit 82f3cb3) |
 
 **Criar nova tag de backup:**
 ```bash
