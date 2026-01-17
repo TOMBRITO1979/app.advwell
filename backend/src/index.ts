@@ -11,6 +11,7 @@ import cron from 'node-cron';
 import prisma from './utils/prisma';
 import { redis, cache } from './utils/redis';
 import { enqueueDailySync, getQueueStats } from './queues/sync.queue';
+import { enqueueDailyMonitoring } from './queues/monitoring.queue';
 import { getEmailQueueStats } from './queues/email.queue';
 import { getWhatsAppQueueStats } from './queues/whatsapp.queue';
 import { getCsvImportQueueStats } from './queues/csv-import.queue';
@@ -590,6 +591,31 @@ CRON_ENABLED && cron.schedule('10 0 * * *', async () => {
     appLogger.info('Daily sync jobs enqueued successfully', { instanceId: INSTANCE_ID });
   } catch (error) {
     appLogger.error('Error enqueueing daily sync', error as Error, { instanceId: INSTANCE_ID });
+  }
+}, { timezone: CRON_TIMEZONE });
+
+// Cron job para monitoramento de OAB via ADVAPI - às 06:00 e 14:00 (São Paulo)
+// ADVAPI processa publicações entre 7h-21h, seg-sáb, então rodamos 2x ao dia
+CRON_ENABLED && cron.schedule('0 6,14 * * *', async () => {
+  const { isLeader, fencingToken } = await tryBecomeLeader();
+
+  if (!isLeader) {
+    appLogger.debug('Not leader, skipping OAB monitoring', { instanceId: INSTANCE_ID });
+    return;
+  }
+
+  if (!await validateLeadership()) {
+    appLogger.warn('Leadership validation failed, aborting OAB monitoring', { instanceId: INSTANCE_ID });
+    return;
+  }
+
+  appLogger.info('Starting daily OAB monitoring', { instanceId: INSTANCE_ID, fencingToken });
+
+  try {
+    await enqueueDailyMonitoring();
+    appLogger.info('Daily OAB monitoring jobs enqueued successfully', { instanceId: INSTANCE_ID });
+  } catch (error) {
+    appLogger.error('Error enqueueing OAB monitoring', error as Error, { instanceId: INSTANCE_ID });
   }
 }, { timezone: CRON_TIMEZONE });
 
