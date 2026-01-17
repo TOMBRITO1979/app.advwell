@@ -8,7 +8,8 @@ import { ScheduleEvent, ScheduleEventType, Priority } from '@prisma/client';
 // Scopes necessários para Google Calendar
 const SCOPES = [
   'https://www.googleapis.com/auth/calendar.events',
-  'https://www.googleapis.com/auth/userinfo.email',
+  'openid',
+  'email',
 ];
 
 // Interface para credenciais da empresa
@@ -146,11 +147,26 @@ class GoogleCalendarService {
       throw new Error('Tokens não retornados pelo Google');
     }
 
-    // Obter email da conta Google
-    oauth2Client.setCredentials(tokens);
-    const oauth2 = google.oauth2({ version: 'v2', auth: oauth2Client });
-    const userInfo = await oauth2.userinfo.get();
-    const email = userInfo.data.email;
+    // Obter email do ID Token (mais confiável que chamar userinfo API)
+    let email: string | undefined;
+
+    if (tokens.id_token) {
+      // Decodificar ID Token para obter email
+      const ticket = await oauth2Client.verifyIdToken({
+        idToken: tokens.id_token,
+        audience: credentials.clientId,
+      });
+      const payload = ticket.getPayload();
+      email = payload?.email;
+    }
+
+    // Fallback: usar API userinfo se ID Token não tiver email
+    if (!email) {
+      oauth2Client.setCredentials(tokens);
+      const oauth2 = google.oauth2({ version: 'v2', auth: oauth2Client });
+      const userInfo = await oauth2.userinfo.get();
+      email = userInfo.data.email || undefined;
+    }
 
     if (!email) {
       throw new Error('Email não retornado pelo Google');
