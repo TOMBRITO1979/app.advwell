@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Calendar, Plus, Search, CheckCircle, Circle, Edit2, Trash2, Eye, List, Grid3X3, ChevronLeft, ChevronRight, Download, FileText, FileSpreadsheet, MessageCircle, Upload } from 'lucide-react';
 import ActionsDropdown from '../components/ui/ActionsDropdown';
+import KanbanStatusDropdown from '../components/ui/KanbanStatusDropdown';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import Layout from '../components/Layout';
@@ -59,6 +60,7 @@ interface ScheduleEvent {
   date: string;
   endDate?: string;
   completed: boolean;
+  kanbanStatus?: 'TODO' | 'IN_PROGRESS' | 'DONE';
   googleMeetLink?: string;
   client?: Client;
   case?: Case;
@@ -175,6 +177,13 @@ const Schedule: React.FC = () => {
     ALTA: 'bg-orange-100 text-orange-800',
     URGENTE: 'bg-red-100 text-red-800',
   };
+
+  const kanbanStatusLabels = {
+    TODO: 'A Fazer',
+    IN_PROGRESS: 'Em Andamento',
+    DONE: 'Concluído',
+  };
+
 
   // Função para ordenar eventos: atuais/futuros primeiro em ordem cronológica, passados no final
   const sortEventsByDate = (eventsToSort: ScheduleEvent[]): ScheduleEvent[] => {
@@ -466,6 +475,22 @@ const Schedule: React.FC = () => {
     } catch (error) {
       console.error('Erro ao atualizar status:', error);
       toast.error('Erro ao atualizar status do evento');
+    }
+  };
+
+  const handleKanbanStatusChange = async (event: ScheduleEvent, newStatus: 'TODO' | 'IN_PROGRESS' | 'DONE') => {
+    try {
+      // Sincronizar completed com kanbanStatus
+      const completed = newStatus === 'DONE';
+      await api.put(`/schedule/${event.id}`, {
+        kanbanStatus: newStatus,
+        completed: completed,
+      });
+      toast.success(`Status alterado para "${kanbanStatusLabels[newStatus]}"`);
+      fetchEvents();
+    } catch (error) {
+      console.error('Erro ao atualizar status kanban:', error);
+      toast.error('Erro ao atualizar status');
     }
   };
 
@@ -801,6 +826,7 @@ const Schedule: React.FC = () => {
                     },
                     fields: [
                       { label: 'Prioridade', value: priorityLabels[event.priority || 'MEDIA'] },
+                      { label: 'Kanban', value: event.type === 'TAREFA' ? kanbanStatusLabels[event.kanbanStatus || 'TODO'] : '-' },
                       { label: 'Cliente', value: event.client?.name || '-' },
                       { label: 'Processo', value: event.case?.processNumber || '-' },
                       { label: 'Status', value: event.completed ? 'Concluído' : 'Pendente' },
@@ -826,6 +852,9 @@ const Schedule: React.FC = () => {
                       </th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                         Tipo
+                      </th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
+                        Status Kanban
                       </th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                         Prioridade
@@ -870,6 +899,16 @@ const Schedule: React.FC = () => {
                           <span className={`px-2 py-1 text-xs font-medium rounded-full ${eventTypeColors[event.type]}`}>
                             {eventTypeLabels[event.type]}
                           </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          {event.type === 'TAREFA' ? (
+                            <KanbanStatusDropdown
+                              value={(event.kanbanStatus as 'TODO' | 'IN_PROGRESS' | 'DONE') || 'TODO'}
+                              onChange={(status) => handleKanbanStatusChange(event, status)}
+                            />
+                          ) : (
+                            <span className="text-neutral-400 dark:text-slate-500">-</span>
+                          )}
                         </td>
                         <td className="px-4 py-3">
                           <span className={`px-2 py-1 text-xs font-medium rounded-full ${priorityColors[event.priority || 'MEDIA']}`}>

@@ -701,12 +701,12 @@ export class ScheduleController {
           type,
           priority: priority || undefined,
           date: date ? new Date(date) : undefined,
-          endDate: endDate ? new Date(endDate) : null,
-          clientId: clientId || null,
-          caseId: caseId || null,
+          endDate: endDate !== undefined ? (endDate ? new Date(endDate) : null) : undefined,
+          clientId: clientId !== undefined ? (clientId || null) : undefined,
+          caseId: caseId !== undefined ? (caseId || null) : undefined,
           completed: finalCompleted !== undefined ? finalCompleted : undefined,
-          kanbanStatus: kanbanStatus || undefined,
-          googleMeetLink: googleMeetLink,
+          kanbanStatus: kanbanStatus !== undefined ? kanbanStatus : undefined,
+          googleMeetLink: googleMeetLink !== undefined ? googleMeetLink : undefined,
         },
         include: {
           client: {

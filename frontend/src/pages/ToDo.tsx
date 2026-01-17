@@ -1,46 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, Plus, Search, CheckCircle, Circle, Edit2, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import ActionsDropdown from '../components/ui/ActionsDropdown';
+import KanbanStatusDropdown from '../components/ui/KanbanStatusDropdown';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import Layout from '../components/Layout';
 import MobileCardList, { MobileCardItem } from '../components/MobileCardList';
 import { formatDate } from '../utils/dateFormatter';
+import type { ScheduleEvent, Priority } from '../types/schedule';
 
-interface Todo {
-  id: string;
-  title: string;
-  description?: string;
-  dueDate?: string;
-  priority: 'BAIXA' | 'MEDIA' | 'ALTA' | 'URGENTE';
-  completed: boolean;
-  clientId?: string;
-  caseId?: string;
-  client?: {
-    id: string;
-    name: string;
-  };
-  case?: {
-    id: string;
-    processNumber: string;
-  };
-  assignedUsers?: Array<{
-    id: string;
-    user: {
-      id: string;
-      name: string;
-      email: string;
-    };
-  }>;
-  createdAt: string;
-  updatedAt: string;
+// Interface local estendendo ScheduleEvent para compatibilidade com código existente
+interface Todo extends Omit<ScheduleEvent, 'type' | 'endDate' | 'googleMeetLink'> {
+  updatedAt?: string;
 }
 
 interface TodoFormData {
   title: string;
   description: string;
-  dueDate: string;
-  priority: 'BAIXA' | 'MEDIA' | 'ALTA' | 'URGENTE';
+  date: string;
+  priority: Priority;
   clientId: string;
   caseId: string;
   assignedUserIds: string[];
@@ -66,7 +44,7 @@ const ToDo: React.FC = () => {
   const [formData, setFormData] = useState<TodoFormData>({
     title: '',
     description: '',
-    dueDate: '',
+    date: '',
     priority: 'MEDIA',
     clientId: '',
     caseId: '',
@@ -103,10 +81,25 @@ const ToDo: React.FC = () => {
 
       const response = await api.get('/schedule', { params });
       // Backend retorna { data: [...], total, page, limit }
-      // Ordenar: tarefas pendentes primeiro, concluídas no final
+      // Ordenar: futuros primeiro (ASC), passados no final (DESC)
+      const now = new Date().getTime();
       const sortedTodos = (response.data.data || []).sort((a: Todo, b: Todo) => {
-        if (a.completed === b.completed) return 0;
-        return a.completed ? 1 : -1;
+        const dateA = new Date(a.date || a.createdAt).getTime();
+        const dateB = new Date(b.date || b.createdAt).getTime();
+
+        const isPastA = dateA < now;
+        const isPastB = dateB < now;
+
+        // Passados vão para o final
+        if (isPastA && !isPastB) return 1;
+        if (!isPastA && isPastB) return -1;
+
+        // Futuros: mais próximo primeiro (ASC)
+        // Passados: mais recente primeiro (DESC)
+        if (isPastA && isPastB) {
+          return dateB - dateA;
+        }
+        return dateA - dateB;
       });
       setTodos(sortedTodos);
       setTotal(response.data.total || 0);
@@ -124,8 +117,8 @@ const ToDo: React.FC = () => {
       // Adicionar hora 12:00 para evitar problema de fuso horário
       // Quando apenas a data é enviada (YYYY-MM-DD), o JS interpreta como UTC meia-noite
       // o que pode resultar em um dia anterior quando convertido para o fuso local
-      const dateWithTime = formData.dueDate
-        ? `${formData.dueDate}T12:00:00`
+      const dateWithTime = formData.date
+        ? `${formData.date}T12:00:00`
         : new Date().toISOString();
 
       const data = {
@@ -188,10 +181,10 @@ const ToDo: React.FC = () => {
     setFormData({
       title: todo.title,
       description: todo.description || '',
-      dueDate: todo.dueDate ? todo.dueDate.split('T')[0] : '',
+      date: todo.date ? todo.date.split('T')[0] : '',
       priority: todo.priority,
-      clientId: todo.clientId || '',
-      caseId: todo.caseId || '',
+      clientId: todo.client?.id || '',
+      caseId: todo.case?.id || '',
       assignedUserIds: todo.assignedUsers?.map(au => au.user.id) || [],
     });
     setSelectedUserIds(todo.assignedUsers?.map(au => au.user.id) || []);
@@ -203,7 +196,7 @@ const ToDo: React.FC = () => {
     setFormData({
       title: '',
       description: '',
-      dueDate: '',
+      date: '',
       priority: 'MEDIA',
       clientId: '',
       caseId: '',
@@ -232,6 +225,30 @@ const ToDo: React.FC = () => {
       URGENTE: 'Urgente',
     };
     return labels[priority as keyof typeof labels] || priority;
+  };
+
+  const getKanbanStatusLabel = (status?: string) => {
+    const labels = {
+      TODO: 'A Fazer',
+      IN_PROGRESS: 'Em Andamento',
+      DONE: 'Concluído',
+    };
+    return labels[status as keyof typeof labels] || 'A Fazer';
+  };
+
+  const handleKanbanStatusChange = async (todo: Todo, newStatus: 'TODO' | 'IN_PROGRESS' | 'DONE') => {
+    try {
+      // Sincronizar completed com kanbanStatus
+      const completed = newStatus === 'DONE';
+      await api.put(`/schedule/${todo.id}`, {
+        kanbanStatus: newStatus,
+        completed: completed,
+      });
+      toast.success(`Status alterado para "${getKanbanStatusLabel(newStatus)}"`);
+      loadTodos();
+    } catch (error) {
+      toast.error('Erro ao atualizar status');
+    }
   };
 
   return (
@@ -313,7 +330,8 @@ const ToDo: React.FC = () => {
                     },
                     fields: [
                       { label: 'Status', value: todo.completed ? 'Concluída' : 'Pendente' },
-                      { label: 'Vencimento', value: todo.dueDate ? formatDate(todo.dueDate) : '-' },
+                      { label: 'Kanban', value: getKanbanStatusLabel(todo.kanbanStatus) },
+                      { label: 'Vencimento', value: todo.date ? formatDate(todo.date) : '-' },
                     ],
                     onEdit: () => handleEdit(todo),
                     onDelete: () => handleDelete(todo.id),
@@ -328,6 +346,7 @@ const ToDo: React.FC = () => {
                   <thead className="bg-neutral-50 dark:bg-slate-700">
                     <tr>
                       <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">Status</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">Status Kanban</th>
                       <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">Tarefa</th>
                       <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">Prioridade</th>
                       <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">Vencimento</th>
@@ -346,6 +365,12 @@ const ToDo: React.FC = () => {
                           </button>
                         </td>
                         <td className="px-6 py-4">
+                          <KanbanStatusDropdown
+                            value={(todo.kanbanStatus as 'TODO' | 'IN_PROGRESS' | 'DONE') || 'TODO'}
+                            onChange={(status) => handleKanbanStatusChange(todo, status)}
+                          />
+                        </td>
+                        <td className="px-6 py-4">
                           <div className={todo.completed ? 'line-through text-neutral-400' : ''}>
                             <div className="font-medium">{todo.title}</div>
                             {todo.description && (
@@ -359,7 +384,7 @@ const ToDo: React.FC = () => {
                           </span>
                         </td>
                         <td className="px-6 py-4 text-sm text-neutral-500 dark:text-slate-400">
-                          {todo.dueDate ? formatDate(todo.dueDate) : '-'}
+                          {todo.date ? formatDate(todo.date) : '-'}
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center justify-end">
@@ -468,8 +493,8 @@ const ToDo: React.FC = () => {
                       <label className="block text-sm font-medium mb-1">Vencimento</label>
                       <input
                         type="date"
-                        value={formData.dueDate}
-                        onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
+                        value={formData.date}
+                        onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                         className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
                     </div>

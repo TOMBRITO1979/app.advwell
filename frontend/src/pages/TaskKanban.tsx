@@ -16,35 +16,11 @@ import api from '../services/api';
 import toast from 'react-hot-toast';
 import Layout from '../components/Layout';
 import { formatDate, formatDateTime } from '../utils/dateFormatter';
+import type { ScheduleEvent } from '../types/schedule';
 
-interface Task {
-  id: string;
-  title: string;
-  description?: string;
-  dueDate?: string;
-  date: string;
-  priority: 'BAIXA' | 'MEDIA' | 'ALTA' | 'URGENTE';
-  completed: boolean;
-  kanbanStatus?: 'TODO' | 'IN_PROGRESS' | 'DONE';
-  type: string;
-  client?: {
-    id: string;
-    name: string;
-  };
-  case?: {
-    id: string;
-    processNumber: string;
-  };
-  assignedUsers?: Array<{
-    id: string;
-    user: {
-      id: string;
-      name: string;
-      email: string;
-    };
-  }>;
-  createdAt: string;
-  updatedAt: string;
+// Interface local estendendo ScheduleEvent para Kanban
+interface Task extends Omit<ScheduleEvent, 'endDate' | 'googleMeetLink'> {
+  updatedAt?: string;
 }
 
 interface Column {
@@ -160,22 +136,17 @@ const TaskKanban: React.FC = () => {
         return getTaskColumn(task) === columnId;
       })
       .sort((a, b) => {
-        const dateA = new Date(a.dueDate || a.date || a.createdAt).getTime();
-        const dateB = new Date(b.dueDate || b.date || b.createdAt).getTime();
+        const dateA = new Date(a.date || a.createdAt).getTime();
+        const dateB = new Date(b.date || b.createdAt).getTime();
 
-        // Primeiro: tarefas futuras/atuais antes de passadas
         const isPastA = dateA < now;
         const isPastB = dateB < now;
 
-        if (isPastA && !isPastB) return 1;  // A é passado, B não -> B vem primeiro
-        if (!isPastA && isPastB) return -1; // A não é passado, B é -> A vem primeiro
+        // Passados vão para o final
+        if (isPastA && !isPastB) return 1;
+        if (!isPastA && isPastB) return -1;
 
-        // Segundo: ordenar por prioridade (URGENTE primeiro)
-        const priorityOrder = { URGENTE: 0, ALTA: 1, MEDIA: 2, BAIXA: 3 };
-        const priorityDiff = priorityOrder[a.priority] - priorityOrder[b.priority];
-        if (priorityDiff !== 0) return priorityDiff;
-
-        // Terceiro: dentro da mesma prioridade, ordenar por data
+        // Ordenar apenas por data
         // Futuros: mais próximo primeiro (ASC)
         // Passados: mais recente primeiro (DESC)
         if (isPastA && isPastB) {
@@ -307,9 +278,8 @@ const TaskKanban: React.FC = () => {
   // Check if task is overdue
   const isOverdue = (task: Task) => {
     if (task.completed) return false;
-    const dueDate = task.dueDate || task.date;
-    if (!dueDate) return false;
-    return new Date(dueDate) < new Date();
+    if (!task.date) return false;
+    return new Date(task.date) < new Date();
   };
 
   // Render task card
@@ -403,10 +373,10 @@ const TaskKanban: React.FC = () => {
           </span>
 
           {/* Due date */}
-          {(task.dueDate || task.date) && (
+          {task.date && (
             <span className={`flex items-center gap-1 ${overdue ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-slate-400'}`}>
               <Calendar className="w-3 h-3" />
-              {formatDate(task.dueDate || task.date)}
+              {formatDate(task.date)}
             </span>
           )}
 
@@ -485,11 +455,11 @@ const TaskKanban: React.FC = () => {
                 </div>
               </div>
 
-              {(selectedTask.dueDate || selectedTask.date) && (
+              {selectedTask.date && (
                 <div>
                   <label className="text-sm font-medium text-gray-500 dark:text-slate-400">Data</label>
                   <p className="text-gray-900 dark:text-slate-100 mt-1">
-                    {formatDateTime(selectedTask.dueDate || selectedTask.date)}
+                    {formatDateTime(selectedTask.date)}
                   </p>
                 </div>
               )}
