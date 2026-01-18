@@ -12,7 +12,7 @@ AdvWell is a multitenant SaaS for Brazilian law firms with DataJud CNJ integrati
 - Grafana: https://grafana.advwell.pro
 - Landing Page: https://advwell.pro
 
-**Current Version:** v1.8.126 (Backend) | v1.8.175 (Frontend)
+**Current Version:** v1.8.126 (Backend) | v1.8.176 (Frontend)
 
 ## Technology Stack
 
@@ -55,8 +55,6 @@ curl https://api.advwell.pro/health
 # Database (via PostgreSQL VPS)
 ssh root@5.78.137.1 "docker exec advwell-postgres psql -U postgres -d advtom"
 
-# Worker DATABASE_URL fix (if worker fails to start)
-docker service update --env-add "DATABASE_URL=postgresql://postgres:PASSWORD@5.78.137.1:5432/advtom?connection_limit=15&pool_timeout=20&sslmode=require" advtom_backend-worker
 ```
 
 ## Architecture
@@ -135,11 +133,6 @@ git push origin backup-YYYY-MM-DD
 # Database
 ssh root@5.78.137.1 "docker exec advwell-postgres pg_dump -U postgres advtom > /backup/advtom_$(date +%Y%m%d).sql"
 ```
-
-### Automated Backup (S3)
-- Script: `/root/advwell/automated-backup.sh`
-- Schedule: Daily at 02:00
-- Bucket: `s3://advwell-app/database-backups/`
 
 ## Access Information
 

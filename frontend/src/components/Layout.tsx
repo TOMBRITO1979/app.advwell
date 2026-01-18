@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import api from '../services/api';
+import SidebarSubmenu from './SidebarSubmenu';
 import {
   Home,
   Users,
@@ -622,272 +623,75 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               </Link>
 
               {/* Dropdown Agenda */}
-              <button
-                onClick={() => setAgendaOpen(!agendaOpen)}
-                className={`w-full flex items-center ${
-                  sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-6'
-                } py-3 transition-all duration-200 font-medium ${
-                  agendaItems.some(item => location.pathname.startsWith(item.path))
-                    ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400'
-                    : 'text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-700 hover:text-primary-600 dark:hover:text-primary-400'
-                }`}
-                title={sidebarCollapsed ? 'Agenda' : ''}
-              >
-                <Calendar size={20} />
-                {!sidebarCollapsed && <span className="text-sm">Agenda</span>}
-              </button>
-              {(agendaOpen || sidebarCollapsed) && (
-                <div className={sidebarCollapsed ? '' : 'bg-neutral-50 dark:bg-slate-700/50'}>
-                  {agendaItems.map((item) => {
-                    const Icon = item.icon;
-                    const isActive = location.pathname === item.path;
-                    const showTasksBadge = item.path === '/todos' && tasksDueToday && tasksDueToday.count > 0;
-                    return (
-                      <Link
-                        key={item.path}
-                        to={item.path}
-                        className={`flex items-center ${
-                          sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-6 pl-10'
-                        } py-2.5 transition-all duration-200 font-medium ${
-                          isActive
-                            ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 border-r-4 border-primary-500'
-                            : 'text-neutral-600 dark:text-slate-400 hover:bg-neutral-100 dark:hover:bg-slate-700 hover:text-primary-600 dark:hover:text-primary-400'
-                        }`}
-                        onClick={() => setSidebarOpen(false)}
-                        title={sidebarCollapsed ? item.label : ''}
-                      >
-                        <div className="relative">
-                          <Icon size={18} />
-                          {showTasksBadge && sidebarCollapsed && (
-                            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center">
-                              {tasksDueToday && tasksDueToday.count > 9 ? '9+' : tasksDueToday?.count}
-                            </span>
-                          )}
-                        </div>
-                        {!sidebarCollapsed && (
-                          <div className="flex items-center justify-between flex-1">
-                            <span className="text-sm">{item.label}</span>
-                            {showTasksBadge && (
-                              <span className="bg-red-500 text-white text-xs font-bold rounded-full px-2 py-0.5 ml-2">
-                                {tasksDueToday?.count}
-                              </span>
-                            )}
-                          </div>
-                        )}
-                      </Link>
-                    );
-                  })}
-                </div>
-              )}
+              <SidebarSubmenu
+                label="Agenda"
+                icon={Calendar}
+                items={agendaItems.map(item => ({
+                  ...item,
+                  badge: item.path === '/todos' && tasksDueToday ? tasksDueToday.count : undefined,
+                  badgeTitle: item.path === '/todos' && tasksDueToday ? `${tasksDueToday.count} tarefa(s) para hoje` : undefined,
+                }))}
+                isCollapsed={sidebarCollapsed}
+                isOpen={agendaOpen}
+                onToggle={() => setAgendaOpen(!agendaOpen)}
+                onNavigate={() => setSidebarOpen(false)}
+              />
 
               {/* Dropdown Pessoas */}
-              <button
-                onClick={() => setPessoasOpen(!pessoasOpen)}
-                className={`w-full flex items-center ${
-                  sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-6'
-                } py-3 transition-all duration-200 font-medium ${
-                  pessoasItems.some(item => location.pathname.startsWith(item.path))
-                    ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400'
-                    : 'text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-700 hover:text-primary-600 dark:hover:text-primary-400'
-                }`}
-                title={sidebarCollapsed ? 'Pessoas' : ''}
-              >
-                <Users size={20} />
-                {!sidebarCollapsed && <span className="text-sm">Pessoas</span>}
-              </button>
-              {(pessoasOpen || sidebarCollapsed) && (
-                <div className={sidebarCollapsed ? '' : 'bg-neutral-50 dark:bg-slate-700/50'}>
-                  {pessoasItems.map((item) => {
-                    const Icon = item.icon;
-                    const isActive = location.pathname === item.path;
-                    return (
-                      <Link
-                        key={item.path}
-                        to={item.path}
-                        className={`flex items-center ${
-                          sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-6 pl-10'
-                        } py-2.5 transition-all duration-200 font-medium ${
-                          isActive
-                            ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 border-r-4 border-primary-500'
-                            : 'text-neutral-600 dark:text-slate-400 hover:bg-neutral-100 dark:hover:bg-slate-700 hover:text-primary-600 dark:hover:text-primary-400'
-                        }`}
-                        onClick={() => setSidebarOpen(false)}
-                        title={sidebarCollapsed ? item.label : ''}
-                      >
-                        <Icon size={18} />
-                        {!sidebarCollapsed && <span className="text-sm">{item.label}</span>}
-                      </Link>
-                    );
-                  })}
-                </div>
-              )}
+              <SidebarSubmenu
+                label="Pessoas"
+                icon={Users}
+                items={pessoasItems}
+                isCollapsed={sidebarCollapsed}
+                isOpen={pessoasOpen}
+                onToggle={() => setPessoasOpen(!pessoasOpen)}
+                onNavigate={() => setSidebarOpen(false)}
+              />
 
               {/* Dropdown Processos */}
-              <button
-                onClick={() => setProcessosOpen(!processosOpen)}
-                className={`w-full flex items-center ${
-                  sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-6'
-                } py-3 transition-all duration-200 font-medium ${
-                  processosItems.some(item => location.pathname.startsWith(item.path))
-                    ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400'
-                    : 'text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-700 hover:text-primary-600 dark:hover:text-primary-400'
-                }`}
-                title={sidebarCollapsed ? 'Processos' : ''}
-              >
-                <FileText size={20} />
-                {!sidebarCollapsed && <span className="text-sm">Processos</span>}
-              </button>
-              {(processosOpen || sidebarCollapsed) && (
-                <div className={sidebarCollapsed ? '' : 'bg-neutral-50 dark:bg-slate-700/50'}>
-                  {processosItems.map((item) => {
-                    const Icon = item.icon;
-                    const isActive = location.pathname === item.path;
-                    const showDeadlinesBadge = item.path === '/deadlines' && deadlinesDueToday && deadlinesDueToday.count > 0;
-                    return (
-                      <Link
-                        key={item.path}
-                        to={item.path}
-                        className={`flex items-center ${
-                          sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-6 pl-10'
-                        } py-2.5 transition-all duration-200 font-medium ${
-                          isActive
-                            ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 border-r-4 border-primary-500'
-                            : 'text-neutral-600 dark:text-slate-400 hover:bg-neutral-100 dark:hover:bg-slate-700 hover:text-primary-600 dark:hover:text-primary-400'
-                        }`}
-                        onClick={() => setSidebarOpen(false)}
-                        title={sidebarCollapsed ? item.label : ''}
-                      >
-                        <div className="relative">
-                          <Icon size={18} />
-                          {showDeadlinesBadge && sidebarCollapsed && (
-                            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center">
-                              {deadlinesDueToday && deadlinesDueToday.count > 9 ? '9+' : deadlinesDueToday?.count}
-                            </span>
-                          )}
-                        </div>
-                        {!sidebarCollapsed && (
-                          <div className="flex items-center justify-between flex-1">
-                            <span className="text-sm">{item.label}</span>
-                            {showDeadlinesBadge && (
-                              <span className="bg-red-500 text-white text-xs font-bold rounded-full px-2 py-0.5 ml-2">
-                                {deadlinesDueToday?.count}
-                              </span>
-                            )}
-                          </div>
-                        )}
-                      </Link>
-                    );
-                  })}
-                </div>
-              )}
+              <SidebarSubmenu
+                label="Processos"
+                icon={FileText}
+                items={processosItems.map(item => ({
+                  ...item,
+                  badge: item.path === '/deadlines' && deadlinesDueToday ? deadlinesDueToday.count : undefined,
+                  badgeTitle: item.path === '/deadlines' && deadlinesDueToday ? `${deadlinesDueToday.count} prazo(s) para hoje` : undefined,
+                }))}
+                isCollapsed={sidebarCollapsed}
+                isOpen={processosOpen}
+                onToggle={() => setProcessosOpen(!processosOpen)}
+                onNavigate={() => setSidebarOpen(false)}
+              />
 
               {/* Dropdown Marketing */}
               {marketingItems.length > 0 && (
-                <>
-                  <button
-                    onClick={() => setMarketingOpen(!marketingOpen)}
-                    className={`w-full flex items-center ${
-                      sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-6'
-                    } py-3 transition-all duration-200 font-medium ${
-                      marketingItems.some(item => location.pathname.startsWith(item.path))
-                        ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400'
-                        : 'text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-700 hover:text-primary-600 dark:hover:text-primary-400'
-                    }`}
-                    title={sidebarCollapsed ? 'Marketing' : ''}
-                  >
-                    <Megaphone size={20} />
-                    {!sidebarCollapsed && <span className="text-sm">Marketing</span>}
-                  </button>
-                  {(marketingOpen || sidebarCollapsed) && (
-                    <div className={sidebarCollapsed ? '' : 'bg-neutral-50 dark:bg-slate-700/50'}>
-                      {marketingItems.map((item) => {
-                        const Icon = item.icon;
-                        const isActive = location.pathname === item.path;
-                        return (
-                          <Link
-                            key={item.path}
-                            to={item.path}
-                            className={`flex items-center ${
-                              sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-6 pl-10'
-                            } py-2.5 transition-all duration-200 font-medium ${
-                              isActive
-                                ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 border-r-4 border-primary-500'
-                                : 'text-neutral-600 dark:text-slate-400 hover:bg-neutral-100 dark:hover:bg-slate-700 hover:text-primary-600 dark:hover:text-primary-400'
-                            }`}
-                            onClick={() => setSidebarOpen(false)}
-                            title={sidebarCollapsed ? item.label : ''}
-                          >
-                            <Icon size={18} />
-                            {!sidebarCollapsed && <span className="text-sm">{item.label}</span>}
-                          </Link>
-                        );
-                      })}
-                    </div>
-                  )}
-                </>
+                <SidebarSubmenu
+                  label="Marketing"
+                  icon={Megaphone}
+                  items={marketingItems}
+                  isCollapsed={sidebarCollapsed}
+                  isOpen={marketingOpen}
+                  onToggle={() => setMarketingOpen(!marketingOpen)}
+                  onNavigate={() => setSidebarOpen(false)}
+                />
               )}
 
               {/* Dropdown Financeiro */}
-              <button
-                onClick={() => setFinanceiroOpen(!financeiroOpen)}
-                className={`w-full flex items-center ${
-                  sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-6'
-                } py-3 transition-all duration-200 font-medium ${
-                  financeiroItems.some(item => location.pathname.startsWith(item.path))
-                    ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400'
-                    : 'text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-700 hover:text-primary-600 dark:hover:text-primary-400'
-                }`}
-                title={sidebarCollapsed ? 'Financeiro' : ''}
-              >
-                <DollarSign size={20} />
-                {!sidebarCollapsed && <span className="text-sm">Financeiro</span>}
-              </button>
-              {(financeiroOpen || sidebarCollapsed) && (
-                <div className={sidebarCollapsed ? '' : 'bg-neutral-50 dark:bg-slate-700/50'}>
-                  {financeiroItems.map((item) => {
-                    const Icon = item.icon;
-                    const isActive = location.pathname === item.path;
-                    const showAccountsBadge = item.path === '/accounts-payable' && accountsDueToday && accountsDueToday.count > 0;
-                    return (
-                      <Link
-                        key={item.path}
-                        to={item.path}
-                        className={`flex items-center ${
-                          sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-6 pl-10'
-                        } py-2.5 transition-all duration-200 font-medium ${
-                          isActive
-                            ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 border-r-4 border-primary-500'
-                            : 'text-neutral-600 dark:text-slate-400 hover:bg-neutral-100 dark:hover:bg-slate-700 hover:text-primary-600 dark:hover:text-primary-400'
-                        }`}
-                        onClick={() => setSidebarOpen(false)}
-                        title={sidebarCollapsed ? item.label : ''}
-                      >
-                        <div className="relative">
-                          <Icon size={18} />
-                          {showAccountsBadge && sidebarCollapsed && (
-                            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center">
-                              {accountsDueToday && accountsDueToday.count > 9 ? '9+' : accountsDueToday?.count}
-                            </span>
-                          )}
-                        </div>
-                        {!sidebarCollapsed && (
-                          <div className="flex items-center justify-between flex-1">
-                            <span className="text-sm">{item.label}</span>
-                            {showAccountsBadge && (
-                              <span
-                                className="bg-red-500 text-white text-xs font-bold rounded-full px-2 py-0.5 ml-2"
-                                title={`R$ ${accountsDueToday?.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} vencendo hoje`}
-                              >
-                                {accountsDueToday?.count}
-                              </span>
-                            )}
-                          </div>
-                        )}
-                      </Link>
-                    );
-                  })}
-                </div>
-              )}
+              <SidebarSubmenu
+                label="Financeiro"
+                icon={DollarSign}
+                items={financeiroItems.map(item => ({
+                  ...item,
+                  badge: item.path === '/accounts-payable' && accountsDueToday ? accountsDueToday.count : undefined,
+                  badgeTitle: item.path === '/accounts-payable' && accountsDueToday
+                    ? `R$ ${accountsDueToday.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} vencendo hoje`
+                    : undefined,
+                }))}
+                isCollapsed={sidebarCollapsed}
+                isOpen={financeiroOpen}
+                onToggle={() => setFinanceiroOpen(!financeiroOpen)}
+                onNavigate={() => setSidebarOpen(false)}
+              />
 
               {/* Demais itens do menu (exceto Dashboard que já foi renderizado) */}
               {menuItems.filter(item => item.path !== '/dashboard').map((item) => {
@@ -951,44 +755,15 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
               {/* Submenu Credenciais */}
               {credentialsItems.length > 0 && (
-                <>
-                  <button
-                    onClick={() => setCredentialsOpen(!credentialsOpen)}
-                    className={`w-full flex items-center ${
-                      sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-6'
-                    } py-3 transition-all duration-200 font-medium text-neutral-700 hover:bg-neutral-50 hover:text-primary-600`}
-                    title={sidebarCollapsed ? 'Credenciais' : ''}
-                  >
-                    <Key size={20} />
-                    {!sidebarCollapsed && <span className="text-sm">Credenciais</span>}
-                  </button>
-                  {(credentialsOpen || sidebarCollapsed) && (
-                    <div className={sidebarCollapsed ? '' : 'bg-neutral-50 dark:bg-slate-700/50'}>
-                      {credentialsItems.map((item) => {
-                        const Icon = item.icon;
-                        const isActive = location.pathname === item.path;
-                        return (
-                          <Link
-                            key={item.path}
-                            to={item.path}
-                            className={`flex items-center ${
-                              sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-6 pl-10'
-                            } py-2.5 transition-all duration-200 font-medium ${
-                              isActive
-                                ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 border-r-4 border-primary-500'
-                                : 'text-neutral-600 dark:text-slate-400 hover:bg-neutral-100 dark:hover:bg-slate-700 hover:text-primary-600 dark:hover:text-primary-400'
-                            }`}
-                            onClick={() => setSidebarOpen(false)}
-                            title={sidebarCollapsed ? item.label : ''}
-                          >
-                            <Icon size={18} />
-                            {!sidebarCollapsed && <span className="text-sm">{item.label}</span>}
-                          </Link>
-                        );
-                      })}
-                    </div>
-                  )}
-                </>
+                <SidebarSubmenu
+                  label="Credenciais"
+                  icon={Key}
+                  items={credentialsItems}
+                  isCollapsed={sidebarCollapsed}
+                  isOpen={credentialsOpen}
+                  onToggle={() => setCredentialsOpen(!credentialsOpen)}
+                  onNavigate={() => setSidebarOpen(false)}
+                />
               )}
 
               {/* Itens após Credenciais */}
