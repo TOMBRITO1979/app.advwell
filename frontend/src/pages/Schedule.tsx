@@ -850,34 +850,34 @@ const Schedule: React.FC = () => {
                 <table className="min-w-full divide-y divide-neutral-200 dark:divide-slate-700">
                   <thead className="bg-neutral-50 dark:bg-slate-700">
                     <tr>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                         Status
                       </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider whitespace-nowrap">
                         Data
                       </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                         Tipo
                       </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                         Status Kanban
                       </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                         Prioridade
                       </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                         Título
                       </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                         Cliente
                       </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                         Processo
                       </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                         Atribuído
                       </th>
-                      <th className="px-4 py-3 text-right text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                         Ações
                       </th>
                     </tr>
@@ -885,7 +885,7 @@ const Schedule: React.FC = () => {
                   <tbody className="bg-white dark:bg-slate-800 divide-y divide-neutral-200 dark:divide-slate-700">
                     {events.map((event) => (
                       <tr key={event.id} className="odd:bg-white dark:bg-slate-800 even:bg-neutral-50 dark:bg-slate-700 hover:bg-success-100 transition-colors">
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-3 text-center">
                           <button
                             onClick={() => handleToggleComplete(event)}
                             className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-neutral-600 dark:text-slate-400 hover:text-success-600 hover:bg-success-50 rounded-md transition-all duration-200"
@@ -898,15 +898,15 @@ const Schedule: React.FC = () => {
                             )}
                           </button>
                         </td>
-                        <td className="px-4 py-3 text-sm text-neutral-600 dark:text-slate-400">
+                        <td className="px-4 py-3 text-sm text-neutral-600 dark:text-slate-400 text-center whitespace-nowrap">
                           {formatDateTime(event.date)}
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-3 text-center">
                           <span className={`px-2 py-1 text-xs font-medium rounded-full ${eventTypeColors[event.type]}`}>
                             {eventTypeLabels[event.type]}
                           </span>
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-3 text-center">
                           {event.type === 'TAREFA' ? (
                             <KanbanStatusDropdown
                               value={(event.kanbanStatus as 'TODO' | 'IN_PROGRESS' | 'DONE') || 'TODO'}
@@ -916,25 +916,25 @@ const Schedule: React.FC = () => {
                             <span className="text-neutral-400 dark:text-slate-500">-</span>
                           )}
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-3 text-center">
                           <span className={`px-2 py-1 text-xs font-medium rounded-full ${priorityColors[event.priority || 'MEDIA']}`}>
                             {priorityLabels[event.priority || 'MEDIA']}
                           </span>
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-3 text-center">
                           <div className={event.completed ? 'line-through text-neutral-500' : 'text-neutral-900 dark:text-slate-100'}>
                             {event.title}
                           </div>
                         </td>
-                        <td className="px-4 py-3 text-sm text-neutral-600 dark:text-slate-400">
+                        <td className="px-4 py-3 text-sm text-neutral-600 dark:text-slate-400 text-center">
                           {event.client?.name || '-'}
                         </td>
-                        <td className="px-4 py-3 text-sm text-neutral-600 dark:text-slate-400">
+                        <td className="px-4 py-3 text-sm text-neutral-600 dark:text-slate-400 text-center">
                           {event.case?.processNumber || '-'}
                         </td>
-                        <td className="px-4 py-3 text-sm text-neutral-600 dark:text-slate-400">
+                        <td className="px-4 py-3 text-sm text-neutral-600 dark:text-slate-400 text-center">
                           {event.assignedUsers && event.assignedUsers.length > 0 ? (
-                            <div className="flex flex-wrap gap-1">
+                            <div className="flex flex-wrap gap-1 justify-center">
                               {event.assignedUsers.map((assignment) => (
                                 <span
                                   key={assignment.id}
@@ -948,8 +948,8 @@ const Schedule: React.FC = () => {
                             '-'
                           )}
                         </td>
-                        <td className="px-4 py-3">
-                          <div className="flex justify-end">
+                        <td className="px-4 py-3 text-center">
+                          <div className="flex justify-center">
                             <ActionsDropdown
                               actions={[
                                 {

@@ -353,18 +353,18 @@ const ToDo: React.FC = () => {
                 <table className="min-w-full divide-y divide-neutral-200 dark:divide-slate-700">
                   <thead className="bg-neutral-50 dark:bg-slate-700">
                     <tr>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">Status</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">Status Kanban</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">Tarefa</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">Prioridade</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">Vencimento</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">Ações</th>
+                      <th className="px-6 py-3 text-center text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">Status</th>
+                      <th className="px-6 py-3 text-center text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">Status Kanban</th>
+                      <th className="px-6 py-3 text-center text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">Tarefa</th>
+                      <th className="px-6 py-3 text-center text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">Prioridade</th>
+                      <th className="px-6 py-3 text-center text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">Vencimento</th>
+                      <th className="px-6 py-3 text-center text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">Ações</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white dark:bg-slate-800 divide-y divide-neutral-200 dark:divide-slate-700">
                     {todos.map((todo) => (
                       <tr key={todo.id} className="odd:bg-white dark:bg-slate-800 even:bg-neutral-50 dark:bg-slate-700 hover:bg-success-100 transition-colors">
-                        <td className="px-6 py-4">
+                        <td className="px-6 py-4 text-center">
                           <button
                             onClick={() => handleToggleComplete(todo)}
                             className="inline-flex items-center justify-center p-2 min-h-[44px] min-w-[44px] text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-md transition-all duration-200"
@@ -372,13 +372,13 @@ const ToDo: React.FC = () => {
                             {todo.completed ? <CheckCircle size={18} /> : <Circle size={18} />}
                           </button>
                         </td>
-                        <td className="px-6 py-4">
+                        <td className="px-6 py-4 text-center">
                           <KanbanStatusDropdown
                             value={(todo.kanbanStatus as 'TODO' | 'IN_PROGRESS' | 'DONE') || 'TODO'}
                             onChange={(status) => handleKanbanStatusChange(todo, status)}
                           />
                         </td>
-                        <td className="px-6 py-4">
+                        <td className="px-6 py-4 text-center">
                           <div className={todo.completed ? 'line-through text-neutral-400' : ''}>
                             <div className="font-medium">{todo.title}</div>
                             {todo.description && (
@@ -386,16 +386,16 @@ const ToDo: React.FC = () => {
                             )}
                           </div>
                         </td>
-                        <td className="px-6 py-4">
+                        <td className="px-6 py-4 text-center">
                           <span className={`px-2 py-1 rounded text-xs font-medium ${getPriorityColor(todo.priority)}`}>
                             {getPriorityLabel(todo.priority)}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-sm text-neutral-500 dark:text-slate-400">
+                        <td className="px-6 py-4 text-sm text-neutral-500 dark:text-slate-400 text-center">
                           {todo.date ? formatDate(todo.date) : '-'}
                         </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center justify-end">
+                        <td className="px-6 py-4 text-center">
+                          <div className="flex items-center justify-center">
                             <ActionsDropdown
                               actions={[
                                 {
