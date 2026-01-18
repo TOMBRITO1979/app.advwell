@@ -323,111 +323,110 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     return false;
   };
 
-  // Submenu Agenda (dropdown)
+  // Submenu Agenda (dropdown) - filtra por permissão
   const agendaItems = [
-    { path: '/schedule', label: 'Agendamentos', icon: Calendar },
-    { path: '/todos', label: 'Tarefas', icon: CheckSquare },
-    { path: '/kanban', label: 'Kanban', icon: LayoutGrid },
-    { path: '/hearings', label: 'Audiências', icon: Gavel },
-    { path: '/google-calendar', label: 'Google Calendar', icon: Calendar },
+    ...(hasPermission('schedule') ? [{ path: '/schedule', label: 'Agendamentos', icon: Calendar }] : []),
+    ...(hasPermission('todos') ? [{ path: '/todos', label: 'Tarefas', icon: CheckSquare }] : []),
+    ...(hasPermission('kanban') ? [{ path: '/kanban', label: 'Kanban', icon: LayoutGrid }] : []),
+    ...(hasPermission('hearings') ? [{ path: '/hearings', label: 'Audiências', icon: Gavel }] : []),
+    ...(hasPermission('google-calendar') ? [{ path: '/google-calendar', label: 'Google Calendar', icon: Calendar }] : []),
   ];
 
-  // Submenu Pessoas (dropdown) - Usuários só para ADMIN/SUPER_ADMIN
+  // Submenu Pessoas (dropdown) - filtra por permissão
   const pessoasItems = [
-    { path: '/clients', label: 'Clientes', icon: Users },
-    { path: '/adverses', label: 'Adversos', icon: UserPlus },
-    { path: '/lawyers', label: 'Advogados', icon: Scale },
-    ...((user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN')
-      ? [{ path: '/users', label: 'Usuários', icon: UserCog }]
-      : []),
+    ...(hasPermission('clients') ? [{ path: '/clients', label: 'Clientes', icon: Users }] : []),
+    ...(hasPermission('adverses') ? [{ path: '/adverses', label: 'Adversos', icon: UserPlus }] : []),
+    ...(hasPermission('lawyers') ? [{ path: '/lawyers', label: 'Advogados', icon: Scale }] : []),
+    ...(hasPermission('users') ? [{ path: '/users', label: 'Usuários', icon: UserCog }] : []),
   ];
 
-  // Submenu Processos (dropdown)
+  // Submenu Processos (dropdown) - filtra por permissão
   const processosItems = [
-    { path: '/cases', label: 'Judiciais', icon: FileText },
-    { path: '/pnj', label: 'PNJ', icon: FileText },
-    { path: '/deadlines', label: 'Prazos', icon: Clock },
-    { path: '/monitoring', label: 'Monitoramento', icon: Radar },
-    { path: '/updates', label: 'Atualizações', icon: Bell },
+    ...(hasPermission('cases') ? [{ path: '/cases', label: 'Judiciais', icon: FileText }] : []),
+    ...(hasPermission('pnj') ? [{ path: '/pnj', label: 'PNJ', icon: FileText }] : []),
+    ...(hasPermission('deadlines') ? [{ path: '/deadlines', label: 'Prazos', icon: Clock }] : []),
+    ...(hasPermission('monitoring') ? [{ path: '/monitoring', label: 'Monitoramento', icon: Radar }] : []),
+    ...(hasPermission('updates') ? [{ path: '/updates', label: 'Atualizações', icon: Bell }] : []),
   ];
 
-  // Submenu Marketing (dropdown) - itens condicionais por permissão/role
+  // Submenu Marketing (dropdown) - filtra por permissão
   const marketingItems = [
     ...(hasPermission('tags') ? [{ path: '/tags', label: 'Tags', icon: Tag }] : []),
-    { path: '/leads', label: 'Leads', icon: UserPlus },
+    ...(hasPermission('leads') ? [{ path: '/leads', label: 'Leads', icon: UserPlus }] : []),
     ...(hasPermission('lead-analytics') ? [{ path: '/lead-analytics', label: 'Analytics Leads', icon: BarChart3 }] : []),
-    ...((user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') ? [
-      { path: '/campaigns', label: 'Campanhas', icon: Mail },
-      { path: '/whatsapp-campaigns', label: 'Campanhas WhatsApp', icon: WhatsAppIcon },
-    ] : []),
+    ...(hasPermission('campaigns') ? [{ path: '/campaigns', label: 'Campanhas', icon: Mail }] : []),
+    ...(hasPermission('whatsapp-campaigns') ? [{ path: '/whatsapp-campaigns', label: 'Campanhas WhatsApp', icon: WhatsAppIcon }] : []),
   ];
 
-  // Submenu Financeiro (dropdown) - Assinatura só para ADMIN/SUPER_ADMIN
+  // Submenu Financeiro (dropdown) - filtra por permissão
   const financeiroItems = [
-    { path: '/financial', label: 'Fluxo de Caixa', icon: DollarSign },
-    { path: '/accounts-payable', label: 'Contas a Pagar', icon: CreditCard },
-    { path: '/cost-centers', label: 'Centros de Custo', icon: Building2 },
-    { path: '/client-subscriptions', label: 'Planos', icon: CreditCard },
-    ...((user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN')
-      ? [{ path: '/subscription', label: 'Assinatura', icon: Crown }]
-      : []),
+    ...(hasPermission('financial') ? [{ path: '/financial', label: 'Fluxo de Caixa', icon: DollarSign }] : []),
+    ...(hasPermission('accounts-payable') ? [{ path: '/accounts-payable', label: 'Contas a Pagar', icon: CreditCard }] : []),
+    ...(hasPermission('cost-centers') ? [{ path: '/cost-centers', label: 'Centros de Custo', icon: Building2 }] : []),
+    ...(hasPermission('client-subscriptions') ? [{ path: '/client-subscriptions', label: 'Planos', icon: CreditCard }] : []),
+    ...(hasPermission('subscription') ? [{ path: '/subscription', label: 'Assinatura', icon: Crown }] : []),
   ];
 
+  // Itens principais do menu - filtra por permissão
   const menuItems = [
-    { path: '/dashboard', label: 'Dashboard', icon: Home },
+    ...(hasPermission('dashboard') ? [{ path: '/dashboard', label: 'Dashboard', icon: Home }] : []),
     // Agenda, Pessoas, Processos, Marketing e Financeiro serão renderizados como dropdowns separadamente
-    { path: '/legal-documents', label: 'Documentos', icon: Scale },
-    { path: '/documents', label: 'Uploads', icon: FolderOpen },
-    { path: '/reports', label: 'Relatórios', icon: BarChart3 },
+    ...(hasPermission('legal-documents') ? [{ path: '/legal-documents', label: 'Documentos', icon: Scale }] : []),
+    ...(hasPermission('documents') ? [{ path: '/documents', label: 'Uploads', icon: FolderOpen }] : []),
+    ...(hasPermission('reports') ? [{ path: '/reports', label: 'Relatórios', icon: BarChart3 }] : []),
   ];
 
   // Portal do Cliente (apenas para Admin) - não vai para Marketing
-  if (user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') {
+  // Portal do Cliente - filtra por permissão
+  if (hasPermission('announcements')) {
     menuItems.push({ path: '/announcements', label: 'Portal do Cliente', icon: Megaphone });
   }
 
-  // Chatwell - mostrar apenas se habilitado e com acesso
-  if (chatwellStatus?.enabled && chatwellStatus?.hasAccess) {
+  // Chatwell - mostrar apenas se habilitado e com acesso e permissão
+  if (chatwellStatus?.enabled && chatwellStatus?.hasAccess && hasPermission('chatwell')) {
     menuItems.push({ path: '/chatwell', label: 'Chatwell', icon: MessageCircle });
   }
 
-  // Itens administrativos (Google Calendar e Usuários movidos para dropdowns)
-
-  // Submenu de Credenciais (apenas para ADMIN e SUPER_ADMIN)
-  const credentialsItems = (user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') ? [
-    { path: '/stripe-config', label: 'Config. Stripe', icon: CreditCard },
-    { path: '/smtp-settings', label: 'Config. SMTP', icon: Mail },
-    { path: '/whatsapp-settings', label: 'Config. WhatsApp', icon: MessageCircle },
-    { path: '/backup-settings', label: 'Email Backup', icon: Database },
-    { path: '/ai-config', label: 'Config. IA', icon: Bot },
-    { path: '/google-calendar-config', label: 'Config. Google Cal.', icon: Calendar },
-  ] : [];
+  // Submenu de Credenciais - filtra por permissão
+  const credentialsItems = [
+    ...(hasPermission('stripe-config') ? [{ path: '/stripe-config', label: 'Config. Stripe', icon: CreditCard }] : []),
+    ...(hasPermission('smtp-settings') ? [{ path: '/smtp-settings', label: 'Config. SMTP', icon: Mail }] : []),
+    ...(hasPermission('whatsapp-settings') ? [{ path: '/whatsapp-settings', label: 'Config. WhatsApp', icon: MessageCircle }] : []),
+    ...(hasPermission('backup-settings') ? [{ path: '/backup-settings', label: 'Email Backup', icon: Database }] : []),
+    ...(hasPermission('ai-config') ? [{ path: '/ai-config', label: 'Config. IA', icon: Bot }] : []),
+    ...(hasPermission('google-calendar-config') ? [{ path: '/google-calendar-config', label: 'Config. Google Cal.', icon: Calendar }] : []),
+  ];
 
   // Itens após Credenciais
   const afterCredentialsItems: typeof menuItems = [];
 
-  // Configurações vem logo após Credenciais
-  afterCredentialsItems.push({ path: '/settings', label: 'Configurações', icon: Settings });
-  // Meus Dados vem após Configurações
+  // Configurações - filtra por permissão
+  if (hasPermission('settings')) {
+    afterCredentialsItems.push({ path: '/settings', label: 'Configurações', icon: Settings });
+  }
+  // Meus Dados - sempre disponível para todos (dados pessoais)
   afterCredentialsItems.push({ path: '/meus-dados', label: 'Meus Dados', icon: Shield });
 
-  if (user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') {
+  // LGPD Requests - filtra por permissão
+  if (hasPermission('lgpd-requests')) {
     afterCredentialsItems.push({ path: '/lgpd-requests', label: 'LGPD Requests', icon: Shield });
+  }
+
+  // Logs de Auditoria - filtra por permissão
+  if (hasPermission('audit-logs')) {
     afterCredentialsItems.push({ path: '/audit-logs', label: 'Logs de Auditoria', icon: History });
   }
 
+  // Empresas e Alertas - apenas SUPER_ADMIN
   if (user?.role === 'SUPER_ADMIN') {
     afterCredentialsItems.push({ path: '/companies', label: 'Empresas', icon: Building2 });
     afterCredentialsItems.push({ path: '/subscription-alerts', label: 'Alertas Assinatura', icon: AlertTriangle });
   }
 
-  // Logs de Auditoria para todos os usuários (USER vê apenas seus próprios logs)
-  if (user?.role === 'USER') {
-    afterCredentialsItems.push({ path: '/audit-logs', label: 'Meus Logs', icon: History });
+  // Manual do Usuário - filtra por permissão
+  if (hasPermission('manual')) {
+    afterCredentialsItems.push({ path: '/manual', label: 'Manual', icon: Book });
   }
-
-  // Manual do Usuário (disponível para todos)
-  afterCredentialsItems.push({ path: '/manual', label: 'Manual', icon: Book });
 
   // Gerenciar Manual (apenas SUPER_ADMIN)
   if (user?.role === 'SUPER_ADMIN') {
@@ -605,25 +604,28 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </div>
 
             <nav className={`${sidebarCollapsed ? 'mt-2' : 'mt-8'} flex-1 overflow-y-auto pb-4`}>
-              {/* Dashboard (primeiro item fixo) */}
-              <Link
-                to="/dashboard"
-                className={`flex items-center ${
-                  sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-6'
-                } py-3 transition-all duration-200 font-medium ${
-                  location.pathname === '/dashboard'
-                    ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 border-r-4 border-primary-500'
-                    : 'text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-700 hover:text-primary-600 dark:hover:text-primary-400'
-                }`}
-                onClick={() => setSidebarOpen(false)}
-                title={sidebarCollapsed ? 'Dashboard' : ''}
-              >
-                <Home size={20} />
-                {!sidebarCollapsed && <span className="text-sm">Dashboard</span>}
-              </Link>
+              {/* Dashboard (primeiro item) - verifica permissão */}
+              {hasPermission('dashboard') && (
+                <Link
+                  to="/dashboard"
+                  className={`flex items-center ${
+                    sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-6'
+                  } py-3 transition-all duration-200 font-medium ${
+                    location.pathname === '/dashboard'
+                      ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 border-r-4 border-primary-500'
+                      : 'text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-700 hover:text-primary-600 dark:hover:text-primary-400'
+                  }`}
+                  onClick={() => setSidebarOpen(false)}
+                  title={sidebarCollapsed ? 'Dashboard' : ''}
+                >
+                  <Home size={20} />
+                  {!sidebarCollapsed && <span className="text-sm">Dashboard</span>}
+                </Link>
+              )}
 
-              {/* Dropdown Agenda */}
-              <SidebarSubmenu
+              {/* Dropdown Agenda - só mostra se tiver itens */}
+              {agendaItems.length > 0 && (
+                <SidebarSubmenu
                 label="Agenda"
                 icon={Calendar}
                 items={agendaItems.map(item => ({
@@ -636,34 +638,39 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 onToggle={() => setAgendaOpen(!agendaOpen)}
                 onNavigate={() => setSidebarOpen(false)}
               />
+              )}
 
-              {/* Dropdown Pessoas */}
-              <SidebarSubmenu
-                label="Pessoas"
-                icon={Users}
-                items={pessoasItems}
-                isCollapsed={sidebarCollapsed}
-                isOpen={pessoasOpen}
-                onToggle={() => setPessoasOpen(!pessoasOpen)}
-                onNavigate={() => setSidebarOpen(false)}
-              />
+              {/* Dropdown Pessoas - só mostra se tiver itens */}
+              {pessoasItems.length > 0 && (
+                <SidebarSubmenu
+                  label="Pessoas"
+                  icon={Users}
+                  items={pessoasItems}
+                  isCollapsed={sidebarCollapsed}
+                  isOpen={pessoasOpen}
+                  onToggle={() => setPessoasOpen(!pessoasOpen)}
+                  onNavigate={() => setSidebarOpen(false)}
+                />
+              )}
 
-              {/* Dropdown Processos */}
-              <SidebarSubmenu
-                label="Processos"
-                icon={FileText}
-                items={processosItems.map(item => ({
-                  ...item,
-                  badge: item.path === '/deadlines' && deadlinesDueToday ? deadlinesDueToday.count : undefined,
-                  badgeTitle: item.path === '/deadlines' && deadlinesDueToday ? `${deadlinesDueToday.count} prazo(s) para hoje` : undefined,
-                }))}
-                isCollapsed={sidebarCollapsed}
-                isOpen={processosOpen}
-                onToggle={() => setProcessosOpen(!processosOpen)}
-                onNavigate={() => setSidebarOpen(false)}
-              />
+              {/* Dropdown Processos - só mostra se tiver itens */}
+              {processosItems.length > 0 && (
+                <SidebarSubmenu
+                  label="Processos"
+                  icon={FileText}
+                  items={processosItems.map(item => ({
+                    ...item,
+                    badge: item.path === '/deadlines' && deadlinesDueToday ? deadlinesDueToday.count : undefined,
+                    badgeTitle: item.path === '/deadlines' && deadlinesDueToday ? `${deadlinesDueToday.count} prazo(s) para hoje` : undefined,
+                  }))}
+                  isCollapsed={sidebarCollapsed}
+                  isOpen={processosOpen}
+                  onToggle={() => setProcessosOpen(!processosOpen)}
+                  onNavigate={() => setSidebarOpen(false)}
+                />
+              )}
 
-              {/* Dropdown Marketing */}
+              {/* Dropdown Marketing - só mostra se tiver itens */}
               {marketingItems.length > 0 && (
                 <SidebarSubmenu
                   label="Marketing"
@@ -676,10 +683,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 />
               )}
 
-              {/* Dropdown Financeiro */}
-              <SidebarSubmenu
-                label="Financeiro"
-                icon={DollarSign}
+              {/* Dropdown Financeiro - só mostra se tiver itens */}
+              {financeiroItems.length > 0 && (
+                <SidebarSubmenu
+                  label="Financeiro"
+                  icon={DollarSign}
                 items={financeiroItems.map(item => ({
                   ...item,
                   badge: item.path === '/accounts-payable' && accountsDueToday ? accountsDueToday.count : undefined,
@@ -692,6 +700,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 onToggle={() => setFinanceiroOpen(!financeiroOpen)}
                 onNavigate={() => setSidebarOpen(false)}
               />
+              )}
 
               {/* Demais itens do menu (exceto Dashboard que já foi renderizado) */}
               {menuItems.filter(item => item.path !== '/dashboard').map((item) => {
