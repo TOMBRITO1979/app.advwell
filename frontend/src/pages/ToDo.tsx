@@ -355,7 +355,7 @@ const ToDo: React.FC = () => {
                     <tr>
                       <th className="px-6 py-3 text-center text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">Status</th>
                       <th className="px-6 py-3 text-center text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">Status Kanban</th>
-                      <th className="px-6 py-3 text-center text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">Tarefa</th>
+                      <th className="px-3 py-3 text-center text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase max-w-[240px]">Tarefa</th>
                       <th className="px-6 py-3 text-center text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">Prioridade</th>
                       <th className="px-6 py-3 text-center text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">Vencimento</th>
                       <th className="px-6 py-3 text-center text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">Ações</th>
@@ -378,11 +378,11 @@ const ToDo: React.FC = () => {
                             onChange={(status) => handleKanbanStatusChange(todo, status)}
                           />
                         </td>
-                        <td className="px-6 py-4 text-center">
+                        <td className="px-3 py-4 text-center max-w-[240px]">
                           <div className={todo.completed ? 'line-through text-neutral-400' : ''}>
-                            <div className="font-medium">{todo.title}</div>
+                            <div className="font-medium truncate">{todo.title}</div>
                             {todo.description && (
-                              <div className="text-sm text-neutral-500 dark:text-slate-400 mt-1">{todo.description}</div>
+                              <div className="text-sm text-neutral-500 dark:text-slate-400 mt-1 truncate">{todo.description}</div>
                             )}
                           </div>
                         </td>

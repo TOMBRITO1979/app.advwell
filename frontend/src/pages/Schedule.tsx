@@ -865,7 +865,7 @@ const Schedule: React.FC = () => {
                       <th className="px-4 py-3 text-center text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                         Prioridade
                       </th>
-                      <th className="px-4 py-3 text-center text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
+                      <th className="px-2 py-3 text-center text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider max-w-[176px]">
                         Título
                       </th>
                       <th className="px-4 py-3 text-center text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
@@ -921,8 +921,8 @@ const Schedule: React.FC = () => {
                             {priorityLabels[event.priority || 'MEDIA']}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-center">
-                          <div className={event.completed ? 'line-through text-neutral-500' : 'text-neutral-900 dark:text-slate-100'}>
+                        <td className="px-2 py-3 text-center max-w-[176px]">
+                          <div className={`truncate ${event.completed ? 'line-through text-neutral-500' : 'text-neutral-900 dark:text-slate-100'}`}>
                             {event.title}
                           </div>
                         </td>
