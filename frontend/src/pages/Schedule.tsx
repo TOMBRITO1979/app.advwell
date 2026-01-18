@@ -74,6 +74,7 @@ interface ScheduleFormData {
   description: string;
   type: 'COMPROMISSO' | 'TAREFA' | 'PRAZO' | 'AUDIENCIA' | 'PERICIA' | 'GOOGLE_MEET';
   priority: 'BAIXA' | 'MEDIA' | 'ALTA' | 'URGENTE';
+  kanbanStatus: 'TODO' | 'IN_PROGRESS' | 'DONE';
   date: string;
   endDate: string;
   clientId: string;
@@ -139,6 +140,7 @@ const Schedule: React.FC = () => {
     description: '',
     type: 'COMPROMISSO',
     priority: 'MEDIA',
+    kanbanStatus: 'TODO',
     date: '',
     endDate: '',
     clientId: '',
@@ -384,6 +386,8 @@ const Schedule: React.FC = () => {
         clientId: selectedClient?.id || null,
         caseId: selectedCase?.id || null,
         assignedUserIds: selectedUserIds.length > 0 ? selectedUserIds : undefined,
+        // Incluir kanbanStatus apenas para tarefas
+        kanbanStatus: formData.type === 'TAREFA' ? formData.kanbanStatus : undefined,
       };
 
       if (editingEvent) {
@@ -412,6 +416,7 @@ const Schedule: React.FC = () => {
       description: event.description || '',
       type: event.type,
       priority: event.priority || 'MEDIA',
+      kanbanStatus: event.kanbanStatus || 'TODO',
       date: toDatetimeLocal(event.date),
       endDate: event.endDate ? toDatetimeLocal(event.endDate) : '',
       clientId: event.client?.id || '',
@@ -515,6 +520,7 @@ const Schedule: React.FC = () => {
       description: '',
       type: 'COMPROMISSO',
       priority: 'MEDIA',
+      kanbanStatus: 'TODO',
       date: '',
       endDate: '',
       clientId: '',
@@ -1303,6 +1309,24 @@ const Schedule: React.FC = () => {
                     <option value="URGENTE">🔴 Urgente</option>
                   </select>
                 </div>
+
+                {/* Kanban Status - apenas para tarefas */}
+                {formData.type === 'TAREFA' && (
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
+                      Status Kanban
+                    </label>
+                    <select
+                      value={formData.kanbanStatus}
+                      onChange={(e) => setFormData({ ...formData, kanbanStatus: e.target.value as any })}
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    >
+                      <option value="TODO">📋 A Fazer</option>
+                      <option value="IN_PROGRESS">🔄 Em Andamento</option>
+                      <option value="DONE">✅ Concluído</option>
+                    </select>
+                  </div>
+                )}
 
                 {/* Date and Time */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

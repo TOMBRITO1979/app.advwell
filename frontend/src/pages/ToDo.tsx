@@ -19,6 +19,7 @@ interface TodoFormData {
   description: string;
   date: string;
   priority: Priority;
+  kanbanStatus: 'TODO' | 'IN_PROGRESS' | 'DONE';
   clientId: string;
   caseId: string;
   assignedUserIds: string[];
@@ -46,6 +47,7 @@ const ToDo: React.FC = () => {
     description: '',
     date: '',
     priority: 'MEDIA',
+    kanbanStatus: 'TODO',
     clientId: '',
     caseId: '',
     assignedUserIds: [],
@@ -121,16 +123,20 @@ const ToDo: React.FC = () => {
         ? `${formData.date}T12:00:00`
         : new Date().toISOString();
 
+      // Determinar completed baseado no kanbanStatus
+      const isCompleted = formData.kanbanStatus === 'DONE';
+
       const data = {
         title: formData.title,
         description: formData.description || undefined,
         priority: formData.priority,
+        kanbanStatus: formData.kanbanStatus,
         type: 'TAREFA',
         date: dateWithTime,
         // Converter strings vazias para null/undefined para evitar erro de validação UUID
         clientId: formData.clientId || undefined,
         caseId: formData.caseId || undefined,
-        completed: false,
+        completed: isCompleted,
         assignedUserIds: selectedUserIds,
       };
 
@@ -183,6 +189,7 @@ const ToDo: React.FC = () => {
       description: todo.description || '',
       date: todo.date ? todo.date.split('T')[0] : '',
       priority: todo.priority,
+      kanbanStatus: todo.kanbanStatus || 'TODO',
       clientId: todo.client?.id || '',
       caseId: todo.case?.id || '',
       assignedUserIds: todo.assignedUsers?.map(au => au.user.id) || [],
@@ -198,6 +205,7 @@ const ToDo: React.FC = () => {
       description: '',
       date: '',
       priority: 'MEDIA',
+      kanbanStatus: 'TODO',
       clientId: '',
       caseId: '',
       assignedUserIds: [],
@@ -512,6 +520,20 @@ const ToDo: React.FC = () => {
                         <option value="URGENTE">🔴 Urgente</option>
                       </select>
                     </div>
+                  </div>
+
+                  {/* Status Kanban */}
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Status Kanban</label>
+                    <select
+                      value={formData.kanbanStatus}
+                      onChange={(e) => setFormData({ ...formData, kanbanStatus: e.target.value as any })}
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    >
+                      <option value="TODO">📋 A Fazer</option>
+                      <option value="IN_PROGRESS">🔄 Em Andamento</option>
+                      <option value="DONE">✅ Concluído</option>
+                    </select>
                   </div>
 
                   {/* Assigned Users */}
