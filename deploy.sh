@@ -22,6 +22,16 @@ export S3_BUCKET_NAME="${S3_BUCKET_NAME:-advwell-app}"
 export SMTP_PORT="${SMTP_PORT:-587}"
 export PORTAL_URL="${PORTAL_URL:-https://cliente.advwell.pro}"
 
+# Monitoring services defaults
+export GRAFANA_ADMIN_USER="${GRAFANA_ADMIN_USER:-admin}"
+export GRAFANA_ADMIN_PASSWORD="${GRAFANA_ADMIN_PASSWORD:-AdvWell@2024}"
+export ALERT_EMAIL="${ALERT_EMAIL:-admin@advwell.pro}"
+export SMTP_FROM_EMAIL="${SMTP_FROM_EMAIL:-noreply@advwell.pro}"
+
+# Database defaults (for postgres-exporter)
+export POSTGRES_USER="${POSTGRES_USER:-postgres}"
+export POSTGRES_DB="${POSTGRES_DB:-advtom}"
+
 # Deploy the stack
 echo "🔧 Deploying Docker stack..."
 # Use envsubst to interpolate env vars (preserves YAML formatting unlike docker compose config)
