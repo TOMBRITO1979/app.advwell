@@ -12,7 +12,7 @@ AdvWell is a multitenant SaaS for Brazilian law firms with DataJud CNJ integrati
 - Grafana: https://grafana.advwell.pro
 - Landing Page: https://advwell.pro
 
-**Current Version:** v1.8.121 (Backend) | v1.8.166 (Frontend)
+**Current Version:** v1.8.122 (Backend) | v1.8.167 (Frontend)
 
 ## Technology Stack
 
@@ -54,6 +54,9 @@ curl https://api.advwell.pro/health
 
 # Database (via PostgreSQL VPS)
 ssh root@5.78.137.1 "docker exec advwell-postgres psql -U postgres -d advtom"
+
+# Worker DATABASE_URL fix (if worker fails to start)
+docker service update --env-add "DATABASE_URL=postgresql://postgres:PASSWORD@5.78.137.1:5432/advtom?connection_limit=15&pool_timeout=20&sslmode=require" advtom_backend-worker
 ```
 
 ## Architecture
@@ -77,19 +80,13 @@ Jobs processed by dedicated worker (not API replicas):
 
 | Module | Description |
 |--------|-------------|
-| Cases | Process management with DataJud sync (comarca, vara fields) |
+| Cases | Process management with DataJud sync |
 | Clients | Client management with portal access |
 | Financial | Cash flow with cost center integration |
-| Accounts Payable | Expense management with cost centers |
-| Cost Centers | Expense/income categorization |
+| Schedule | Calendar events, Kanban tasks, deadlines |
 | Monitoring | OAB publication monitoring via ADVAPI |
-| Schedule | Calendar events, hearings, deadlines |
-| Hearings | Hearing management with calendar view |
-| Kanban | Visual task management board |
 | Reports | Filtered reports with CSV export |
-| LGPD | Data privacy requests (access, deletion, portability) |
-| Audit Logs | Activity tracking for clients, cases, events |
-| Manual/FAQ | Documentation system for users |
+| LGPD | Data privacy requests |
 
 ## Key Files
 
@@ -100,19 +97,7 @@ Jobs processed by dedicated worker (not API replicas):
 | Queue config | `backend/src/queues/*.ts` |
 | Auth middleware | `backend/src/middleware/auth.ts` |
 | Docker config | `docker-compose.yml` |
-
-## Environment Variables
-
-**Required:**
-- `DATABASE_URL` - PostgreSQL (sslmode=require)
-- `JWT_SECRET` - Min 32 chars
-- `ENCRYPTION_KEY` - 64 hex chars
-- `REDIS_PASSWORD` - Redis auth
-- `DATAJUD_API_KEY` - CNJ API
-
-**Worker-specific:**
-- `ENABLE_QUEUE_PROCESSORS=true`
-- `ENABLE_CRON=true`
+| Shared types | `frontend/src/types/schedule.ts` |
 
 ## Adding Features
 
@@ -127,196 +112,38 @@ Jobs processed by dedicated worker (not API replicas):
 3. Apply: `cat migration.sql | ssh root@5.78.137.1 "docker exec -i advwell-postgres psql -U postgres -d advtom"`
 4. Run `npx prisma generate`
 
-## Plano de Segurança (Backup e Recuperação)
+## Backup e Recuperacao
 
-**IMPORTANTE:** Antes de fazer mudanças significativas no código, SEMPRE criar um ponto de recuperação.
-
----
-
-### Backups Realizados
-
-#### 1. Tags de Backup no Git (GitHub)
-
-| Tag | Data | Commit | Descrição |
-|-----|------|--------|-----------|
-| `backup-2026-01-17` | 2026-01-17 | d786f69 | Backup inicial |
-| `backup-2026-01-17-v2` | 2026-01-17 | 82f3cb3 | Backup com versões sincronizadas v1.8.120/v1.8.156 |
-
-**Onde está:** GitHub - https://github.com/TOMBRITO1979/app.advwell/tags
-
-#### 2. Backup Completo do Código (tar.gz)
-
-| Arquivo | Data | Tamanho | Conteúdo |
-|---------|------|---------|----------|
-| `advwell-backup-2026-01-17.tar.gz` | 2026-01-17 | 270 MB | Código + .env + node_modules + dist |
-
-**Onde está salvo:**
-- VPS Principal: `/root/advwell-backup-2026-01-17.tar.gz`
-- Computador local: `C:\Users\Bot 02\advwell-backup-2026-01-17.tar.gz`
-
-#### 3. Backup do Banco de Dados (PostgreSQL)
-
-| Arquivo | Data | Tamanho | Conteúdo |
-|---------|------|---------|----------|
-| `advtom_20260117.sql` | 2026-01-17 | 3.9 MB | Dump completo do banco (21.648 linhas) |
-
-**Onde está salvo:**
-- VPS PostgreSQL: `/backup/advtom_20260117.sql`
-- VPS Principal: `/root/advtom_20260117.sql`
-- Computador local: `C:\Users\Bot 02\advtom_20260117.sql`
-
-#### 4. Snapshots Hetzner (Imagem completa das VPS)
-
-| VPS | Nome do Snapshot | Data | Conteúdo |
-|-----|------------------|------|----------|
-| Principal (5.161.98.0) | `backup-completo-2026-01-17` | 2026-01-17 | Sistema completo (SO + Docker + configs + dados) |
-| PostgreSQL (5.78.137.1) | `backup-completo-2026-01-17` | 2026-01-17 | Sistema completo (SO + PostgreSQL + dados) |
-
-**Onde está:** Painel Hetzner - https://console.hetzner.cloud/ > Servidor > Snapshots
-
-**Como restaurar:** No painel Hetzner, selecione o snapshot e clique em "Create Server" para criar uma nova VPS a partir do snapshot, ou use "Rebuild" para restaurar o servidor existente.
-
----
-
-### Como Restaurar (Passo a Passo)
-
-#### Cenário 1: Código quebrou mas VPS está OK
-
+### Quick Recovery
 ```bash
-# Opção A: Voltar para tag de backup
-cd /root/advwell
-git fetch origin
+# Restore from git tag
 git reset --hard backup-2026-01-17-v2
-
-# Rebuild e deploy
 ./deploy.sh
 ```
 
-#### Cenário 2: Precisa restaurar do arquivo tar.gz
+### Backup Locations
+- **Git tags**: GitHub - https://github.com/TOMBRITO1979/app.advwell/tags
+- **VPS backup**: `/root/advwell-backup-2026-01-17.tar.gz`
+- **DB backup**: `/backup/advtom_20260117.sql` (PostgreSQL VPS)
 
+### Create New Backups
 ```bash
-# Na VPS Principal (5.161.98.0):
-
-# 1. Backup da pasta atual (por segurança)
-mv /root/advwell /root/advwell-quebrado
-
-# 2. Extrair backup
-cd /root
-tar -xzvf advwell-backup-2026-01-17.tar.gz
-
-# 3. Rebuild e deploy
-cd /root/advwell
-./deploy.sh
-```
-
-#### Cenário 3: Restaurar do computador local para VPS
-
-```powershell
-# No computador local (PowerShell):
-scp "C:\Users\Bot 02\advwell-backup-2026-01-17.tar.gz" root@5.161.98.0:/root/
-```
-
-```bash
-# Na VPS:
-cd /root
-mv advwell advwell-quebrado
-tar -xzvf advwell-backup-2026-01-17.tar.gz
-cd advwell
-./deploy.sh
-```
-
-#### Cenário 4: Restaurar banco de dados (quando houver backup)
-
-```bash
-# Na VPS do PostgreSQL (5.78.137.1):
-docker exec -i advwell-postgres psql -U postgres -d advtom < /backup/advtom_YYYYMMDD.sql
-```
-
----
-
-### Criar Novos Backups
-
-#### Nova tag no Git:
-```bash
-git tag -a backup-YYYY-MM-DD -m "Descrição do backup"
+# Git tag
+git tag -a backup-YYYY-MM-DD -m "Description"
 git push origin backup-YYYY-MM-DD
-```
 
-#### Novo arquivo tar.gz:
-```bash
-tar -czvf /root/advwell-backup-YYYY-MM-DD.tar.gz -C /root advwell
-```
-
-#### Backup do PostgreSQL:
-```bash
+# Database
 ssh root@5.78.137.1 "docker exec advwell-postgres pg_dump -U postgres advtom > /backup/advtom_$(date +%Y%m%d).sql"
 ```
 
-#### Baixar backup para computador local:
-```powershell
-scp root@5.161.98.0:/root/advwell-backup-YYYY-MM-DD.tar.gz .
-```
+### Automated Backup (S3)
+- Script: `/root/advwell/automated-backup.sh`
+- Schedule: Daily at 02:00
+- Bucket: `s3://advwell-app/database-backups/`
 
----
+## Access Information
 
-### Backup Automático S3 (Configurado)
-
-O backup automático do banco de dados para AWS S3 está **ativo**.
-
-| Configuração | Valor |
-|--------------|-------|
-| Script | `/root/advwell/automated-backup.sh` |
-| Horário | Todo dia às 02:00 (cron) |
-| Bucket S3 | `s3://advwell-app/database-backups/` |
-| Retenção S3 | 30 dias |
-| Retenção local | 7 dias |
-| Backups locais | `/root/advwell/backups/` |
-| Log | `/root/advwell/backups/backup.log` |
-
-**Comandos úteis:**
-```bash
-# Ver log do backup
-cat /root/advwell/backups/backup.log
-
-# Executar backup manualmente
-/root/advwell/automated-backup.sh
-
-# Listar backups no S3
-export AWS_ACCESS_KEY_ID=$(grep '^AWS_ACCESS_KEY_ID=' /root/advwell/.env | cut -d'=' -f2)
-export AWS_SECRET_ACCESS_KEY=$(grep '^AWS_SECRET_ACCESS_KEY=' /root/advwell/.env | cut -d'=' -f2)
-export AWS_DEFAULT_REGION=us-east-1
-aws s3 ls s3://advwell-app/database-backups/
-
-# Ver cron configurado
-crontab -l
-```
-
----
-
-### Outras Opções de Backup
-
-| Tipo | Comando/Ação | Frequência |
-|------|--------------|------------|
-| **Backup S3 automático** | Cron às 02:00 | Diário (automático) |
-| **Snapshot VPS Principal** | Painel Hetzner (5.161.98.0) | Antes de mudanças na infra |
-| **Snapshot VPS PostgreSQL** | Painel Hetzner (5.78.137.1) | Semanal |
-| **Clone local** | `git clone` para máquina local | Manter atualizado |
-
----
-
-### Procedimento Antes de Mudanças Críticas
-
-1. Criar tag de backup: `git tag -a backup-YYYY-MM-DD -m "Antes de [descrição]"`
-2. Push da tag: `git push origin backup-YYYY-MM-DD`
-3. Criar tar.gz se mudança for arriscada: `tar -czvf /root/advwell-backup-YYYY-MM-DD.tar.gz -C /root advwell`
-4. Considerar snapshot da VPS se mudança afetar infraestrutura
-5. Backup do banco se mudança afetar schema
-
----
-
-### Informações de Acesso
-
-| VPS | IP | Usuário | Descrição |
-|-----|-----|---------|-----------|
-| Principal | 5.161.98.0 | root | Backend, Frontend, Redis, Traefik |
-| PostgreSQL | 5.78.137.1 | root | Banco de dados dedicado |
+| VPS | IP | Description |
+|-----|-----|-------------|
+| Principal | 5.161.98.0 | Backend, Frontend, Redis, Traefik |
+| PostgreSQL | 5.78.137.1 | Dedicated database |
