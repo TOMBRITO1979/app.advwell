@@ -179,19 +179,19 @@ const Updates: React.FC = () => {
             <table className="min-w-full divide-y divide-neutral-200 dark:divide-slate-700">
               <thead className="bg-neutral-50 dark:bg-slate-700">
                 <tr>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-center text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                     Processo
                   </th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-center text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                     Cliente
                   </th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-center text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                     Assunto
                   </th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-center text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                     Último Andamento
                   </th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider whitespace-nowrap">
+                  <th className="px-6 py-3 text-center text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider whitespace-nowrap">
                     Atualizado em
                   </th>
                   <th className="px-6 py-3 text-center text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
