@@ -731,12 +731,12 @@ const Monitoring: React.FC = () => {
                     <table className="w-full">
                       <thead className="bg-neutral-50 dark:bg-slate-700">
                         <tr>
-                          <th className="px-4 py-3 text-center text-sm font-medium text-neutral-600 dark:text-slate-400">Advogado</th>
-                          <th className="px-4 py-3 text-center text-sm font-medium text-neutral-600 dark:text-slate-400">OAB</th>
-                          <th className="px-4 py-3 text-center text-sm font-medium text-neutral-600 dark:text-slate-400">Status</th>
-                          <th className="px-4 py-3 text-center text-sm font-medium text-neutral-600 dark:text-slate-400">Publicacoes</th>
-                          <th className="px-4 py-3 text-center text-sm font-medium text-neutral-600 dark:text-slate-400">Ultima Consulta</th>
-                          <th className="px-4 py-3 text-center text-sm font-medium text-neutral-600 dark:text-slate-400">Acoes</th>
+                          <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-slate-400">Advogado</th>
+                          <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-slate-400">OAB</th>
+                          <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-slate-400">Status</th>
+                          <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-slate-400">Publicacoes</th>
+                          <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-slate-400">Ultima Consulta</th>
+                          <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-slate-400">Acoes</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-neutral-200 dark:divide-slate-700">
@@ -843,13 +843,13 @@ const Monitoring: React.FC = () => {
                       <table className="w-full">
                         <thead className="bg-neutral-50 dark:bg-slate-700">
                           <tr>
-                            <th className="px-4 py-3 text-center text-sm font-medium text-neutral-600 dark:text-slate-400">Processo</th>
-                            <th className="px-4 py-3 text-center text-sm font-medium text-neutral-600 dark:text-slate-400">Tribunal</th>
-                            <th className="px-4 py-3 text-center text-sm font-medium text-neutral-600 dark:text-slate-400">Data</th>
-                            <th className="px-4 py-3 text-center text-sm font-medium text-neutral-600 dark:text-slate-400">Tipo</th>
-                            <th className="px-4 py-3 text-center text-sm font-medium text-neutral-600 dark:text-slate-400">Advogado</th>
-                            <th className="px-4 py-3 text-center text-sm font-medium text-neutral-600 dark:text-slate-400">Status</th>
-                            <th className="px-4 py-3 text-center text-sm font-medium text-neutral-600 dark:text-slate-400">Acoes</th>
+                            <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-slate-400">Processo</th>
+                            <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-slate-400">Tribunal</th>
+                            <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-slate-400">Data</th>
+                            <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-slate-400">Tipo</th>
+                            <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-slate-400">Advogado</th>
+                            <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-slate-400">Status</th>
+                            <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-slate-400">Acoes</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-neutral-200 dark:divide-slate-700">
@@ -940,11 +940,11 @@ const Monitoring: React.FC = () => {
                     <table className="w-full">
                       <thead className="bg-neutral-50 dark:bg-slate-700">
                         <tr>
-                          <th className="px-4 py-3 text-center text-sm font-medium text-neutral-600 dark:text-slate-400">Advogado</th>
-                          <th className="px-4 py-3 text-center text-sm font-medium text-neutral-600 dark:text-slate-400">Periodo</th>
-                          <th className="px-4 py-3 text-center text-sm font-medium text-neutral-600 dark:text-slate-400">Status</th>
-                          <th className="px-4 py-3 text-center text-sm font-medium text-neutral-600 dark:text-slate-400">Publicacoes</th>
-                          <th className="px-4 py-3 text-center text-sm font-medium text-neutral-600 dark:text-slate-400">Data</th>
+                          <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-slate-400">Advogado</th>
+                          <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-slate-400">Periodo</th>
+                          <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-slate-400">Status</th>
+                          <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-slate-400">Publicacoes</th>
+                          <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-slate-400">Data</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-neutral-200 dark:divide-slate-700">
