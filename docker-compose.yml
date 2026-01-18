@@ -244,7 +244,7 @@ services:
 
   # OTIMIZADO: 16GB server - 2 replicas para 50-80 escritorios
   backend:
-    image: tomautomations/advtom-backend:v1.8.122
+    image: tomautomations/advtom-backend:v1.8.123
     environment:
       # Timezone Brasil (São Paulo)
       - TZ=${TZ:-America/Sao_Paulo}
@@ -380,7 +380,7 @@ services:
   # ISSUE 1 FIX: Separa processamento de jobs das replicas API
   # ===========================================
   backend-worker:
-    image: tomautomations/advtom-backend:v1.8.122
+    image: tomautomations/advtom-backend:v1.8.123
     environment:
       - TZ=${TZ:-America/Sao_Paulo}
       # ISSUE 3 FIX: sslmode=require para conexao criptografada
