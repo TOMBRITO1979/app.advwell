@@ -18,7 +18,7 @@ export const config = {
 
   jwt: {
     secret: process.env.JWT_SECRET || '', // Validated at startup in index.ts
-    expiresIn: '1h', // Access token: 1 hora
+    expiresIn: '8h', // Access token: 8 horas (dia de trabalho)
     refreshExpiresIn: '7d', // Refresh token: 7 dias
   },
 
