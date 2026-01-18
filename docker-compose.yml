@@ -14,7 +14,7 @@ services:
       --tcp-keepalive 300
       --tcp-backlog 511
     environment:
-      - TZ=${TZ:-America/Sao_Paulo}
+      - TZ=${TZ}
     volumes:
       - redis_data:/data
     networks:
@@ -51,7 +51,7 @@ services:
     image: redis:7-alpine
     entrypoint: ["/bin/sh", "/etc/redis/replica-entrypoint.sh"]
     environment:
-      - TZ=${TZ:-America/Sao_Paulo}
+      - TZ=${TZ}
       - REDIS_PASSWORD=${REDIS_PASSWORD}
     volumes:
       - redis_replica_data:/data
@@ -84,7 +84,7 @@ services:
     image: redis:7-alpine
     entrypoint: ["/bin/sh", "/etc/redis/sentinel-entrypoint.sh"]
     environment:
-      - TZ=${TZ:-America/Sao_Paulo}
+      - TZ=${TZ}
       - REDIS_PASSWORD=${REDIS_PASSWORD}
     volumes:
       - ./redis/sentinel.conf.tmpl:/etc/redis/sentinel.conf.tmpl:ro
@@ -116,7 +116,7 @@ services:
     image: redis:7-alpine
     entrypoint: ["/bin/sh", "/etc/redis/sentinel-entrypoint.sh"]
     environment:
-      - TZ=${TZ:-America/Sao_Paulo}
+      - TZ=${TZ}
       - REDIS_PASSWORD=${REDIS_PASSWORD}
     volumes:
       - ./redis/sentinel.conf.tmpl:/etc/redis/sentinel.conf.tmpl:ro
@@ -148,7 +148,7 @@ services:
     image: redis:7-alpine
     entrypoint: ["/bin/sh", "/etc/redis/sentinel-entrypoint.sh"]
     environment:
-      - TZ=${TZ:-America/Sao_Paulo}
+      - TZ=${TZ}
       - REDIS_PASSWORD=${REDIS_PASSWORD}
     volumes:
       - ./redis/sentinel.conf.tmpl:/etc/redis/sentinel.conf.tmpl:ro
@@ -192,8 +192,8 @@ services:
   #   volumes:
   #     - postgres_data:/var/lib/postgresql/data
   #   environment:
-  #     - TZ=${TZ:-America/Sao_Paulo}
-  #     - PGTZ=${TZ:-America/Sao_Paulo}
+  #     - TZ=${TZ}
+  #     - PGTZ=${TZ}
   #     - POSTGRES_DB=${POSTGRES_DB:-advtom}
   #     - POSTGRES_USER=${POSTGRES_USER:-postgres}
   #     - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -247,7 +247,7 @@ services:
     image: tomautomations/advtom-backend:v1.8.126
     environment:
       # Timezone Brasil (São Paulo)
-      - TZ=${TZ:-America/Sao_Paulo}
+      - TZ=${TZ}
 
       # Database connection (dedicated PostgreSQL VPS - 5.78.137.1)
       # OTIMIZADO: 25 conexoes x 3 replicas = 75 conexoes (max_connections=500 no servidor dedicado)
@@ -273,12 +273,12 @@ services:
       # AWS S3 (Usuário exclusivo: advwell-s3-user)
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-      - AWS_REGION=${AWS_REGION:-us-east-1}
-      - S3_BUCKET_NAME=${S3_BUCKET_NAME:-advwell-app}
+      - AWS_REGION=${AWS_REGION}
+      - S3_BUCKET_NAME=${S3_BUCKET_NAME}
 
       # SMTP
       - SMTP_HOST=${SMTP_HOST}
-      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_PORT=${SMTP_PORT}
       - SMTP_USER=${SMTP_USER}
       - SMTP_PASSWORD=${SMTP_PASSWORD}
       - SMTP_FROM=${SMTP_FROM}
@@ -286,7 +286,7 @@ services:
       # API URLs
       - API_URL=${API_URL}
       - FRONTEND_URL=${FRONTEND_URL}
-      - PORTAL_URL=${PORTAL_URL:-https://cliente.advwell.pro}
+      - PORTAL_URL=${PORTAL_URL}
 
       # DataJud CNJ API
       - DATAJUD_API_KEY=${DATAJUD_API_KEY}
@@ -382,7 +382,7 @@ services:
   backend-worker:
     image: tomautomations/advtom-backend:v1.8.126
     environment:
-      - TZ=${TZ:-America/Sao_Paulo}
+      - TZ=${TZ}
       # ISSUE 3 FIX: sslmode=require para conexao criptografada
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@5.78.137.1:5432/${POSTGRES_DB}?connection_limit=10&pool_timeout=20&sslmode=require
       - REDIS_SENTINEL_ENABLED=true
@@ -395,16 +395,16 @@ services:
       - ENCRYPTION_KEY=${ENCRYPTION_KEY}
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-      - AWS_REGION=${AWS_REGION:-us-east-1}
-      - S3_BUCKET_NAME=${S3_BUCKET_NAME:-advwell-app}
+      - AWS_REGION=${AWS_REGION}
+      - S3_BUCKET_NAME=${S3_BUCKET_NAME}
       - SMTP_HOST=${SMTP_HOST}
-      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_PORT=${SMTP_PORT}
       - SMTP_USER=${SMTP_USER}
       - SMTP_PASSWORD=${SMTP_PASSWORD}
       - SMTP_FROM=${SMTP_FROM}
       - API_URL=${API_URL}
       - FRONTEND_URL=${FRONTEND_URL}
-      - PORTAL_URL=${PORTAL_URL:-https://cliente.advwell.pro}
+      - PORTAL_URL=${PORTAL_URL}
       - DATAJUD_API_KEY=${DATAJUD_API_KEY}
       # ADVAPI Integration (Monitoramento OAB)
       - ADVAPI_BASE_URL=${ADVAPI_BASE_URL}
@@ -470,7 +470,7 @@ services:
   frontend:
     image: tomautomations/advtom-frontend:v1.8.175
     environment:
-      - TZ=${TZ:-America/Sao_Paulo}
+      - TZ=${TZ}
       - VITE_API_URL=${VITE_API_URL}
     networks:
       - network_public
@@ -635,7 +635,7 @@ services:
       - alertmanager_data:/alertmanager
     environment:
       - SMTP_HOST=${SMTP_HOST:-smtp.gmail.com}
-      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_PORT=${SMTP_PORT}
       - SMTP_FROM_EMAIL=${SMTP_FROM_EMAIL:-noreply@advwell.pro}
       - SMTP_USER=${SMTP_USER}
       - SMTP_PASSWORD=${SMTP_PASSWORD}
@@ -670,7 +670,7 @@ services:
       - GF_USERS_ALLOW_SIGN_UP=false
       - GF_ANALYTICS_REPORTING_ENABLED=false
       - GF_ANALYTICS_CHECK_FOR_UPDATES=false
-      - TZ=${TZ:-America/Sao_Paulo}
+      - TZ=${TZ}
     volumes:
       - grafana_data:/var/lib/grafana
       - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro

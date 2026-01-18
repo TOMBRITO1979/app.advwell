@@ -15,12 +15,20 @@ set -a
 source .env
 set +a
 
+# Set default values for optional variables (envsubst doesn't support ${VAR:-default} syntax)
+export TZ="${TZ:-America/Sao_Paulo}"
+export AWS_REGION="${AWS_REGION:-us-east-1}"
+export S3_BUCKET_NAME="${S3_BUCKET_NAME:-advwell-app}"
+export SMTP_PORT="${SMTP_PORT:-587}"
+export PORTAL_URL="${PORTAL_URL:-https://cliente.advwell.pro}"
+
 # Deploy the stack
 echo "🔧 Deploying Docker stack..."
-# Use docker compose config to properly interpolate env vars, then deploy
-docker compose config > /tmp/docker-compose-resolved.yml
-docker stack deploy -c /tmp/docker-compose-resolved.yml advtom
-rm -f /tmp/docker-compose-resolved.yml
+# Use envsubst to interpolate env vars (preserves YAML formatting unlike docker compose config)
+# Keep resolved file in project directory so relative paths work correctly
+envsubst < docker-compose.yml > docker-compose-resolved.yml
+docker stack deploy -c docker-compose-resolved.yml advtom
+rm -f docker-compose-resolved.yml
 
 echo "⏳ Waiting for services to start..."
 sleep 10
