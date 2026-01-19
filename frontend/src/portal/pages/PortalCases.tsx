@@ -68,8 +68,8 @@ export default function PortalCases() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Meus Processos</h1>
-            <p className="text-gray-500">{totalCount} processo(s) encontrado(s)</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Meus Processos</h1>
+            <p className="text-gray-500 dark:text-slate-400">{totalCount} processo(s) encontrado(s)</p>
           </div>
           <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0">
             {[
@@ -84,7 +84,7 @@ export default function PortalCases() {
                 className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
                   filter === item.value
                     ? 'bg-green-600 text-white'
-                    : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+                    : 'bg-white dark:bg-slate-800 text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 border border-gray-200 dark:border-slate-600'
                 }`}
               >
                 {item.label}
@@ -94,20 +94,20 @@ export default function PortalCases() {
         </div>
 
         {/* Tabs */}
-        <div className="border-b border-gray-200">
+        <div className="border-b border-gray-200 dark:border-slate-700">
           <nav className="-mb-px flex space-x-8">
             <button
               onClick={() => setActiveTab('judicial')}
               className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${
                 activeTab === 'judicial'
-                  ? 'border-green-500 text-green-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'border-green-500 text-green-600 dark:text-green-400'
+                  : 'border-transparent text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-300 hover:border-gray-300 dark:hover:border-slate-600'
               }`}
             >
               <Briefcase size={18} />
               Processos Judiciais
               <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
-                activeTab === 'judicial' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
+                activeTab === 'judicial' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-slate-400'
               }`}>
                 {cases.length}
               </span>
@@ -116,14 +116,14 @@ export default function PortalCases() {
               onClick={() => setActiveTab('pnj')}
               className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${
                 activeTab === 'pnj'
-                  ? 'border-green-500 text-green-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'border-green-500 text-green-600 dark:text-green-400'
+                  : 'border-transparent text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-300 hover:border-gray-300 dark:hover:border-slate-600'
               }`}
             >
               <FileText size={18} />
               Processos Não Judiciais
               <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
-                activeTab === 'pnj' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
+                activeTab === 'pnj' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-slate-400'
               }`}>
                 {pnjs.length}
               </span>
@@ -135,10 +135,10 @@ export default function PortalCases() {
         {activeTab === 'judicial' && (
           <>
             {filteredCases.length === 0 ? (
-              <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 p-12 text-center">
-                <Briefcase className="mx-auto h-16 w-16 text-gray-300 mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhum processo judicial encontrado</h3>
-                <p className="text-gray-500">
+              <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 p-12 text-center">
+                <Briefcase className="mx-auto h-16 w-16 text-gray-300 dark:text-slate-600 mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 dark:text-slate-100 mb-2">Nenhum processo judicial encontrado</h3>
+                <p className="text-gray-500 dark:text-slate-400">
                   {filter === 'ALL'
                     ? 'Você ainda não possui processos judiciais cadastrados.'
                     : 'Nenhum processo judicial com este status.'}
@@ -153,7 +153,7 @@ export default function PortalCases() {
                     <Link
                       key={caseItem.id}
                       to={`/portal/cases/${caseItem.id}`}
-                      className="block bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all"
+                      className="block bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 p-6 hover:shadow-md dark:hover:shadow-slate-700/50 transition-all"
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1 min-w-0">
@@ -163,18 +163,18 @@ export default function PortalCases() {
                               {status.label}
                             </span>
                           </div>
-                          <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                          <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-1">
                             {caseItem.processNumber}
                           </h3>
-                          <p className="text-gray-600 mb-2">{caseItem.subject}</p>
-                          <p className="text-sm text-gray-500">{caseItem.court}</p>
+                          <p className="text-gray-600 dark:text-slate-300 mb-2">{caseItem.subject}</p>
+                          <p className="text-sm text-gray-500 dark:text-slate-400">{caseItem.court}</p>
 
                           {/* Last movement */}
                           {caseItem.lastMovement && (
-                            <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-                              <p className="text-xs text-gray-500 uppercase font-medium mb-1">Última Movimentação</p>
-                              <p className="text-sm text-gray-700">{caseItem.lastMovement.movementName}</p>
-                              <p className="text-xs text-gray-500 mt-1">
+                            <div className="mt-4 p-3 bg-gray-50 dark:bg-slate-700/50 rounded-lg">
+                              <p className="text-xs text-gray-500 dark:text-slate-400 uppercase font-medium mb-1">Última Movimentação</p>
+                              <p className="text-sm text-gray-700 dark:text-slate-300">{caseItem.lastMovement.movementName}</p>
+                              <p className="text-xs text-gray-500 dark:text-slate-500 mt-1">
                                 {format(new Date(caseItem.lastMovement.movementDate), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
                               </p>
                             </div>
@@ -182,13 +182,13 @@ export default function PortalCases() {
 
                           {/* Info for client */}
                           {caseItem.informarCliente && (
-                            <div className="mt-3 p-3 bg-green-50 border-l-4 border-green-500 rounded">
-                              <p className="text-xs text-green-600 uppercase font-medium mb-1">Informação do Escritório</p>
-                              <p className="text-sm text-green-800">{caseItem.informarCliente}</p>
+                            <div className="mt-3 p-3 bg-green-50 dark:bg-green-900/20 border-l-4 border-green-500 rounded">
+                              <p className="text-xs text-green-600 dark:text-green-400 uppercase font-medium mb-1">Informação do Escritório</p>
+                              <p className="text-sm text-green-800 dark:text-green-300">{caseItem.informarCliente}</p>
                             </div>
                           )}
                         </div>
-                        <ChevronRight className="text-gray-400 flex-shrink-0 mt-4" size={24} />
+                        <ChevronRight className="text-gray-400 dark:text-slate-500 flex-shrink-0 mt-4" size={24} />
                       </div>
                     </Link>
                   );
@@ -202,10 +202,10 @@ export default function PortalCases() {
         {activeTab === 'pnj' && (
           <>
             {filteredPNJs.length === 0 ? (
-              <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 p-12 text-center">
-                <FileText className="mx-auto h-16 w-16 text-gray-300 mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhum processo não judicial encontrado</h3>
-                <p className="text-gray-500">
+              <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 p-12 text-center">
+                <FileText className="mx-auto h-16 w-16 text-gray-300 dark:text-slate-600 mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 dark:text-slate-100 mb-2">Nenhum processo não judicial encontrado</h3>
+                <p className="text-gray-500 dark:text-slate-400">
                   {filter === 'ALL'
                     ? 'Você ainda não possui processos não judiciais cadastrados.'
                     : 'Nenhum processo não judicial com este status.'}
@@ -220,7 +220,7 @@ export default function PortalCases() {
                     <Link
                       key={pnj.id}
                       to={`/portal/pnjs/${pnj.id}`}
-                      className="block bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all"
+                      className="block bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 p-6 hover:shadow-md dark:hover:shadow-slate-700/50 transition-all"
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1 min-w-0">
@@ -229,24 +229,24 @@ export default function PortalCases() {
                               <StatusIcon size={14} />
                               {status.label}
                             </span>
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-700">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400">
                               PNJ
                             </span>
                           </div>
-                          <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                          <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-1">
                             {pnj.number}
                           </h3>
-                          <p className="text-gray-600 mb-2">{pnj.title}</p>
+                          <p className="text-gray-600 dark:text-slate-300 mb-2">{pnj.title}</p>
                           {pnj.protocol && (
-                            <p className="text-sm text-gray-500">Protocolo: {pnj.protocol}</p>
+                            <p className="text-sm text-gray-500 dark:text-slate-400">Protocolo: {pnj.protocol}</p>
                           )}
 
                           {/* Last movement */}
                           {pnj.lastMovement && (
-                            <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-                              <p className="text-xs text-gray-500 uppercase font-medium mb-1">Último Andamento</p>
-                              <p className="text-sm text-gray-700">{pnj.lastMovement.description}</p>
-                              <p className="text-xs text-gray-500 mt-1">
+                            <div className="mt-4 p-3 bg-gray-50 dark:bg-slate-700/50 rounded-lg">
+                              <p className="text-xs text-gray-500 dark:text-slate-400 uppercase font-medium mb-1">Último Andamento</p>
+                              <p className="text-sm text-gray-700 dark:text-slate-300">{pnj.lastMovement.description}</p>
+                              <p className="text-xs text-gray-500 dark:text-slate-500 mt-1">
                                 {format(new Date(pnj.lastMovement.date), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
                               </p>
                             </div>
@@ -254,13 +254,13 @@ export default function PortalCases() {
 
                           {/* Description */}
                           {pnj.description && (
-                            <div className="mt-3 p-3 bg-blue-50 border-l-4 border-blue-500 rounded">
-                              <p className="text-xs text-blue-600 uppercase font-medium mb-1">Descrição</p>
-                              <p className="text-sm text-blue-800 line-clamp-2">{pnj.description}</p>
+                            <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 rounded">
+                              <p className="text-xs text-blue-600 dark:text-blue-400 uppercase font-medium mb-1">Descrição</p>
+                              <p className="text-sm text-blue-800 dark:text-blue-300 line-clamp-2">{pnj.description}</p>
                             </div>
                           )}
                         </div>
-                        <ChevronRight className="text-gray-400 flex-shrink-0 mt-4" size={24} />
+                        <ChevronRight className="text-gray-400 dark:text-slate-500 flex-shrink-0 mt-4" size={24} />
                       </div>
                     </Link>
                   );

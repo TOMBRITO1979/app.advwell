@@ -72,10 +72,10 @@ export default function PortalLogin() {
   // Loading inicial
   if (loadingCompany) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-emerald-100">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-emerald-100 dark:from-slate-900 dark:to-slate-800">
         <div className="text-center">
-          <Loader2 className="h-12 w-12 animate-spin text-green-600 mx-auto" />
-          <p className="mt-4 text-gray-600">Carregando...</p>
+          <Loader2 className="h-12 w-12 animate-spin text-green-600 dark:text-green-400 mx-auto" />
+          <p className="mt-4 text-gray-600 dark:text-slate-400">Carregando...</p>
         </div>
       </div>
     );
@@ -84,18 +84,18 @@ export default function PortalLogin() {
   // Escritório não encontrado
   if (notFound) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 px-4">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-900 dark:to-slate-800 px-4">
         <div className="max-w-md w-full text-center">
           <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-8">
-            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <AlertCircle className="h-8 w-8 text-red-600" />
+            <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+              <AlertCircle className="h-8 w-8 text-red-600 dark:text-red-400" />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Escritório não encontrado</h1>
-            <p className="text-gray-600 mb-6">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100 mb-2">Escritório não encontrado</h1>
+            <p className="text-gray-600 dark:text-slate-400 mb-6">
               Não foi possível encontrar o escritório para este endereço.
               Verifique a URL e tente novamente.
             </p>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-500 dark:text-slate-500">
               Se você acredita que isso é um erro, entre em contato com o escritório.
             </p>
           </div>
@@ -105,7 +105,7 @@ export default function PortalLogin() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-emerald-100 px-4 py-12">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-emerald-100 dark:from-slate-900 dark:to-slate-800 px-4 py-12">
       <div className="max-w-md w-full">
         <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-8">
           {/* Logo e nome do escritório */}
@@ -117,25 +117,25 @@ export default function PortalLogin() {
                 className="h-20 w-auto mx-auto mb-4 object-contain"
               />
             ) : (
-              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Scale className="h-10 w-10 text-green-600" />
+              <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Scale className="h-10 w-10 text-green-600 dark:text-green-400" />
               </div>
             )}
-            <h1 className="text-2xl font-bold text-gray-900">{company?.name}</h1>
-            <p className="text-green-600 font-medium mt-1">Área do Cliente</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">{company?.name}</h1>
+            <p className="text-green-600 dark:text-green-400 font-medium mt-1">Área do Cliente</p>
           </div>
 
           {/* Formulário de login - SEM links de cadastro ou recuperação */}
           <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
-              <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg flex items-start gap-3">
+              <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-lg flex items-start gap-3">
                 <AlertCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
                 <span className="text-sm">{error}</span>
               </div>
             )}
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1.5">
                 Email
               </label>
               <input
@@ -144,13 +144,13 @@ export default function PortalLogin() {
                 onChange={e => setEmail(e.target.value)}
                 required
                 autoComplete="email"
-                className="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
+                className="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500"
                 placeholder="seu@email.com"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1.5">
                 Senha
               </label>
               <div className="relative">
@@ -160,13 +160,13 @@ export default function PortalLogin() {
                   onChange={e => setPassword(e.target.value)}
                   required
                   autoComplete="current-password"
-                  className="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors pr-12"
+                  className="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors pr-12 text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500"
                   placeholder="Digite sua senha"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-300"
                 >
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
@@ -176,7 +176,7 @@ export default function PortalLogin() {
             <button
               type="submit"
               disabled={loading || !company}
-              className="w-full py-3 px-4 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 focus:ring-4 focus:ring-green-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full py-3 px-4 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 focus:ring-4 focus:ring-green-200 dark:focus:ring-green-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>
@@ -190,15 +190,15 @@ export default function PortalLogin() {
           </form>
 
           {/* Mensagem de suporte - contato com escritório */}
-          <div className="mt-8 pt-6 border-t border-gray-100 text-center">
-            <p className="text-sm text-gray-500">
+          <div className="mt-8 pt-6 border-t border-gray-100 dark:border-slate-700 text-center">
+            <p className="text-sm text-gray-500 dark:text-slate-400">
               Problemas para acessar? Entre em contato com o escritório.
             </p>
           </div>
         </div>
 
         {/* Footer discreto */}
-        <p className="text-center text-xs text-gray-400 mt-6">
+        <p className="text-center text-xs text-gray-400 dark:text-slate-500 mt-6">
           Sistema de gestão jurídica
         </p>
       </div>

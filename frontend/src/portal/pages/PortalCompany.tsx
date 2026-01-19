@@ -37,7 +37,7 @@ export default function PortalCompany() {
     return (
       <PortalLayout>
         <div className="text-center py-12">
-          <p className="text-gray-500">Dados do escritório não encontrados</p>
+          <p className="text-gray-500 dark:text-slate-400">Dados do escritório não encontrados</p>
         </div>
       </PortalLayout>
     );
@@ -48,12 +48,12 @@ export default function PortalCompany() {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Escritório</h1>
-          <p className="text-gray-500">Informações de contato do escritório</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Escritório</h1>
+          <p className="text-gray-500 dark:text-slate-400">Informações de contato do escritório</p>
         </div>
 
         {/* Company card */}
-        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
           {/* Header with logo */}
           <div className="bg-gradient-to-r from-green-600 to-green-700 p-8">
             <div className="flex items-center gap-6">
@@ -61,10 +61,10 @@ export default function PortalCompany() {
                 <img
                   src={company.logo}
                   alt={company.name}
-                  className="w-20 h-20 rounded-xl object-cover bg-white dark:bg-slate-800"
+                  className="w-20 h-20 rounded-xl object-cover bg-white"
                 />
               ) : (
-                <div className="w-20 h-20 bg-white dark:bg-slate-800/20 rounded-xl flex items-center justify-center">
+                <div className="w-20 h-20 bg-white/20 rounded-xl flex items-center justify-center">
                   <Building2 className="text-white" size={40} />
                 </div>
               )}
@@ -80,18 +80,18 @@ export default function PortalCompany() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* Contact info */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Contato</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4">Contato</h3>
                 <div className="space-y-4">
                   {company.email && (
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                        <Mail className="text-green-600" size={20} />
+                      <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+                        <Mail className="text-green-600 dark:text-green-400" size={20} />
                       </div>
                       <div>
-                        <p className="text-sm text-gray-500">Email</p>
+                        <p className="text-sm text-gray-500 dark:text-slate-400">Email</p>
                         <a
                           href={`mailto:${company.email}`}
-                          className="font-medium text-green-600 hover:text-green-700"
+                          className="font-medium text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300"
                         >
                           {company.email}
                         </a>
@@ -100,14 +100,14 @@ export default function PortalCompany() {
                   )}
                   {company.phone && (
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                        <Phone className="text-green-600" size={20} />
+                      <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+                        <Phone className="text-green-600 dark:text-green-400" size={20} />
                       </div>
                       <div>
-                        <p className="text-sm text-gray-500">Telefone</p>
+                        <p className="text-sm text-gray-500 dark:text-slate-400">Telefone</p>
                         <a
                           href={`tel:${company.phone}`}
-                          className="font-medium text-green-600 hover:text-green-700"
+                          className="font-medium text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300"
                         >
                           {company.phone}
                         </a>
@@ -120,21 +120,21 @@ export default function PortalCompany() {
               {/* Address */}
               {(company.address || company.city || company.state) && (
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Endereço</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4">Endereço</h3>
                   <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <MapPin className="text-green-600" size={20} />
+                    <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <MapPin className="text-green-600 dark:text-green-400" size={20} />
                     </div>
                     <div>
                       {company.address && (
-                        <p className="font-medium text-gray-900">{company.address}</p>
+                        <p className="font-medium text-gray-900 dark:text-slate-100">{company.address}</p>
                       )}
                       {(company.city || company.state) && (
-                        <p className="text-gray-600">
+                        <p className="text-gray-600 dark:text-slate-300">
                           {[company.city, company.state].filter(Boolean).join(' - ')}
                         </p>
                       )}
-                      {company.zipCode && <p className="text-gray-500">{company.zipCode}</p>}
+                      {company.zipCode && <p className="text-gray-500 dark:text-slate-400">{company.zipCode}</p>}
                     </div>
                   </div>
                 </div>

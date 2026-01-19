@@ -39,7 +39,7 @@ export default function PortalProfile() {
     return (
       <PortalLayout>
         <div className="text-center py-12">
-          <p className="text-gray-500">Perfil não encontrado</p>
+          <p className="text-gray-500 dark:text-slate-400">Perfil não encontrado</p>
         </div>
       </PortalLayout>
     );
@@ -48,11 +48,11 @@ export default function PortalProfile() {
   const InfoRow = ({ icon: Icon, label, value }: { icon: typeof User; label: string; value: string | null }) => {
     if (!value) return null;
     return (
-      <div className="flex items-start gap-3 py-3 border-b border-gray-100 last:border-0">
-        <Icon className="text-gray-400 mt-0.5 flex-shrink-0" size={20} />
+      <div className="flex items-start gap-3 py-3 border-b border-gray-100 dark:border-slate-700 last:border-0">
+        <Icon className="text-gray-400 dark:text-slate-500 mt-0.5 flex-shrink-0" size={20} />
         <div>
-          <p className="text-sm text-gray-500">{label}</p>
-          <p className="font-medium text-gray-900">{value}</p>
+          <p className="text-sm text-gray-500 dark:text-slate-400">{label}</p>
+          <p className="font-medium text-gray-900 dark:text-slate-100">{value}</p>
         </div>
       </div>
     );
@@ -63,16 +63,16 @@ export default function PortalProfile() {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Meus Dados</h1>
-          <p className="text-gray-500">Informações do seu cadastro no escritório</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Meus Dados</h1>
+          <p className="text-gray-500 dark:text-slate-400">Informações do seu cadastro no escritório</p>
         </div>
 
         {/* Profile card */}
-        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
           {/* Header */}
           <div className="bg-gradient-to-r from-green-600 to-green-700 p-6">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-white dark:bg-slate-800/20 rounded-full flex items-center justify-center">
+              <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
                 <User className="text-white" size={32} />
               </div>
               <div>
@@ -89,7 +89,7 @@ export default function PortalProfile() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Personal info */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Dados Pessoais</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4">Dados Pessoais</h3>
                 <div className="space-y-1">
                   <InfoRow icon={User} label="CPF/CNPJ" value={profile.cpf} />
                   <InfoRow icon={User} label="RG" value={profile.rg} />
@@ -107,7 +107,7 @@ export default function PortalProfile() {
 
               {/* Additional info */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Informações Adicionais</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4">Informações Adicionais</h3>
                 <div className="space-y-1">
                   <InfoRow icon={Briefcase} label="Profissão" value={profile.profession} />
                   <InfoRow icon={User} label="Nacionalidade" value={profile.nationality} />
@@ -125,26 +125,26 @@ export default function PortalProfile() {
 
             {/* Address */}
             {(profile.address || profile.city || profile.state) && (
-              <div className="mt-6 pt-6 border-t border-gray-100">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Endereço</h3>
+              <div className="mt-6 pt-6 border-t border-gray-100 dark:border-slate-700">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4">Endereço</h3>
                 <div className="flex items-start gap-3">
-                  <MapPin className="text-gray-400 mt-0.5 flex-shrink-0" size={20} />
+                  <MapPin className="text-gray-400 dark:text-slate-500 mt-0.5 flex-shrink-0" size={20} />
                   <div>
-                    {profile.address && <p className="font-medium text-gray-900">{profile.address}</p>}
+                    {profile.address && <p className="font-medium text-gray-900 dark:text-slate-100">{profile.address}</p>}
                     {(profile.city || profile.state) && (
-                      <p className="text-gray-600">
+                      <p className="text-gray-600 dark:text-slate-300">
                         {[profile.city, profile.state].filter(Boolean).join(' - ')}
                       </p>
                     )}
-                    {profile.zipCode && <p className="text-gray-500">{profile.zipCode}</p>}
+                    {profile.zipCode && <p className="text-gray-500 dark:text-slate-400">{profile.zipCode}</p>}
                   </div>
                 </div>
               </div>
             )}
 
             {/* Client since */}
-            <div className="mt-6 pt-6 border-t border-gray-100">
-              <p className="text-sm text-gray-500">
+            <div className="mt-6 pt-6 border-t border-gray-100 dark:border-slate-700">
+              <p className="text-sm text-gray-500 dark:text-slate-400">
                 Cliente desde {format(new Date(profile.createdAt), "MMMM 'de' yyyy", { locale: ptBR })}
               </p>
             </div>
@@ -152,8 +152,8 @@ export default function PortalProfile() {
         </div>
 
         {/* Info notice */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <p className="text-sm text-blue-700">
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+          <p className="text-sm text-blue-700 dark:text-blue-400">
             Para atualizar seus dados cadastrais, entre em contato com o escritório.
           </p>
         </div>
