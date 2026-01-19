@@ -53,7 +53,7 @@ const SidebarSubmenu: React.FC<SidebarSubmenuProps> = ({
       const itemHeight = 40; // Cada item: py-2.5 (20px) + conteúdo (20px)
 
       // Posiciona o primeiro item na mesma altura do ícone
-      let top = rect.top - headerHeight + (rect.height - itemHeight) / 2;
+      let top = rect.top - 70;
 
       // Garante que não saia da tela
       const menuHeight = items.length * itemHeight + headerHeight;
