@@ -82,7 +82,7 @@ services:
         condition: on-failure
 
   backend:
-    image: tomautomations/advwell-backend:v52-user-profile
+    image: tomautomations/advtom-backend:v1.8.129
     environment:
       # Database - USING PGBOUNCER
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@pgbouncer:5432/${POSTGRES_DB}
@@ -155,7 +155,7 @@ services:
         - "traefik.docker.network=network_public"
 
   frontend:
-    image: tomautomations/advwell-frontend:v67-buttons-mobile
+    image: tomautomations/advtom-frontend:v1.8.205
     environment:
       - VITE_API_URL=${VITE_API_URL}
     networks:

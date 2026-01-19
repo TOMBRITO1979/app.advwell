@@ -19,6 +19,7 @@ Sistema SaaS completo para escritórios de advocacia brasileiros com integraçã
 - **Contas a Pagar**: Gestão de contas com recorrência
 - **Agenda**: Eventos com integração Google Meet
 - **Prazos**: Acompanhamento com cores por urgência
+- **Monitoramento OAB**: Publicações do Diário Oficial via ADVAPI
 - **Gestão Financeira**: Receitas e despesas
 - **Documentos**: Armazenamento S3 + links externos
 - **Import/Export CSV**: Para clientes e processos
@@ -106,6 +107,11 @@ docker service logs advtom_backend -f   # Ver logs
 - `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD` - Email
 - `DATAJUD_API_KEY` - API DataJud CNJ
 - `API_URL`, `FRONTEND_URL` - URLs dos serviços
+
+### ADVAPI (Monitoramento OAB)
+- `ADVAPI_BASE_URL` - URL da ADVAPI (https://api.advtom.com)
+- `ADVAPI_API_KEY` - API Key para autenticação
+- `ADVAPI_WEBHOOK_KEY` - Key para validar webhooks
 
 ### Segurança
 - `HEALTH_CHECK_KEY` - Protege `/health/detailed`

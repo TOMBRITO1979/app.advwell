@@ -18,7 +18,7 @@ services:
           - node.role == manager
 
   backend:
-    image: tomautomations/advwell-backend:v40-pdf-fix-real
+    image: tomautomations/advtom-backend:v1.8.129
     environment:
       # Database
       - DATABASE_URL=postgresql://postgres:YOUR_SECURE_POSTGRES_PASSWORD_HERE@postgres:5432/advtom
@@ -65,7 +65,7 @@ services:
         - "traefik.docker.network=network_public"
 
   frontend:
-    image: tomautomations/advwell-frontend:v25-pdf-converter
+    image: tomautomations/advtom-frontend:v1.8.205
     environment:
       - VITE_API_URL=https://api.advwell.pro/api
     networks:
