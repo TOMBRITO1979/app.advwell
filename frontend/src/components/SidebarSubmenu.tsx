@@ -49,11 +49,14 @@ const SidebarSubmenu: React.FC<SidebarSubmenuProps> = ({
   const updatePosition = () => {
     if (containerRef.current) {
       const rect = containerRef.current.getBoundingClientRect();
-      // Centraliza verticalmente com o ícone
-      const menuHeight = items.length * 40 + 44; // ~40px por item + 44px do header
-      let top = rect.top + rect.height / 2 - 22; // Alinha header com o ícone
+      const headerHeight = 41; // Header: py-2 (16px) + text (20px) + border (1px) + spacing (4px)
+      const itemHeight = 40; // Cada item: py-2.5 (20px) + conteúdo (20px)
+
+      // Posiciona o primeiro item na mesma altura do ícone
+      let top = rect.top - headerHeight + (rect.height - itemHeight) / 2;
 
       // Garante que não saia da tela
+      const menuHeight = items.length * itemHeight + headerHeight;
       const maxTop = window.innerHeight - menuHeight - 10;
       if (top > maxTop) top = maxTop;
       if (top < 10) top = 10;
