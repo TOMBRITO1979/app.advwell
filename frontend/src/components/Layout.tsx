@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import api from '../services/api';
 import SidebarSubmenu from './SidebarSubmenu';
+import SidebarTooltip from './SidebarTooltip';
 import {
   Home,
   Users,
@@ -109,7 +110,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = React.useState(true);
   const [credentialsOpen, setCredentialsOpen] = React.useState(false);
   const [agendaOpen, setAgendaOpen] = React.useState(false);
   const [pessoasOpen, setPessoasOpen] = React.useState(false);
@@ -606,21 +607,22 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <nav className={`${sidebarCollapsed ? 'mt-2' : 'mt-8'} flex-1 overflow-y-auto pb-4`}>
               {/* Dashboard (primeiro item) - verifica permissão */}
               {hasPermission('dashboard') && (
-                <Link
-                  to="/dashboard"
-                  className={`flex items-center ${
-                    sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-6'
-                  } py-3 transition-all duration-200 font-medium ${
-                    location.pathname === '/dashboard'
-                      ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 border-r-4 border-primary-500'
-                      : 'text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-700 hover:text-primary-600 dark:hover:text-primary-400'
-                  }`}
-                  onClick={() => setSidebarOpen(false)}
-                  title={sidebarCollapsed ? 'Dashboard' : ''}
-                >
-                  <Home size={20} />
-                  {!sidebarCollapsed && <span className="text-sm">Dashboard</span>}
-                </Link>
+                <SidebarTooltip label="Dashboard" isCollapsed={sidebarCollapsed}>
+                  <Link
+                    to="/dashboard"
+                    className={`flex items-center ${
+                      sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-6'
+                    } py-3 transition-all duration-200 font-medium ${
+                      location.pathname === '/dashboard'
+                        ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 border-r-4 border-primary-500'
+                        : 'text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-700 hover:text-primary-600 dark:hover:text-primary-400'
+                    }`}
+                    onClick={() => setSidebarOpen(false)}
+                  >
+                    <Home size={20} />
+                    {!sidebarCollapsed && <span className="text-sm">Dashboard</span>}
+                  </Link>
+                </SidebarTooltip>
               )}
 
               {/* Dropdown Agenda - só mostra se tiver itens */}
@@ -724,41 +726,41 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 const badgeTitle = getBadgeTitle();
 
                 return (
-                  <Link
-                    key={item.path}
-                    to={item.path}
-                    className={`flex items-center ${
-                      sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-6'
-                    } py-3 transition-all duration-200 font-medium ${
-                      isActive
-                        ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 border-r-4 border-primary-500'
-                        : 'text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-700 hover:text-primary-600 dark:hover:text-primary-400'
-                    }`}
-                    onClick={() => setSidebarOpen(false)}
-                    title={sidebarCollapsed ? badgeTitle : ''}
-                  >
-                    <div className="relative">
-                      <Icon size={20} />
-                      {showMessagesBadge && sidebarCollapsed && (
-                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center">
-                          {badgeCount && badgeCount > 9 ? '9+' : badgeCount}
-                        </span>
-                      )}
-                    </div>
-                    {!sidebarCollapsed && (
-                      <div className="flex items-center justify-between flex-1">
-                        <span className="text-sm">{item.label}</span>
-                        {showMessagesBadge && (
-                          <span
-                            className="bg-red-500 text-white text-xs font-bold rounded-full px-2 py-0.5 ml-2"
-                            title={badgeTitle}
-                          >
-                            {badgeCount}
+                  <SidebarTooltip key={item.path} label={badgeTitle} isCollapsed={sidebarCollapsed}>
+                    <Link
+                      to={item.path}
+                      className={`flex items-center ${
+                        sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-6'
+                      } py-3 transition-all duration-200 font-medium ${
+                        isActive
+                          ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 border-r-4 border-primary-500'
+                          : 'text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-700 hover:text-primary-600 dark:hover:text-primary-400'
+                      }`}
+                      onClick={() => setSidebarOpen(false)}
+                    >
+                      <div className="relative">
+                        <Icon size={20} />
+                        {showMessagesBadge && sidebarCollapsed && (
+                          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                            {badgeCount && badgeCount > 9 ? '9+' : badgeCount}
                           </span>
                         )}
                       </div>
-                    )}
-                  </Link>
+                      {!sidebarCollapsed && (
+                        <div className="flex items-center justify-between flex-1">
+                          <span className="text-sm">{item.label}</span>
+                          {showMessagesBadge && (
+                            <span
+                              className="bg-red-500 text-white text-xs font-bold rounded-full px-2 py-0.5 ml-2"
+                              title={badgeTitle}
+                            >
+                              {badgeCount}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </Link>
+                  </SidebarTooltip>
                 );
               })}
 
@@ -781,22 +783,22 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 const isActive = location.pathname.startsWith(item.path);
 
                 return (
-                  <Link
-                    key={item.path}
-                    to={item.path}
-                    className={`flex items-center ${
-                      sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-6'
-                    } py-3 transition-all duration-200 font-medium ${
-                      isActive
-                        ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 border-r-4 border-primary-500'
-                        : 'text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-700 hover:text-primary-600 dark:hover:text-primary-400'
-                    }`}
-                    onClick={() => setSidebarOpen(false)}
-                    title={sidebarCollapsed ? item.label : ''}
-                  >
-                    <Icon size={20} />
-                    {!sidebarCollapsed && <span className="text-sm">{item.label}</span>}
-                  </Link>
+                  <SidebarTooltip key={item.path} label={item.label} isCollapsed={sidebarCollapsed}>
+                    <Link
+                      to={item.path}
+                      className={`flex items-center ${
+                        sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-6'
+                      } py-3 transition-all duration-200 font-medium ${
+                        isActive
+                          ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 border-r-4 border-primary-500'
+                          : 'text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-700 hover:text-primary-600 dark:hover:text-primary-400'
+                      }`}
+                      onClick={() => setSidebarOpen(false)}
+                    >
+                      <Icon size={20} />
+                      {!sidebarCollapsed && <span className="text-sm">{item.label}</span>}
+                    </Link>
+                  </SidebarTooltip>
                 );
               })}
             </nav>
