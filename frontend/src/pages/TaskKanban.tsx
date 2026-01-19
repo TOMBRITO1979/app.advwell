@@ -390,8 +390,8 @@ const TaskKanban: React.FC = () => {
         )}
 
         {/* Navigation arrows - footer */}
-        <div className="flex items-center justify-center gap-4 mt-3 pt-3 border-t border-gray-100 dark:border-slate-700">
-          {/* Left arrow - move to previous column */}
+        <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100 dark:border-slate-700">
+          {/* Left arrow */}
           {getPreviousColumn(getTaskColumn(task)) ? (
             <button
               onClick={(e) => {
@@ -399,17 +399,17 @@ const TaskKanban: React.FC = () => {
                 const prevColumn = getPreviousColumn(getTaskColumn(task));
                 if (prevColumn) moveTaskToColumn(task, prevColumn);
               }}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 text-gray-600 dark:text-slate-300 hover:text-gray-800 dark:hover:text-slate-100 transition-colors text-sm font-medium"
+              className="flex items-center gap-0.5 text-xs text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 transition-colors"
               title="Mover para coluna anterior"
             >
-              <ChevronLeft className="w-4 h-4" />
-              Voltar
+              <ChevronLeft className="w-3.5 h-3.5" />
+              <span>Voltar</span>
             </button>
           ) : (
-            <div className="w-20" />
+            <div />
           )}
 
-          {/* Right arrow - move to next column */}
+          {/* Right arrow */}
           {getNextColumn(getTaskColumn(task)) ? (
             <button
               onClick={(e) => {
@@ -417,14 +417,14 @@ const TaskKanban: React.FC = () => {
                 const nextColumn = getNextColumn(getTaskColumn(task));
                 if (nextColumn) moveTaskToColumn(task, nextColumn);
               }}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 text-gray-600 dark:text-slate-300 hover:text-gray-800 dark:hover:text-slate-100 transition-colors text-sm font-medium"
+              className="flex items-center gap-0.5 text-xs text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 transition-colors"
               title="Mover para próxima coluna"
             >
-              Avançar
-              <ChevronRight className="w-4 h-4" />
+              <span>Avançar</span>
+              <ChevronRight className="w-3.5 h-3.5" />
             </button>
           ) : (
-            <div className="w-20" />
+            <div />
           )}
         </div>
       </div>
