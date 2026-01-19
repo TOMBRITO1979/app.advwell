@@ -625,8 +625,8 @@ const Documents: React.FC = () => {
       {/* Add Document Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="bg-white dark:bg-slate-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-            <div className="p-6 border-b border-neutral-200 dark:border-slate-700">
+          <div className="bg-white dark:bg-slate-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto flex flex-col">
+            <div className="sticky top-0 z-10 p-6 border-b border-neutral-200 dark:border-slate-700 bg-white dark:bg-slate-800">
               <h2 className="text-xl font-bold text-neutral-800 dark:text-slate-200">
                 {editMode ? 'Editar Documento' : 'Adicionar Documento'}
               </h2>

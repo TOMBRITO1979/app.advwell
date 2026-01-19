@@ -468,7 +468,7 @@ services:
       - health_check_key
 
   frontend:
-    image: tomautomations/advtom-frontend:v1.8.180
+    image: tomautomations/advtom-frontend:v1.8.181
     environment:
       - TZ=${TZ}
       - VITE_API_URL=${VITE_API_URL}

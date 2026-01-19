@@ -288,6 +288,142 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
             padding: 12px 14px;
           }
         }
+
+        /* ========== DARK MODE ========== */
+
+        /* Container principal - dark */
+        .dark .rich-text-editor {
+          box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        /* Toolbar - dark */
+        .dark .rich-text-editor .ql-toolbar {
+          border-color: #475569;
+          background: linear-gradient(to bottom, #334155, #1e293b);
+        }
+
+        /* Grupos de botões - dark */
+        .dark .rich-text-editor .ql-toolbar .ql-formats {
+          border-right-color: #475569;
+        }
+
+        /* Botões da toolbar - dark */
+        .dark .rich-text-editor .ql-toolbar button {
+          color: #e2e8f0;
+        }
+
+        .dark .rich-text-editor .ql-toolbar button:hover {
+          background-color: #475569;
+        }
+
+        .dark .rich-text-editor .ql-toolbar button .ql-stroke {
+          stroke: #e2e8f0;
+        }
+
+        .dark .rich-text-editor .ql-toolbar button .ql-fill {
+          fill: #e2e8f0;
+        }
+
+        .dark .rich-text-editor .ql-toolbar button.ql-active {
+          background-color: #3b82f6;
+        }
+
+        /* Dropdowns - dark */
+        .dark .rich-text-editor .ql-toolbar .ql-picker {
+          color: #e2e8f0;
+        }
+
+        .dark .rich-text-editor .ql-toolbar .ql-picker:hover {
+          background-color: #475569;
+        }
+
+        .dark .rich-text-editor .ql-toolbar .ql-picker-label {
+          color: #e2e8f0;
+        }
+
+        .dark .rich-text-editor .ql-toolbar .ql-picker-label .ql-stroke {
+          stroke: #e2e8f0;
+        }
+
+        .dark .rich-text-editor .ql-toolbar .ql-picker-options {
+          background-color: #1e293b;
+          border-color: #475569;
+        }
+
+        .dark .rich-text-editor .ql-toolbar .ql-picker-item {
+          color: #e2e8f0;
+        }
+
+        .dark .rich-text-editor .ql-toolbar .ql-picker-item:hover {
+          background-color: #334155;
+        }
+
+        /* Container do editor - dark */
+        .dark .rich-text-editor .ql-container {
+          border-color: #475569;
+          background-color: #1e293b;
+        }
+
+        /* Área de edição - dark */
+        .dark .rich-text-editor .ql-editor {
+          color: #f1f5f9;
+        }
+
+        .dark .rich-text-editor .ql-editor.ql-blank::before {
+          color: #64748b;
+        }
+
+        /* Estilos de conteúdo - dark */
+        .dark .rich-text-editor .ql-editor blockquote {
+          color: #cbd5e1;
+          background-color: #334155;
+          border-left-color: #3b82f6;
+        }
+
+        .dark .rich-text-editor .ql-editor pre.ql-syntax {
+          background-color: #0f172a;
+          color: #e2e8f0;
+        }
+
+        .dark .rich-text-editor .ql-editor a {
+          color: #60a5fa;
+        }
+
+        .dark .rich-text-editor .ql-editor a:hover {
+          color: #93c5fd;
+        }
+
+        /* Tooltip - dark */
+        .dark .rich-text-editor .ql-tooltip {
+          background-color: #1e293b;
+          border-color: #475569;
+          color: #e2e8f0;
+        }
+
+        .dark .rich-text-editor .ql-tooltip input[type="text"] {
+          background-color: #334155;
+          border-color: #475569;
+          color: #f1f5f9;
+        }
+
+        .dark .rich-text-editor .ql-tooltip a.ql-action,
+        .dark .rich-text-editor .ql-tooltip a.ql-remove {
+          color: #60a5fa;
+        }
+
+        /* Snow theme overrides - dark */
+        .dark .rich-text-editor .ql-snow .ql-stroke {
+          stroke: #e2e8f0;
+        }
+
+        .dark .rich-text-editor .ql-snow .ql-fill,
+        .dark .rich-text-editor .ql-snow .ql-stroke.ql-fill {
+          fill: #e2e8f0;
+        }
+
+        .dark .rich-text-editor .ql-snow .ql-picker {
+          color: #e2e8f0;
+        }
       `}</style>
       <ReactQuill
         theme="snow"
