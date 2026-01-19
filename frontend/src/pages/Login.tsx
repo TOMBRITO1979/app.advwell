@@ -35,18 +35,18 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-100 via-green-200 to-teal-200 px-4 relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-100 via-green-200 to-teal-200 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 px-4 relative overflow-hidden">
       {/* Animated background geometric shapes */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-32 -left-32 w-[500px] h-[500px] bg-emerald-300/30 rounded-full blur-3xl animate-blob"></div>
-        <div className="absolute top-1/4 -right-24 w-96 h-96 bg-green-300/25 rounded-full blur-3xl animate-blob animation-delay-2000"></div>
-        <div className="absolute -bottom-32 left-1/4 w-[600px] h-[600px] bg-teal-200/20 rounded-full blur-3xl animate-blob animation-delay-4000"></div>
+        <div className="absolute -top-32 -left-32 w-[500px] h-[500px] bg-emerald-300/30 dark:bg-emerald-900/20 rounded-full blur-3xl animate-blob"></div>
+        <div className="absolute top-1/4 -right-24 w-96 h-96 bg-green-300/25 dark:bg-green-900/15 rounded-full blur-3xl animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-32 left-1/4 w-[600px] h-[600px] bg-teal-200/20 dark:bg-teal-900/10 rounded-full blur-3xl animate-blob animation-delay-4000"></div>
 
         {/* Dot pattern overlay */}
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImRvdHMiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9IndoaXRlIiBmaWxsLW9wYWNpdHk9IjAuMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNkb3RzKSIvPjwvc3ZnPg==')] opacity-40"></div>
       </div>
 
-      <div className="max-w-md w-full backdrop-blur-xl bg-white/90 rounded-2xl shadow-2xl border border-white/40 p-10 relative z-10">
+      <div className="max-w-md w-full backdrop-blur-xl bg-white/90 dark:bg-slate-800/90 rounded-2xl shadow-2xl border border-white/40 dark:border-slate-700/40 p-10 relative z-10">
         {/* Decorative corner accents */}
         <div className="absolute -top-3 -left-3 w-28 h-28 bg-gradient-to-br from-white/20 to-transparent rounded-tl-2xl blur-xl"></div>
         <div className="absolute -bottom-3 -right-3 w-28 h-28 bg-gradient-to-tl from-white/20 to-transparent rounded-br-2xl blur-xl"></div>
@@ -57,13 +57,13 @@ const Login: React.FC = () => {
               <Scale className="w-11 h-11 text-white" strokeWidth={2.5} />
             </div>
           </div>
-          <h1 className="text-5xl font-bold text-primary-600 mb-3 drop-shadow-lg tracking-tight">AdvWell</h1>
-          <p className="text-base text-neutral-600 font-medium">Sistema de Advocacia</p>
+          <h1 className="text-5xl font-bold text-primary-600 dark:text-primary-400 mb-3 drop-shadow-lg tracking-tight">AdvWell</h1>
+          <p className="text-base text-neutral-600 dark:text-slate-400 font-medium">Sistema de Advocacia</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6 relative">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-neutral-700 mb-2">
+            <label htmlFor="email" className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2">
               Email
             </label>
             <input
@@ -72,13 +72,13 @@ const Login: React.FC = () => {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="block w-full border rounded-lg shadow-sm bg-white appearance-none focus:outline-none text-neutral-900 placeholder:text-neutral-400 text-base px-4 py-3 border-neutral-300 hover:border-primary-400 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 focus:ring-opacity-20 transition-all min-h-[44px]"
+              className="block w-full border rounded-lg shadow-sm bg-white dark:bg-slate-700 appearance-none focus:outline-none text-neutral-900 dark:text-slate-100 placeholder:text-neutral-400 dark:placeholder:text-slate-500 text-base px-4 py-3 border-neutral-300 dark:border-slate-600 hover:border-primary-400 dark:hover:border-primary-500 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 focus:ring-opacity-20 transition-all min-h-[44px]"
               placeholder="seu@email.com"
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-neutral-700 mb-2">
+            <label htmlFor="password" className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2">
               Senha
             </label>
             <div className="relative">
@@ -88,13 +88,13 @@ const Login: React.FC = () => {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="block w-full border rounded-lg shadow-sm bg-white appearance-none focus:outline-none text-neutral-900 placeholder:text-neutral-400 text-base px-4 py-3 pr-12 border-neutral-300 hover:border-primary-400 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 focus:ring-opacity-20 transition-all min-h-[44px]"
+                className="block w-full border rounded-lg shadow-sm bg-white dark:bg-slate-700 appearance-none focus:outline-none text-neutral-900 dark:text-slate-100 placeholder:text-neutral-400 dark:placeholder:text-slate-500 text-base px-4 py-3 pr-12 border-neutral-300 dark:border-slate-600 hover:border-primary-400 dark:hover:border-primary-500 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 focus:ring-opacity-20 transition-all min-h-[44px]"
                 placeholder="••••••••"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-neutral-700 focus:outline-none transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 dark:text-slate-400 hover:text-neutral-700 dark:hover:text-slate-300 focus:outline-none transition-colors"
                 tabIndex={-1}
               >
                 {showPassword ? (
@@ -125,15 +125,15 @@ const Login: React.FC = () => {
         </form>
 
         <div className="mt-6 text-center space-y-2 relative">
-          <p className="text-sm text-neutral-600">
+          <p className="text-sm text-neutral-600 dark:text-slate-400">
             Não tem uma conta?{' '}
-            <Link to="/register" className="text-primary-600 hover:text-primary-700 transition-colors duration-200 font-semibold">
+            <Link to="/register" className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 transition-colors duration-200 font-semibold">
               Cadastre-se
             </Link>
           </p>
-          <p className="text-xs text-neutral-500">
+          <p className="text-xs text-neutral-500 dark:text-slate-500">
             Não recebeu o email de verificação?{' '}
-            <Link to="/resend-verification" className="text-primary-600 hover:text-primary-700 transition-colors duration-200 font-medium">
+            <Link to="/resend-verification" className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 transition-colors duration-200 font-medium">
               Reenviar
             </Link>
           </p>
