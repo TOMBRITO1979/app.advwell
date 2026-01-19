@@ -28,7 +28,7 @@ AdvWell is a multitenant SaaS for Brazilian law firms with DataJud CNJ integrati
 ## Infrastructure (Production)
 
 ```
-VPS Principal (5.161.98.0)       VPS PostgreSQL (5.78.137.1)
+VPS Principal (5.161.98.0)       VPS PostgreSQL (178.156.188.93)
 30GB RAM | 8 vCPU                16GB RAM | 4 vCPU
 ├── Backend API (3 replicas)     └── PostgreSQL 16 (SSL/TLS)
 ├── Backend Worker (1 replica)       └── max_connections=500
@@ -53,7 +53,7 @@ docker service logs advtom_backend-worker -f
 curl https://api.advwell.pro/health
 
 # Database (via PostgreSQL VPS)
-ssh root@5.78.137.1 "docker exec advwell-postgres psql -U postgres -d advtom"
+ssh root@178.156.188.93 "docker exec advwell-postgres psql -U postgres -d advtom"
 
 ```
 
@@ -107,7 +107,7 @@ Jobs processed by dedicated worker (not API replicas):
 ### New Database Table
 1. Update `backend/prisma/schema.prisma`
 2. Create migration SQL: `backend/migrations_manual/`
-3. Apply: `cat migration.sql | ssh root@5.78.137.1 "docker exec -i advwell-postgres psql -U postgres -d advtom"`
+3. Apply: `cat migration.sql | ssh root@178.156.188.93 "docker exec -i advwell-postgres psql -U postgres -d advtom"`
 4. Run `npx prisma generate`
 
 ## Backup e Recuperacao
@@ -131,7 +131,7 @@ git tag -a backup-YYYY-MM-DD -m "Description"
 git push origin backup-YYYY-MM-DD
 
 # Database
-ssh root@5.78.137.1 "docker exec advwell-postgres pg_dump -U postgres advtom > /backup/advtom_$(date +%Y%m%d).sql"
+ssh root@178.156.188.93 "docker exec advwell-postgres pg_dump -U postgres advtom > /backup/advtom_$(date +%Y%m%d).sql"
 ```
 
 ## Access Information
@@ -139,4 +139,4 @@ ssh root@5.78.137.1 "docker exec advwell-postgres pg_dump -U postgres advtom > /
 | VPS | IP | Description |
 |-----|-----|-------------|
 | Principal | 5.161.98.0 | Backend, Frontend, Redis, Traefik |
-| PostgreSQL | 5.78.137.1 | Dedicated database |
+| PostgreSQL | 178.156.188.93 | Dedicated database |

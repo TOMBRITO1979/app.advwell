@@ -52,10 +52,10 @@ scrape_configs:
     static_configs:
       - targets: ['postgres-exporter:9187']
 
-  # Dedicated PostgreSQL VPS (5.78.137.1)
+  # Dedicated PostgreSQL VPS (178.156.188.93)
   - job_name: 'postgres-dedicated'
     static_configs:
-      - targets: ['5.78.137.1:9187']
+      - targets: ['178.156.188.93:9187']
         labels:
           instance: 'postgres-vps'
           server: 'dedicated'
@@ -79,7 +79,7 @@ scrape_configs:
   # Dedicated PostgreSQL VPS - System metrics
   - job_name: 'node-postgres-vps'
     static_configs:
-      - targets: ['5.78.137.1:9100']
+      - targets: ['178.156.188.93:9100']
         labels:
           instance: 'postgres-vps'
           server: 'dedicated'

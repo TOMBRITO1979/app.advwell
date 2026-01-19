@@ -323,7 +323,7 @@ groups:
           description: "Servico {{ $labels.service }} nao tem nenhuma replica rodando!"
 
   # ============================================
-  # Dedicated PostgreSQL VPS Alerts (5.78.137.1)
+  # Dedicated PostgreSQL VPS Alerts (178.156.188.93)
   # ============================================
   - name: postgres-dedicated
     rules:
@@ -335,7 +335,7 @@ groups:
           severity: critical
         annotations:
           summary: "PostgreSQL VPS esta fora do ar"
-          description: "PostgreSQL na VPS dedicada (5.78.137.1) nao esta respondendo!"
+          description: "PostgreSQL na VPS dedicada (178.156.188.93) nao esta respondendo!"
 
       # PostgreSQL VPS Memory High (12GB de 16GB para PostgreSQL)
       - alert: PostgresVPSMemoryHigh

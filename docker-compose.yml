@@ -178,7 +178,7 @@ services:
   # =====================================================
   # POSTGRESQL DISABLED - MIGRATED TO DEDICATED VPS
   # =====================================================
-  # PostgreSQL now runs on dedicated VPS: 5.78.137.1
+  # PostgreSQL now runs on dedicated VPS: 178.156.188.93
   # - 4 vCPUs, 16GB RAM
   # - max_connections=500
   # - shared_buffers=4GB
@@ -249,10 +249,10 @@ services:
       # Timezone Brasil (São Paulo)
       - TZ=${TZ}
 
-      # Database connection (dedicated PostgreSQL VPS - 5.78.137.1)
+      # Database connection (dedicated PostgreSQL VPS - 178.156.188.93)
       # OTIMIZADO: 25 conexoes x 3 replicas = 75 conexoes (max_connections=500 no servidor dedicado)
       # ISSUE 3 FIX: sslmode=require para conexao criptografada
-      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@5.78.137.1:5432/${POSTGRES_DB}?connection_limit=25&pool_timeout=20&sslmode=require
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@178.156.188.93:5432/${POSTGRES_DB}?connection_limit=25&pool_timeout=20&sslmode=require
 
       # Redis for caching and queues (with authentication)
       # ALTA DISPONIBILIDADE: Sentinel mode para failover automatico
@@ -317,7 +317,7 @@ services:
     networks:
       - network_public
     depends_on:
-      # NOTE: PostgreSQL now runs on dedicated VPS (5.78.137.1)
+      # NOTE: PostgreSQL now runs on dedicated VPS (178.156.188.93)
       - redis
       - redis-replica
       - redis-sentinel-1
@@ -384,7 +384,7 @@ services:
     environment:
       - TZ=${TZ}
       # ISSUE 3 FIX: sslmode=require para conexao criptografada
-      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@5.78.137.1:5432/${POSTGRES_DB}?connection_limit=10&pool_timeout=20&sslmode=require
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@178.156.188.93:5432/${POSTGRES_DB}?connection_limit=10&pool_timeout=20&sslmode=require
       - REDIS_SENTINEL_ENABLED=true
       - REDIS_SENTINELS=redis-sentinel-1:26379,redis-sentinel-2:26379,redis-sentinel-3:26379
       - REDIS_MASTER_NAME=mymaster
@@ -569,12 +569,12 @@ services:
           cpus: '0.05'
           memory: 32M
 
-  # Postgres Exporter - PostgreSQL metrics (dedicated VPS - 5.78.137.1)
+  # Postgres Exporter - PostgreSQL metrics (dedicated VPS - 178.156.188.93)
   # ISSUE 3 FIX: sslmode=require para conexao criptografada
   postgres-exporter:
     image: wrouesnel/postgres_exporter:latest
     environment:
-      - DATA_SOURCE_NAME=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@5.78.137.1:5432/${POSTGRES_DB}?sslmode=require
+      - DATA_SOURCE_NAME=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@178.156.188.93:5432/${POSTGRES_DB}?sslmode=require
     networks:
       - network_public
     deploy:
