@@ -31,6 +31,7 @@ const SidebarSubmenu: React.FC<SidebarSubmenuProps> = ({
 }) => {
   const location = useLocation();
   const [isHovered, setIsHovered] = useState(false);
+  const [position, setPosition] = useState({ top: 0, left: 0 });
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -45,11 +46,22 @@ const SidebarSubmenu: React.FC<SidebarSubmenuProps> = ({
     };
   }, []);
 
+  const updatePosition = () => {
+    if (containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      setPosition({
+        top: rect.top,
+        left: rect.right + 4,
+      });
+    }
+  };
+
   const handleMouseEnter = () => {
     if (isCollapsed) {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
+      updatePosition();
       setIsHovered(true);
     }
   };
@@ -79,15 +91,18 @@ const SidebarSubmenu: React.FC<SidebarSubmenuProps> = ({
               ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400'
               : 'text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-700 hover:text-primary-600 dark:hover:text-primary-400'
           }`}
-          title={label}
         >
           <Icon size={20} />
         </button>
 
-        {/* Hover dropdown */}
+        {/* Hover dropdown - fixed position */}
         {isHovered && (
           <div
-            className="absolute left-full top-0 ml-1 bg-white dark:bg-slate-800 shadow-lg rounded-lg border border-neutral-200 dark:border-slate-700 py-2 min-w-48 z-50"
+            className="fixed bg-white dark:bg-slate-800 shadow-lg rounded-lg border border-neutral-200 dark:border-slate-700 py-2 min-w-48 z-[100]"
+            style={{
+              top: position.top,
+              left: position.left,
+            }}
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
           >
