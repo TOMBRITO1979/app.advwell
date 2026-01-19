@@ -252,6 +252,26 @@ body.dark {
   }
 }
 
+/* Fix autofill styles for dark mode */
+.dark input:-webkit-autofill,
+.dark input:-webkit-autofill:hover,
+.dark input:-webkit-autofill:focus,
+.dark input:-webkit-autofill:active,
+.dark textarea:-webkit-autofill,
+.dark select:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 30px #334155 inset !important;
+  -webkit-text-fill-color: #f1f5f9 !important;
+  caret-color: #f1f5f9 !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Ensure inputs maintain dark mode background */
+.dark input,
+.dark textarea,
+.dark select {
+  color-scheme: dark;
+}
+
 /* Safe area insets for iPhone notch */
 @supports (padding-top: env(safe-area-inset-top)) {
   .safe-area-top {
