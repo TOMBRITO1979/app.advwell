@@ -138,6 +138,7 @@ export class MonitoringController {
         });
 
         // Enfileirar para processamento assíncrono
+        // forceFullSync=true para primeira consulta (sem lastSyncDate ainda)
         await enqueueOabConsulta(
           consulta.id,
           monitoredOab.id,
@@ -148,7 +149,8 @@ export class MonitoringController {
           dataInicio.toISOString().split('T')[0],
           dataFim.toISOString().split('T')[0],
           monitoredOab.tribunais,
-          monitoredOab.autoImport
+          monitoredOab.autoImport,
+          true // forceFullSync - primeira consulta da OAB
         );
 
         appLogger.info('Consulta inicial enfileirada automaticamente', {
@@ -374,6 +376,7 @@ export class MonitoringController {
       });
 
       // Enfileirar consulta para processamento assíncrono
+      // forceFullSync=true para consultas manuais com datas específicas
       const jobId = await enqueueOabConsulta(
         consulta.id,
         monitoredOab.id,
@@ -384,7 +387,8 @@ export class MonitoringController {
         inicio.toISOString().split('T')[0],
         fim.toISOString().split('T')[0],
         tribunais || monitoredOab.tribunais,
-        autoImport !== undefined ? autoImport : monitoredOab.autoImport
+        autoImport !== undefined ? autoImport : monitoredOab.autoImport,
+        true // forceFullSync - consulta manual usa datas exatas do usuário
       );
 
       appLogger.info('Consulta enfileirada', {

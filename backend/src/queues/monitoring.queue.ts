@@ -88,7 +88,8 @@ export async function enqueueOabConsulta(
   dataInicio: string,
   dataFim: string,
   tribunais: string[] = [],
-  autoImport: boolean = false
+  autoImport: boolean = false,
+  forceFullSync: boolean = false
 ): Promise<string> {
   const jobId = `consulta-${consultaId}-${Date.now()}`;
 
@@ -119,6 +120,7 @@ export async function enqueueOabConsulta(
       dataFim,
       tribunais,
       autoImport,
+      forceFullSync,
     },
     {
       jobId,
@@ -156,6 +158,7 @@ if (ENABLE_QUEUE_PROCESSORS) {
       dataInicio: requestedDataInicio,
       dataFim: requestedDataFim,
       autoImport,
+      forceFullSync,
     } = job.data;
 
     try {
@@ -177,8 +180,9 @@ if (ENABLE_QUEUE_PROCESSORS) {
       });
 
       // Determinar data inicial real (usar lastSyncDate se disponível para sync incremental)
+      // Pular sync incremental quando forceFullSync=true (consultas manuais com datas específicas)
       let effectiveDataInicio = new Date(requestedDataInicio);
-      if (monitoredOab?.lastSyncDate) {
+      if (!forceFullSync && monitoredOab?.lastSyncDate) {
         const lastSync = new Date(monitoredOab.lastSyncDate);
         // Usar o dia seguinte ao último sync para não repetir
         const nextDay = addDays(lastSync, 1);
@@ -190,6 +194,12 @@ if (ENABLE_QUEUE_PROCESSORS) {
             effectiveDataInicio: formatDate(effectiveDataInicio),
           });
         }
+      } else if (forceFullSync) {
+        appLogger.info('Using full sync (forceFullSync=true)', {
+          consultaId,
+          requestedDataInicio,
+          requestedDataFim,
+        });
       }
 
       const dataFim = new Date(requestedDataFim);
