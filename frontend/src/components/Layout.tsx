@@ -590,8 +590,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             className={`${
               sidebarOpen ? 'translate-x-0' : '-translate-x-full'
             } lg:translate-x-0 ${
-              sidebarCollapsed ? 'lg:w-16' : 'lg:w-64'
-            } w-64 bg-white dark:bg-slate-800 shadow-lg h-screen fixed lg:sticky top-0 lg:top-0 z-30 lg:z-10 transition-all duration-300 ease-in-out border-r border-neutral-200 dark:border-slate-700 flex flex-col`}
+              sidebarCollapsed ? 'lg:w-16' : 'lg:w-[216px]'
+            } w-[216px] bg-white dark:bg-slate-800 shadow-lg h-screen fixed lg:sticky top-0 lg:top-0 z-30 lg:z-10 transition-all duration-300 ease-in-out border-r border-neutral-200 dark:border-slate-700 flex flex-col`}
           >
             {/* Botão de recolher (apenas desktop) */}
             <div className="hidden lg:flex justify-end p-2">
@@ -611,7 +611,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   <Link
                     to="/dashboard"
                     className={`flex items-center ${
-                      sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-6'
+                      sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-4'
                     } py-3 transition-all duration-200 font-medium ${
                       location.pathname === '/dashboard'
                         ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 border-r-4 border-primary-500'
@@ -730,7 +730,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                     <Link
                       to={item.path}
                       className={`flex items-center ${
-                        sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-6'
+                        sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-4'
                       } py-3 transition-all duration-200 font-medium ${
                         isActive
                           ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 border-r-4 border-primary-500'
@@ -787,7 +787,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                     <Link
                       to={item.path}
                       className={`flex items-center ${
-                        sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-6'
+                        sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-4'
                       } py-3 transition-all duration-200 font-medium ${
                         isActive
                           ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 border-r-4 border-primary-500'

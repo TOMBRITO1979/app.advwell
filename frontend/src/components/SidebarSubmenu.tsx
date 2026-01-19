@@ -165,7 +165,7 @@ const SidebarSubmenu: React.FC<SidebarSubmenuProps> = ({
     <>
       <button
         onClick={onToggle}
-        className={`w-full flex items-center space-x-3 px-6 py-3 transition-all duration-200 font-medium ${
+        className={`w-full flex items-center space-x-3 px-4 py-3 transition-all duration-200 font-medium ${
           isActive
             ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400'
             : 'text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-700 hover:text-primary-600 dark:hover:text-primary-400'
@@ -184,7 +184,7 @@ const SidebarSubmenu: React.FC<SidebarSubmenuProps> = ({
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex items-center space-x-3 px-6 pl-10 py-2.5 transition-all duration-200 font-medium ${
+                className={`flex items-center space-x-3 px-4 pl-10 py-2.5 transition-all duration-200 font-medium ${
                   isItemActive
                     ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 border-r-4 border-primary-500'
                     : 'text-neutral-600 dark:text-slate-400 hover:bg-neutral-100 dark:hover:bg-slate-700 hover:text-primary-600 dark:hover:text-primary-400'
