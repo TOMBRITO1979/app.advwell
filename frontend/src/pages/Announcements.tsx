@@ -461,7 +461,7 @@ export default function Announcements() {
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex gap-2 border-b border-gray-200">
+        <div className="flex gap-2 border-b border-gray-200 dark:border-slate-700">
           <button
             onClick={() => setActiveTab('avisos')}
             className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
@@ -527,7 +527,7 @@ export default function Announcements() {
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   filter === item.value
                     ? 'bg-green-600 text-white'
-                    : 'bg-white text-gray-600 dark:text-slate-400 hover:bg-gray-100 border border-gray-200'
+                    : 'bg-white dark:bg-slate-800 text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700 border border-gray-200 dark:border-slate-700'
                 }`}
               >
                 {item.label}
@@ -545,8 +545,8 @@ export default function Announcements() {
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600" />
               </div>
             ) : filteredAnnouncements.length === 0 ? (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
-            <Megaphone className="mx-auto h-16 w-16 text-gray-300 mb-4" />
+          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 p-12 text-center">
+            <Megaphone className="mx-auto h-16 w-16 text-gray-300 dark:text-slate-600 mb-4" />
             <h3 className="text-lg font-medium text-gray-900 dark:text-slate-100 mb-2">Nenhum aviso</h3>
             <p className="text-gray-500 dark:text-slate-400 mb-4">
               Crie avisos para informar seus clientes sobre novidades e atualizações.
@@ -567,7 +567,7 @@ export default function Announcements() {
               return (
                 <div
                   key={announcement.id}
-                  className={`bg-white rounded-xl shadow-sm border p-6 ${
+                  className={`bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6 ${
                     !announcement.active ? 'opacity-60' : ''
                   }`}
                 >
@@ -580,15 +580,15 @@ export default function Announcements() {
                         </span>
                         <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
                           announcement.active
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-gray-100 text-gray-600 dark:text-slate-400'
+                            ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+                            : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-slate-400'
                         }`}>
                           {announcement.active ? 'Ativo' : 'Inativo'}
                         </span>
                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
                           announcement.client
-                            ? 'bg-purple-100 text-purple-700'
-                            : 'bg-cyan-100 text-cyan-700'
+                            ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400'
+                            : 'bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-400'
                         }`}>
                           {announcement.client ? (
                             <>
@@ -628,8 +628,8 @@ export default function Announcements() {
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => handleToggle(announcement.id)}
-                        className={`p-2 rounded-lg hover:bg-gray-100 ${
-                          announcement.active ? 'text-green-600' : 'text-gray-400 dark:text-slate-500'
+                        className={`p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 ${
+                          announcement.active ? 'text-green-600 dark:text-green-400' : 'text-gray-400 dark:text-slate-500'
                         }`}
                         title={announcement.active ? 'Desativar' : 'Ativar'}
                       >
@@ -637,14 +637,14 @@ export default function Announcements() {
                       </button>
                       <button
                         onClick={() => openModal(announcement)}
-                        className="p-2 rounded-lg hover:bg-gray-100 text-gray-600 dark:text-slate-400"
+                        className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-600 dark:text-slate-400"
                         title="Editar"
                       >
                         <Edit2 size={20} />
                       </button>
                       <button
                         onClick={() => handleDelete(announcement.id)}
-                        className="p-2 rounded-lg hover:bg-red-50 text-red-600"
+                        className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400"
                         title="Excluir"
                       >
                         <Trash2 size={20} />
@@ -659,7 +659,7 @@ export default function Announcements() {
 
             {/* Pagination */}
             {total > 0 && (
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white rounded-xl shadow-sm border border-gray-100 px-6 py-4">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 px-6 py-4">
                 <p className="text-sm text-gray-600 dark:text-slate-400">
                   Mostrando {((page - 1) * limit) + 1} a {Math.min(page * limit, total)} de {total} avisos
                 </p>
@@ -670,7 +670,7 @@ export default function Announcements() {
                       setLimit(Number(e.target.value));
                       setPage(1);
                     }}
-                    className="px-2 py-1 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="px-2 py-1 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-gray-700 dark:text-slate-300"
                   >
                     <option value={25}>25</option>
                     <option value={50}>50</option>
@@ -683,17 +683,17 @@ export default function Announcements() {
                   <button
                     onClick={() => setPage(p => Math.max(1, p - 1))}
                     disabled={page === 1}
-                    className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="p-2 rounded-lg border border-gray-200 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-700 dark:text-slate-300"
                   >
                     <ChevronLeft size={20} />
                   </button>
-                  <span className="px-4 py-2 text-sm font-medium">
+                  <span className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-slate-300">
                     Página {page} de {Math.ceil(total / limit)}
                   </span>
                   <button
                     onClick={() => setPage(p => Math.min(Math.ceil(total / limit), p + 1))}
                     disabled={page >= Math.ceil(total / limit)}
-                    className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="p-2 rounded-lg border border-gray-200 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-700 dark:text-slate-300"
                   >
                     <ChevronRight size={20} />
                   </button>
@@ -708,7 +708,7 @@ export default function Announcements() {
           <>
             {/* New Message Form */}
             {showNewMessageForm && (
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4">Nova Mensagem</h2>
                 <form onSubmit={handleSendNewMessage} className="space-y-4">
                   <div className="relative">
@@ -728,7 +728,7 @@ export default function Announcements() {
                       className="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                     />
                     {newMessageClientSearch.trim() && !newMessageClientId && (
-                      <div className="absolute z-50 w-full mt-1 bg-white bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                      <div className="absolute z-50 w-full mt-1 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg shadow-lg max-h-48 overflow-y-auto">
                         {clients.filter(c => c.name.toLowerCase().includes(newMessageClientSearch.toLowerCase())).slice(0, 10).map((client) => (
                           <button
                             key={client.id}
@@ -737,7 +737,7 @@ export default function Announcements() {
                               setNewMessageClientId(client.id);
                               setNewMessageClientSearch(client.name);
                             }}
-                            className="w-full px-4 py-2 text-left hover:bg-gray-100 text-sm text-gray-700 dark:text-slate-300"
+                            className="w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-slate-600 text-sm text-gray-700 dark:text-slate-300"
                           >
                             {client.name}
                           </button>
@@ -804,7 +804,7 @@ export default function Announcements() {
             )}
 
             {/* Filter */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-4">
               <div className="flex items-center gap-2">
                 <Search size={20} className="text-gray-400 dark:text-slate-500" />
                 <input
@@ -812,12 +812,12 @@ export default function Announcements() {
                   placeholder="Filtrar por nome do cliente..."
                   value={messagesFilter}
                   onChange={(e) => setMessagesFilter(e.target.value)}
-                  className="flex-1 px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="flex-1 px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 dark:text-slate-100"
                 />
                 {messagesFilter && (
                   <button
                     onClick={() => setMessagesFilter('')}
-                    className="p-2 text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:text-slate-400"
+                    className="p-2 text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-400"
                   >
                     <X size={18} />
                   </button>
@@ -831,8 +831,8 @@ export default function Announcements() {
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600" />
               </div>
             ) : messages.length === 0 ? (
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
-                <MessageCircle className="mx-auto h-16 w-16 text-gray-300 mb-4" />
+              <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 p-12 text-center">
+                <MessageCircle className="mx-auto h-16 w-16 text-gray-300 dark:text-slate-600 mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 dark:text-slate-100 mb-2">Nenhuma mensagem</h3>
                 <p className="text-gray-500 dark:text-slate-400 mb-4">
                   Quando seus clientes enviarem mensagens pelo portal, elas aparecerão aqui.
@@ -845,13 +845,13 @@ export default function Announcements() {
                   .map((message) => (
                   <div
                     key={message.id}
-                    className={`bg-white rounded-xl shadow-sm border overflow-hidden ${
-                      message.sender === 'CLIENT' && !message.readAt ? 'border-green-300 border-l-4' : 'border-gray-200'
+                    className={`bg-white dark:bg-slate-800 rounded-xl shadow-sm border overflow-hidden ${
+                      message.sender === 'CLIENT' && !message.readAt ? 'border-green-300 dark:border-green-600 border-l-4' : 'border-gray-200 dark:border-slate-700'
                     }`}
                   >
                     {/* Message Header */}
                     <div
-                      className="p-4 cursor-pointer hover:bg-gray-50 transition-colors"
+                      className="p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
                       onClick={() => {
                         setExpandedMessage(expandedMessage === message.id ? null : message.id);
                         if (message.sender === 'CLIENT' && !message.readAt) {
@@ -865,14 +865,14 @@ export default function Announcements() {
                             <span
                               className={`px-2 py-0.5 rounded text-xs font-medium ${
                                 message.sender === 'CLIENT'
-                                  ? 'bg-blue-100 text-blue-800'
-                                  : 'bg-green-100 text-green-800'
+                                  ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400'
+                                  : 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400'
                               }`}
                             >
                               {message.sender === 'CLIENT' ? message.client?.name : 'Escritório'}
                             </span>
                             {message.sender === 'CLIENT' && !message.readAt && (
-                              <span className="px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded text-xs font-medium">
+                              <span className="px-2 py-0.5 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400 rounded text-xs font-medium">
                                 Não lida
                               </span>
                             )}
@@ -903,30 +903,30 @@ export default function Announcements() {
 
                     {/* Expanded Content */}
                     {expandedMessage === message.id && (
-                      <div className="border-t border-gray-200">
+                      <div className="border-t border-gray-200 dark:border-slate-700">
                         {/* Full Message Content */}
-                        <div className="p-4 bg-gray-50">
+                        <div className="p-4 bg-gray-50 dark:bg-slate-700/50">
                           <p className="text-gray-800 dark:text-slate-200 whitespace-pre-wrap">{message.content}</p>
                         </div>
 
                         {/* Replies */}
                         {message.replies && message.replies.length > 0 && (
-                          <div className="border-t border-gray-200">
+                          <div className="border-t border-gray-200 dark:border-slate-700">
                             {message.replies.map((reply) => (
                               <div
                                 key={reply.id}
                                 className={`p-4 border-l-4 ${
                                   reply.sender === 'CLIENT'
-                                    ? 'border-blue-400 bg-blue-50'
-                                    : 'border-green-400 bg-green-50'
+                                    ? 'border-blue-400 bg-blue-50 dark:bg-blue-900/20'
+                                    : 'border-green-400 bg-green-50 dark:bg-green-900/20'
                                 }`}
                               >
                                 <div className="flex items-center gap-2 mb-2">
                                   <span
                                     className={`px-2 py-0.5 rounded text-xs font-medium ${
                                       reply.sender === 'CLIENT'
-                                        ? 'bg-blue-100 text-blue-800'
-                                        : 'bg-green-100 text-green-800'
+                                        ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400'
+                                        : 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400'
                                     }`}
                                   >
                                     {reply.sender === 'CLIENT' ? message.client?.name : reply.creator?.name || 'Escritório'}
@@ -942,7 +942,7 @@ export default function Announcements() {
                         )}
 
                         {/* Reply Form */}
-                        <div className="p-4 border-t border-gray-200 bg-white">
+                        <div className="p-4 border-t border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800">
                           <div className="flex gap-3">
                             <textarea
                               value={replyContent[message.id] || ''}
@@ -951,7 +951,7 @@ export default function Announcements() {
                               }
                               placeholder="Digite sua resposta..."
                               rows={2}
-                              className="flex-1 px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
+                              className="flex-1 px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm text-gray-900 dark:text-slate-100"
                             />
                             <button
                               onClick={() => handleSendReply(message.id, message.client?.id)}
@@ -975,7 +975,7 @@ export default function Announcements() {
         {activeTab === 'documentos' && (
           <>
             {/* Filter */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-4">
               <div className="flex items-center gap-2">
                 <Search size={20} className="text-gray-400 dark:text-slate-500" />
                 <input
@@ -983,12 +983,12 @@ export default function Announcements() {
                   placeholder="Filtrar por nome do cliente..."
                   value={documentsFilter}
                   onChange={(e) => setDocumentsFilter(e.target.value)}
-                  className="flex-1 px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="flex-1 px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 dark:text-slate-100"
                 />
                 {documentsFilter && (
                   <button
                     onClick={() => setDocumentsFilter('')}
-                    className="p-2 text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:text-slate-400"
+                    className="p-2 text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-400"
                   >
                     <X size={18} />
                   </button>
@@ -1001,8 +1001,8 @@ export default function Announcements() {
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600" />
               </div>
             ) : clientDocuments.length === 0 ? (
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
-                <FileText className="mx-auto h-16 w-16 text-gray-300 mb-4" />
+              <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 p-12 text-center">
+                <FileText className="mx-auto h-16 w-16 text-gray-300 dark:text-slate-600 mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 dark:text-slate-100 mb-2">Nenhum documento</h3>
                 <p className="text-gray-500 dark:text-slate-400 mb-4">
                   Quando seus clientes enviarem documentos pelo portal, eles aparecerão aqui.
@@ -1015,24 +1015,24 @@ export default function Announcements() {
                   .map((doc) => (
                   <div
                     key={doc.id}
-                    className={`bg-white rounded-xl shadow-sm border overflow-hidden ${
-                      doc.status === 'UPLOADED' ? 'border-green-300 border-l-4' : 'border-gray-200'
+                    className={`bg-white dark:bg-slate-800 rounded-xl shadow-sm border overflow-hidden ${
+                      doc.status === 'UPLOADED' ? 'border-green-300 dark:border-green-600 border-l-4' : 'border-gray-200 dark:border-slate-700'
                     }`}
                   >
                     <div className="p-4">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2 flex-wrap">
-                            <span className="px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                            <span className="px-2 py-0.5 rounded text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400">
                               {doc.client?.name}
                             </span>
                             {doc.status === 'UPLOADED' ? (
-                              <span className="px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded text-xs font-medium flex items-center gap-1">
+                              <span className="px-2 py-0.5 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400 rounded text-xs font-medium flex items-center gap-1">
                                 <Clock size={12} />
                                 Novo
                               </span>
                             ) : (
-                              <span className="px-2 py-0.5 bg-green-100 text-green-800 rounded text-xs font-medium flex items-center gap-1">
+                              <span className="px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 rounded text-xs font-medium flex items-center gap-1">
                                 <Download size={12} />
                                 Baixado
                               </span>
@@ -1073,14 +1073,14 @@ export default function Announcements() {
         {/* Modal */}
         {showModal && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="flex items-center justify-between p-6 border-b">
-                <h2 className="text-xl font-semibold">
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-slate-700">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-slate-100">
                   {editingAnnouncement ? 'Editar Aviso' : 'Novo Aviso'}
                 </h2>
                 <button
                   onClick={closeModal}
-                  className="p-2 hover:bg-gray-100 rounded-lg"
+                  className="p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg text-gray-500 dark:text-slate-400"
                 >
                   <X size={20} />
                 </button>
@@ -1095,7 +1095,7 @@ export default function Announcements() {
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                     required
-                    className="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 dark:text-slate-100"
                     placeholder="Título do aviso"
                   />
                 </div>
@@ -1108,7 +1108,7 @@ export default function Announcements() {
                     onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                     required
                     rows={5}
-                    className="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 dark:text-slate-100"
                     placeholder="Conteúdo do aviso..."
                   />
                 </div>
@@ -1120,7 +1120,7 @@ export default function Announcements() {
                     <select
                       value={formData.priority}
                       onChange={(e) => setFormData({ ...formData, priority: e.target.value as any })}
-                      className="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      className="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 dark:text-slate-100"
                     >
                       {priorityOptions.map((opt) => (
                         <option key={opt.value} value={opt.value}>
@@ -1137,7 +1137,7 @@ export default function Announcements() {
                       type="date"
                       value={formData.expiresAt}
                       onChange={(e) => setFormData({ ...formData, expiresAt: e.target.value })}
-                      className="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      className="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 dark:text-slate-100"
                     />
                   </div>
                 </div>
@@ -1155,11 +1155,11 @@ export default function Announcements() {
                       }
                     }}
                     placeholder="Digite para buscar cliente ou deixe vazio para todos..."
-                    className="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 dark:text-slate-100"
                   />
                   {/* Suggestions dropdown - only shows when typing */}
                   {clientSearchText.trim() && filteredClients.length > 0 && !formData.clientId && (
-                    <div className="absolute z-50 w-full mt-1 bg-white bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                    <div className="absolute z-50 w-full mt-1 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg shadow-lg max-h-48 overflow-y-auto">
                       {filteredClients.map((client) => (
                         <button
                           key={client.id}
@@ -1168,7 +1168,7 @@ export default function Announcements() {
                             setFormData({ ...formData, clientId: client.id });
                             setClientSearchText(client.name);
                           }}
-                          className="w-full px-4 py-2 text-left hover:bg-gray-100 text-sm text-gray-700 dark:text-slate-300"
+                          className="w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-slate-600 text-sm text-gray-700 dark:text-slate-300"
                         >
                           {client.name}
                         </button>
@@ -1203,11 +1203,11 @@ export default function Announcements() {
                     Publicar imediatamente (aviso ativo)
                   </label>
                 </div>
-                <div className="flex justify-end gap-3 pt-4 border-t">
+                <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-slate-700">
                   <button
                     type="button"
                     onClick={closeModal}
-                    className="px-4 py-2 text-gray-600 dark:text-slate-400 hover:bg-gray-100 rounded-lg"
+                    className="px-4 py-2 text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg"
                   >
                     Cancelar
                   </button>
