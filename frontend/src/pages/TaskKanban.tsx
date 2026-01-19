@@ -7,7 +7,8 @@ import {
   AlertCircle,
   CheckCircle2,
   Clock,
-  MoreHorizontal,
+  ChevronLeft,
+  ChevronRight,
   Trash2,
   Eye,
   RefreshCw
@@ -81,7 +82,6 @@ const TaskKanban: React.FC = () => {
   const [draggedTask, setDraggedTask] = useState<Task | null>(null);
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  const [actionMenuOpen, setActionMenuOpen] = useState<string | null>(null);
 
   useEffect(() => {
     loadTasks();
@@ -238,14 +238,12 @@ const TaskKanban: React.FC = () => {
       console.error('Erro ao excluir tarefa:', error);
       toast.error('Erro ao excluir tarefa');
     }
-    setActionMenuOpen(null);
   };
 
   // Move task to specific column
   const moveTaskToColumn = async (task: Task, targetColumn: 'todo' | 'in_progress' | 'done') => {
     const currentColumn = getTaskColumn(task);
     if (currentColumn === targetColumn) {
-      setActionMenuOpen(null);
       return;
     }
 
@@ -272,7 +270,6 @@ const TaskKanban: React.FC = () => {
       console.error('Erro ao mover tarefa:', error);
       toast.error('Erro ao mover tarefa');
     }
-    setActionMenuOpen(null);
   };
 
   // Check if task is overdue
@@ -280,6 +277,24 @@ const TaskKanban: React.FC = () => {
     if (task.completed) return false;
     if (!task.date) return false;
     return new Date(task.date) < new Date();
+  };
+
+  // Get previous column (for left arrow navigation)
+  const getPreviousColumn = (currentColumn: 'todo' | 'in_progress' | 'done'): 'todo' | 'in_progress' | null => {
+    switch (currentColumn) {
+      case 'in_progress': return 'todo';
+      case 'done': return 'in_progress';
+      default: return null;
+    }
+  };
+
+  // Get next column (for right arrow navigation)
+  const getNextColumn = (currentColumn: 'todo' | 'in_progress' | 'done'): 'in_progress' | 'done' | null => {
+    switch (currentColumn) {
+      case 'todo': return 'in_progress';
+      case 'in_progress': return 'done';
+      default: return null;
+    }
   };
 
   // Render task card
@@ -300,63 +315,37 @@ const TaskKanban: React.FC = () => {
           group
         `}
       >
-        {/* Header with drag handle and actions */}
+        {/* Header with title and actions */}
         <div className="flex items-start justify-between gap-2 mb-2">
-          <div className="flex items-center gap-2 flex-1 min-w-0">
+          {/* Title with drag handle */}
+          <div className="flex items-center gap-1 flex-1 min-w-0">
             <GripVertical className="w-4 h-4 text-gray-400 dark:text-slate-500 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
             <h4 className="font-medium text-gray-900 dark:text-slate-100 truncate">{task.title}</h4>
           </div>
-          <div className="relative">
+
+          {/* Action buttons: View details and Delete */}
+          <div className="flex items-center gap-1 flex-shrink-0">
             <button
-              onClick={() => setActionMenuOpen(actionMenuOpen === task.id ? null : task.id)}
-              className="p-1 rounded hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-500 dark:text-slate-400"
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedTask(task);
+                setShowTaskModal(true);
+              }}
+              className="p-1.5 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-600 text-gray-500 dark:text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+              title="Ver detalhes"
             >
-              <MoreHorizontal className="w-4 h-4" />
+              <Eye className="w-4 h-4" />
             </button>
-            {actionMenuOpen === task.id && (
-              <div className="absolute right-0 bottom-full mb-1 w-44 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-gray-200 dark:border-slate-700 py-1 z-10">
-                {/* Opções de mover para colunas */}
-                <div className="px-3 py-1 text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase">
-                  Mover para
-                </div>
-                {columns.map((column) => {
-                  const isCurrentColumn = getTaskColumn(task) === column.id;
-                  return (
-                    <button
-                      key={column.id}
-                      onClick={() => moveTaskToColumn(task, column.id)}
-                      disabled={isCurrentColumn}
-                      className={`w-full px-3 py-2 text-left text-sm flex items-center gap-2 ${
-                        isCurrentColumn
-                          ? 'text-gray-400 dark:text-slate-600 cursor-not-allowed'
-                          : 'hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-700 dark:text-slate-300'
-                      }`}
-                    >
-                      {column.icon}
-                      {column.title}
-                      {isCurrentColumn && <span className="ml-auto text-xs">(atual)</span>}
-                    </button>
-                  );
-                })}
-                <div className="border-t border-gray-200 dark:border-slate-700 my-1"></div>
-                <button
-                  onClick={() => {
-                    setSelectedTask(task);
-                    setShowTaskModal(true);
-                    setActionMenuOpen(null);
-                  }}
-                  className="w-full px-3 py-2 text-left text-sm flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-700 dark:text-slate-300"
-                >
-                  <Eye className="w-4 h-4" /> Ver detalhes
-                </button>
-                <button
-                  onClick={() => deleteTask(task.id)}
-                  className="w-full px-3 py-2 text-left text-sm flex items-center gap-2 hover:bg-red-50 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400"
-                >
-                  <Trash2 className="w-4 h-4" /> Excluir
-                </button>
-              </div>
-            )}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                deleteTask(task.id);
+              }}
+              className="p-1.5 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 text-gray-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+              title="Excluir"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
           </div>
         </div>
 
@@ -399,6 +388,45 @@ const TaskKanban: React.FC = () => {
             {task.case && <div>Processo: {task.case.processNumber}</div>}
           </div>
         )}
+
+        {/* Navigation arrows - footer */}
+        <div className="flex items-center justify-center gap-4 mt-3 pt-3 border-t border-gray-100 dark:border-slate-700">
+          {/* Left arrow - move to previous column */}
+          {getPreviousColumn(getTaskColumn(task)) ? (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                const prevColumn = getPreviousColumn(getTaskColumn(task));
+                if (prevColumn) moveTaskToColumn(task, prevColumn);
+              }}
+              className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 text-gray-600 dark:text-slate-300 hover:text-gray-800 dark:hover:text-slate-100 transition-colors text-sm font-medium"
+              title="Mover para coluna anterior"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              Voltar
+            </button>
+          ) : (
+            <div className="w-20" />
+          )}
+
+          {/* Right arrow - move to next column */}
+          {getNextColumn(getTaskColumn(task)) ? (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                const nextColumn = getNextColumn(getTaskColumn(task));
+                if (nextColumn) moveTaskToColumn(task, nextColumn);
+              }}
+              className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 text-gray-600 dark:text-slate-300 hover:text-gray-800 dark:hover:text-slate-100 transition-colors text-sm font-medium"
+              title="Mover para próxima coluna"
+            >
+              Avançar
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          ) : (
+            <div className="w-20" />
+          )}
+        </div>
       </div>
     );
   };
@@ -646,14 +674,6 @@ const TaskKanban: React.FC = () => {
 
       {/* Task detail modal */}
       {renderTaskModal()}
-
-      {/* Click outside to close action menu */}
-      {actionMenuOpen && (
-        <div
-          className="fixed inset-0 z-0"
-          onClick={() => setActionMenuOpen(null)}
-        />
-      )}
     </Layout>
   );
 };
