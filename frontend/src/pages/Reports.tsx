@@ -148,8 +148,12 @@ const Reports: React.FC = () => {
 
   useEffect(() => {
     loadClients();
-    loadReportData();
   }, []);
+
+  // Carrega dados automaticamente quando a aba muda
+  useEffect(() => {
+    loadReportData();
+  }, [activeReport]);
 
   const loadClients = async () => {
     try {
