@@ -720,7 +720,7 @@ const Schedule: React.FC = () => {
             <span>Importar</span>
           </button>
           {/* Export Button */}
-          <div className="relative">
+          <div className="relative flex">
             <button
               onClick={() => setShowExportMenu(!showExportMenu)}
               disabled={exporting}
