@@ -17,7 +17,6 @@ import {
   Settings,
   LogOut,
   Building2,
-  Menu,
   X,
   UserCog,
   ChevronLeft,
@@ -109,7 +108,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
-  const [sidebarOpen, setSidebarOpen] = React.useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(true);
   const [credentialsOpen, setCredentialsOpen] = React.useState(false);
   const [agendaOpen, setAgendaOpen] = React.useState(false);
@@ -521,31 +519,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         </div>
       )}
 
-      {/* Overlay para mobile */}
-      {!shouldHideSidebar && sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
       {/* Header */}
-      <header className="bg-white dark:bg-slate-800 shadow-sm sticky top-0 z-30 border-b border-neutral-200 dark:border-slate-700 transition-colors duration-300">
+      <header className="bg-white dark:bg-slate-800 shadow-sm sticky top-0 z-40 border-b border-neutral-200 dark:border-slate-700 transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
           <div className="flex justify-between items-center py-3 sm:py-4">
             <div className="flex items-center gap-2 sm:gap-4">
-              {!shouldHideSidebar && (
-                <button
-                  onClick={() => setSidebarOpen(!sidebarOpen)}
-                  className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-slate-700 transition-colors lg:hidden"
-                  aria-label="Menu"
-                >
-                  {sidebarOpen ? <X size={20} className="dark:text-slate-200" /> : <Menu size={20} className="dark:text-slate-200" />}
-                </button>
-              )}
               <div className="flex items-center gap-2">
-                <Scale className="text-primary-600 dark:text-primary-400" size={28} />
-                <h1 className="text-lg sm:text-2xl font-bold text-primary-600 dark:text-primary-400">{user?.companyName || 'AdvWell'}</h1>
+                <Scale className="text-primary-600 dark:text-primary-400 hidden sm:block" size={28} />
+                <h1 className="text-lg sm:text-2xl font-bold text-primary-600 dark:text-primary-400 hidden sm:block">{user?.companyName || 'AdvWell'}</h1>
               </div>
             </div>
             <div className="flex items-center gap-2 sm:gap-4">
@@ -588,23 +569,21 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         {!shouldHideSidebar && (
           <aside
             className={`${
-              sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-            } lg:translate-x-0 ${
-              sidebarCollapsed ? 'lg:w-16' : 'lg:w-[216px]'
-            } w-[216px] bg-white dark:bg-slate-800 shadow-lg h-screen fixed lg:sticky top-0 lg:top-0 z-30 lg:z-10 transition-all duration-300 ease-in-out border-r border-neutral-200 dark:border-slate-700 flex flex-col`}
+              sidebarCollapsed ? 'w-14 lg:w-16' : 'w-[160px] lg:w-[216px]'
+            } bg-white dark:bg-slate-800 shadow-lg h-[calc(100vh-56px)] lg:h-screen sticky top-[56px] lg:top-0 z-10 transition-all duration-300 ease-in-out border-r border-neutral-200 dark:border-slate-700 flex flex-col flex-shrink-0`}
           >
-            {/* Botão de recolher (apenas desktop) */}
-            <div className="hidden lg:flex justify-end p-2">
+            {/* Botão de recolher/expandir */}
+            <div className="flex justify-center lg:justify-end p-2 border-b border-neutral-100 dark:border-slate-700 lg:border-0">
               <button
                 onClick={toggleSidebarCollapse}
                 className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-slate-700 text-neutral-600 dark:text-slate-300 transition-colors"
-                title={sidebarCollapsed ? 'Expandir' : 'Recolher'}
+                title={sidebarCollapsed ? 'Expandir menu' : 'Recolher menu'}
               >
                 {sidebarCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
               </button>
             </div>
 
-            <nav className={`${sidebarCollapsed ? 'mt-2' : 'mt-8'} flex-1 overflow-y-auto pb-4`}>
+            <nav className={`${sidebarCollapsed ? 'mt-1' : 'mt-2 lg:mt-6'} flex-1 overflow-y-auto pb-4 safe-area-bottom`}>
               {/* Dashboard (primeiro item) - verifica permissão */}
               {hasPermission('dashboard') && (
                 <SidebarTooltip label="Dashboard" isCollapsed={sidebarCollapsed}>
@@ -617,8 +596,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                         ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 border-r-4 border-primary-500'
                         : 'text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-700 hover:text-primary-600 dark:hover:text-primary-400'
                     }`}
-                    onClick={() => setSidebarOpen(false)}
-                  >
+                                      >
                     <Home size={20} />
                     {!sidebarCollapsed && <span className="text-sm">Dashboard</span>}
                   </Link>
@@ -638,7 +616,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 isCollapsed={sidebarCollapsed}
                 isOpen={agendaOpen}
                 onToggle={() => setAgendaOpen(!agendaOpen)}
-                onNavigate={() => setSidebarOpen(false)}
+                onNavigate={() => {}}
               />
               )}
 
@@ -651,7 +629,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   isCollapsed={sidebarCollapsed}
                   isOpen={pessoasOpen}
                   onToggle={() => setPessoasOpen(!pessoasOpen)}
-                  onNavigate={() => setSidebarOpen(false)}
+                  onNavigate={() => {}}
                 />
               )}
 
@@ -668,7 +646,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   isCollapsed={sidebarCollapsed}
                   isOpen={processosOpen}
                   onToggle={() => setProcessosOpen(!processosOpen)}
-                  onNavigate={() => setSidebarOpen(false)}
+                  onNavigate={() => {}}
                 />
               )}
 
@@ -681,7 +659,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   isCollapsed={sidebarCollapsed}
                   isOpen={marketingOpen}
                   onToggle={() => setMarketingOpen(!marketingOpen)}
-                  onNavigate={() => setSidebarOpen(false)}
+                  onNavigate={() => {}}
                 />
               )}
 
@@ -700,7 +678,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 isCollapsed={sidebarCollapsed}
                 isOpen={financeiroOpen}
                 onToggle={() => setFinanceiroOpen(!financeiroOpen)}
-                onNavigate={() => setSidebarOpen(false)}
+                onNavigate={() => {}}
               />
               )}
 
@@ -736,8 +714,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                           ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 border-r-4 border-primary-500'
                           : 'text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-700 hover:text-primary-600 dark:hover:text-primary-400'
                       }`}
-                      onClick={() => setSidebarOpen(false)}
-                    >
+                                          >
                       <div className="relative">
                         <Icon size={20} />
                         {showMessagesBadge && sidebarCollapsed && (
@@ -773,7 +750,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   isCollapsed={sidebarCollapsed}
                   isOpen={credentialsOpen}
                   onToggle={() => setCredentialsOpen(!credentialsOpen)}
-                  onNavigate={() => setSidebarOpen(false)}
+                  onNavigate={() => {}}
                 />
               )}
 
@@ -793,8 +770,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                           ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 border-r-4 border-primary-500'
                           : 'text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-700 hover:text-primary-600 dark:hover:text-primary-400'
                       }`}
-                      onClick={() => setSidebarOpen(false)}
-                    >
+                                          >
                       <Icon size={20} />
                       {!sidebarCollapsed && <span className="text-sm">{item.label}</span>}
                     </Link>

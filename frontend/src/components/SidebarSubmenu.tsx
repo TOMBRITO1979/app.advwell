@@ -184,7 +184,7 @@ const SidebarSubmenu: React.FC<SidebarSubmenuProps> = ({
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex items-center space-x-3 px-4 pl-10 py-2.5 transition-all duration-200 font-medium ${
+                className={`flex items-center space-x-2 px-3 pl-8 py-2.5 transition-all duration-200 font-medium ${
                   isItemActive
                     ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 border-r-4 border-primary-500'
                     : 'text-neutral-600 dark:text-slate-400 hover:bg-neutral-100 dark:hover:bg-slate-700 hover:text-primary-600 dark:hover:text-primary-400'
