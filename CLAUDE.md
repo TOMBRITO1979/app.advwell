@@ -133,7 +133,7 @@ source .env && curl -s "${ADVAPI_BASE_URL}/health" -H "x-api-key: ${ADVAPI_API_K
 ### New Database Table
 1. Update `backend/prisma/schema.prisma`
 2. Create migration SQL: `backend/migrations_manual/`
-3. Apply: `cat migration.sql | ssh root@5.78.137.1 "docker exec -i advwell-postgres psql -U postgres -d advtom"`
+3. Apply: `PGPASSWORD='<password>' psql -h 178.156.188.93 -U postgres -d advtom -f migration.sql`
 4. Run `npx prisma generate`
 
 ## Backup e Recuperacao
