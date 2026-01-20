@@ -80,6 +80,7 @@ services:
       retries: 3
 
   # Redis Sentinel 1
+  # NOTE: No data persistence - Sentinel discovery data gets stale when IPs change in Swarm
   redis-sentinel-1:
     image: redis:7-alpine
     entrypoint: ["/bin/sh", "/etc/redis/sentinel-entrypoint.sh"]
@@ -89,7 +90,6 @@ services:
     volumes:
       - ./redis/sentinel.conf.tmpl:/etc/redis/sentinel.conf.tmpl:ro
       - ./redis/sentinel-entrypoint.sh:/etc/redis/sentinel-entrypoint.sh:ro
-      - sentinel_1_data:/data
     networks:
       - network_public
     depends_on:
@@ -121,7 +121,6 @@ services:
     volumes:
       - ./redis/sentinel.conf.tmpl:/etc/redis/sentinel.conf.tmpl:ro
       - ./redis/sentinel-entrypoint.sh:/etc/redis/sentinel-entrypoint.sh:ro
-      - sentinel_2_data:/data
     networks:
       - network_public
     depends_on:
@@ -153,7 +152,6 @@ services:
     volumes:
       - ./redis/sentinel.conf.tmpl:/etc/redis/sentinel.conf.tmpl:ro
       - ./redis/sentinel-entrypoint.sh:/etc/redis/sentinel-entrypoint.sh:ro
-      - sentinel_3_data:/data
     networks:
       - network_public
     depends_on:
@@ -255,12 +253,9 @@ services:
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@178.156.188.93:5432/${POSTGRES_DB}?connection_limit=25&pool_timeout=20&sslmode=require
 
       # Redis for caching and queues (with authentication)
-      # ALTA DISPONIBILIDADE: Sentinel mode para failover automatico
-      - REDIS_SENTINEL_ENABLED=true
-      - REDIS_SENTINELS=redis-sentinel-1:26379,redis-sentinel-2:26379,redis-sentinel-3:26379
-      - REDIS_MASTER_NAME=mymaster
+      # Direct mode - Sentinel disabled due to DNS caching issues with ioredis in Swarm
+      - REDIS_SENTINEL_ENABLED=false
       - REDIS_PASSWORD=${REDIS_PASSWORD}
-      # Fallback para modo direto (usado se Sentinel nao estiver disponivel)
       - REDIS_HOST=redis
       - REDIS_PORT=6379
 
@@ -385,9 +380,7 @@ services:
       - TZ=${TZ}
       # ISSUE 3 FIX: sslmode=require para conexao criptografada
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@178.156.188.93:5432/${POSTGRES_DB}?connection_limit=10&pool_timeout=20&sslmode=require
-      - REDIS_SENTINEL_ENABLED=true
-      - REDIS_SENTINELS=redis-sentinel-1:26379,redis-sentinel-2:26379,redis-sentinel-3:26379
-      - REDIS_MASTER_NAME=mymaster
+      - REDIS_SENTINEL_ENABLED=false
       - REDIS_PASSWORD=${REDIS_PASSWORD}
       - REDIS_HOST=redis
       - REDIS_PORT=6379
@@ -708,9 +701,7 @@ volumes:
   postgres_data:
   redis_data:
   redis_replica_data:
-  sentinel_1_data:
-  sentinel_2_data:
-  sentinel_3_data:
+  # Sentinel volumes removed - discovery data gets stale when IPs change in Swarm
   prometheus_data:
   alertmanager_data:
   grafana_data:
