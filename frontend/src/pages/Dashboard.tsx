@@ -74,21 +74,21 @@ interface UpcomingHearings {
   audiencias: number;
 }
 
-// Mapeamento de status para português com formatação correta
+// Mapeamento de status para português (plural)
 const statusTranslations: Record<string, string> = {
-  'PENDING': 'Pendente',
-  'ACTIVE': 'Ativo',
-  'FINISHED': 'Finalizado',
-  'ARCHIVED': 'Arquivado',
-  'SUSPENDED': 'Suspenso',
-  'CLOSED': 'Encerrado',
+  'PENDING': 'Pendentes',
+  'ACTIVE': 'Ativos',
+  'FINISHED': 'Finalizados',
+  'ARCHIVED': 'Arquivados',
+  'SUSPENDED': 'Suspensos',
+  'CLOSED': 'Encerrados',
   // Fallback para status já em português mas em caixa alta
-  'PENDENTE': 'Pendente',
-  'ATIVO': 'Ativo',
-  'FINALIZADO': 'Finalizado',
-  'ARQUIVADO': 'Arquivado',
-  'SUSPENSO': 'Suspenso',
-  'ENCERRADO': 'Encerrado',
+  'PENDENTE': 'Pendentes',
+  'ATIVO': 'Ativos',
+  'FINALIZADO': 'Finalizados',
+  'ARQUIVADO': 'Arquivados',
+  'SUSPENSO': 'Suspensos',
+  'ENCERRADO': 'Encerrados',
 };
 
 // Função para formatar nome do status
