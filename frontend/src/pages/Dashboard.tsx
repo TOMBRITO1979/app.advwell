@@ -74,6 +74,32 @@ interface UpcomingHearings {
   audiencias: number;
 }
 
+// Mapeamento de status para português com formatação correta
+const statusTranslations: Record<string, string> = {
+  'PENDING': 'Pendente',
+  'ACTIVE': 'Ativo',
+  'FINISHED': 'Arquivado',
+  'ARCHIVED': 'Arquivado',
+  'SUSPENDED': 'Suspenso',
+  'CLOSED': 'Encerrado',
+  // Fallback para status já em português mas em caixa alta
+  'PENDENTE': 'Pendente',
+  'ATIVO': 'Ativo',
+  'ARQUIVADO': 'Arquivado',
+  'SUSPENSO': 'Suspenso',
+  'ENCERRADO': 'Encerrado',
+};
+
+// Função para formatar nome do status
+const formatStatusName = (status: string): string => {
+  // Primeiro tenta traduzir
+  if (statusTranslations[status.toUpperCase()]) {
+    return statusTranslations[status.toUpperCase()];
+  }
+  // Fallback: capitaliza primeira letra e coloca resto em minúsculo
+  return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+};
+
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
@@ -240,7 +266,7 @@ const Dashboard: React.FC = () => {
             <ResponsiveContainer width="100%" height={250}>
               <PieChart>
                 <Pie
-                  data={casesByStatus}
+                  data={casesByStatus.map(item => ({ ...item, name: formatStatusName(item.name) }))}
                   cx="50%"
                   cy="50%"
                   labelLine={false}
@@ -253,7 +279,8 @@ const Dashboard: React.FC = () => {
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip formatter={(value: number, name: string) => [value, formatStatusName(name)]} />
+                <Legend formatter={(value: string) => formatStatusName(value)} />
               </PieChart>
             </ResponsiveContainer>
           </div>
