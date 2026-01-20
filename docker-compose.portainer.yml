@@ -171,7 +171,7 @@ services:
   # FRONTEND - React App
   # ---------------------------------------------------------------------------
   frontend:
-    image: tomautomations/advtom-frontend:v1.8.205
+    image: tomautomations/advtom-frontend:v1.8.206
     environment:
       - TZ=America/Sao_Paulo
       - VITE_API_URL=${VITE_API_URL}
