@@ -264,26 +264,56 @@ const Dashboard: React.FC = () => {
               Processos por Status
             </h2>
             <p className="text-xs sm:text-sm text-neutral-600 mb-2 sm:mb-4">Distribuição atual</p>
-            <ResponsiveContainer width="100%" height={250}>
-              <PieChart>
-                <Pie
-                  data={casesByStatus.map(item => ({ ...item, name: formatStatusName(item.name) }))}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) => `${name}: ${((percent || 0) * 100).toFixed(0)}%`}
-                  outerRadius={70}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {casesByStatus.map((_entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(value: number, name: string) => [value, formatStatusName(name)]} />
-                <Legend formatter={(value: string) => formatStatusName(value)} />
-              </PieChart>
-            </ResponsiveContainer>
+            <div className="flex items-center">
+              {/* Gráfico de Pizza */}
+              <div className="w-1/2">
+                <ResponsiveContainer width="100%" height={200}>
+                  <PieChart>
+                    <Pie
+                      data={casesByStatus.map(item => ({ ...item, name: formatStatusName(item.name) }))}
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={70}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {casesByStatus.map((_entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(value: number, name: string) => [value, formatStatusName(name)]} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              {/* Legenda Customizada */}
+              <div className="w-1/2 pl-4">
+                <div className="space-y-2">
+                  {casesByStatus.map((item, index) => {
+                    const total = casesByStatus.reduce((sum, i) => sum + i.value, 0);
+                    const percent = total > 0 ? ((item.value / total) * 100).toFixed(0) : '0';
+                    return (
+                      <div key={index} className="flex items-center justify-between text-sm">
+                        <div className="flex items-center gap-2">
+                          <div
+                            className="w-3 h-3 rounded-full flex-shrink-0"
+                            style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                          />
+                          <span className="text-neutral-700 dark:text-slate-300">
+                            {formatStatusName(item.name)}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-neutral-500 dark:text-slate-400">{item.value}</span>
+                          <span className="text-neutral-700 dark:text-slate-300 font-medium w-10 text-right">
+                            {percent}%
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
