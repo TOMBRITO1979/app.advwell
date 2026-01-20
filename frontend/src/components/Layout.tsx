@@ -344,7 +344,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     ...(hasPermission('cases') ? [{ path: '/cases', label: 'Judiciais', icon: FileText }] : []),
     ...(hasPermission('pnj') ? [{ path: '/pnj', label: 'PNJ', icon: FileText }] : []),
     ...(hasPermission('deadlines') ? [{ path: '/deadlines', label: 'Prazos', icon: Clock }] : []),
-    ...(hasPermission('monitoring') ? [{ path: '/monitoring', label: 'Monitoramento', icon: Radar }] : []),
+    ...(hasPermission('monitoring') ? [{ path: '/monitoring', label: 'Importar Proc.', icon: Radar }] : []),
     ...(hasPermission('updates') ? [{ path: '/updates', label: 'Atualizações', icon: Bell }] : []),
   ];
 
