@@ -18,7 +18,7 @@ services:
           - node.role == manager
 
   backend:
-    image: tomautomations/advtom-backend:v1.8.129
+    image: tomautomations/advtom-backend:v1.8.130
     environment:
       # Database
       - DATABASE_URL=postgresql://postgres:YOUR_SECURE_POSTGRES_PASSWORD_HERE@postgres:5432/advtom

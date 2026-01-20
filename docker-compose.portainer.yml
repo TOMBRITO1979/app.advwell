@@ -101,7 +101,7 @@ services:
   # BACKEND - API Node.js
   # ---------------------------------------------------------------------------
   backend:
-    image: tomautomations/advtom-backend:v1.8.129
+    image: tomautomations/advtom-backend:v1.8.130
     environment:
       - TZ=America/Sao_Paulo
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?connection_limit=25&pool_timeout=20

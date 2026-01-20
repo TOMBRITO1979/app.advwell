@@ -82,7 +82,7 @@ services:
         condition: on-failure
 
   backend:
-    image: tomautomations/advtom-backend:v1.8.129
+    image: tomautomations/advtom-backend:v1.8.130
     environment:
       # Database - USING PGBOUNCER
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@pgbouncer:5432/${POSTGRES_DB}
