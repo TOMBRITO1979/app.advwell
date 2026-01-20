@@ -161,6 +161,9 @@ export class AdvApiService {
    *
    * Cadastra um novo advogado e inicia o monitoramento de publicações.
    * A raspagem ocorre automaticamente entre 7h-21h, segunda a sábado.
+   *
+   * O callbackUrl é enviado para que a ADVAPI possa notificar o AdvWell
+   * quando novas publicações forem encontradas.
    */
   async cadastrarAdvogado(
     companyId: string,
@@ -169,11 +172,15 @@ export class AdvApiService {
     uf: string
   ): Promise<AdvApiCadastroResponse> {
     try {
+      // URL do webhook para receber callbacks da ADVAPI
+      const callbackUrl = process.env.ADVAPI_CALLBACK_URL || 'https://api.advwell.pro/api/advapi-webhook';
+
       const response = await this.client.post<AdvApiCadastroResponse>('/api/consulta', {
         companyId,
         advogadoNome: nome,
         oab,
         uf,
+        callbackUrl,
       });
 
       appLogger.info('ADVAPI: Advogado cadastrado', {

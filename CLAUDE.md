@@ -12,7 +12,7 @@ AdvWell is a multitenant SaaS for Brazilian law firms with DataJud CNJ integrati
 - Grafana: https://grafana.advwell.pro
 - Landing Page: https://advwell.pro
 
-**Current Version:** v1.8.130 (Backend) | v1.8.216 (Frontend)
+**Current Version:** v1.8.131 (Backend) | v1.8.216 (Frontend)
 
 ## Technology Stack
 
@@ -84,6 +84,33 @@ Jobs processed by dedicated worker (not API replicas):
 | Monitoring | OAB publication monitoring via ADVAPI |
 | Reports | Filtered reports with CSV export |
 | LGPD | Data privacy requests |
+
+## ADVAPI Integration
+
+External API for scraping CNJ lawyer publications from Diário Oficial.
+
+**Endpoints Used:**
+- `GET /health` - Health check
+- `GET /api/consulta/buffer` - Query stored publications
+- `POST /api/consulta` - Register lawyer for monitoring
+- `GET /api/advogados` - List registered lawyers
+
+**Environment Variables:**
+- `ADVAPI_BASE_URL` - API base URL (https://api.advtom.com)
+- `ADVAPI_API_KEY` - Authentication key
+- `ADVAPI_WEBHOOK_KEY` - Webhook validation key
+- `ADVAPI_CALLBACK_URL` - Callback URL for ADVAPI notifications (https://api.advwell.pro/api/advapi-webhook)
+
+**Key Files:**
+- `backend/src/services/advapi.service.ts` - API client
+- `backend/src/queues/monitoring.queue.ts` - Async processing
+- `backend/src/controllers/monitoring.controller.ts` - Business logic
+- `frontend/src/pages/Monitoring.tsx` - UI (Importar Proc.)
+
+**Test Connection:**
+```bash
+source .env && curl -s "${ADVAPI_BASE_URL}/health" -H "x-api-key: ${ADVAPI_API_KEY}"
+```
 
 ## Key Files
 
