@@ -12,7 +12,7 @@ AdvWell is a multitenant SaaS for Brazilian law firms with DataJud CNJ integrati
 - Grafana: https://grafana.advwell.pro
 - Landing Page: https://advwell.pro
 
-**Current Version:** v1.8.131 (Backend) | v1.8.216 (Frontend)
+**Current Version:** v1.8.132 (Backend) | v1.8.217 (Frontend)
 
 ## Technology Stack
 
@@ -28,7 +28,7 @@ AdvWell is a multitenant SaaS for Brazilian law firms with DataJud CNJ integrati
 ## Infrastructure (Production)
 
 ```
-VPS Principal (5.161.98.0)       VPS PostgreSQL (5.78.137.1)
+VPS Principal (5.161.98.0)       VPS PostgreSQL (178.156.188.93)
 30GB RAM | 8 vCPU                16GB RAM | 4 vCPU
 ├── Backend API (3 replicas)     └── PostgreSQL 16 (SSL/TLS)
 ├── Backend Worker (1 replica)       └── max_connections=500
@@ -52,8 +52,8 @@ docker service logs advtom_backend-worker -f
 # Health check
 curl https://api.advwell.pro/health
 
-# Database (via PostgreSQL VPS)
-ssh root@5.78.137.1 "docker exec advwell-postgres psql -U postgres -d advtom"
+# Database (direct connection)
+PGPASSWORD='<password>' psql -h 178.156.188.93 -U postgres -d advtom
 ```
 
 ## Architecture
@@ -149,7 +149,7 @@ git tag -a backup-YYYY-MM-DD -m "Description"
 git push origin backup-YYYY-MM-DD
 
 # Database
-ssh root@5.78.137.1 "docker exec advwell-postgres pg_dump -U postgres advtom > /backup/advtom_$(date +%Y%m%d).sql"
+PGPASSWORD='<password>' pg_dump -h 178.156.188.93 -U postgres advtom > /backup/advtom_$(date +%Y%m%d).sql
 ```
 
 ## Access Information
@@ -157,4 +157,9 @@ ssh root@5.78.137.1 "docker exec advwell-postgres pg_dump -U postgres advtom > /
 | VPS | IP | Description |
 |-----|-----|-------------|
 | Principal | 5.161.98.0 | Backend, Frontend, Redis, Traefik |
-| PostgreSQL | 5.78.137.1 | Dedicated database |
+| PostgreSQL | 178.156.188.93 | Dedicated database (production) |
+
+**Database Query:**
+```bash
+PGPASSWORD='<password>' psql -h 178.156.188.93 -U postgres -d advtom -c "SELECT ..."
+```
