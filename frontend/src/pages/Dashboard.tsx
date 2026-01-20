@@ -78,13 +78,14 @@ interface UpcomingHearings {
 const statusTranslations: Record<string, string> = {
   'PENDING': 'Pendente',
   'ACTIVE': 'Ativo',
-  'FINISHED': 'Arquivado',
+  'FINISHED': 'Finalizado',
   'ARCHIVED': 'Arquivado',
   'SUSPENDED': 'Suspenso',
   'CLOSED': 'Encerrado',
   // Fallback para status já em português mas em caixa alta
   'PENDENTE': 'Pendente',
   'ATIVO': 'Ativo',
+  'FINALIZADO': 'Finalizado',
   'ARQUIVADO': 'Arquivado',
   'SUSPENSO': 'Suspenso',
   'ENCERRADO': 'Encerrado',
