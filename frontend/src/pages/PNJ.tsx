@@ -893,7 +893,7 @@ const PNJPage: React.FC = () => {
                   </thead>
                   <tbody className="divide-y divide-neutral-200 dark:divide-slate-700 bg-white dark:bg-slate-800">
                     {pnjs.map((pnj) => (
-                      <tr key={pnj.id} className="odd:bg-white dark:bg-slate-800 even:bg-neutral-50 dark:bg-slate-700 hover:bg-success-100 transition-colors">
+                      <tr key={pnj.id} className="odd:bg-white even:bg-neutral-50 dark:odd:bg-slate-800 dark:even:bg-slate-700 hover:bg-neutral-100 dark:hover:bg-slate-600 transition-colors">
                         <td className="px-4 py-3 text-sm font-medium text-neutral-900 dark:text-slate-100">{pnj.number}</td>
                         <td className="px-4 py-3 text-sm text-neutral-600 dark:text-slate-400">{pnj.protocol || '-'}</td>
                         <td className="px-4 py-3 text-sm text-neutral-600 dark:text-slate-400 max-w-[200px] truncate">{pnj.title}</td>

@@ -617,18 +617,18 @@ const Hearings: React.FC = () => {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white dark:bg-slate-800 divide-y divide-neutral-200 dark:divide-slate-700">
+                  <tbody className="divide-y divide-neutral-200 dark:divide-slate-700 bg-white dark:bg-slate-800">
                     {events
                       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
                       .map((hearing) => (
                         <tr
                           key={hearing.id}
-                          className={`hover:bg-neutral-50 dark:hover:bg-slate-700 cursor-pointer border-l-4 ${
+                          className={`odd:bg-white even:bg-neutral-50 dark:odd:bg-slate-800 dark:even:bg-slate-700 hover:bg-neutral-100 dark:hover:bg-slate-600 transition-colors cursor-pointer border-l-4 ${
                             hearing.priority === 'URGENTE' ? 'border-l-red-500' :
                             hearing.priority === 'ALTA' ? 'border-l-orange-500' :
                             hearing.priority === 'MEDIA' ? 'border-l-yellow-500' :
                             'border-l-green-500'
-                          } ${hearing.completed ? 'bg-neutral-50 dark:bg-slate-700 opacity-60' : ''}`}
+                          } ${hearing.completed ? 'opacity-60' : ''}`}
                           onClick={() => handleEditClick(hearing)}
                         >
                           <td className="px-4 py-3 whitespace-nowrap">

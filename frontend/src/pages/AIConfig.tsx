@@ -590,9 +590,9 @@ const AIConfigPage: React.FC = () => {
                               <th className="pb-2 font-medium text-right">Tokens</th>
                             </tr>
                           </thead>
-                          <tbody>
+                          <tbody className="divide-y divide-neutral-200 dark:divide-slate-700 bg-white dark:bg-slate-800">
                             {tokenUsage.recentOperations.map((op) => (
-                              <tr key={op.id} className="border-b border-neutral-100">
+                              <tr key={op.id} className="odd:bg-white even:bg-neutral-50 dark:odd:bg-slate-800 dark:even:bg-slate-700 hover:bg-neutral-100 dark:hover:bg-slate-600 transition-colors">
                                 <td className="py-2 text-neutral-600 dark:text-slate-400">
                                   {new Date(op.createdAt).toLocaleString('pt-BR', {
                                     day: '2-digit',

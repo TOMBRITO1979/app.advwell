@@ -1081,9 +1081,9 @@ const Reports: React.FC = () => {
                     <th className="text-left py-2 px-2 text-gray-500 dark:text-slate-400 font-medium">Tribunal</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-neutral-200 dark:divide-slate-700 bg-white dark:bg-slate-800">
                   {caseAdvancedStats.withDeadline.cases.slice(0, 10).map((c) => (
-                    <tr key={c.id} className="border-b border-gray-100 dark:border-slate-700/50">
+                    <tr key={c.id} className="odd:bg-white even:bg-neutral-50 dark:odd:bg-slate-800 dark:even:bg-slate-700 hover:bg-neutral-100 dark:hover:bg-slate-600 transition-colors">
                       <td className="py-2 px-2 text-gray-900 dark:text-slate-100 font-mono text-xs">{c.processNumber}</td>
                       <td className="py-2 px-2">
                         <span className={`px-2 py-1 rounded text-xs ${
@@ -1125,9 +1125,9 @@ const Reports: React.FC = () => {
                     <th className="text-left py-2 px-2 text-gray-500 dark:text-slate-400 font-medium">Advogado</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-neutral-200 dark:divide-slate-700 bg-white dark:bg-slate-800">
                   {caseAdvancedStats.withoutMovement180Days.cases.map((c) => (
-                    <tr key={c.id} className="border-b border-gray-100 dark:border-slate-700/50 hover:bg-gray-50 dark:hover:bg-slate-700/30">
+                    <tr key={c.id} className="odd:bg-white even:bg-neutral-50 dark:odd:bg-slate-800 dark:even:bg-slate-700 hover:bg-neutral-100 dark:hover:bg-slate-600 transition-colors">
                       <td className="py-2 px-2 text-gray-900 dark:text-slate-100 font-mono text-xs">{c.processNumber}</td>
                       <td className="py-2 px-2">
                         <span className="px-2 py-1 rounded text-xs bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400">
@@ -1212,9 +1212,9 @@ const Reports: React.FC = () => {
                     <th className="text-left py-2 px-2 text-gray-500 dark:text-slate-400 font-medium">Números</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-neutral-200 dark:divide-slate-700 bg-white dark:bg-slate-800">
                   {pnjAdversesStats.topAdverses.map((adv, index) => (
-                    <tr key={index} className="border-b border-gray-100 dark:border-slate-700/50 hover:bg-gray-50 dark:hover:bg-slate-700/30">
+                    <tr key={index} className="odd:bg-white even:bg-neutral-50 dark:odd:bg-slate-800 dark:even:bg-slate-700 hover:bg-neutral-100 dark:hover:bg-slate-600 transition-colors">
                       <td className="py-2 px-2">
                         <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
                           index < 3
@@ -1266,9 +1266,9 @@ const Reports: React.FC = () => {
                     <th className="text-left py-2 px-2 text-gray-500 dark:text-slate-400 font-medium">Réus</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-neutral-200 dark:divide-slate-700 bg-white dark:bg-slate-800">
                   {pnjAdversesStats.withoutMovement180Days.pnjs.map((pnj) => (
-                    <tr key={pnj.id} className="border-b border-gray-100 dark:border-slate-700/50 hover:bg-gray-50 dark:hover:bg-slate-700/30">
+                    <tr key={pnj.id} className="odd:bg-white even:bg-neutral-50 dark:odd:bg-slate-800 dark:even:bg-slate-700 hover:bg-neutral-100 dark:hover:bg-slate-600 transition-colors">
                       <td className="py-2 px-2 text-gray-900 dark:text-slate-100 font-mono text-xs">{pnj.number}</td>
                       <td className="py-2 px-2 text-gray-600 dark:text-slate-300 max-w-xs truncate">{pnj.title}</td>
                       <td className="py-2 px-2">

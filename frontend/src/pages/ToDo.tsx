@@ -361,9 +361,9 @@ const ToDo: React.FC = () => {
                       <th className="px-6 py-3 text-center text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">Ações</th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white dark:bg-slate-800 divide-y divide-neutral-200 dark:divide-slate-700">
+                  <tbody className="divide-y divide-neutral-200 dark:divide-slate-700 bg-white dark:bg-slate-800">
                     {todos.map((todo) => (
-                      <tr key={todo.id} className="odd:bg-white dark:bg-slate-800 even:bg-neutral-50 dark:bg-slate-700 hover:bg-success-100 transition-colors">
+                      <tr key={todo.id} className="odd:bg-white even:bg-neutral-50 dark:odd:bg-slate-800 dark:even:bg-slate-700 hover:bg-neutral-100 dark:hover:bg-slate-600 transition-colors">
                         <td className="px-6 py-4 text-center">
                           <button
                             onClick={() => handleToggleComplete(todo)}
