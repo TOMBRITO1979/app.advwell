@@ -739,9 +739,9 @@ const Monitoring: React.FC = () => {
                           <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-slate-400">Acoes</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-neutral-200 dark:divide-slate-700">
+                      <tbody className="divide-y divide-neutral-200 dark:divide-slate-700 bg-white dark:bg-slate-800">
                         {oabs.map((oab) => (
-                          <tr key={oab.id} className="hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700">
+                          <tr key={oab.id} className="odd:bg-white even:bg-neutral-50 dark:odd:bg-slate-800 dark:even:bg-slate-700 hover:bg-neutral-100 dark:hover:bg-slate-600 transition-colors">
                             <td className="px-4 py-3 text-sm text-neutral-900 dark:text-slate-100">{oab.name}</td>
                             <td className="px-4 py-3 text-sm text-neutral-600 dark:text-slate-400">
                               {oab.oab}/{oab.oabState}
@@ -852,9 +852,9 @@ const Monitoring: React.FC = () => {
                             <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-slate-400">Acoes</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-neutral-200 dark:divide-slate-700">
+                        <tbody className="divide-y divide-neutral-200 dark:divide-slate-700 bg-white dark:bg-slate-800">
                           {publications.map((pub) => (
-                            <tr key={pub.id} className="hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700">
+                            <tr key={pub.id} className="odd:bg-white even:bg-neutral-50 dark:odd:bg-slate-800 dark:even:bg-slate-700 hover:bg-neutral-100 dark:hover:bg-slate-600 transition-colors">
                               <td className="px-4 py-3 text-sm text-neutral-900 dark:text-slate-100 font-mono">
                                 {formatProcessNumber(pub.numeroProcesso)}
                               </td>
@@ -947,9 +947,9 @@ const Monitoring: React.FC = () => {
                           <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-slate-400">Data</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-neutral-200 dark:divide-slate-700">
+                      <tbody className="divide-y divide-neutral-200 dark:divide-slate-700 bg-white dark:bg-slate-800">
                         {consultas.map((consulta) => (
-                          <tr key={consulta.id} className="hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700">
+                          <tr key={consulta.id} className="odd:bg-white even:bg-neutral-50 dark:odd:bg-slate-800 dark:even:bg-slate-700 hover:bg-neutral-100 dark:hover:bg-slate-600 transition-colors">
                             <td className="px-4 py-3 text-sm text-neutral-900 dark:text-slate-100">
                               {consulta.monitoredOab.name}
                               <div className="text-xs text-neutral-500 dark:text-slate-400">

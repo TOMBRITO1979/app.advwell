@@ -220,9 +220,9 @@ export default function Tags() {
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-neutral-200 dark:divide-slate-700">
-                  {tags.map((tag, index) => (
-                    <tr key={tag.id} className={index % 2 === 0 ? 'bg-white dark:bg-slate-800' : 'bg-neutral-50 dark:bg-slate-700/50'}>
+                <tbody className="divide-y divide-neutral-200 dark:divide-slate-700 bg-white dark:bg-slate-800">
+                  {tags.map((tag) => (
+                    <tr key={tag.id} className="odd:bg-white even:bg-neutral-50 dark:odd:bg-slate-800 dark:even:bg-slate-700 hover:bg-neutral-100 dark:hover:bg-slate-600 transition-colors">
                       <td className="px-6 py-4">
                         <span
                           className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"

@@ -303,9 +303,9 @@ export default function ManualAdmin() {
               <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">Ações</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-neutral-200 dark:divide-neutral-700">
+          <tbody className="divide-y divide-neutral-200 dark:divide-slate-700 bg-white dark:bg-slate-800">
             {categories.map((category) => (
-              <tr key={category.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-700/30">
+              <tr key={category.id} className="odd:bg-white even:bg-neutral-50 dark:odd:bg-slate-800 dark:even:bg-slate-700 hover:bg-neutral-100 dark:hover:bg-slate-600 transition-colors">
                 <td className="px-4 py-3 text-sm text-neutral-600 dark:text-neutral-400">
                   {category.order}
                 </td>
@@ -401,9 +401,9 @@ export default function ManualAdmin() {
               <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">Ações</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-neutral-200 dark:divide-neutral-700">
+          <tbody className="divide-y divide-neutral-200 dark:divide-slate-700 bg-white dark:bg-slate-800">
             {articles.map((article) => (
-              <tr key={article.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-700/30">
+              <tr key={article.id} className="odd:bg-white even:bg-neutral-50 dark:odd:bg-slate-800 dark:even:bg-slate-700 hover:bg-neutral-100 dark:hover:bg-slate-600 transition-colors">
                 <td className="px-4 py-3 text-sm text-neutral-600 dark:text-neutral-400">
                   {article.order}
                 </td>
@@ -500,9 +500,9 @@ export default function ManualAdmin() {
               <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase">Ações</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-neutral-200 dark:divide-neutral-700">
+          <tbody className="divide-y divide-neutral-200 dark:divide-slate-700 bg-white dark:bg-slate-800">
             {faqs.map((faq) => (
-              <tr key={faq.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-700/30">
+              <tr key={faq.id} className="odd:bg-white even:bg-neutral-50 dark:odd:bg-slate-800 dark:even:bg-slate-700 hover:bg-neutral-100 dark:hover:bg-slate-600 transition-colors">
                 <td className="px-4 py-3 text-sm text-neutral-600 dark:text-neutral-400">
                   {faq.order}
                 </td>

@@ -280,13 +280,13 @@ const Deadlines: React.FC = () => {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-neutral-200 dark:divide-slate-700">
+                  <tbody className="divide-y divide-neutral-200 dark:divide-slate-700 bg-white dark:bg-slate-800">
                     {cases.map((caseItem) => {
                       const daysRemaining = calculateDaysRemaining(caseItem.deadline);
                       const deadlineColor = getDeadlineColor(daysRemaining);
 
                       return (
-                        <tr key={caseItem.id} className={`odd:bg-white dark:odd:bg-slate-800 even:bg-neutral-50 dark:even:bg-slate-700/50 hover:bg-success-100 transition-colors ${caseItem.deadlineCompleted ? 'bg-success-50' : ''}`}>
+                        <tr key={caseItem.id} className={`odd:bg-white even:bg-neutral-50 dark:odd:bg-slate-800 dark:even:bg-slate-700 hover:bg-neutral-100 dark:hover:bg-slate-600 transition-colors ${caseItem.deadlineCompleted ? 'bg-success-50 dark:bg-success-900/30' : ''}`}>
                           <td className="px-4 py-3 text-sm">
                             <div className="flex items-center justify-center">
                               {caseItem.deadlineCompleted ? (

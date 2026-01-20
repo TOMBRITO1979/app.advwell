@@ -387,7 +387,7 @@ export default function ClientSubscriptions() {
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-slate-300 uppercase">Acoes</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-slate-700">
+              <tbody className="divide-y divide-neutral-200 dark:divide-slate-700 bg-white dark:bg-slate-800">
                 {subscriptions.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="px-6 py-8 text-center text-gray-500 dark:text-slate-400">
@@ -396,7 +396,7 @@ export default function ClientSubscriptions() {
                   </tr>
                 ) : (
                   subscriptions.map((sub) => (
-                    <tr key={sub.id} className="hover:bg-gray-50 dark:hover:bg-slate-700">
+                    <tr key={sub.id} className="odd:bg-white even:bg-neutral-50 dark:odd:bg-slate-800 dark:even:bg-slate-700 hover:bg-neutral-100 dark:hover:bg-slate-600 transition-colors">
                       <td className="px-6 py-4">
                         <div>
                           <p className="font-medium text-gray-900 dark:text-slate-100">{sub.client.name}</p>

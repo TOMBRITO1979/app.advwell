@@ -322,11 +322,11 @@ const LGPDRequests: React.FC = () => {
                       <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">Acoes</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-neutral-200">
+                  <tbody className="divide-y divide-neutral-200 dark:divide-slate-700 bg-white dark:bg-slate-800">
                     {filteredRequests.map((request) => {
                       const typeInfo = getRequestTypeLabel(request.requestType);
                       return (
-                        <tr key={request.id} className="odd:bg-white dark:odd:bg-slate-800 even:bg-neutral-50 dark:bg-slate-700 dark:even:bg-slate-700/50 hover:bg-success-100 dark:hover:bg-success-900/30 transition-colors">
+                        <tr key={request.id} className="odd:bg-white even:bg-neutral-50 dark:odd:bg-slate-800 dark:even:bg-slate-700 hover:bg-neutral-100 dark:hover:bg-slate-600 transition-colors">
                           <td className="px-4 py-4">
                             <div className="flex items-center gap-3">
                               <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
