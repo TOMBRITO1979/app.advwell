@@ -601,7 +601,7 @@ const Monitoring: React.FC = () => {
           <div>
             <h1 className="text-2xl font-bold text-neutral-900 dark:text-slate-100">Monitoramento</h1>
             <p className="text-neutral-600 dark:text-slate-400 mt-1">
-              Monitore publicacoes do Diario Oficial por OAB
+              Importe processos do Diario Oficial por OAB
             </p>
           </div>
           <div className="flex gap-2">
@@ -635,7 +635,7 @@ const Monitoring: React.FC = () => {
             </div>
             <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 p-4">
               <div className="text-2xl font-bold text-blue-600">{stats.totalPublications}</div>
-              <div className="text-sm text-neutral-600 dark:text-slate-400">Publicacoes</div>
+              <div className="text-sm text-neutral-600 dark:text-slate-400">Proc. Encontrados</div>
             </div>
             <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 p-4">
               <div className="text-2xl font-bold text-yellow-600">{stats.pendingPublications}</div>
@@ -672,7 +672,7 @@ const Monitoring: React.FC = () => {
                 }`}
               >
                 <FileText size={16} className="inline mr-2" />
-                Publicacoes
+                Importar Proc.
               </button>
               <button
                 onClick={() => setActiveTab('consultas')}
@@ -734,7 +734,7 @@ const Monitoring: React.FC = () => {
                           <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-slate-400">Advogado</th>
                           <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-slate-400">OAB</th>
                           <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-slate-400">Status</th>
-                          <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-slate-400">Publicacoes</th>
+                          <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-slate-400">Processos</th>
                           <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-slate-400">Ultima Consulta</th>
                           <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-slate-400">Acoes</th>
                         </tr>
@@ -899,7 +899,7 @@ const Monitoring: React.FC = () => {
                     {publicationTotalPages > 1 && (
                       <div className="flex items-center justify-between mt-4">
                         <div className="text-sm text-neutral-600 dark:text-slate-400">
-                          Mostrando pagina {publicationPage} de {publicationTotalPages} ({publicationTotal} publicacoes)
+                          Mostrando pagina {publicationPage} de {publicationTotalPages} ({publicationTotal} processos)
                         </div>
                         <div className="flex gap-2">
                           <button
@@ -943,7 +943,7 @@ const Monitoring: React.FC = () => {
                           <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-slate-400">Advogado</th>
                           <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-slate-400">Periodo</th>
                           <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-slate-400">Status</th>
-                          <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-slate-400">Publicacoes</th>
+                          <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-slate-400">Processos</th>
                           <th className="px-4 py-3 text-left text-sm font-medium text-neutral-600 dark:text-slate-400">Data</th>
                         </tr>
                       </thead>
@@ -1125,7 +1125,7 @@ const Monitoring: React.FC = () => {
                   className="rounded border-neutral-300 dark:border-slate-600 text-primary-600 focus:ring-primary-500"
                 />
                 <label htmlFor="autoImport" className="text-sm text-neutral-700 dark:text-slate-300">
-                  Importar publicacoes automaticamente
+                  Importar processos automaticamente
                 </label>
               </div>
             </div>
@@ -1279,7 +1279,7 @@ const Monitoring: React.FC = () => {
                 </div>
               </div>
               <p className="text-sm text-neutral-500 dark:text-slate-400">
-                A consulta buscara publicacoes do Diario Oficial no periodo selecionado.
+                A consulta buscara processos do Diario Oficial no periodo selecionado.
               </p>
             </div>
             <div className="flex justify-end gap-3 p-4 border-t">
