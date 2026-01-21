@@ -43,6 +43,7 @@ const LeadAnalytics = lazy(() => import('./pages/LeadAnalytics'));
 const Tags = lazy(() => import('./pages/Tags'));
 const PNJ = lazy(() => import('./pages/PNJ'));
 const Monitoring = lazy(() => import('./pages/Monitoring'));
+const DocumentRequests = lazy(() => import('./pages/DocumentRequests'));
 const Subscription = lazy(() => import('./pages/Subscription'));
 const SubscriptionAlerts = lazy(() => import('./pages/SubscriptionAlerts'));
 const StripeConfig = lazy(() => import('./pages/StripeConfig'));
@@ -257,6 +258,14 @@ function App() {
             element={
               <PrivateRoute>
                 <Monitoring />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/document-requests"
+            element={
+              <PrivateRoute>
+                <DocumentRequests />
               </PrivateRoute>
             }
           />

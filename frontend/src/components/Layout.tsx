@@ -44,6 +44,7 @@ import {
   Moon,
   LayoutGrid,
   LucideProps,
+  ClipboardList,
 } from 'lucide-react';
 
 // WhatsApp icon component (outline style to match other icons)
@@ -334,6 +335,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   // Submenu Pessoas (dropdown) - filtra por permissão
   const pessoasItems = [
     ...(hasPermission('clients') ? [{ path: '/clients', label: 'Clientes', icon: Users }] : []),
+    ...(hasPermission('document-requests') ? [{ path: '/document-requests', label: 'Solicitações', icon: ClipboardList }] : []),
     ...(hasPermission('adverses') ? [{ path: '/adverses', label: 'Adversos', icon: UserPlus }] : []),
     ...(hasPermission('lawyers') ? [{ path: '/lawyers', label: 'Advogados', icon: Scale }] : []),
     ...(hasPermission('users') ? [{ path: '/users', label: 'Usuários', icon: UserCog }] : []),

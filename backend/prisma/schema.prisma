@@ -17,18 +17,18 @@ enum SubscriptionStatus {
 
 // Enum para planos de assinatura
 enum SubscriptionPlan {
-  GRATUITO  // R$0/mês - até 50 processos, 100MB storage
-  BASICO    // R$69/mês - até 150 processos, 300MB storage
-  BRONZE    // $99/mês - até 1000 processos, 1GB storage
-  PRATA     // $159/mês - até 2500 processos, 5GB storage
-  OURO      // $219/mês - até 5000 processos, 30GB storage
+  GRATUITO // R$0/mês - até 50 processos, 100MB storage
+  BASICO // R$69/mês - até 150 processos, 300MB storage
+  BRONZE // $99/mês - até 1000 processos, 1GB storage
+  PRATA // $159/mês - até 2500 processos, 5GB storage
+  OURO // $219/mês - até 5000 processos, 30GB storage
 }
 
 // Tabela de empresas (tenants)
 model Company {
   id        String   @id @default(uuid())
   name      String
-  subdomain String?  @unique  // Subdomínio único para portal de clientes (ex: silva-advocacia.advwell.pro)
+  subdomain String?  @unique // Subdomínio único para portal de clientes (ex: silva-advocacia.advwell.pro)
   cnpj      String?  @unique
   email     String   @unique
   phone     String?
@@ -36,35 +36,35 @@ model Company {
   city      String?
   state     String?
   zipCode   String?
-  logo      String?  // URL do logo da empresa
+  logo      String? // URL do logo da empresa
   apiKey    String?  @unique // API Key para integrações externas (Chatwoot, etc)
   active    Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Campos de assinatura Stripe
-  subscriptionStatus    SubscriptionStatus @default(TRIAL)
-  subscriptionPlan      SubscriptionPlan?
-  trialEndsAt           DateTime?          // Quando o trial expira (1 dia após criação)
-  stripeCustomerId      String?            // ID do cliente no Stripe
-  stripeSubscriptionId  String?            // ID da assinatura no Stripe
-  subscriptionEndsAt    DateTime?          // Data de expiração da assinatura atual
-  casesLimit            Int                @default(50) // Limite de processos do plano (default: Gratuito)
-  monitoringLimit       Int                @default(500)  @map("monitoring_limit") // Limite de publicações monitoradas por mês
-  storageLimit          BigInt             @default(104857600) @map("storage_limit") // Limite de armazenamento em bytes (default: 100MB - Gratuito)
+  subscriptionStatus   SubscriptionStatus @default(TRIAL)
+  subscriptionPlan     SubscriptionPlan?
+  trialEndsAt          DateTime? // Quando o trial expira (1 dia após criação)
+  stripeCustomerId     String? // ID do cliente no Stripe
+  stripeSubscriptionId String? // ID da assinatura no Stripe
+  subscriptionEndsAt   DateTime? // Data de expiração da assinatura atual
+  casesLimit           Int                @default(50) // Limite de processos do plano (default: Gratuito)
+  monitoringLimit      Int                @default(500) @map("monitoring_limit") // Limite de publicações monitoradas por mês
+  storageLimit         BigInt             @default(104857600) @map("storage_limit") // Limite de armazenamento em bytes (default: 100MB - Gratuito)
 
   // LGPD - Dados do DPO (Encarregado de Dados)
-  dpoName               String?                // Nome do DPO/Encarregado
-  dpoEmail              String?                // Email do DPO
+  dpoName  String? // Nome do DPO/Encarregado
+  dpoEmail String? // Email do DPO
 
   // Backup automático por email
-  backupEmail           String?                // Email para receber backup diário (12h e 18h)
+  backupEmail String? // Email para receber backup diário (12h e 18h)
 
   // Chatwell Integration (embed Chatwell no AdvWell)
-  chatwellEnabled       Boolean   @default(false) @map("chatwell_enabled")  // Se Chatwell está habilitado
-  chatwellUrl           String?   @map("chatwell_url")                      // URL do painel Chatwell
-  chatwellEmail         String?   @map("chatwell_email")                    // Email de login (criptografado)
-  chatwellToken         String?   @db.Text @map("chatwell_token")           // Token de API (criptografado AES-256)
+  chatwellEnabled Boolean @default(false) @map("chatwell_enabled") // Se Chatwell está habilitado
+  chatwellUrl     String? @map("chatwell_url") // URL do painel Chatwell
+  chatwellEmail   String? @map("chatwell_email") // Email de login (criptografado)
+  chatwellToken   String? @map("chatwell_token") @db.Text // Token de API (criptografado AES-256)
 
   users                 User[]
   clients               Client[]
@@ -90,55 +90,58 @@ model Company {
   auditLogs             AuditLog[]
 
   // TAREFA 4.3: Relações diretas para isolamento de tenant
-  caseMovements         CaseMovement[]
-  caseDocuments         CaseDocument[]
-  caseParts             CasePart[]
-  caseWitnesses         CaseWitness[]
-  caseAuditLogs         CaseAuditLog[]
-  installmentPayments   InstallmentPayment[]
-  eventAssignments      EventAssignment[]
-  campaignRecipients    CampaignRecipient[]
-  subscriptionPayments  SubscriptionPayment[]
+  caseMovements        CaseMovement[]
+  caseDocuments        CaseDocument[]
+  caseParts            CasePart[]
+  caseWitnesses        CaseWitness[]
+  caseAuditLogs        CaseAuditLog[]
+  installmentPayments  InstallmentPayment[]
+  eventAssignments     EventAssignment[]
+  campaignRecipients   CampaignRecipient[]
+  subscriptionPayments SubscriptionPayment[]
 
   // Portal do cliente
-  announcements         Announcement[]
+  announcements Announcement[]
 
   // Google Calendar
-  googleCalendarCompanyConfig  GoogleCalendarCompanyConfig?
-  googleCalendarConfigs        GoogleCalendarConfig[]
+  googleCalendarCompanyConfig GoogleCalendarCompanyConfig?
+  googleCalendarConfigs       GoogleCalendarConfig[]
 
   // PNJ - Processos Não Judiciais
-  pnjs                  PNJ[]
-  pnjDocuments          PNJDocument[]
-  pnjParts              PNJPart[]       // ISSUE 2 FIX: Isolamento direto de tenant
-  pnjMovements          PNJMovement[]   // ISSUE 2 FIX: Isolamento direto de tenant
+  pnjs         PNJ[]
+  pnjDocuments PNJDocument[]
+  pnjParts     PNJPart[] // ISSUE 2 FIX: Isolamento direto de tenant
+  pnjMovements PNJMovement[] // ISSUE 2 FIX: Isolamento direto de tenant
 
   // WhatsApp Business API
-  whatsAppConfig              WhatsAppConfig?
-  whatsAppTemplates           WhatsAppTemplate[]
-  whatsAppCampaigns           WhatsAppCampaign[]
-  whatsAppCampaignRecipients  WhatsAppCampaignRecipient[]
-  whatsAppMessages            WhatsAppMessage[]
+  whatsAppConfig             WhatsAppConfig?
+  whatsAppTemplates          WhatsAppTemplate[]
+  whatsAppCampaigns          WhatsAppCampaign[]
+  whatsAppCampaignRecipients WhatsAppCampaignRecipient[]
+  whatsAppMessages           WhatsAppMessage[]
 
   // Sistema de Tags Centralizado
-  tags                        Tag[]
-  clientTags                  ClientTag[]
-  leadTags                    LeadTag[]
+  tags       Tag[]
+  clientTags ClientTag[]
+  leadTags   LeadTag[]
 
   // Documentos Compartilhados (Portal do Cliente)
-  sharedDocuments             SharedDocument[]
+  sharedDocuments SharedDocument[]
 
   // Mensagens do Portal do Cliente
-  clientMessages              ClientMessage[]
+  clientMessages ClientMessage[]
 
   // Compartilhamento de tokens de IA
-  aiTokenSharesProvided       AITokenShare[] @relation("AITokenShareProvider")  // Tokens que esta empresa compartilha
-  aiTokenSharesReceived       AITokenShare[] @relation("AITokenShareClient")    // Tokens que esta empresa recebe
+  aiTokenSharesProvided AITokenShare[] @relation("AITokenShareProvider") // Tokens que esta empresa compartilha
+  aiTokenSharesReceived AITokenShare[] @relation("AITokenShareClient") // Tokens que esta empresa recebe
 
   // Monitoramento de OABs
-  monitoredOabs               MonitoredOAB[]
-  oabConsultas                OABConsulta[]
-  publications                Publication[]
+  monitoredOabs MonitoredOAB[]
+  oabConsultas  OABConsulta[]
+  publications  Publication[]
+
+  // Solicitação de Documentos
+  documentRequests DocumentRequest[]
 
   @@map("companies")
 }
@@ -148,7 +151,7 @@ enum UserRole {
   SUPER_ADMIN
   ADMIN
   USER
-  CLIENT      // Portal do cliente - acesso restrito aos próprios dados
+  CLIENT // Portal do cliente - acesso restrito aos próprios dados
 }
 
 // Enum para prioridade de anúncios do portal
@@ -161,90 +164,93 @@ enum AnnouncementPriority {
 
 // Tabela de usuários
 model User {
-  id                        String    @id @default(uuid())
-  companyId                 String?
-  name                      String
-  email                     String    // Email único por empresa (ver @@unique abaixo)
-  password                  String
-  role                      UserRole  @default(USER)
-  active                    Boolean   @default(true)
-  emailVerified             Boolean   @default(false)
-  emailVerificationToken    String?
-  emailVerificationExpiry   DateTime?
-  resetToken                String?
-  resetTokenExpiry          DateTime?
-  failedLoginAttempts       Int       @default(0)
-  lastFailedLoginAt         DateTime?
-  accountLockedUntil        DateTime?
+  id                      String    @id @default(uuid())
+  companyId               String?
+  name                    String
+  email                   String // Email único por empresa (ver @@unique abaixo)
+  password                String
+  role                    UserRole  @default(USER)
+  active                  Boolean   @default(true)
+  emailVerified           Boolean   @default(false)
+  emailVerificationToken  String?
+  emailVerificationExpiry DateTime?
+  resetToken              String?
+  resetTokenExpiry        DateTime?
+  failedLoginAttempts     Int       @default(0)
+  lastFailedLoginAt       DateTime?
+  accountLockedUntil      DateTime?
 
   // Campos de perfil
-  phone                     String?   // Telefone fixo
-  mobile                    String?   // Celular
-  birthDate                 DateTime? // Data de nascimento
-  profilePhoto              String?   // Chave S3 da foto de perfil
-  profilePhotoUrl           String?   // URL da foto de perfil
+  phone           String? // Telefone fixo
+  mobile          String? // Celular
+  birthDate       DateTime? // Data de nascimento
+  profilePhoto    String? // Chave S3 da foto de perfil
+  profilePhotoUrl String? // URL da foto de perfil
 
   // Configurações de interface
-  hideSidebar               Boolean   @default(false) // Esconder sidebar para este usuário
+  hideSidebar Boolean @default(false) // Esconder sidebar para este usuário
 
   // Vínculo com cliente (para usuários do tipo CLIENT no portal)
-  clientId                  String?   @unique         // ID do cliente vinculado (apenas para role=CLIENT)
+  clientId String? @unique // ID do cliente vinculado (apenas para role=CLIENT)
 
-  createdAt                 DateTime  @default(now())
-  updatedAt                 DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  company                 Company?  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  linkedClient            Client?   @relation("UserClientLink", fields: [clientId], references: [id], onDelete: SetNull)
-  permissions             Permission[]
-  documents               Document[]
-  scheduleEvents          ScheduleEvent[]
-  accountsPayable         AccountPayable[]
-  emailCampaigns          EmailCampaign[]
-  assignedEvents          EventAssignment[]
-  scheduleEventGoogleSyncs ScheduleEventGoogleSync[]
-  casesAsDeadlineResponsible Case[]  @relation("CaseDeadlineResponsible")
-  announcements           Announcement[]    @relation("AnnouncementCreator")
-  caseAuditLogs           CaseAuditLog[]
-  legalDocumentsSigned    LegalDocument[] @relation("LegalDocumentSigner")
-  legalDocumentsCreated   LegalDocument[] @relation("LegalDocumentCreator")
-  consentLogs             ConsentLog[]
-  dataRequests            DataRequest[]
-  auditLogs               AuditLog[]
-  googleCalendarConfig    GoogleCalendarConfig?
+  company                    Company?                  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  linkedClient               Client?                   @relation("UserClientLink", fields: [clientId], references: [id], onDelete: SetNull)
+  permissions                Permission[]
+  documents                  Document[]
+  scheduleEvents             ScheduleEvent[]
+  accountsPayable            AccountPayable[]
+  emailCampaigns             EmailCampaign[]
+  assignedEvents             EventAssignment[]
+  scheduleEventGoogleSyncs   ScheduleEventGoogleSync[]
+  casesAsDeadlineResponsible Case[]                    @relation("CaseDeadlineResponsible")
+  announcements              Announcement[]            @relation("AnnouncementCreator")
+  caseAuditLogs              CaseAuditLog[]
+  legalDocumentsSigned       LegalDocument[]           @relation("LegalDocumentSigner")
+  legalDocumentsCreated      LegalDocument[]           @relation("LegalDocumentCreator")
+  consentLogs                ConsentLog[]
+  dataRequests               DataRequest[]
+  auditLogs                  AuditLog[]
+  googleCalendarConfig       GoogleCalendarConfig?
 
   // PNJ - Processos Não Judiciais
-  pnjsCreated             PNJ[]         @relation("PNJCreator")
-  pnjMovementsCreated     PNJMovement[] @relation("PNJMovementCreator")
-  pnjDocumentsUploaded    PNJDocument[] @relation("PNJDocumentUploader")
+  pnjsCreated          PNJ[]         @relation("PNJCreator")
+  pnjMovementsCreated  PNJMovement[] @relation("PNJMovementCreator")
+  pnjDocumentsUploaded PNJDocument[] @relation("PNJDocumentUploader")
 
   // WhatsApp Business API
-  whatsAppCampaigns       WhatsAppCampaign[]
+  whatsAppCampaigns WhatsAppCampaign[]
 
   // Documentos compartilhados
-  sharedDocumentsShared   SharedDocument[]  @relation("SharedDocumentSharedBy")
+  sharedDocumentsShared SharedDocument[] @relation("SharedDocumentSharedBy")
 
   // Mensagens do Portal
-  clientMessagesCreated   ClientMessage[]   @relation("MessageCreator")
+  clientMessagesCreated ClientMessage[] @relation("MessageCreator")
 
-  @@unique([companyId, email])  // Email único por empresa (permite mesmo email em empresas diferentes)
+  // Solicitação de Documentos
+  documentRequestsCreated DocumentRequest[] @relation("DocumentRequestRequestedBy")
+
+  @@unique([companyId, email]) // Email único por empresa (permite mesmo email em empresas diferentes)
   @@index([companyId])
-  @@index([email])  // Índice para buscas por email
+  @@index([email]) // Índice para buscas por email
   @@map("users")
 }
 
 // Tabela de permissões
 model Permission {
   id        String   @id @default(uuid())
-  companyId String   // OBRIGATORIO: Isolamento de tenant (SEGURANCA)
+  companyId String // OBRIGATORIO: Isolamento de tenant (SEGURANCA)
   userId    String
-  resource  String   // ex: "clients", "cases", "settings"
+  resource  String // ex: "clients", "cases", "settings"
   canView   Boolean  @default(false)
   canEdit   Boolean  @default(false)
   canDelete Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, resource, companyId]) // Unico por usuario, recurso E empresa
   @@index([companyId])
@@ -253,57 +259,58 @@ model Permission {
 
 // Tabela de clientes
 model Client {
-  id            String     @id @default(uuid())
-  companyId     String
-  personType    PersonType @default(FISICA) // Tipo de pessoa: Física ou Jurídica
-  clientCondition ClientCondition? @map("client_condition") // Condição: Demandante ou Demandado
-  name          String
-  cpf           String? // CPF para Pessoa Física ou CNPJ para Pessoa Jurídica
-  stateRegistration String? @map("state_registration") // Inscrição Estadual (para Pessoa Jurídica)
-  rg            String?
-  pis           String?   // Número do PIS
-  ctps          String?   // CTPS
-  ctpsSerie     String?   @map("ctps_serie") // CTPS Série
-  motherName    String?   @map("mother_name") // Nome da mãe
-  email         String?
-  phone         String?   // Telefone 1 (principal)
-  phone2        String?   // Telefone 2
-  instagram     String?   // Instagram
-  facebook      String?   // Facebook
-  address       String?
-  neighborhood  String?   // Bairro
-  city          String?
-  state         String?
-  zipCode       String?
-  profession    String?   // Profissão
-  nationality   String?   // Nacionalidade
-  customField1  String?   @map("custom_field_1") // Campo personalizado 1 (Outros)
-  customField2  String?   @map("custom_field_2") // Campo personalizado 2 (Outros 2)
-  maritalStatus String?   // Estado civil
-  birthDate     DateTime? // Data de nascimento
+  id                 String           @id @default(uuid())
+  companyId          String
+  personType         PersonType       @default(FISICA) // Tipo de pessoa: Física ou Jurídica
+  clientCondition    ClientCondition? @map("client_condition") // Condição: Demandante ou Demandado
+  name               String
+  cpf                String? // CPF para Pessoa Física ou CNPJ para Pessoa Jurídica
+  stateRegistration  String?          @map("state_registration") // Inscrição Estadual (para Pessoa Jurídica)
+  rg                 String?
+  pis                String? // Número do PIS
+  ctps               String? // CTPS
+  ctpsSerie          String?          @map("ctps_serie") // CTPS Série
+  motherName         String?          @map("mother_name") // Nome da mãe
+  email              String?
+  phone              String? // Telefone 1 (principal)
+  phone2             String? // Telefone 2
+  instagram          String? // Instagram
+  facebook           String? // Facebook
+  address            String?
+  neighborhood       String? // Bairro
+  city               String?
+  state              String?
+  zipCode            String?
+  profession         String? // Profissão
+  nationality        String? // Nacionalidade
+  customField1       String?          @map("custom_field_1") // Campo personalizado 1 (Outros)
+  customField2       String?          @map("custom_field_2") // Campo personalizado 2 (Outros 2)
+  maritalStatus      String? // Estado civil
+  birthDate          DateTime? // Data de nascimento
   representativeName String? // Nome do representante legal (para Pessoa Jurídica)
   representativeCpf  String? // CPF do representante legal (para Pessoa Jurídica)
-  notes         String?
-  tag           String?   // Tag/Categoria do cliente
-  active        Boolean   @default(true)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  notes              String?
+  tag                String? // Tag/Categoria do cliente
+  active             Boolean          @default(true)
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
 
-  company               Company               @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  company               Company                @relation(fields: [companyId], references: [id], onDelete: Cascade)
   cases                 Case[]
   financialTransactions FinancialTransaction[]
   documents             Document[]
   scheduleEvents        ScheduleEvent[]
-  legalDocuments        LegalDocument[]       @relation("LegalDocumentClient")
+  legalDocuments        LegalDocument[]        @relation("LegalDocumentClient")
   subscriptions         ClientSubscription[]
-  leadsConverted        Lead[]                @relation("LeadToClient")
-  portalUser            User?                 @relation("UserClientLink")  // Usuário do portal vinculado
-  announcements         Announcement[]        // Avisos direcionados a este cliente
-  pnjs                  PNJ[]                 // Processos Não Judiciais
-  clientTags            ClientTag[]           // Tags do cliente (many-to-many)
-  sharedDocuments       SharedDocument[]      // Documentos compartilhados via portal
-  messages              ClientMessage[]       // Mensagens do portal
-  caseParts             CasePart[]            // Partes de processo onde é demandante
+  leadsConverted        Lead[]                 @relation("LeadToClient")
+  portalUser            User?                  @relation("UserClientLink") // Usuário do portal vinculado
+  announcements         Announcement[] // Avisos direcionados a este cliente
+  pnjs                  PNJ[] // Processos Não Judiciais
+  clientTags            ClientTag[] // Tags do cliente (many-to-many)
+  sharedDocuments       SharedDocument[] // Documentos compartilhados via portal
+  messages              ClientMessage[] // Mensagens do portal
+  caseParts             CasePart[] // Partes de processo onde é demandante
+  documentRequests      DocumentRequest[] // Solicitações de documentos
 
   @@unique([companyId, cpf]) // CPF único por empresa (NULL é permitido para múltiplos clientes)
   @@unique([companyId, email]) // Email único por empresa (NULL é permitido para múltiplos clientes)
@@ -329,42 +336,42 @@ enum ClientCondition {
 
 // Tabela de adversos (parte contrária)
 model Adverse {
-  id            String     @id @default(uuid())
-  companyId     String     @map("company_id")
-  personType    PersonType @default(FISICA) @map("person_type")
-  name          String
-  cpf           String?
-  stateRegistration String? @map("state_registration")
-  rg            String?
-  pis           String?
-  ctps          String?
-  ctpsSerie     String?   @map("ctps_serie")
-  motherName    String?   @map("mother_name")
-  email         String?
-  phone         String?
-  phone2        String?
-  instagram     String?
-  facebook      String?
-  customField1  String?   @map("custom_field_1") // Campo personalizado 1 (Outros)
-  customField2  String?   @map("custom_field_2") // Campo personalizado 2 (Outros 2)
-  address       String?
-  neighborhood  String?   // Bairro
-  city          String?
-  state         String?
-  zipCode       String?   @map("zip_code")
-  profession    String?
-  nationality   String?
-  maritalStatus String?   @map("marital_status")
-  birthDate     DateTime? @map("birth_date")
-  representativeName String? @map("representative_name")
-  representativeCpf  String? @map("representative_cpf")
-  notes         String?
-  active        Boolean   @default(true)
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
+  id                 String     @id @default(uuid())
+  companyId          String     @map("company_id")
+  personType         PersonType @default(FISICA) @map("person_type")
+  name               String
+  cpf                String?
+  stateRegistration  String?    @map("state_registration")
+  rg                 String?
+  pis                String?
+  ctps               String?
+  ctpsSerie          String?    @map("ctps_serie")
+  motherName         String?    @map("mother_name")
+  email              String?
+  phone              String?
+  phone2             String?
+  instagram          String?
+  facebook           String?
+  customField1       String?    @map("custom_field_1") // Campo personalizado 1 (Outros)
+  customField2       String?    @map("custom_field_2") // Campo personalizado 2 (Outros 2)
+  address            String?
+  neighborhood       String? // Bairro
+  city               String?
+  state              String?
+  zipCode            String?    @map("zip_code")
+  profession         String?
+  nationality        String?
+  maritalStatus      String?    @map("marital_status")
+  birthDate          DateTime?  @map("birth_date")
+  representativeName String?    @map("representative_name")
+  representativeCpf  String?    @map("representative_cpf")
+  notes              String?
+  active             Boolean    @default(true)
+  createdAt          DateTime   @default(now()) @map("created_at")
+  updatedAt          DateTime   @updatedAt @map("updated_at")
 
-  company       Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  caseParts     CasePart[]  // Partes de processo onde é demandado
+  company   Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  caseParts CasePart[] // Partes de processo onde é demandado
 
   @@index([companyId])
   @@index([companyId, cpf])
@@ -373,49 +380,49 @@ model Adverse {
 
 // Enum para tipo de advogado
 enum LawyerType {
-  SOCIO       // Sócio
-  ASSOCIADO   // Associado
-  ESTAGIARIO  // Estagiário
-  EXTERNO     // Externo/Correspondente
+  SOCIO // Sócio
+  ASSOCIADO // Associado
+  ESTAGIARIO // Estagiário
+  EXTERNO // Externo/Correspondente
 }
 
 // Enum para vínculo do advogado
 enum LawyerAffiliation {
-  ESCRITORIO  // Advogado do próprio escritório
-  ADVERSO     // Advogado da parte contrária
+  ESCRITORIO // Advogado do próprio escritório
+  ADVERSO // Advogado da parte contrária
 }
 
 // Tabela de advogados da empresa
 model Lawyer {
-  id            String            @id @default(uuid())
-  companyId     String
-  name          String
-  cpf           String?
-  oab           String?           // Número da OAB (ex: 123456)
-  oabState      String?           @map("oab_state") // Estado da OAB (ex: SP)
-  lawyerType    LawyerType        @default(ASSOCIADO) @map("lawyer_type")
-  affiliation   LawyerAffiliation @default(ESCRITORIO) // Vínculo: escritório ou adverso
-  team          String?           // Equipe/Área (ex: Trabalhista, Cível, Tributário)
-  email         String?
-  phone         String?
-  phone2        String?
-  instagram     String?
-  facebook      String?
-  customField1  String?   @map("custom_field_1") // Campo personalizado 1 (Outros)
-  customField2  String?   @map("custom_field_2") // Campo personalizado 2 (Outros 2)
-  address       String?
-  neighborhood  String?   // Bairro
-  city          String?
-  state         String?
-  zipCode       String?   @map("zip_code")
-  notes         String?
-  active        Boolean   @default(true)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id           String            @id @default(uuid())
+  companyId    String
+  name         String
+  cpf          String?
+  oab          String? // Número da OAB (ex: 123456)
+  oabState     String?           @map("oab_state") // Estado da OAB (ex: SP)
+  lawyerType   LawyerType        @default(ASSOCIADO) @map("lawyer_type")
+  affiliation  LawyerAffiliation @default(ESCRITORIO) // Vínculo: escritório ou adverso
+  team         String? // Equipe/Área (ex: Trabalhista, Cível, Tributário)
+  email        String?
+  phone        String?
+  phone2       String?
+  instagram    String?
+  facebook     String?
+  customField1 String?           @map("custom_field_1") // Campo personalizado 1 (Outros)
+  customField2 String?           @map("custom_field_2") // Campo personalizado 2 (Outros 2)
+  address      String?
+  neighborhood String? // Bairro
+  city         String?
+  state        String?
+  zipCode      String?           @map("zip_code")
+  notes        String?
+  active       Boolean           @default(true)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
 
-  company       Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  cases         Case[]
-  caseParts     CasePart[] @relation("CasePartLawyer")  // Partes de processo como advogado
+  company   Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  cases     Case[]
+  caseParts CasePart[] @relation("CasePartLawyer") // Partes de processo como advogado
 
   @@index([companyId])
   @@index([companyId, oab])
@@ -432,51 +439,51 @@ enum CaseStatus {
 
 // Tabela de processos
 model Case {
-  id                    String     @id @default(uuid())
-  companyId             String
-  clientId              String?    // Opcional - usar CasePart para Demandante/Demandado
-  processNumber         String     // Número do processo (único por empresa)
-  court                 String?    // Tribunal (opcional - pode ser preenchido depois)
-  subject               String?    // Assunto (opcional - pode ser preenchido depois)
-  value                 Decimal?   @db.Decimal(15, 2) // Valor da causa
-  status                CaseStatus @default(ACTIVE)
-  deadline              DateTime?  // Prazo do processo
-  deadlineResponsibleId String?    // ID do usuário responsável pelo prazo
-  lawyerId              String?    // ID do advogado responsável pelo processo
-  deadlineCompleted     Boolean    @default(false) // Prazo foi cumprido
-  deadlineCompletedAt   DateTime?  // Data/hora que o prazo foi marcado como cumprido
-  notes                 String?
-  ultimoAndamento       String?    // Último movimento do processo (atualizado via DataJud)
-  ultimaPublicacaoAdvapi String?   @db.Text // Última publicação do Diário Oficial (via ADVAPI)
-  informarCliente       String?    @db.Text // Texto explicativo do andamento para informar ao cliente
-  linkProcesso          String?    // Link/URL do processo no tribunal
-  aiSummary             String?    @db.Text // Resumo gerado por IA dos movimentos do processo
-  createdAt             DateTime   @default(now())
-  updatedAt             DateTime   @updatedAt
-  lastSyncedAt          DateTime?  // Última sincronização com DataJud
-  lastAcknowledgedAt    DateTime?  // Última vez que o advogado marcou como "ciente" das atualizações
-  phase                 String?    // Fase do processo (ex: Inicial, Instrução, Sentença)
-  nature                String?    // Natureza do processo (ex: Cível, Trabalhista, Criminal)
-  rite                  String?    // Rito processual (ex: Ordinário, Sumário, Sumaríssimo)
-  comarca               String?    // Comarca do processo (ex: São Paulo, Campinas)
-  vara                  String?    // Vara do processo (ex: 1ª Vara Cível, 2ª Vara Criminal)
-  distributionDate      DateTime?  @map("distribution_date") // Data de distribuição do processo
+  id                     String     @id @default(uuid())
+  companyId              String
+  clientId               String? // Opcional - usar CasePart para Demandante/Demandado
+  processNumber          String // Número do processo (único por empresa)
+  court                  String? // Tribunal (opcional - pode ser preenchido depois)
+  subject                String? // Assunto (opcional - pode ser preenchido depois)
+  value                  Decimal?   @db.Decimal(15, 2) // Valor da causa
+  status                 CaseStatus @default(ACTIVE)
+  deadline               DateTime? // Prazo do processo
+  deadlineResponsibleId  String? // ID do usuário responsável pelo prazo
+  lawyerId               String? // ID do advogado responsável pelo processo
+  deadlineCompleted      Boolean    @default(false) // Prazo foi cumprido
+  deadlineCompletedAt    DateTime? // Data/hora que o prazo foi marcado como cumprido
+  notes                  String?
+  ultimoAndamento        String? // Último movimento do processo (atualizado via DataJud)
+  ultimaPublicacaoAdvapi String?    @db.Text // Última publicação do Diário Oficial (via ADVAPI)
+  informarCliente        String?    @db.Text // Texto explicativo do andamento para informar ao cliente
+  linkProcesso           String? // Link/URL do processo no tribunal
+  aiSummary              String?    @db.Text // Resumo gerado por IA dos movimentos do processo
+  createdAt              DateTime   @default(now())
+  updatedAt              DateTime   @updatedAt
+  lastSyncedAt           DateTime? // Última sincronização com DataJud
+  lastAcknowledgedAt     DateTime? // Última vez que o advogado marcou como "ciente" das atualizações
+  phase                  String? // Fase do processo (ex: Inicial, Instrução, Sentença)
+  nature                 String? // Natureza do processo (ex: Cível, Trabalhista, Criminal)
+  rite                   String? // Rito processual (ex: Ordinário, Sumário, Sumaríssimo)
+  comarca                String? // Comarca do processo (ex: São Paulo, Campinas)
+  vara                   String? // Vara do processo (ex: 1ª Vara Cível, 2ª Vara Criminal)
+  distributionDate       DateTime?  @map("distribution_date") // Data de distribuição do processo
 
   // Campos MTD 1.2 - DataJud
-  numeroBoletimOcorrencia   String?   @map("numero_boletim_ocorrencia") // B.O. vinculados ao processo
-  numeroInqueritoPolicial   String?   @map("numero_inquerito_policial") // Inquéritos vinculados
-  prioridadeProcessual      String?   @map("prioridade_processual") // Tipo de prioridade (ID=Idoso, etc)
-  prioridadeDataConcessao   DateTime? @map("prioridade_data_concessao") // Data concessão da prioridade
-  prioridadeDataFim         DateTime? @map("prioridade_data_fim") // Data fim da prioridade
+  numeroBoletimOcorrencia String?   @map("numero_boletim_ocorrencia") // B.O. vinculados ao processo
+  numeroInqueritoPolicial String?   @map("numero_inquerito_policial") // Inquéritos vinculados
+  prioridadeProcessual    String?   @map("prioridade_processual") // Tipo de prioridade (ID=Idoso, etc)
+  prioridadeDataConcessao DateTime? @map("prioridade_data_concessao") // Data concessão da prioridade
+  prioridadeDataFim       DateTime? @map("prioridade_data_fim") // Data fim da prioridade
 
-  company               Company               @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  client                Client?               @relation(fields: [clientId], references: [id], onDelete: SetNull)
-  deadlineResponsible   User?                 @relation("CaseDeadlineResponsible", fields: [deadlineResponsibleId], references: [id], onDelete: SetNull)
-  lawyer                Lawyer?               @relation(fields: [lawyerId], references: [id], onDelete: SetNull)
+  company               Company                @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  client                Client?                @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  deadlineResponsible   User?                  @relation("CaseDeadlineResponsible", fields: [deadlineResponsibleId], references: [id], onDelete: SetNull)
+  lawyer                Lawyer?                @relation(fields: [lawyerId], references: [id], onDelete: SetNull)
   movements             CaseMovement[]
-  caseDocuments         CaseDocument[]        @relation("CaseDocuments")
+  caseDocuments         CaseDocument[]         @relation("CaseDocuments")
   parts                 CasePart[]
-  witnesses             CaseWitness[]         // Testemunhas do processo
+  witnesses             CaseWitness[] // Testemunhas do processo
   financialTransactions FinancialTransaction[]
   documents             Document[]
   scheduleEvents        ScheduleEvent[]
@@ -493,17 +500,17 @@ model Case {
 
 // Tabela de movimentações do processo
 model CaseMovement {
-  id              String   @id @default(uuid())
-  caseId          String
-  companyId       String   // TAREFA 4.3: Isolamento de tenant direto
-  movementCode    Int
-  movementName    String
-  movementDate    DateTime
-  description     String?
-  createdAt       DateTime @default(now())
+  id           String   @id @default(uuid())
+  caseId       String
+  companyId    String // TAREFA 4.3: Isolamento de tenant direto
+  movementCode Int
+  movementName String
+  movementDate DateTime
+  description  String?
+  createdAt    DateTime @default(now())
 
-  case            Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
-  company         Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  case    Case    @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   @@index([caseId])
   @@index([companyId])
@@ -513,18 +520,18 @@ model CaseMovement {
 
 // Tabela de documentos do processo
 model CaseDocument {
-  id          String   @id @default(uuid())
-  caseId      String
-  companyId   String   // TAREFA 4.3: Isolamento de tenant direto
-  name        String
-  s3Key       String   // Chave do arquivo no S3
-  s3Url       String   // URL do arquivo no S3
-  fileSize    Int
-  mimeType    String
-  createdAt   DateTime @default(now())
+  id        String   @id @default(uuid())
+  caseId    String
+  companyId String // TAREFA 4.3: Isolamento de tenant direto
+  name      String
+  s3Key     String // Chave do arquivo no S3
+  s3Url     String // URL do arquivo no S3
+  fileSize  Int
+  mimeType  String
+  createdAt DateTime @default(now())
 
-  case        Case     @relation("CaseDocuments", fields: [caseId], references: [id], onDelete: Cascade)
-  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  case    Case    @relation("CaseDocuments", fields: [caseId], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   @@index([caseId])
   @@index([companyId])
@@ -533,43 +540,43 @@ model CaseDocument {
 
 // Enum para tipo de parte do processo
 enum CasePartType {
-  DEMANDANTE           // Demandante (autor) - busca de Clientes
-  DEMANDADO            // Demandado (réu) - busca de Adversos
-  ADVOGADO             // Advogado do escritório - busca de Lawyers (ESCRITORIO)
-  ADVOGADO_ADVERSO     // Advogado da parte contrária - busca de Lawyers (ADVERSO)
+  DEMANDANTE // Demandante (autor) - busca de Clientes
+  DEMANDADO // Demandado (réu) - busca de Adversos
+  ADVOGADO // Advogado do escritório - busca de Lawyers (ESCRITORIO)
+  ADVOGADO_ADVERSO // Advogado da parte contrária - busca de Lawyers (ADVERSO)
 }
 
 // Tabela de partes do processo - referencia entidades existentes
 model CasePart {
-  id              String       @id @default(uuid())
-  caseId          String
-  companyId       String       // TAREFA 4.3: Isolamento de tenant direto
-  type            CasePartType
+  id        String       @id @default(uuid())
+  caseId    String
+  companyId String // TAREFA 4.3: Isolamento de tenant direto
+  type      CasePartType
 
   // Referências às entidades (apenas um será preenchido baseado no type)
-  clientId        String?      // Para DEMANDANTE - referência ao Cliente
-  adverseId       String?      // Para DEMANDADO - referência ao Adverso
-  lawyerId        String?      // Para ADVOGADO/ADVOGADO_ADVERSO - referência ao Advogado
+  clientId  String? // Para DEMANDANTE - referência ao Cliente
+  adverseId String? // Para DEMANDADO - referência ao Adverso
+  lawyerId  String? // Para ADVOGADO/ADVOGADO_ADVERSO - referência ao Advogado
 
   // Campos legados (mantidos para compatibilidade com dados antigos)
-  name            String?
-  cpfCnpj         String?
-  phone           String?
-  address         String?
-  email           String?
-  civilStatus     String?
-  profession      String?
-  rg              String?
-  birthDate       DateTime?
+  name        String?
+  cpfCnpj     String?
+  phone       String?
+  address     String?
+  email       String?
+  civilStatus String?
+  profession  String?
+  rg          String?
+  birthDate   DateTime?
 
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  case            Case         @relation(fields: [caseId], references: [id], onDelete: Cascade)
-  company         Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  client          Client?      @relation(fields: [clientId], references: [id], onDelete: SetNull)
-  adverse         Adverse?     @relation(fields: [adverseId], references: [id], onDelete: SetNull)
-  lawyer          Lawyer?      @relation("CasePartLawyer", fields: [lawyerId], references: [id], onDelete: SetNull)
+  case    Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  company Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  client  Client?  @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  adverse Adverse? @relation(fields: [adverseId], references: [id], onDelete: SetNull)
+  lawyer  Lawyer?  @relation("CasePartLawyer", fields: [lawyerId], references: [id], onDelete: SetNull)
 
   @@index([caseId])
   @@index([companyId])
@@ -581,21 +588,21 @@ model CasePart {
 
 // Tabela de testemunhas do processo
 model CaseWitness {
-  id              String       @id @default(uuid())
-  caseId          String
-  companyId       String       // Isolamento de tenant direto
+  id        String @id @default(uuid())
+  caseId    String
+  companyId String // Isolamento de tenant direto
 
   // Dados da testemunha
-  name            String
-  address         String?
-  phone           String?      // Telefone fixo
-  mobile          String?      // Celular
+  name    String
+  address String?
+  phone   String? // Telefone fixo
+  mobile  String? // Celular
 
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  case            Case         @relation(fields: [caseId], references: [id], onDelete: Cascade)
-  company         Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  case    Case    @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   @@index([caseId])
   @@index([companyId])
@@ -606,20 +613,20 @@ model CaseWitness {
 model CaseAuditLog {
   id          String   @id @default(uuid())
   caseId      String
-  companyId   String   // TAREFA 4.3: Isolamento de tenant direto
-  userId      String?  // Nullable para preservar logs quando usuário é deletado
-  action      String   // CREATED, STATUS_CHANGED, PART_ADDED, PART_UPDATED, PART_DELETED, DOCUMENT_ADDED, DEADLINE_SET, DEADLINE_RESPONSIBLE_SET, etc.
-  description String   // Descrição legível da ação
-  metadata    Json?    // Dados adicionais (valores antigos/novos, etc.)
+  companyId   String // TAREFA 4.3: Isolamento de tenant direto
+  userId      String? // Nullable para preservar logs quando usuário é deletado
+  action      String // CREATED, STATUS_CHANGED, PART_ADDED, PART_UPDATED, PART_DELETED, DOCUMENT_ADDED, DEADLINE_SET, DEADLINE_RESPONSIBLE_SET, etc.
+  description String // Descrição legível da ação
+  metadata    Json? // Dados adicionais (valores antigos/novos, etc.)
   createdAt   DateTime @default(now())
 
-  case        Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
-  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  case    Case    @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user    User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
 
-  @@map("case_audit_logs")
   @@index([caseId])
   @@index([companyId])
+  @@map("case_audit_logs")
 }
 
 // Tabela de configurações do sistema
@@ -635,44 +642,44 @@ model SystemConfig {
 
 // Enum para tipo de transação financeira
 enum TransactionType {
-  INCOME    // Recebimento
-  EXPENSE   // Despesa
+  INCOME // Recebimento
+  EXPENSE // Despesa
 }
 
 // Enum para status de transação financeira
 enum TransactionStatus {
-  PENDING    // Pendente
-  PAID       // Pago
-  PARTIAL    // Parcialmente Pago
-  CANCELLED  // Cancelado
+  PENDING // Pendente
+  PAID // Pago
+  PARTIAL // Parcialmente Pago
+  CANCELLED // Cancelado
 }
 
 // Tabela de transações financeiras
 model FinancialTransaction {
-  id          String          @id @default(uuid())
-  companyId   String
-  clientId    String
-  caseId      String?         // Opcional - pode não estar vinculado a um processo
-  costCenterId String?        // Centro de custo (opcional)
-  type        TransactionType
-  status      TransactionStatus @default(PENDING) // Status da transação
-  description String
-  amount      Decimal         @db.Decimal(15, 2) // Valor total da transação
-  date        DateTime        @default(now())
+  id           String            @id @default(uuid())
+  companyId    String
+  clientId     String
+  caseId       String? // Opcional - pode não estar vinculado a um processo
+  costCenterId String? // Centro de custo (opcional)
+  type         TransactionType
+  status       TransactionStatus @default(PENDING) // Status da transação
+  description  String
+  amount       Decimal           @db.Decimal(15, 2) // Valor total da transação
+  date         DateTime          @default(now())
 
   // Campos de parcelamento
-  isInstallment       Boolean  @default(false)  // Se é uma transação parcelada
-  installmentCount    Int?                      // Número total de parcelas
-  installmentInterval Int?     @default(30)     // Intervalo em dias entre parcelas (padrão 30 = mensal)
+  isInstallment       Boolean @default(false) // Se é uma transação parcelada
+  installmentCount    Int? // Número total de parcelas
+  installmentInterval Int?    @default(30) // Intervalo em dias entre parcelas (padrão 30 = mensal)
 
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  company      Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  client       Client          @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  case         Case?           @relation(fields: [caseId], references: [id], onDelete: SetNull)
-  costCenter   CostCenter?     @relation(fields: [costCenterId], references: [id], onDelete: SetNull)
-  installments InstallmentPayment[]  // Relação com parcelas
+  company      Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  client       Client               @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  case         Case?                @relation(fields: [caseId], references: [id], onDelete: SetNull)
+  costCenter   CostCenter?          @relation(fields: [costCenterId], references: [id], onDelete: SetNull)
+  installments InstallmentPayment[] // Relação com parcelas
 
   @@index([companyId])
   @@index([clientId])
@@ -688,31 +695,31 @@ model FinancialTransaction {
 
 // Enum para status de parcelas
 enum InstallmentStatus {
-  PENDING    // Pendente
-  PAID       // Pago
-  PARTIAL    // Parcialmente Pago
-  OVERDUE    // Atrasado
-  CANCELLED  // Cancelado
+  PENDING // Pendente
+  PAID // Pago
+  PARTIAL // Parcialmente Pago
+  OVERDUE // Atrasado
+  CANCELLED // Cancelado
 }
 
 // Tabela de parcelas de pagamento/recebimento
 model InstallmentPayment {
-  id                      String             @id @default(uuid())
-  financialTransactionId  String
-  companyId               String             // TAREFA 4.3: Isolamento de tenant direto
-  installmentNumber       Int                // Número da parcela (1, 2, 3...)
-  amount                  Decimal            @db.Decimal(15, 2) // Valor da parcela
-  dueDate                 DateTime           // Data de vencimento
-  paidDate                DateTime?          // Data de pagamento (quando pago)
-  paidAmount              Decimal?           @db.Decimal(15, 2) // Valor efetivamente pago (pode diferir do valor da parcela)
-  status                  InstallmentStatus  @default(PENDING)
-  notes                   String?            // Observações sobre a parcela
-  receiptUrl              String?            // URL do recibo/comprovante em PDF
-  createdAt               DateTime           @default(now())
-  updatedAt               DateTime           @updatedAt
+  id                     String            @id @default(uuid())
+  financialTransactionId String
+  companyId              String // TAREFA 4.3: Isolamento de tenant direto
+  installmentNumber      Int // Número da parcela (1, 2, 3...)
+  amount                 Decimal           @db.Decimal(15, 2) // Valor da parcela
+  dueDate                DateTime // Data de vencimento
+  paidDate               DateTime? // Data de pagamento (quando pago)
+  paidAmount             Decimal?          @db.Decimal(15, 2) // Valor efetivamente pago (pode diferir do valor da parcela)
+  status                 InstallmentStatus @default(PENDING)
+  notes                  String? // Observações sobre a parcela
+  receiptUrl             String? // URL do recibo/comprovante em PDF
+  createdAt              DateTime          @default(now())
+  updatedAt              DateTime          @updatedAt
 
-  financialTransaction    FinancialTransaction @relation(fields: [financialTransactionId], references: [id], onDelete: Cascade)
-  company                 Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  financialTransaction FinancialTransaction @relation(fields: [financialTransactionId], references: [id], onDelete: Cascade)
+  company              Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   @@index([companyId])
   @@map("installment_payments")
@@ -720,8 +727,8 @@ model InstallmentPayment {
 
 // Enum para tipo de armazenamento de documentos
 enum StorageType {
-  upload    // Arquivo carregado no S3
-  link      // Link externo
+  upload // Arquivo carregado no S3
+  link // Link externo
 }
 
 // Enum para tipo de link externo
@@ -734,12 +741,12 @@ enum ExternalType {
 
 // Tabela de documentos gerais (novos - diferente de CaseDocument)
 model Document {
-  id          String        @id @default(uuid())
-  companyId   String
+  id        String @id @default(uuid())
+  companyId String
 
   // Relacionamentos (um dos dois é obrigatório)
-  caseId      String?
-  clientId    String?
+  caseId   String?
+  clientId String?
 
   // Dados do documento
   name        String
@@ -749,25 +756,25 @@ model Document {
   storageType StorageType
 
   // Para documentos carregados (storage_type = 'upload')
-  fileUrl     String?       // URL no S3
-  fileKey     String?       // Key no S3
-  fileSize    Int?          // Tamanho em bytes
-  fileType    String?       // MIME type
+  fileUrl  String? // URL no S3
+  fileKey  String? // Key no S3
+  fileSize Int? // Tamanho em bytes
+  fileType String? // MIME type
 
   // Para links externos (storage_type = 'link')
   externalUrl  String?
   externalType ExternalType?
 
   // Metadados
-  uploadedBy  String?
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  uploadedBy String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   // Relations
-  company     Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  case        Case?         @relation(fields: [caseId], references: [id], onDelete: Cascade)
-  client      Client?       @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  user        User?         @relation(fields: [uploadedBy], references: [id], onDelete: SetNull)
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  case    Case?   @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  client  Client? @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  user    User?   @relation(fields: [uploadedBy], references: [id], onDelete: SetNull)
 
   @@index([companyId])
   @@index([clientId])
@@ -778,31 +785,31 @@ model Document {
 
 // Enum para tipo de evento na agenda
 enum ScheduleEventType {
-  COMPROMISSO  // Reunião, encontro
-  TAREFA       // Tarefa interna
-  PRAZO        // Prazo processual
-  AUDIENCIA    // Audiência judicial
-  PERICIA      // Perícia judicial
-  GOOGLE_MEET  // Reunião Google Meet
+  COMPROMISSO // Reunião, encontro
+  TAREFA // Tarefa interna
+  PRAZO // Prazo processual
+  AUDIENCIA // Audiência judicial
+  PERICIA // Perícia judicial
+  GOOGLE_MEET // Reunião Google Meet
 }
 
 enum Priority {
-  BAIXA      // Prioridade baixa
-  MEDIA      // Prioridade média
-  ALTA       // Prioridade alta
-  URGENTE    // Urgente
+  BAIXA // Prioridade baixa
+  MEDIA // Prioridade média
+  ALTA // Prioridade alta
+  URGENTE // Urgente
 }
 
 enum KanbanStatus {
-  TODO         // A Fazer
-  IN_PROGRESS  // Em Andamento
-  DONE         // Concluído
+  TODO // A Fazer
+  IN_PROGRESS // Em Andamento
+  DONE // Concluído
 }
 
 // Tabela de eventos da agenda
 model ScheduleEvent {
-  id          String            @id @default(uuid())
-  companyId   String
+  id        String @id @default(uuid())
+  companyId String
 
   // Dados do evento
   title       String
@@ -811,33 +818,33 @@ model ScheduleEvent {
   priority    Priority          @default(MEDIA)
 
   // Data e hora
-  date        DateTime
-  endDate     DateTime?         // Data/hora de término (opcional)
+  date    DateTime
+  endDate DateTime? // Data/hora de término (opcional)
 
   // Relacionamentos (opcionais)
-  clientId    String?
-  caseId      String?
+  clientId String?
+  caseId   String?
 
   // Status e responsável
-  completed   Boolean           @default(false)
-  kanbanStatus KanbanStatus?    // Status no Kanban (opcional, usado apenas para TAREFA)
-  createdBy   String?           // Quem criou o evento
+  completed    Boolean       @default(false)
+  kanbanStatus KanbanStatus? // Status no Kanban (opcional, usado apenas para TAREFA)
+  createdBy    String? // Quem criou o evento
 
   // Google Meet
-  googleMeetLink String?         // Link do Google Calendar para criar reunião com Google Meet
+  googleMeetLink String? // Link do Google Calendar para criar reunião com Google Meet
 
   // Google Calendar Sync
-  googleEventId  String?         // ID do evento no Google Calendar (para sincronização)
+  googleEventId String? // ID do evento no Google Calendar (para sincronização)
 
   // Metadados
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  company     Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  client      Client?           @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  case        Case?             @relation(fields: [caseId], references: [id], onDelete: Cascade)
-  user        User?             @relation(fields: [createdBy], references: [id], onDelete: SetNull)
+  company       Company                   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  client        Client?                   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  case          Case?                     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  user          User?                     @relation(fields: [createdBy], references: [id], onDelete: SetNull)
   assignedUsers EventAssignment[]
   googleSyncs   ScheduleEventGoogleSync[]
 
@@ -850,15 +857,15 @@ model ScheduleEvent {
 
 // Tabela intermediária para atribuição de usuários a eventos
 model EventAssignment {
-  id        String        @id @default(uuid())
+  id        String   @id @default(uuid())
   eventId   String
   userId    String
-  companyId String        // TAREFA 4.3: Isolamento de tenant direto
-  createdAt DateTime      @default(now())
+  companyId String // TAREFA 4.3: Isolamento de tenant direto
+  createdAt DateTime @default(now())
 
-  event     ScheduleEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  company   Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  event   ScheduleEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user    User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   @@unique([eventId, userId])
   @@index([companyId])
@@ -867,15 +874,15 @@ model EventAssignment {
 
 // Sincronização de eventos com Google Calendar por usuário
 model ScheduleEventGoogleSync {
-  id            String        @id @default(uuid())
+  id            String   @id @default(uuid())
   eventId       String
   userId        String
-  googleEventId String        // ID do evento no Google Calendar do usuário
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  googleEventId String // ID do evento no Google Calendar do usuário
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-  event         ScheduleEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event ScheduleEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user  User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([eventId, userId])
   @@index([eventId])
@@ -885,49 +892,49 @@ model ScheduleEventGoogleSync {
 
 // Enum para status de conta a pagar
 enum AccountPayableStatus {
-  PENDING   // Pendente
-  PAID      // Pago
-  OVERDUE   // Atrasado
+  PENDING // Pendente
+  PAID // Pago
+  OVERDUE // Atrasado
   CANCELLED // Cancelado
 }
 
 enum RecurrencePeriod {
-  DAYS_15  // 15 dias
-  DAYS_30  // 30 dias (mensal)
+  DAYS_15 // 15 dias
+  DAYS_30 // 30 dias (mensal)
   MONTHS_6 // 6 meses (semestral)
-  YEAR_1   // 1 ano (anual)
+  YEAR_1 // 1 ano (anual)
 }
 
 // Tabela de contas a pagar
 model AccountPayable {
-  id          String               @id @default(uuid())
-  companyId   String
-  costCenterId String?             // Centro de custo (opcional)
+  id           String  @id @default(uuid())
+  companyId    String
+  costCenterId String? // Centro de custo (opcional)
 
   // Dados da conta
-  supplier    String               // Fornecedor/Credor
-  description String               // Descrição da conta
+  supplier    String // Fornecedor/Credor
+  description String // Descrição da conta
   amount      Decimal              @db.Decimal(15, 2) // Valor
-  dueDate     DateTime             // Data de vencimento
-  paidDate    DateTime?            // Data de pagamento (quando pago)
+  dueDate     DateTime // Data de vencimento
+  paidDate    DateTime? // Data de pagamento (quando pago)
   status      AccountPayableStatus @default(PENDING)
-  category    String?              // Categoria (ex: Aluguel, Salários, etc)
-  notes       String?              // Observações
+  category    String? // Categoria (ex: Aluguel, Salários, etc)
+  notes       String? // Observações
 
   // Recorrência
-  isRecurring       Boolean?           @default(false)  // Se é uma conta recorrente
-  recurrencePeriod  RecurrencePeriod?                   // Período de recorrência
-  parentId          String?                             // ID da conta original (para rastreamento)
+  isRecurring      Boolean?          @default(false) // Se é uma conta recorrente
+  recurrencePeriod RecurrencePeriod? // Período de recorrência
+  parentId         String? // ID da conta original (para rastreamento)
 
   // Metadados
-  createdBy   String?              // Quem criou
-  createdAt   DateTime             @default(now())
-  updatedAt   DateTime             @updatedAt
+  createdBy String? // Quem criou
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  company     Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  costCenter  CostCenter?          @relation(fields: [costCenterId], references: [id], onDelete: SetNull)
-  user        User?                @relation(fields: [createdBy], references: [id], onDelete: SetNull)
+  company    Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  costCenter CostCenter? @relation(fields: [costCenterId], references: [id], onDelete: SetNull)
+  user       User?       @relation(fields: [createdBy], references: [id], onDelete: SetNull)
 
   @@index([companyId])
   @@index([costCenterId])
@@ -943,48 +950,48 @@ model AccountPayable {
 
 // Enum para providers de IA
 enum AIProvider {
-  openai      // OpenAI (GPT-4, GPT-4o, GPT-4o-mini)
-  gemini      // Google Gemini (Gemini 1.5 Pro/Flash)
-  anthropic   // Anthropic Claude (Claude 3.5 Sonnet)
-  groq        // Groq (Llama, Mixtral)
+  openai // OpenAI (GPT-4, GPT-4o, GPT-4o-mini)
+  gemini // Google Gemini (Gemini 1.5 Pro/Flash)
+  anthropic // Anthropic Claude (Claude 3.5 Sonnet)
+  groq // Groq (Llama, Mixtral)
 }
 
 // Tabela de configuração de IA por empresa
 model AIConfig {
-  id              String     @id @default(uuid())
-  companyId       String     @unique
-  provider        AIProvider
-  apiKey          String     // Criptografado com AES-256
-  model           String     // Nome do modelo específico (ex: gpt-4o-mini, gemini-1.5-flash)
-  enabled         Boolean    @default(true)
-  autoSummarize   Boolean    @default(true)  // Gerar resumo automaticamente após sync
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
+  id            String     @id @default(uuid())
+  companyId     String     @unique
+  provider      AIProvider
+  apiKey        String // Criptografado com AES-256
+  model         String // Nome do modelo específico (ex: gpt-4o-mini, gemini-1.5-flash)
+  enabled       Boolean    @default(true)
+  autoSummarize Boolean    @default(true) // Gerar resumo automaticamente após sync
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
 
   // Relations
-  company         Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  tokenUsages     AITokenUsage[]
+  company     Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  tokenUsages AITokenUsage[]
 
   @@map("ai_configs")
 }
 
 // Histórico de uso de tokens de IA
 model AITokenUsage {
-  id                String     @id @default(uuid())
-  aiConfigId        String
-  companyId         String
-  operation         String     // 'generate_document', 'review_document', 'summarize_case', etc.
-  promptTokens      Int
-  completionTokens  Int
-  totalTokens       Int
-  model             String     // Modelo usado na operação
-  provider          String     // Provider usado (openai, gemini)
-  metadata          Json?      // Dados extras (ex: documentId, caseId)
-  createdAt         DateTime   @default(now())
+  id               String   @id @default(uuid())
+  aiConfigId       String
+  companyId        String
+  operation        String // 'generate_document', 'review_document', 'summarize_case', etc.
+  promptTokens     Int
+  completionTokens Int
+  totalTokens      Int
+  model            String // Modelo usado na operação
+  provider         String // Provider usado (openai, gemini)
+  metadata         Json? // Dados extras (ex: documentId, caseId)
+  createdAt        DateTime @default(now())
 
   // Relations
-  aiConfig          AIConfig   @relation(fields: [aiConfigId], references: [id], onDelete: Cascade)
-  company           Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  aiConfig AIConfig @relation(fields: [aiConfigId], references: [id], onDelete: Cascade)
+  company  Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   @@index([companyId, createdAt])
   @@index([aiConfigId, createdAt])
@@ -993,20 +1000,20 @@ model AITokenUsage {
 
 // Compartilhamento de tokens de IA entre empresas
 model AITokenShare {
-  id                  String     @id @default(uuid())
-  providerCompanyId   String     @map("provider_company_id") // Empresa que fornece o acesso (dona da API key)
-  clientCompanyId     String     @map("client_company_id") // Empresa que recebe o acesso
-  tokenLimit          Int        @map("token_limit") // Limite de tokens permitido
-  tokensUsed          Int        @default(0) @map("tokens_used") // Tokens já utilizados
-  enabled             Boolean    @default(true)
-  notifiedAt80        Boolean    @default(false) @map("notified_at_80") // Notificou ao atingir 80%
-  notifiedAt100       Boolean    @default(false) @map("notified_at_100") // Notificou ao atingir 100%
-  createdAt           DateTime   @default(now()) @map("created_at")
-  updatedAt           DateTime   @updatedAt @map("updated_at")
+  id                String   @id @default(uuid())
+  providerCompanyId String   @map("provider_company_id") // Empresa que fornece o acesso (dona da API key)
+  clientCompanyId   String   @map("client_company_id") // Empresa que recebe o acesso
+  tokenLimit        Int      @map("token_limit") // Limite de tokens permitido
+  tokensUsed        Int      @default(0) @map("tokens_used") // Tokens já utilizados
+  enabled           Boolean  @default(true)
+  notifiedAt80      Boolean  @default(false) @map("notified_at_80") // Notificou ao atingir 80%
+  notifiedAt100     Boolean  @default(false) @map("notified_at_100") // Notificou ao atingir 100%
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
 
   // Relations
-  providerCompany     Company    @relation("AITokenShareProvider", fields: [providerCompanyId], references: [id], onDelete: Cascade)
-  clientCompany       Company    @relation("AITokenShareClient", fields: [clientCompanyId], references: [id], onDelete: Cascade)
+  providerCompany Company @relation("AITokenShareProvider", fields: [providerCompanyId], references: [id], onDelete: Cascade)
+  clientCompany   Company @relation("AITokenShareClient", fields: [clientCompanyId], references: [id], onDelete: Cascade)
 
   @@unique([providerCompanyId, clientCompanyId])
   @@index([clientCompanyId])
@@ -1019,20 +1026,20 @@ model AITokenShare {
 
 // SMTP Configuration per Company
 model SMTPConfig {
-  id         String   @id @default(uuid())
-  companyId  String
-  host       String
-  port       Int
-  user       String
-  password   String   // Encrypted with AES-256
-  fromEmail  String
-  fromName   String?
-  isActive   Boolean  @default(true)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id        String   @id @default(uuid())
+  companyId String
+  host      String
+  port      Int
+  user      String
+  password  String // Encrypted with AES-256
+  fromEmail String
+  fromName  String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  company    Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   @@unique([companyId])
   @@map("smtp_configs")
@@ -1065,9 +1072,9 @@ model EmailCampaign {
   updatedAt       DateTime       @updatedAt
 
   // Relations
-  company         Company                @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  user            User?                  @relation(fields: [createdBy], references: [id], onDelete: SetNull)
-  recipients      CampaignRecipient[]
+  company    Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user       User?               @relation(fields: [createdBy], references: [id], onDelete: SetNull)
+  recipients CampaignRecipient[]
 
   @@index([companyId])
   @@index([status])
@@ -1085,7 +1092,7 @@ enum RecipientStatus {
 model CampaignRecipient {
   id             String          @id @default(uuid())
   campaignId     String
-  companyId      String          // TAREFA 4.3: Isolamento de tenant direto
+  companyId      String // TAREFA 4.3: Isolamento de tenant direto
   recipientEmail String
   recipientName  String?
   status         RecipientStatus @default(pending)
@@ -1094,8 +1101,8 @@ model CampaignRecipient {
   createdAt      DateTime        @default(now())
 
   // Relations
-  campaign       EmailCampaign   @relation(fields: [campaignId], references: [id], onDelete: Cascade)
-  company        Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  campaign EmailCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  company  Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   @@index([companyId])
   @@map("campaign_recipients")
@@ -1107,43 +1114,43 @@ model CampaignRecipient {
 
 // Configuração Stripe por empresa (chaves API do escritório)
 model StripeConfig {
-  id                    String   @id @default(uuid())
-  companyId             String   @unique
-  stripePublicKey       String   // pk_live_... ou pk_test_...
-  stripeSecretKey       String   // Criptografado com AES-256 (sk_live_... ou sk_test_...)
-  stripeWebhookSecret   String?  // Criptografado (whsec_...)
-  isActive              Boolean  @default(true)
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
+  id                  String   @id @default(uuid())
+  companyId           String   @unique
+  stripePublicKey     String // pk_live_... ou pk_test_...
+  stripeSecretKey     String // Criptografado com AES-256 (sk_live_... ou sk_test_...)
+  stripeWebhookSecret String? // Criptografado (whsec_...)
+  isActive            Boolean  @default(true)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 
-  company               Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   @@map("stripe_configs")
 }
 
 // Enum para intervalo de cobrança
 enum BillingInterval {
-  MONTHLY   // Mensal
+  MONTHLY // Mensal
   QUARTERLY // Trimestral
-  YEARLY    // Anual
+  YEARLY // Anual
 }
 
 // Planos/Serviços oferecidos pelo escritório
 model ServicePlan {
-  id                String          @id @default(uuid())
-  companyId         String
-  name              String          // Ex: "Assessoria Jurídica Básica"
-  description       String?
-  price             Decimal         @db.Decimal(15, 2) // Valor em reais (ex: 500.00)
-  interval          BillingInterval @default(MONTHLY)
-  stripeProductId   String?         // ID do produto no Stripe (prod_...)
-  stripePriceId     String?         // ID do preço no Stripe (price_...)
-  isActive          Boolean         @default(true)
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
+  id              String          @id @default(uuid())
+  companyId       String
+  name            String // Ex: "Assessoria Jurídica Básica"
+  description     String?
+  price           Decimal         @db.Decimal(15, 2) // Valor em reais (ex: 500.00)
+  interval        BillingInterval @default(MONTHLY)
+  stripeProductId String? // ID do produto no Stripe (prod_...)
+  stripePriceId   String? // ID do preço no Stripe (price_...)
+  isActive        Boolean         @default(true)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
 
-  company           Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  subscriptions     ClientSubscription[]
+  company       Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  subscriptions ClientSubscription[]
 
   @@index([companyId])
   @@index([isActive])
@@ -1152,36 +1159,36 @@ model ServicePlan {
 
 // Enum para status de assinatura do cliente
 enum ClientSubscriptionStatus {
-  ACTIVE        // Assinatura ativa
-  PAST_DUE      // Pagamento atrasado
-  CANCELED      // Cancelado
-  UNPAID        // Não pago
-  INCOMPLETE    // Aguardando primeiro pagamento
-  TRIALING      // Em período de teste
+  ACTIVE // Assinatura ativa
+  PAST_DUE // Pagamento atrasado
+  CANCELED // Cancelado
+  UNPAID // Não pago
+  INCOMPLETE // Aguardando primeiro pagamento
+  TRIALING // Em período de teste
 }
 
 // Assinatura de cliente em um plano
 model ClientSubscription {
-  id                    String                   @id @default(uuid())
-  companyId             String
-  clientId              String
-  servicePlanId         String
-  stripeCustomerId      String?                  // ID do cliente no Stripe (cus_...)
-  stripeSubscriptionId  String?                  // ID da assinatura no Stripe (sub_...)
-  status                ClientSubscriptionStatus @default(INCOMPLETE)
-  currentPeriodStart    DateTime?                // Início do período atual
-  currentPeriodEnd      DateTime?                // Fim do período atual
-  canceledAt            DateTime?                // Data de cancelamento
-  cancelReason          String?                  // Motivo do cancelamento
-  createdAt             DateTime                 @default(now())
-  updatedAt             DateTime                 @updatedAt
+  id                   String                   @id @default(uuid())
+  companyId            String
+  clientId             String
+  servicePlanId        String
+  stripeCustomerId     String? // ID do cliente no Stripe (cus_...)
+  stripeSubscriptionId String? // ID da assinatura no Stripe (sub_...)
+  status               ClientSubscriptionStatus @default(INCOMPLETE)
+  currentPeriodStart   DateTime? // Início do período atual
+  currentPeriodEnd     DateTime? // Fim do período atual
+  canceledAt           DateTime? // Data de cancelamento
+  cancelReason         String? // Motivo do cancelamento
+  createdAt            DateTime                 @default(now())
+  updatedAt            DateTime                 @updatedAt
 
-  company               Company                  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  client                Client                   @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  servicePlan           ServicePlan              @relation(fields: [servicePlanId], references: [id], onDelete: Cascade)
-  payments              SubscriptionPayment[]
+  company     Company               @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  client      Client                @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  servicePlan ServicePlan           @relation(fields: [servicePlanId], references: [id], onDelete: Cascade)
+  payments    SubscriptionPayment[]
 
-  @@unique([clientId, servicePlanId])  // Cliente só pode ter uma assinatura por plano
+  @@unique([clientId, servicePlanId]) // Cliente só pode ter uma assinatura por plano
   @@index([companyId])
   @@index([clientId])
   @@index([status])
@@ -1191,22 +1198,22 @@ model ClientSubscription {
 
 // Histórico de pagamentos de assinatura
 model SubscriptionPayment {
-  id                    String                 @id @default(uuid())
+  id                    String    @id @default(uuid())
   clientSubscriptionId  String
-  companyId             String                 // TAREFA 4.3: Isolamento de tenant direto
-  stripeInvoiceId       String?                // ID da fatura no Stripe (in_...)
-  stripePaymentIntentId String?                // ID do pagamento no Stripe (pi_...)
-  amount                Decimal                @db.Decimal(15, 2) // Valor pago
-  currency              String                 @default("brl")
-  status                String                 // paid, failed, pending, refunded
-  paidAt                DateTime?              // Data do pagamento
-  failedAt              DateTime?              // Data da falha (se aplicável)
-  failureReason         String?                // Motivo da falha
-  receiptUrl            String?                // URL do recibo do Stripe
-  createdAt             DateTime               @default(now())
+  companyId             String // TAREFA 4.3: Isolamento de tenant direto
+  stripeInvoiceId       String? // ID da fatura no Stripe (in_...)
+  stripePaymentIntentId String? // ID do pagamento no Stripe (pi_...)
+  amount                Decimal   @db.Decimal(15, 2) // Valor pago
+  currency              String    @default("brl")
+  status                String // paid, failed, pending, refunded
+  paidAt                DateTime? // Data do pagamento
+  failedAt              DateTime? // Data da falha (se aplicável)
+  failureReason         String? // Motivo da falha
+  receiptUrl            String? // URL do recibo do Stripe
+  createdAt             DateTime  @default(now())
 
-  clientSubscription    ClientSubscription     @relation(fields: [clientSubscriptionId], references: [id], onDelete: Cascade)
-  company               Company                @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  clientSubscription ClientSubscription @relation(fields: [clientSubscriptionId], references: [id], onDelete: Cascade)
+  company            Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   @@index([companyId])
   @@map("subscription_payments")
@@ -1218,53 +1225,53 @@ model SubscriptionPayment {
 
 // Enum para status do lead
 enum LeadStatus {
-  NOVO          // Lead recém-criado
-  CONTATADO     // Lead foi contatado
-  QUALIFICADO   // Lead qualificado para conversão
-  CONVERTIDO    // Convertido para cliente
-  PERDIDO       // Lead perdido/não interessado
+  NOVO // Lead recém-criado
+  CONTATADO // Lead foi contatado
+  QUALIFICADO // Lead qualificado para conversão
+  CONVERTIDO // Convertido para cliente
+  PERDIDO // Lead perdido/não interessado
 }
 
 // Enum para origem do lead
 enum LeadSource {
-  WHATSAPP      // Via WhatsApp
-  TELEFONE      // Ligação telefônica
-  SITE          // Formulário do site
-  INDICACAO     // Indicação de cliente
+  WHATSAPP // Via WhatsApp
+  TELEFONE // Ligação telefônica
+  SITE // Formulário do site
+  INDICACAO // Indicação de cliente
   REDES_SOCIAIS // Instagram, Facebook, etc
-  OUTROS        // Outras origens
+  OUTROS // Outras origens
 }
 
 // Tabela de leads (potenciais clientes)
 model Lead {
-  id                  String      @id @default(uuid())
-  companyId           String
+  id        String @id @default(uuid())
+  companyId String
 
   // Dados do lead
-  name                String
-  phone               String      // Telefone é obrigatório para verificar se é cliente existente
-  email               String?
-  contactReason       String?     @db.Text  // Motivo do contato/resumo do atendimento
+  name          String
+  phone         String // Telefone é obrigatório para verificar se é cliente existente
+  email         String?
+  contactReason String? @db.Text // Motivo do contato/resumo do atendimento
 
   // Status e origem
-  status              LeadStatus  @default(NOVO)
-  source              LeadSource  @default(WHATSAPP)
+  status LeadStatus @default(NOVO)
+  source LeadSource @default(WHATSAPP)
 
   // Observações adicionais
-  notes               String?     @db.Text
+  notes String? @db.Text
 
   // Conversão para cliente
-  convertedToClientId String?     // ID do cliente se convertido
-  convertedAt         DateTime?   // Data da conversão
+  convertedToClientId String? // ID do cliente se convertido
+  convertedAt         DateTime? // Data da conversão
 
   // Metadados
-  createdAt           DateTime    @default(now())
-  updatedAt           DateTime    @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  company             Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  convertedToClient   Client?     @relation("LeadToClient", fields: [convertedToClientId], references: [id], onDelete: SetNull)
-  leadTags            LeadTag[]   // Tags do lead (many-to-many)
+  company           Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  convertedToClient Client?   @relation("LeadToClient", fields: [convertedToClientId], references: [id], onDelete: SetNull)
+  leadTags          LeadTag[] // Tags do lead (many-to-many)
 
   @@index([companyId])
   @@index([phone])
@@ -1279,64 +1286,64 @@ model Lead {
 
 // Enum para tipo de parte em documentos jurídicos
 enum PartyType {
-  AUTOR       // Autor/Requerente
-  REU         // Réu/Requerido
-  ADVOGADO    // Advogado
-  TESTEMUNHA  // Testemunha
-  OUTRO       // Outro tipo
+  AUTOR // Autor/Requerente
+  REU // Réu/Requerido
+  ADVOGADO // Advogado
+  TESTEMUNHA // Testemunha
+  OUTRO // Outro tipo
 }
 
 // Tabela de documentos jurídicos (recibos, contratos, procurações, etc.)
 model LegalDocument {
-  id          String   @id @default(uuid())
-  companyId   String
+  id        String @id @default(uuid())
+  companyId String
 
   // Dados do documento
-  title       String                    // Título do documento (ex: "Recibo de Honorários")
-  content     String   @db.Text         // Conteúdo/texto do documento
+  title        String // Título do documento (ex: "Recibo de Honorários")
+  content      String   @db.Text // Conteúdo/texto do documento
   documentDate DateTime @default(now()) // Data do documento
 
   // Relacionamentos
-  clientId    String?                   // Cliente relacionado (parte)
-  signerId    String?                   // Profissional que assina
+  clientId String? // Cliente relacionado (parte)
+  signerId String? // Profissional que assina
 
   // Metadados
-  createdBy   String?                   // Quem criou
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdBy String? // Quem criou
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  client      Client?  @relation("LegalDocumentClient", fields: [clientId], references: [id], onDelete: SetNull)
-  signer      User?    @relation("LegalDocumentSigner", fields: [signerId], references: [id], onDelete: SetNull)
-  creator     User?    @relation("LegalDocumentCreator", fields: [createdBy], references: [id], onDelete: SetNull)
-  parties     LegalDocumentParty[]
+  company Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  client  Client?              @relation("LegalDocumentClient", fields: [clientId], references: [id], onDelete: SetNull)
+  signer  User?                @relation("LegalDocumentSigner", fields: [signerId], references: [id], onDelete: SetNull)
+  creator User?                @relation("LegalDocumentCreator", fields: [createdBy], references: [id], onDelete: SetNull)
+  parties LegalDocumentParty[]
 
   @@map("legal_documents")
 }
 
 // Tabela de partes do documento jurídico (múltiplos autores, réus, advogados)
 model LegalDocumentParty {
-  id              String    @id @default(uuid())
+  id              String @id @default(uuid())
   legalDocumentId String
   companyId       String
 
   // Dados da parte
-  name            String    // Nome completo
-  type            PartyType @default(OUTRO)
-  cpfCnpj         String?   // CPF ou CNPJ
-  oab             String?   // Número OAB (apenas para advogados)
-  email           String?
-  phone           String?
-  notes           String?   // Observações
+  name    String // Nome completo
+  type    PartyType @default(OUTRO)
+  cpfCnpj String? // CPF ou CNPJ
+  oab     String? // Número OAB (apenas para advogados)
+  email   String?
+  phone   String?
+  notes   String? // Observações
 
   // Metadados
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  legalDocument   LegalDocument @relation(fields: [legalDocumentId], references: [id], onDelete: Cascade)
-  company         Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  legalDocument LegalDocument @relation(fields: [legalDocumentId], references: [id], onDelete: Cascade)
+  company       Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   @@index([legalDocumentId])
   @@index([companyId])
@@ -1350,40 +1357,40 @@ model LegalDocumentParty {
 
 // Enum para tipo de consentimento
 enum ConsentType {
-  PRIVACY_POLICY      // Política de Privacidade
-  TERMS_OF_USE        // Termos de Uso
-  MARKETING_EMAIL     // Consentimento para emails marketing
-  DATA_PROCESSING     // Processamento de dados específico
+  PRIVACY_POLICY // Política de Privacidade
+  TERMS_OF_USE // Termos de Uso
+  MARKETING_EMAIL // Consentimento para emails marketing
+  DATA_PROCESSING // Processamento de dados específico
 }
 
 // Tabela de registro de consentimentos (LGPD Art. 8)
 model ConsentLog {
-  id            String       @id @default(uuid())
+  id String @id @default(uuid())
 
   // Tenant (opcional para consentimentos de registro)
-  companyId     String?      // Para isolamento de tenant (preenchido para consentimentos pós-login)
+  companyId String? // Para isolamento de tenant (preenchido para consentimentos pós-login)
 
   // Quem deu o consentimento
-  userId        String?      // Usuário autenticado (opcional para leads/registro)
-  email         String       // Email para rastreamento
-  ip            String?      // IP do cliente
-  userAgent     String?      // User agent do navegador
+  userId    String? // Usuário autenticado (opcional para leads/registro)
+  email     String // Email para rastreamento
+  ip        String? // IP do cliente
+  userAgent String? // User agent do navegador
 
   // O que foi consentido
-  consentType   ConsentType
-  version       String       // Versão do documento (ex: "1.0", "2.0")
+  consentType ConsentType
+  version     String // Versão do documento (ex: "1.0", "2.0")
 
   // Quando
-  consentedAt   DateTime     @default(now())
-  revokedAt     DateTime?    // Se foi revogado
+  consentedAt DateTime  @default(now())
+  revokedAt   DateTime? // Se foi revogado
 
   // Metadados
-  documentHash  String?      // Hash SHA-256 do documento aceito
+  documentHash String? // Hash SHA-256 do documento aceito
 
-  createdAt     DateTime     @default(now())
+  createdAt DateTime @default(now())
 
   // Relations
-  user          User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([companyId])
   @@index([userId])
@@ -1394,51 +1401,51 @@ model ConsentLog {
 
 // Enum para tipo de solicitação LGPD
 enum DataRequestType {
-  ACCESS          // Acesso aos dados (Art. 18, II)
-  CORRECTION      // Correção de dados (Art. 18, III)
-  DELETION        // Exclusão de dados (Art. 18, VI)
-  PORTABILITY     // Portabilidade (Art. 18, V)
-  REVOKE_CONSENT  // Revogação de consentimento (Art. 18, IX)
+  ACCESS // Acesso aos dados (Art. 18, II)
+  CORRECTION // Correção de dados (Art. 18, III)
+  DELETION // Exclusão de dados (Art. 18, VI)
+  PORTABILITY // Portabilidade (Art. 18, V)
+  REVOKE_CONSENT // Revogação de consentimento (Art. 18, IX)
 }
 
 // Enum para status de solicitação LGPD
 enum DataRequestStatus {
-  PENDING         // Aguardando processamento
-  IN_PROGRESS     // Em processamento
-  COMPLETED       // Concluído
-  REJECTED        // Rejeitado (com justificativa)
+  PENDING // Aguardando processamento
+  IN_PROGRESS // Em processamento
+  COMPLETED // Concluído
+  REJECTED // Rejeitado (com justificativa)
 }
 
 // Tabela de solicitações de direitos do titular (LGPD Art. 18)
 model DataRequest {
-  id            String            @id @default(uuid())
-  userId        String?           // Nullable para preservar requisições quando usuário é deletado
-  companyId     String
+  id        String  @id @default(uuid())
+  userId    String? // Nullable para preservar requisições quando usuário é deletado
+  companyId String
 
   // Tipo e status
-  requestType   DataRequestType
-  status        DataRequestStatus @default(PENDING)
+  requestType DataRequestType
+  status      DataRequestStatus @default(PENDING)
 
   // Descrição da solicitação (para correções ou especificações)
-  description   String?           @db.Text
+  description String? @db.Text
 
   // Datas
-  requestedAt   DateTime          @default(now())
-  processedAt   DateTime?         // Quando começou a ser processado
-  completedAt   DateTime?         // Quando foi concluído
+  requestedAt DateTime  @default(now())
+  processedAt DateTime? // Quando começou a ser processado
+  completedAt DateTime? // Quando foi concluído
 
   // Resultado
-  resultUrl     String?           // URL do arquivo gerado (portabilidade)
-  notes         String?           @db.Text  // Notas do processamento
-  processedBy   String?           // ID do admin que processou
-  rejectionReason String?         @db.Text  // Motivo da rejeição (se aplicável)
+  resultUrl       String? // URL do arquivo gerado (portabilidade)
+  notes           String? @db.Text // Notas do processamento
+  processedBy     String? // ID do admin que processou
+  rejectionReason String? @db.Text // Motivo da rejeição (se aplicável)
 
-  createdAt     DateTime          @default(now())
-  updatedAt     DateTime          @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  user          User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
-  company       Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user    User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([companyId])
@@ -1453,9 +1460,9 @@ model DataRequest {
 
 // Tabela de anúncios do portal do cliente
 model Announcement {
-  id          String               @id @default(uuid())
-  companyId   String
-  clientId    String?              // Se preenchido, aviso é apenas para este cliente
+  id        String  @id @default(uuid())
+  companyId String
+  clientId  String? // Se preenchido, aviso é apenas para este cliente
 
   // Dados do anúncio
   title       String
@@ -1463,17 +1470,17 @@ model Announcement {
   priority    AnnouncementPriority @default(NORMAL)
   active      Boolean              @default(true)
   publishedAt DateTime             @default(now())
-  expiresAt   DateTime?            // Data de expiração (opcional)
+  expiresAt   DateTime? // Data de expiração (opcional)
 
   // Metadados
-  createdBy   String
-  createdAt   DateTime             @default(now())
-  updatedAt   DateTime             @updatedAt
+  createdBy String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  company     Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  creator     User                 @relation("AnnouncementCreator", fields: [createdBy], references: [id], onDelete: Cascade)
-  client      Client?              @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  creator User    @relation("AnnouncementCreator", fields: [createdBy], references: [id], onDelete: Cascade)
+  client  Client? @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
   @@index([companyId])
   @@index([clientId])
@@ -1488,50 +1495,50 @@ model Announcement {
 
 // Enum para tipo de entidade auditada
 enum AuditEntityType {
-  CLIENT          // Clientes
-  CASE            // Processos
-  SCHEDULE_EVENT  // Eventos da Agenda
+  CLIENT // Clientes
+  CASE // Processos
+  SCHEDULE_EVENT // Eventos da Agenda
 }
 
 // Enum para ação de auditoria
 enum AuditAction {
-  CREATE    // Criação
-  UPDATE    // Atualização
-  DELETE    // Exclusão
+  CREATE // Criação
+  UPDATE // Atualização
+  DELETE // Exclusão
 }
 
 // Tabela de logs de auditoria genérica
 model AuditLog {
-  id            String          @id @default(uuid())
-  companyId     String
+  id        String @id @default(uuid())
+  companyId String
 
   // Entidade afetada
-  entityType    AuditEntityType
-  entityId      String
-  entityName    String?         // Nome para exibição (ex: nome do cliente, número do processo)
+  entityType AuditEntityType
+  entityId   String
+  entityName String? // Nome para exibição (ex: nome do cliente, número do processo)
 
   // Quem fez
-  userId        String
-  userName      String?         // Snapshot do nome do usuário no momento da ação
+  userId   String
+  userName String? // Snapshot do nome do usuário no momento da ação
 
   // O que fez
-  action        AuditAction
-  description   String?         // Descrição legível da ação
+  action      AuditAction
+  description String? // Descrição legível da ação
 
   // Dados da alteração
-  oldValues     Json?           // Valores antes da alteração
-  newValues     Json?           // Valores depois da alteração
-  changedFields String[]        @default([])  // Lista de campos alterados
+  oldValues     Json? // Valores antes da alteração
+  newValues     Json? // Valores depois da alteração
+  changedFields String[] @default([]) // Lista de campos alterados
 
   // Contexto da requisição
-  ipAddress     String?
-  userAgent     String?
+  ipAddress String?
+  userAgent String?
 
-  createdAt     DateTime        @default(now())
+  createdAt DateTime @default(now())
 
   // Relations
-  company       Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  user          User            @relation(fields: [userId], references: [id], onDelete: SetNull)
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([companyId])
   @@index([entityType, entityId])
@@ -1548,46 +1555,46 @@ model AuditLog {
 
 // Configuração OAuth do Google Calendar por empresa (Client ID e Secret)
 model GoogleCalendarCompanyConfig {
-  id            String   @id @default(uuid())
-  companyId     String   @unique  // Uma configuração por empresa
+  id        String @id @default(uuid())
+  companyId String @unique // Uma configuração por empresa
 
   // Credenciais OAuth (criptografadas com ENCRYPTION_KEY via AES-256-CBC)
-  clientId      String   // Google OAuth Client ID
-  clientSecret  String   @db.Text  // Google OAuth Client Secret (criptografado)
-  redirectUri   String?  // URI de redirecionamento (opcional, usa padrão se não definido)
+  clientId     String // Google OAuth Client ID
+  clientSecret String  @db.Text // Google OAuth Client Secret (criptografado)
+  redirectUri  String? // URI de redirecionamento (opcional, usa padrão se não definido)
 
   // Status
-  isActive      Boolean  @default(true)
+  isActive Boolean @default(true)
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  company       Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   @@map("google_calendar_company_configs")
 }
 
 // Configuração de integração Google Calendar por usuário (tokens OAuth)
 model GoogleCalendarConfig {
-  id            String   @id @default(uuid())
-  userId        String   @unique  // Conexão por usuário (1:1)
-  companyId     String   // Isolamento direto de tenant
+  id        String @id @default(uuid())
+  userId    String @unique // Conexão por usuário (1:1)
+  companyId String // Isolamento direto de tenant
 
   // OAuth Tokens (criptografados com ENCRYPTION_KEY via AES-256-CBC)
-  accessToken   String   @db.Text
-  refreshToken  String   @db.Text
-  tokenExpiry   DateTime
+  accessToken  String   @db.Text
+  refreshToken String   @db.Text
+  tokenExpiry  DateTime
 
   // Metadados
-  email         String   // Email da conta Google conectada
-  enabled       Boolean  @default(true)   // Integração ativa
-  syncEnabled   Boolean  @default(true)   // Sincronização automática habilitada
+  email       String // Email da conta Google conectada
+  enabled     Boolean @default(true) // Integração ativa
+  syncEnabled Boolean @default(true) // Sincronização automática habilitada
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  company       Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   @@index([companyId])
   @@map("google_calendar_configs")
@@ -1599,50 +1606,50 @@ model GoogleCalendarConfig {
 
 // Enum para status do PNJ
 enum PNJStatus {
-  ACTIVE    // Ativo
-  ARCHIVED  // Arquivado
-  CLOSED    // Encerrado
+  ACTIVE // Ativo
+  ARCHIVED // Arquivado
+  CLOSED // Encerrado
 }
 
 // Enum para tipo de parte do PNJ
 enum PNJPartType {
-  AUTHOR        // Demandante
-  DEFENDANT     // Demandado
-  INTERESTED    // Interessado
-  THIRD_PARTY   // Terceiro
-  OTHER         // Outro
+  AUTHOR // Demandante
+  DEFENDANT // Demandado
+  INTERESTED // Interessado
+  THIRD_PARTY // Terceiro
+  OTHER // Outro
 }
 
 // Tabela de Processos Não Judiciais
 model PNJ {
-  id          String    @id @default(uuid())
-  companyId   String
-  clientId    String?
+  id        String  @id @default(uuid())
+  companyId String
+  clientId  String?
 
   // Dados principais
-  number      String              // Número do processo
-  protocol    String?             // Protocolo
-  title       String              // Título/Descrição
-  description String?   @db.Text  // Descrição detalhada
+  number      String // Número do processo
+  protocol    String? // Protocolo
+  title       String // Título/Descrição
+  description String?   @db.Text // Descrição detalhada
   status      PNJStatus @default(ACTIVE)
 
   // Datas
-  openDate    DateTime  @default(now())
-  closeDate   DateTime?
+  openDate  DateTime  @default(now())
+  closeDate DateTime?
 
   // Metadados
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  createdBy   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
 
   // Relacionamentos
-  company     Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  client      Client?   @relation(fields: [clientId], references: [id], onDelete: SetNull)
-  creator     User?     @relation("PNJCreator", fields: [createdBy], references: [id], onDelete: SetNull)
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  client  Client? @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  creator User?   @relation("PNJCreator", fields: [createdBy], references: [id], onDelete: SetNull)
 
-  parts       PNJPart[]
-  movements   PNJMovement[]
-  documents   PNJDocument[]
+  parts     PNJPart[]
+  movements PNJMovement[]
+  documents PNJDocument[]
 
   @@index([companyId])
   @@index([clientId])
@@ -1653,23 +1660,23 @@ model PNJ {
 
 // Tabela de Partes do PNJ
 model PNJPart {
-  id        String      @id @default(uuid())
+  id        String @id @default(uuid())
   pnjId     String
-  companyId String      // ISSUE 2 FIX: Isolamento direto de tenant
+  companyId String // ISSUE 2 FIX: Isolamento direto de tenant
 
   // Dados da parte
-  name      String
-  document  String?     // CPF/CNPJ
-  type      PNJPartType
-  notes     String?     @db.Text
+  name     String
+  document String? // CPF/CNPJ
+  type     PNJPartType
+  notes    String?     @db.Text
 
   // Metadados
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relacionamentos
-  pnj       PNJ         @relation(fields: [pnjId], references: [id], onDelete: Cascade)
-  company   Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  pnj     PNJ     @relation(fields: [pnjId], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   @@index([pnjId])
   @@index([companyId])
@@ -1678,9 +1685,9 @@ model PNJPart {
 
 // Tabela de Andamentos do PNJ
 model PNJMovement {
-  id          String   @id @default(uuid())
-  pnjId       String
-  companyId   String   // ISSUE 2 FIX: Isolamento direto de tenant
+  id        String @id @default(uuid())
+  pnjId     String
+  companyId String // ISSUE 2 FIX: Isolamento direto de tenant
 
   // Dados do andamento
   date        DateTime @default(now())
@@ -1688,14 +1695,14 @@ model PNJMovement {
   notes       String?  @db.Text
 
   // Metadados
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  createdBy   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
 
   // Relacionamentos
-  pnj         PNJ      @relation(fields: [pnjId], references: [id], onDelete: Cascade)
-  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  creator     User?    @relation("PNJMovementCreator", fields: [createdBy], references: [id], onDelete: SetNull)
+  pnj     PNJ     @relation(fields: [pnjId], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  creator User?   @relation("PNJMovementCreator", fields: [createdBy], references: [id], onDelete: SetNull)
 
   @@index([pnjId])
   @@index([companyId])
@@ -1705,34 +1712,34 @@ model PNJMovement {
 
 // Tabela de Documentos do PNJ
 model PNJDocument {
-  id          String        @id @default(uuid())
-  pnjId       String
-  companyId   String
+  id        String @id @default(uuid())
+  pnjId     String
+  companyId String
 
   // Dados do documento
   name        String
   description String?
-  storageType StorageType   @default(upload)
+  storageType StorageType @default(upload)
 
   // Para uploads (S3)
-  fileUrl     String?
-  fileKey     String?       // Chave no S3
-  fileSize    Int?          // Tamanho em bytes
-  fileType    String?       // MIME type
+  fileUrl  String?
+  fileKey  String? // Chave no S3
+  fileSize Int? // Tamanho em bytes
+  fileType String? // MIME type
 
   // Para links externos
   externalUrl  String?
   externalType ExternalType?
 
   // Metadados
-  uploadedBy  String?
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  uploadedBy String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   // Relacionamentos
-  pnj         PNJ           @relation(fields: [pnjId], references: [id], onDelete: Cascade)
-  company     Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  user        User?         @relation("PNJDocumentUploader", fields: [uploadedBy], references: [id], onDelete: SetNull)
+  pnj     PNJ     @relation(fields: [pnjId], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user    User?   @relation("PNJDocumentUploader", fields: [uploadedBy], references: [id], onDelete: SetNull)
 
   @@index([pnjId])
   @@index([companyId])
@@ -1745,42 +1752,42 @@ model PNJDocument {
 
 // Configuração WhatsApp Business API por empresa
 model WhatsAppConfig {
-  id                String   @id @default(uuid())
-  companyId         String   @unique  // Uma configuração por empresa
+  id        String @id @default(uuid())
+  companyId String @unique // Uma configuração por empresa
 
   // Meta Business API credentials
-  phoneNumberId     String   // ID do número no Meta Business
-  businessAccountId String   // ID da conta Business (WABA)
-  accessToken       String   @db.Text  // Token permanente (criptografado AES-256)
+  phoneNumberId     String // ID do número no Meta Business
+  businessAccountId String // ID da conta Business (WABA)
+  accessToken       String @db.Text // Token permanente (criptografado AES-256)
 
   // Configurações
-  isActive          Boolean  @default(true)
+  isActive           Boolean @default(true)
   webhookVerifyToken String? // Token para verificação do webhook
 
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  company           Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   @@map("whatsapp_configs")
 }
 
 // Templates pré-aprovados pela Meta
 model WhatsAppTemplate {
-  id           String   @id @default(uuid())
-  companyId    String
+  id        String @id @default(uuid())
+  companyId String
 
-  name         String   // Nome do template na Meta (ex: "appointment_reminder")
-  category     String   // MARKETING, UTILITY, AUTHENTICATION
-  language     String   @default("pt_BR")
-  components   Json     // Estrutura do template (header, body, footer, buttons)
-  status       String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  name       String // Nome do template na Meta (ex: "appointment_reminder")
+  category   String // MARKETING, UTILITY, AUTHENTICATION
+  language   String @default("pt_BR")
+  components Json // Estrutura do template (header, body, footer, buttons)
+  status     String @default("PENDING") // PENDING, APPROVED, REJECTED
 
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  company      Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  campaigns    WhatsAppCampaign[]
+  company   Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  campaigns WhatsAppCampaign[]
 
   @@unique([companyId, name])
   @@index([companyId])
@@ -1790,11 +1797,11 @@ model WhatsAppTemplate {
 
 // Campanhas de WhatsApp (similar a EmailCampaign)
 model WhatsAppCampaign {
-  id              String         @id @default(uuid())
-  companyId       String
+  id        String @id @default(uuid())
+  companyId String
 
-  name            String
-  templateId      String
+  name       String
+  templateId String
 
   status          CampaignStatus @default(draft)
   totalRecipients Int            @default(0)
@@ -1803,17 +1810,17 @@ model WhatsAppCampaign {
   deliveredCount  Int            @default(0)
   readCount       Int            @default(0)
 
-  scheduledAt     DateTime?
-  sentAt          DateTime?
+  scheduledAt DateTime?
+  sentAt      DateTime?
 
-  createdBy       String?
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  createdBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  company         Company                     @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  template        WhatsAppTemplate            @relation(fields: [templateId], references: [id], onDelete: Restrict)
-  user            User?                       @relation(fields: [createdBy], references: [id], onDelete: SetNull)
-  recipients      WhatsAppCampaignRecipient[]
+  company    Company                     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  template   WhatsAppTemplate            @relation(fields: [templateId], references: [id], onDelete: Restrict)
+  user       User?                       @relation(fields: [createdBy], references: [id], onDelete: SetNull)
+  recipients WhatsAppCampaignRecipient[]
 
   @@index([companyId])
   @@index([status])
@@ -1822,25 +1829,25 @@ model WhatsAppCampaign {
 
 // Destinatários de campanha WhatsApp
 model WhatsAppCampaignRecipient {
-  id             String          @id @default(uuid())
-  campaignId     String
-  companyId      String          // Isolamento de tenant
+  id         String @id @default(uuid())
+  campaignId String
+  companyId  String // Isolamento de tenant
 
   recipientPhone String
   recipientName  String?
-  variables      Json?           // Variáveis para o template
+  variables      Json? // Variáveis para o template
 
-  status         RecipientStatus @default(pending)
-  messageId      String?         // ID da mensagem retornado pela Meta
-  sentAt         DateTime?
-  deliveredAt    DateTime?
-  readAt         DateTime?
-  errorMessage   String?         @db.Text
+  status       RecipientStatus @default(pending)
+  messageId    String? // ID da mensagem retornado pela Meta
+  sentAt       DateTime?
+  deliveredAt  DateTime?
+  readAt       DateTime?
+  errorMessage String?         @db.Text
 
-  createdAt      DateTime        @default(now())
+  createdAt DateTime @default(now())
 
-  campaign       WhatsAppCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
-  company        Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  campaign WhatsAppCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  company  Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   @@index([companyId])
   @@index([campaignId])
@@ -1850,42 +1857,42 @@ model WhatsAppCampaignRecipient {
 
 // Enum para tipo de mensagem WhatsApp
 enum WhatsAppMessageType {
-  CAMPAIGN    // Mensagem de campanha marketing
-  REMINDER    // Lembrete de consulta/evento
-  MANUAL      // Mensagem manual
+  CAMPAIGN // Mensagem de campanha marketing
+  REMINDER // Lembrete de consulta/evento
+  MANUAL // Mensagem manual
 }
 
 // Log de todas as mensagens WhatsApp (campanhas + lembretes)
 model WhatsAppMessage {
-  id           String               @id @default(uuid())
-  companyId    String
+  id        String @id @default(uuid())
+  companyId String
 
   // Referências opcionais
-  campaignId   String?              // Para mensagens de campanha
-  eventId      String?              // Para lembretes de consulta
-  clientId     String?              // Cliente destinatário
+  campaignId String? // Para mensagens de campanha
+  eventId    String? // Para lembretes de consulta
+  clientId   String? // Cliente destinatário
 
   // Dados da mensagem
-  type         WhatsAppMessageType  @default(MANUAL)
+  type         WhatsAppMessageType @default(MANUAL)
   phone        String
   templateName String
-  variables    Json?                // Variáveis substituídas no template
+  variables    Json? // Variáveis substituídas no template
 
   // Status da Meta API
-  messageId    String?              // ID retornado pela Meta (wamid.xxx)
-  status       String               @default("pending") // pending, sent, delivered, read, failed
-  errorCode    String?              // Código de erro da Meta
-  errorMessage String?              @db.Text
+  messageId    String? // ID retornado pela Meta (wamid.xxx)
+  status       String  @default("pending") // pending, sent, delivered, read, failed
+  errorCode    String? // Código de erro da Meta
+  errorMessage String? @db.Text
 
   // Timestamps de status
-  sentAt       DateTime?
-  deliveredAt  DateTime?
-  readAt       DateTime?
-  failedAt     DateTime?
+  sentAt      DateTime?
+  deliveredAt DateTime?
+  readAt      DateTime?
+  failedAt    DateTime?
 
-  createdAt    DateTime             @default(now())
+  createdAt DateTime @default(now())
 
-  company      Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   @@index([companyId])
   @@index([companyId, status])
@@ -1908,9 +1915,9 @@ model Tag {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  company   Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  clients   ClientTag[]
-  leads     LeadTag[]
+  company Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  clients ClientTag[]
+  leads   LeadTag[]
 
   @@unique([companyId, name]) // Tag names unique per company
   @@index([companyId])
@@ -1922,12 +1929,12 @@ model ClientTag {
   id        String   @id @default(uuid())
   clientId  String
   tagId     String
-  companyId String   // Direct tenant isolation (following EventAssignment pattern)
+  companyId String // Direct tenant isolation (following EventAssignment pattern)
   createdAt DateTime @default(now())
 
-  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  tag       Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
-  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  client  Client  @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  tag     Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   @@unique([clientId, tagId])
   @@index([companyId])
@@ -1941,12 +1948,12 @@ model LeadTag {
   id        String   @id @default(uuid())
   leadId    String
   tagId     String
-  companyId String   // Direct tenant isolation (following EventAssignment pattern)
+  companyId String // Direct tenant isolation (following EventAssignment pattern)
   createdAt DateTime @default(now())
 
-  lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
-  tag       Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
-  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  lead    Lead    @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  tag     Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   @@unique([leadId, tagId])
   @@index([companyId])
@@ -1961,61 +1968,62 @@ model LeadTag {
 
 // Status do documento compartilhado
 enum SharedDocumentStatus {
-  PENDING           // Aguardando ação do cliente
-  VIEWED            // Visualizado pelo cliente
-  DOWNLOADED        // Baixado pelo cliente
-  SIGNED            // Assinado pelo cliente
-  UPLOADED          // Enviado pelo cliente para o escritório
+  PENDING // Aguardando ação do cliente
+  VIEWED // Visualizado pelo cliente
+  DOWNLOADED // Baixado pelo cliente
+  SIGNED // Assinado pelo cliente
+  UPLOADED // Enviado pelo cliente para o escritório
 }
 
 // Documentos compartilhados entre escritório e cliente
 model SharedDocument {
-  id                String               @id @default(uuid())
-  companyId         String
-  clientId          String
+  id        String @id @default(uuid())
+  companyId String
+  clientId  String
 
   // Dados do documento
-  name              String               // Nome do documento
-  description       String?              // Descrição opcional
+  name        String // Nome do documento
+  description String? // Descrição opcional
 
   // Arquivo
-  fileUrl           String               // URL no S3
-  fileKey           String               // Key no S3 para delete
-  fileSize          Int                  // Tamanho em bytes
-  fileType          String               // MIME type (application/pdf, image/png, etc)
+  fileUrl  String // URL no S3
+  fileKey  String // Key no S3 para delete
+  fileSize Int // Tamanho em bytes
+  fileType String // MIME type (application/pdf, image/png, etc)
 
   // Controle de compartilhamento
-  sharedByUserId    String               // Usuário que compartilhou (advogado/admin)
-  sharedAt          DateTime             @default(now())
+  sharedByUserId String // Usuário que compartilhou (advogado/admin)
+  sharedAt       DateTime @default(now())
 
   // Configurações
-  requiresSignature Boolean              @default(false)  // Requer assinatura do cliente?
-  allowDownload     Boolean              @default(true)   // Permite download?
+  requiresSignature Boolean @default(false) // Requer assinatura do cliente?
+  allowDownload     Boolean @default(true) // Permite download?
 
   // Assinatura do cliente
-  signedAt          DateTime?            // Data/hora da assinatura
-  signatureUrl      String?              // URL da imagem da assinatura no S3
-  signatureKey      String?              // Key da assinatura no S3
-  signatureIp       String?              // IP do cliente ao assinar
-  signatureUserAgent String?             // User agent do cliente
+  signedAt           DateTime? // Data/hora da assinatura
+  signatureUrl       String? // URL da imagem da assinatura no S3
+  signatureKey       String? // Key da assinatura no S3
+  signatureIp        String? // IP do cliente ao assinar
+  signatureUserAgent String? // User agent do cliente
 
   // Upload pelo cliente (documento enviado pelo cliente)
-  uploadedByClient  Boolean              @default(false)  // Foi upload do cliente?
-  uploadedAt        DateTime?            // Data do upload pelo cliente
+  uploadedByClient Boolean   @default(false) // Foi upload do cliente?
+  uploadedAt       DateTime? // Data do upload pelo cliente
 
   // Status e controle
-  status            SharedDocumentStatus @default(PENDING)
-  viewedAt          DateTime?            // Primeira visualização
-  downloadedAt      DateTime?            // Primeiro download
+  status       SharedDocumentStatus @default(PENDING)
+  viewedAt     DateTime? // Primeira visualização
+  downloadedAt DateTime? // Primeiro download
 
   // Metadados
-  createdAt         DateTime             @default(now())
-  updatedAt         DateTime             @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  company           Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  client            Client               @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  sharedBy          User                 @relation("SharedDocumentSharedBy", fields: [sharedByUserId], references: [id], onDelete: Cascade)
+  company         Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  client          Client           @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  sharedBy        User             @relation("SharedDocumentSharedBy", fields: [sharedByUserId], references: [id], onDelete: Cascade)
+  documentRequest DocumentRequest? @relation("DocumentRequestReceivedDocument")
 
   @@index([companyId])
   @@index([clientId])
@@ -2031,38 +2039,38 @@ model SharedDocument {
 
 // Enum para remetente da mensagem
 enum MessageSender {
-  CLIENT    // Mensagem enviada pelo cliente
-  OFFICE    // Mensagem enviada pelo escritório
+  CLIENT // Mensagem enviada pelo cliente
+  OFFICE // Mensagem enviada pelo escritório
 }
 
 // Tabela de mensagens entre cliente e escritório
 model ClientMessage {
-  id          String        @id @default(uuid())
-  companyId   String
-  clientId    String
+  id        String @id @default(uuid())
+  companyId String
+  clientId  String
 
   // Dados da mensagem
-  sender      MessageSender // Quem enviou (CLIENT ou OFFICE)
-  subject     String?       // Assunto (opcional)
-  content     String        @db.Text
+  sender  MessageSender // Quem enviou (CLIENT ou OFFICE)
+  subject String? // Assunto (opcional)
+  content String        @db.Text
 
   // Leitura
-  readAt      DateTime?     // Data/hora em que foi lida
-  readBy      String?       // ID do usuário que leu (para msgs do cliente)
+  readAt DateTime? // Data/hora em que foi lida
+  readBy String? // ID do usuário que leu (para msgs do cliente)
 
   // Resposta (thread)
-  parentId    String?       // ID da mensagem pai (para respostas)
+  parentId String? // ID da mensagem pai (para respostas)
 
   // Metadados
-  createdBy   String?       // ID do usuário que enviou (para msgs do escritório)
-  createdAt   DateTime      @default(now())
+  createdBy String? // ID do usuário que enviou (para msgs do escritório)
+  createdAt DateTime @default(now())
 
   // Relations
-  company     Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  client      Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  creator     User?         @relation("MessageCreator", fields: [createdBy], references: [id], onDelete: SetNull)
-  parent      ClientMessage? @relation("MessageReplies", fields: [parentId], references: [id], onDelete: SetNull)
-  replies     ClientMessage[] @relation("MessageReplies")
+  company Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  client  Client          @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  creator User?           @relation("MessageCreator", fields: [createdBy], references: [id], onDelete: SetNull)
+  parent  ClientMessage?  @relation("MessageReplies", fields: [parentId], references: [id], onDelete: SetNull)
+  replies ClientMessage[] @relation("MessageReplies")
 
   @@index([companyId])
   @@index([clientId])
@@ -2078,47 +2086,47 @@ model ClientMessage {
 
 // Status do monitoramento
 enum MonitoringStatus {
-  ACTIVE    // Monitoramento ativo
-  PAUSED    // Pausado temporariamente
-  INACTIVE  // Desativado
+  ACTIVE // Monitoramento ativo
+  PAUSED // Pausado temporariamente
+  INACTIVE // Desativado
 }
 
 // Status da consulta de publicações
 enum ConsultaStatus {
-  PENDING     // Aguardando processamento
-  PROCESSING  // Em processamento
-  COMPLETED   // Concluído
-  FAILED      // Falhou
+  PENDING // Aguardando processamento
+  PROCESSING // Em processamento
+  COMPLETED // Concluído
+  FAILED // Falhou
 }
 
 // OAB Monitorada (advogado cadastrado para monitoramento)
 model MonitoredOAB {
-  id           String           @id @default(uuid())
-  companyId    String
+  id        String @id @default(uuid())
+  companyId String
 
   // Dados do advogado
-  name         String           // Nome completo do advogado
-  oab          String           // Número da OAB
-  oabState     String           @map("oab_state") // Estado da OAB (SP, RJ, MG, etc)
+  name     String // Nome completo do advogado
+  oab      String // Número da OAB
+  oabState String @map("oab_state") // Estado da OAB (SP, RJ, MG, etc)
 
   // Status do monitoramento
-  status       MonitoringStatus @default(ACTIVE)
+  status MonitoringStatus @default(ACTIVE)
 
   // Configurações
-  tribunais    String[]         @default([]) // Tribunais para buscar (vazio = todos)
-  autoImport   Boolean          @default(true) @map("auto_import") // Importar automaticamente
+  tribunais  String[] @default([]) // Tribunais para buscar (vazio = todos)
+  autoImport Boolean  @default(true) @map("auto_import") // Importar automaticamente
 
   // Última consulta
-  lastConsultaAt DateTime?      @map("last_consulta_at")
-  lastConsultaId String?        @map("last_consulta_id") // ID da última consulta na ADVAPI
-  lastSyncDate   DateTime?      @map("last_sync_date")   // Data da última publicação sincronizada (para sync incremental)
+  lastConsultaAt DateTime? @map("last_consulta_at")
+  lastConsultaId String?   @map("last_consulta_id") // ID da última consulta na ADVAPI
+  lastSyncDate   DateTime? @map("last_sync_date") // Data da última publicação sincronizada (para sync incremental)
 
   // Metadados
-  createdAt    DateTime         @default(now()) @map("created_at")
-  updatedAt    DateTime         @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  company      Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  company      Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
   consultas    OABConsulta[]
   publications Publication[]
 
@@ -2130,9 +2138,9 @@ model MonitoredOAB {
 
 // Consulta realizada na ADVAPI
 model OABConsulta {
-  id               String         @id @default(uuid())
-  companyId        String
-  monitoredOabId   String         @map("monitored_oab_id")
+  id             String @id @default(uuid())
+  companyId      String
+  monitoredOabId String @map("monitored_oab_id")
 
   // Dados da consulta
   advApiConsultaId String?        @map("adv_api_consulta_id") // ID retornado pela ADVAPI
@@ -2142,18 +2150,18 @@ model OABConsulta {
   tribunais        String[]       @default([]) // Tribunais consultados
 
   // Resultado
-  totalPublicacoes Int            @default(0) @map("total_publicacoes")
-  importedCount    Int            @default(0) @map("imported_count")
-  errorMessage     String?        @map("error_message")
-  notes            String?        // Observações sobre a consulta (ex: limite atingido)
+  totalPublicacoes Int     @default(0) @map("total_publicacoes")
+  importedCount    Int     @default(0) @map("imported_count")
+  errorMessage     String? @map("error_message")
+  notes            String? // Observações sobre a consulta (ex: limite atingido)
 
   // Metadados
-  createdAt        DateTime       @default(now()) @map("created_at")
-  completedAt      DateTime?      @map("completed_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  completedAt DateTime? @map("completed_at")
 
   // Relations
-  company          Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  monitoredOab     MonitoredOAB   @relation(fields: [monitoredOabId], references: [id], onDelete: Cascade)
+  company      Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  monitoredOab MonitoredOAB @relation(fields: [monitoredOabId], references: [id], onDelete: Cascade)
 
   @@index([companyId])
   @@index([monitoredOabId])
@@ -2163,38 +2171,38 @@ model OABConsulta {
 
 // Publicações encontradas (publicações do diário oficial)
 model Publication {
-  id                String        @id @default(uuid())
-  companyId         String
-  monitoredOabId    String        @map("monitored_oab_id")
+  id             String @id @default(uuid())
+  companyId      String
+  monitoredOabId String @map("monitored_oab_id")
 
   // Dados da publicação
-  numeroProcesso    String        @map("numero_processo") // Número do processo
-  siglaTribunal     String        @map("sigla_tribunal") // Ex: TJSP, TRT2
-  dataPublicacao    DateTime      @map("data_publicacao")
-  tipoComunicacao   String?       @map("tipo_comunicacao") // Ex: Intimação, Citação
-  textoComunicacao  String?       @db.Text @map("texto_comunicacao") // Texto da publicação
+  numeroProcesso   String   @map("numero_processo") // Número do processo
+  siglaTribunal    String   @map("sigla_tribunal") // Ex: TJSP, TRT2
+  dataPublicacao   DateTime @map("data_publicacao")
+  tipoComunicacao  String?  @map("tipo_comunicacao") // Ex: Intimação, Citação
+  textoComunicacao String?  @map("texto_comunicacao") @db.Text // Texto da publicação
 
   // Campos extras da ADVAPI
-  textoLimpo            String?   @db.Text @map("texto_limpo") // Texto sem HTML/tags
-  comarca               String?   // Comarca do processo
-  classeProcessual      String?   @map("classe_processual") // Ex: Cumprimento de sentença
-  nomeOrgao             String?   @map("nome_orgao") // Órgão julgador (ex: 3ª Vara Cível)
-  parteAutor            String?   @db.Text @map("parte_autor") // Nome do autor/exequente
-  parteReu              String?   @db.Text @map("parte_reu") // Nome do réu/executado
-  dataDisponibilizacao  DateTime? @map("data_disponibilizacao") // Data de disponibilização
+  textoLimpo           String?   @map("texto_limpo") @db.Text // Texto sem HTML/tags
+  comarca              String? // Comarca do processo
+  classeProcessual     String?   @map("classe_processual") // Ex: Cumprimento de sentença
+  nomeOrgao            String?   @map("nome_orgao") // Órgão julgador (ex: 3ª Vara Cível)
+  parteAutor           String?   @map("parte_autor") @db.Text // Nome do autor/exequente
+  parteReu             String?   @map("parte_reu") @db.Text // Nome do réu/executado
+  dataDisponibilizacao DateTime? @map("data_disponibilizacao") // Data de disponibilização
 
   // Status de importação
-  imported          Boolean       @default(false) // Se foi importado como processo
-  importedCaseId    String?       @map("imported_case_id") // ID do processo criado
-  importedClientId  String?       @map("imported_client_id") // ID do cliente criado
+  imported         Boolean @default(false) // Se foi importado como processo
+  importedCaseId   String? @map("imported_case_id") // ID do processo criado
+  importedClientId String? @map("imported_client_id") // ID do cliente criado
 
   // Metadados
-  createdAt         DateTime      @default(now()) @map("created_at")
-  importedAt        DateTime?     @map("imported_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  importedAt DateTime? @map("imported_at")
 
   // Relations
-  company           Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  monitoredOab      MonitoredOAB  @relation(fields: [monitoredOabId], references: [id], onDelete: Cascade)
+  company      Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  monitoredOab MonitoredOAB @relation(fields: [monitoredOabId], references: [id], onDelete: Cascade)
 
   @@unique([companyId, numeroProcesso, monitoredOabId]) // Evita duplicatas
   @@index([companyId])
@@ -2211,17 +2219,17 @@ model Publication {
 // Categorias do manual
 model ManualCategory {
   id          String   @id @default(uuid())
-  name        String   // Nome da categoria (ex: "Início Rápido", "Processos")
+  name        String // Nome da categoria (ex: "Início Rápido", "Processos")
   slug        String   @unique // URL slug (ex: "inicio-rapido")
-  description String?  // Descrição da categoria
-  icon        String?  // Nome do ícone Lucide (ex: "Rocket", "Scale")
+  description String? // Descrição da categoria
+  icon        String? // Nome do ícone Lucide (ex: "Rocket", "Scale")
   order       Int      @default(0) // Ordem de exibição
   active      Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  articles    ManualArticle[]
-  faqs        ManualFAQ[]
+  articles ManualArticle[]
+  faqs     ManualFAQ[]
 
   @@index([order])
   @@index([active])
@@ -2230,21 +2238,21 @@ model ManualCategory {
 
 // Artigos/Tutoriais do manual
 model ManualArticle {
-  id           String          @id @default(uuid())
+  id           String   @id @default(uuid())
   categoryId   String
-  title        String          // Título do artigo
-  slug         String          // URL slug (único por categoria)
-  summary      String?         // Resumo/descrição curta
-  content      String          @db.Text // Conteúdo em HTML/Markdown
-  videoUrl     String?         // URL do vídeo (YouTube, Vimeo, etc)
-  thumbnailUrl String?         // Thumbnail do vídeo
-  order        Int             @default(0) // Ordem dentro da categoria
-  active       Boolean         @default(true)
-  viewCount    Int             @default(0) // Contador de visualizações
-  createdAt    DateTime        @default(now())
-  updatedAt    DateTime        @updatedAt
+  title        String // Título do artigo
+  slug         String // URL slug (único por categoria)
+  summary      String? // Resumo/descrição curta
+  content      String   @db.Text // Conteúdo em HTML/Markdown
+  videoUrl     String? // URL do vídeo (YouTube, Vimeo, etc)
+  thumbnailUrl String? // Thumbnail do vídeo
+  order        Int      @default(0) // Ordem dentro da categoria
+  active       Boolean  @default(true)
+  viewCount    Int      @default(0) // Contador de visualizações
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  category     ManualCategory  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  category ManualCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
   @@unique([categoryId, slug])
   @@index([categoryId])
@@ -2256,18 +2264,18 @@ model ManualArticle {
 
 // Perguntas frequentes (FAQ)
 model ManualFAQ {
-  id          String          @id @default(uuid())
-  categoryId  String?         // Categoria (opcional - pode ser FAQ geral)
-  question    String          // Pergunta
-  answer      String          @db.Text // Resposta
-  order       Int             @default(0) // Ordem de exibição
-  active      Boolean         @default(true)
-  helpful     Int             @default(0) // Contador de "útil"
-  notHelpful  Int             @default(0) // Contador de "não útil"
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  id         String   @id @default(uuid())
+  categoryId String? // Categoria (opcional - pode ser FAQ geral)
+  question   String // Pergunta
+  answer     String   @db.Text // Resposta
+  order      Int      @default(0) // Ordem de exibição
+  active     Boolean  @default(true)
+  helpful    Int      @default(0) // Contador de "útil"
+  notHelpful Int      @default(0) // Contador de "não útil"
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
-  category    ManualCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  category ManualCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
 
   @@index([categoryId])
   @@index([order])
@@ -2277,20 +2285,20 @@ model ManualFAQ {
 
 // Centro de Custos - para categorizar despesas e receitas
 model CostCenter {
-  id          String    @id @default(uuid())
+  id          String         @id @default(uuid())
   companyId   String
-  name        String    // Nome do centro de custo (ex: "Administrativo", "Marketing", "Operacional")
-  code        String?   // Código opcional (ex: "ADM-001")
-  description String?   // Descrição
+  name        String // Nome do centro de custo (ex: "Administrativo", "Marketing", "Operacional")
+  code        String? // Código opcional (ex: "ADM-001")
+  description String? // Descrição
   type        CostCenterType @default(BOTH) // Se é para despesas, receitas ou ambos
-  color       String?   // Cor para identificação visual (hex)
-  active      Boolean   @default(true)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  color       String? // Cor para identificação visual (hex)
+  active      Boolean        @default(true)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
 
-  company             Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  company               Company                @relation(fields: [companyId], references: [id], onDelete: Cascade)
   financialTransactions FinancialTransaction[]
-  accountsPayable     AccountPayable[]
+  accountsPayable       AccountPayable[]
 
   @@unique([companyId, name])
   @@unique([companyId, code])
@@ -2300,7 +2308,74 @@ model CostCenter {
 }
 
 enum CostCenterType {
-  EXPENSE   // Apenas despesas
-  INCOME    // Apenas receitas
-  BOTH      // Ambos
+  EXPENSE // Apenas despesas
+  INCOME // Apenas receitas
+  BOTH // Ambos
+}
+
+// Enum para status de solicitação de documento
+enum DocumentRequestStatus {
+  PENDING // Aguardando envio pelo cliente
+  SENT // Notificação enviada
+  REMINDED // Lembrete enviado
+  RECEIVED // Documento recebido
+  CANCELLED // Solicitação cancelada
+}
+
+// Enum para canal de notificação
+enum NotificationChannel {
+  EMAIL
+  WHATSAPP
+  BOTH
+}
+
+// Solicitação de Documentos - permite ao escritório solicitar documentos aos clientes
+model DocumentRequest {
+  id                String  @id @default(uuid())
+  companyId         String
+  clientId          String
+  requestedByUserId String?
+
+  // O que foi pedido
+  documentName  String  @map("document_name")
+  description   String? @db.Text
+  internalNotes String? @map("internal_notes") @db.Text
+
+  // Prazo e Status
+  dueDate DateTime              @map("due_date")
+  status  DocumentRequestStatus @default(PENDING)
+
+  // Comunicação
+  notificationChannel NotificationChannel? @map("notification_channel")
+  emailTemplateId     String?              @map("email_template_id")
+  whatsappTemplateId  String?              @map("whatsapp_template_id")
+
+  // Automação
+  autoRemind     Boolean   @default(true) @map("auto_remind")
+  autoFollowup   Boolean   @default(true) @map("auto_followup")
+  lastReminderAt DateTime? @map("last_reminder_at")
+  reminderCount  Int       @default(0) @map("reminder_count")
+
+  // Resolução
+  receivedAt         DateTime? @map("received_at")
+  receivedDocumentId String?   @unique @map("received_document_id")
+  clientNotes        String?   @map("client_notes") @db.Text
+
+  // Metadados
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  company          Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  client           Client          @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  requestedBy      User?           @relation("DocumentRequestRequestedBy", fields: [requestedByUserId], references: [id], onDelete: SetNull)
+  receivedDocument SharedDocument? @relation("DocumentRequestReceivedDocument", fields: [receivedDocumentId], references: [id], onDelete: SetNull)
+
+  @@index([companyId])
+  @@index([clientId])
+  @@index([status])
+  @@index([dueDate])
+  @@index([companyId, status])
+  @@index([companyId, clientId, status])
+  @@map("document_requests")
 }

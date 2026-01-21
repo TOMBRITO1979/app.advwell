@@ -43,6 +43,7 @@ import deadLetterRoutes from './dead-letter.routes';
 import manualRoutes from './manual.routes';
 import costCenterRoutes from './costCenter.routes';
 import reportsRoutes from './reports.routes';
+import documentRequestRoutes from './document-request.routes';
 
 const router = Router();
 
@@ -99,5 +100,6 @@ router.use('/admin/dead-letter', deadLetterRoutes); // Dead Letter Queue (jobs f
 router.use('/manual', manualRoutes); // Manual do usuário e FAQ (público + admin SUPER_ADMIN)
 router.use('/cost-centers', costCenterRoutes); // Centros de custo (categorização de despesas/receitas)
 router.use('/reports', reportsRoutes); // Relatórios avançados (processos por fase, rito, prazo, etc.)
+router.use('/document-requests', documentRequestRoutes); // Solicitação de documentos aos clientes
 
 export default router;
