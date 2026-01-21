@@ -38,4 +38,8 @@ router.post('/documents/:id/download', portalController.downloadDocument);
 router.post('/documents/:id/sign', portalController.signDocument);
 router.post('/documents/upload', upload.single('file'), portalController.uploadDocument);
 
+// Solicitações de Documentos
+router.get('/document-requests', portalController.getDocumentRequests);
+router.post('/document-requests/:id/submit', upload.single('file'), portalController.submitDocumentRequest);
+
 export default router;

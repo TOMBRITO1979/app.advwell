@@ -20,5 +20,6 @@ router.get('/movements-timeline', controller.getMovementsTimeline);
 router.get('/upcoming-deadlines', controller.getUpcomingDeadlines);
 router.get('/new-clients-timeline', controller.getNewClientsTimeline);
 router.get('/upcoming-hearings', controller.getUpcomingHearings);
+router.get('/document-request-stats', controller.getDocumentRequestStats);
 
 export default router;

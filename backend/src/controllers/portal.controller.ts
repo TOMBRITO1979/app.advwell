@@ -954,6 +954,130 @@ export class PortalController {
       res.status(500).json({ error: 'Erro ao enviar documento' });
     }
   }
+
+  /**
+   * Lista solicitações de documentos do cliente
+   * GET /portal/document-requests
+   */
+  async getDocumentRequests(req: AuthRequest, res: Response) {
+    try {
+      const clientId = req.user!.clientId;
+      const companyId = req.user!.companyId;
+
+      if (!clientId || !companyId) {
+        return res.status(403).json({ error: 'Acesso não autorizado' });
+      }
+
+      const requests = await prisma.documentRequest.findMany({
+        where: {
+          clientId,
+          companyId,
+          status: { notIn: ['CANCELLED'] },
+        },
+        select: {
+          id: true,
+          documentName: true,
+          description: true,
+          dueDate: true,
+          status: true,
+          receivedAt: true,
+          createdAt: true,
+        },
+        orderBy: { dueDate: 'asc' },
+      });
+
+      res.json(requests);
+    } catch (error) {
+      appLogger.error('Erro ao listar solicitações de documentos:', error as Error);
+      res.status(500).json({ error: 'Erro ao listar solicitações' });
+    }
+  }
+
+  /**
+   * Cliente envia documento em resposta à solicitação
+   * POST /portal/document-requests/:id/submit
+   */
+  async submitDocumentRequest(req: AuthRequest, res: Response) {
+    try {
+      const { id } = req.params;
+      const { clientNotes } = req.body;
+      const clientId = req.user!.clientId;
+      const companyId = req.user!.companyId;
+      const userId = req.user!.userId;
+
+      if (!clientId || !companyId) {
+        return res.status(403).json({ error: 'Acesso não autorizado' });
+      }
+
+      // Verificar se a solicitação existe e pertence ao cliente
+      const documentRequest = await prisma.documentRequest.findFirst({
+        where: { id, clientId, companyId },
+      });
+
+      if (!documentRequest) {
+        return res.status(404).json({ error: 'Solicitação não encontrada' });
+      }
+
+      if (documentRequest.status === 'RECEIVED') {
+        return res.status(400).json({ error: 'Esta solicitação já foi respondida' });
+      }
+
+      if (documentRequest.status === 'CANCELLED') {
+        return res.status(400).json({ error: 'Esta solicitação foi cancelada' });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({ error: 'Arquivo é obrigatório' });
+      }
+
+      // Upload do arquivo
+      const { uploadBufferToS3 } = await import('../utils/s3');
+      const fileKey = `companies/${companyId}/documents/${Date.now()}-${req.file.originalname}`;
+      const fileUrl = await uploadBufferToS3(req.file.buffer, fileKey, req.file.mimetype);
+
+      // Criar documento compartilhado
+      const document = await prisma.sharedDocument.create({
+        data: {
+          companyId,
+          clientId,
+          name: documentRequest.documentName,
+          description: `Documento enviado em resposta à solicitação`,
+          fileUrl,
+          fileKey,
+          fileSize: req.file.size,
+          fileType: req.file.mimetype,
+          sharedByUserId: userId,
+          uploadedByClient: true,
+          uploadedAt: new Date(),
+          status: 'UPLOADED',
+          allowDownload: true,
+          requiresSignature: false,
+        },
+      });
+
+      // Atualizar a solicitação como recebida
+      await prisma.documentRequest.update({
+        where: { id },
+        data: {
+          status: 'RECEIVED',
+          receivedAt: new Date(),
+          receivedDocumentId: document.id,
+          clientNotes: clientNotes || null,
+        },
+      });
+
+      appLogger.info('Cliente enviou documento para solicitação', {
+        requestId: id,
+        documentId: document.id,
+        clientId,
+      });
+
+      res.json({ message: 'Documento enviado com sucesso' });
+    } catch (error) {
+      appLogger.error('Erro ao enviar documento:', error as Error);
+      res.status(500).json({ error: 'Erro ao enviar documento' });
+    }
+  }
 }
 
 export default new PortalController();

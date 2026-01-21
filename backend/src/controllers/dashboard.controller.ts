@@ -491,6 +491,67 @@ export const getNewClientsTimeline = async (req: AuthRequest, res: Response) => 
   }
 };
 
+// Obter estatísticas de solicitações de documentos (com cache)
+export const getDocumentRequestStats = async (req: AuthRequest, res: Response) => {
+  try {
+    const companyId = req.user!.companyId;
+    const cacheKey = `dashboard:doc-requests:${companyId}`;
+
+    const cachedData = await cache.get<any>(cacheKey);
+    if (cachedData) {
+      return res.json(cachedData);
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const [pending, overdue, received, total] = await Promise.all([
+      // Pendentes (não vencidos)
+      prisma.documentRequest.count({
+        where: {
+          companyId,
+          status: { in: ['PENDING', 'SENT', 'REMINDED'] },
+          dueDate: { gte: today }
+        }
+      }),
+      // Vencidos (prazo passou e não foi recebido)
+      prisma.documentRequest.count({
+        where: {
+          companyId,
+          status: { in: ['PENDING', 'SENT', 'REMINDED'] },
+          dueDate: { lt: today }
+        }
+      }),
+      // Recebidos
+      prisma.documentRequest.count({
+        where: {
+          companyId,
+          status: 'RECEIVED'
+        }
+      }),
+      // Total
+      prisma.documentRequest.count({
+        where: { companyId }
+      })
+    ]);
+
+    const stats = {
+      pending,
+      overdue,
+      received,
+      total,
+      pendingWithOverdue: pending + overdue
+    };
+
+    await cache.set(cacheKey, stats, CACHE_TTL.STATS);
+
+    res.json(stats);
+  } catch (error: any) {
+    appLogger.error('Erro ao buscar estatísticas de solicitações:', error as Error);
+    res.status(500).json({ error: 'Erro ao buscar dados' });
+  }
+};
+
 // Obter audiências nos próximos 7 dias (com cache)
 export const getUpcomingHearings = async (req: AuthRequest, res: Response) => {
   try {

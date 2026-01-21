@@ -27,8 +27,10 @@ import {
   TrendingUp,
   Activity,
   Clock,
-  CalendarCheck
+  CalendarCheck,
+  ClipboardList
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface Stats {
   clients: number;
@@ -74,6 +76,14 @@ interface UpcomingHearings {
   audiencias: number;
 }
 
+interface DocumentRequestStats {
+  pending: number;
+  overdue: number;
+  received: number;
+  total: number;
+  pendingWithOverdue: number;
+}
+
 // Mapeamento de status para português (plural)
 const statusTranslations: Record<string, string> = {
   'PENDING': 'Pendentes',
@@ -103,12 +113,14 @@ const formatStatusName = (status: string): string => {
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<Stats>({
     clients: 0,
     cases: 0,
     todayHearings: 0,
   });
+  const [documentRequestStats, setDocumentRequestStats] = useState<DocumentRequestStats | null>(null);
 
   const [eventsPerWeekday, setEventsPerWeekday] = useState<EventsPerWeekday[]>([]);
   const [casesByStatus, setCasesByStatus] = useState<CasesByStatus[]>([]);
@@ -130,7 +142,8 @@ const Dashboard: React.FC = () => {
         movementsRes,
         deadlinesRes,
         clientsRes,
-        hearingsRes
+        hearingsRes,
+        docRequestsRes
       ] = await Promise.all([
         api.get('/dashboard/stats'),
         api.get('/dashboard/events-per-weekday'),
@@ -138,7 +151,8 @@ const Dashboard: React.FC = () => {
         api.get('/dashboard/movements-timeline'),
         api.get('/dashboard/upcoming-deadlines'),
         api.get('/dashboard/new-clients-timeline'),
-        api.get('/dashboard/upcoming-hearings')
+        api.get('/dashboard/upcoming-hearings'),
+        api.get('/dashboard/document-request-stats')
       ]);
 
       setStats({
@@ -153,6 +167,7 @@ const Dashboard: React.FC = () => {
       setUpcomingDeadlines(deadlinesRes.data);
       setNewClientsTimeline(clientsRes.data);
       setUpcomingHearings(hearingsRes.data);
+      setDocumentRequestStats(docRequestsRes.data);
     } catch (error: any) {
       console.error('Erro ao carregar dados do dashboard:', error);
       toast.error('Erro ao carregar dados do dashboard');
@@ -234,6 +249,44 @@ const Dashboard: React.FC = () => {
             </div>
           )}
         </div>
+
+        {/* Document Request Stats Widget */}
+        {documentRequestStats && documentRequestStats.total > 0 && (
+          <div
+            onClick={() => navigate('/document-requests')}
+            className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-4 cursor-pointer hover:shadow-md transition-shadow"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-slate-200 flex items-center gap-2">
+                <ClipboardList size={18} className="text-primary-600" />
+                Solicitações de Documentos
+              </h3>
+              <span className="text-xs text-gray-500 dark:text-slate-400">
+                {documentRequestStats.total} total
+              </span>
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="text-center">
+                <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
+                  {documentRequestStats.pending}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-slate-400">Pendentes</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-red-600 dark:text-red-400">
+                  {documentRequestStats.overdue}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-slate-400">Vencidos</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                  {documentRequestStats.received}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-slate-400">Recebidos</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Primeira Linha de Gráficos */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">

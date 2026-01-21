@@ -180,6 +180,17 @@ export interface PortalDocument {
   };
 }
 
+// Document Request Types
+export interface PortalDocumentRequest {
+  id: string;
+  documentName: string;
+  description: string | null;
+  dueDate: string;
+  status: 'PENDING' | 'SENT' | 'REMINDED' | 'RECEIVED' | 'CANCELLED';
+  receivedAt: string | null;
+  createdAt: string;
+}
+
 // API calls
 export const portalApi = {
   getDashboard: async (): Promise<PortalDashboard> => {
@@ -261,6 +272,27 @@ export const portalApi = {
     if (description) formData.append('description', description);
 
     const response = await api.post('/portal/documents/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  },
+
+  // Document Request endpoints
+  getDocumentRequests: async (): Promise<PortalDocumentRequest[]> => {
+    const response = await api.get('/portal/document-requests');
+    return response.data;
+  },
+
+  submitDocumentRequest: async (
+    requestId: string,
+    file: File,
+    clientNotes?: string
+  ): Promise<{ message: string }> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    if (clientNotes) formData.append('clientNotes', clientNotes);
+
+    const response = await api.post(`/portal/document-requests/${requestId}/submit`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     return response.data;

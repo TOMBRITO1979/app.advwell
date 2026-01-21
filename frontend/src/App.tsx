@@ -72,6 +72,7 @@ const PortalProfile = lazy(() => import('./portal/pages/PortalProfile'));
 const PortalCompany = lazy(() => import('./portal/pages/PortalCompany'));
 const PortalAnnouncements = lazy(() => import('./portal/pages/PortalAnnouncements'));
 const PortalDocuments = lazy(() => import('./portal/pages/PortalDocuments'));
+const PortalDocumentRequests = lazy(() => import('./portal/pages/PortalDocumentRequests'));
 const PortalMessages = lazy(() => import('./portal/pages/PortalMessages'));
 
 // Loading spinner component
@@ -603,6 +604,14 @@ function App() {
             element={
               <PortalRoute>
                 <PortalDocuments />
+              </PortalRoute>
+            }
+          />
+          <Route
+            path="/portal/document-requests"
+            element={
+              <PortalRoute>
+                <PortalDocumentRequests />
               </PortalRoute>
             }
           />
