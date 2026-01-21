@@ -61,6 +61,15 @@ interface Publication {
   dataPublicacao: string;
   tipoComunicacao?: string;
   textoComunicacao?: string;
+  // Campos extras da ADVAPI
+  textoLimpo?: string;
+  comarca?: string;
+  classeProcessual?: string;
+  nomeOrgao?: string;
+  parteAutor?: string;
+  parteReu?: string;
+  dataDisponibilizacao?: string;
+  // Status
   imported: boolean;
   importedCaseId?: string;
   importedClientId?: string;
@@ -1180,7 +1189,42 @@ const Monitoring: React.FC = () => {
                   <label className="text-sm font-medium text-neutral-500 dark:text-slate-400">Tipo de Comunicacao</label>
                   <div className="text-neutral-900 dark:text-slate-100">{selectedPublication.tipoComunicacao || '-'}</div>
                 </div>
+                {selectedPublication.comarca && (
+                  <div>
+                    <label className="text-sm font-medium text-neutral-500 dark:text-slate-400">Comarca</label>
+                    <div className="text-neutral-900 dark:text-slate-100">{selectedPublication.comarca}</div>
+                  </div>
+                )}
+                {selectedPublication.classeProcessual && (
+                  <div>
+                    <label className="text-sm font-medium text-neutral-500 dark:text-slate-400">Classe Processual</label>
+                    <div className="text-neutral-900 dark:text-slate-100">{selectedPublication.classeProcessual}</div>
+                  </div>
+                )}
+                {selectedPublication.nomeOrgao && (
+                  <div className="col-span-2">
+                    <label className="text-sm font-medium text-neutral-500 dark:text-slate-400">Órgão Julgador</label>
+                    <div className="text-neutral-900 dark:text-slate-100">{selectedPublication.nomeOrgao}</div>
+                  </div>
+                )}
               </div>
+              {/* Partes do processo */}
+              {(selectedPublication.parteAutor || selectedPublication.parteReu) && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-neutral-200 dark:border-slate-700">
+                  {selectedPublication.parteAutor && (
+                    <div>
+                      <label className="text-sm font-medium text-neutral-500 dark:text-slate-400">Polo Ativo (Autor/Exequente)</label>
+                      <div className="text-neutral-900 dark:text-slate-100 text-sm">{selectedPublication.parteAutor}</div>
+                    </div>
+                  )}
+                  {selectedPublication.parteReu && (
+                    <div>
+                      <label className="text-sm font-medium text-neutral-500 dark:text-slate-400">Polo Passivo (Réu/Executado)</label>
+                      <div className="text-neutral-900 dark:text-slate-100 text-sm">{selectedPublication.parteReu}</div>
+                    </div>
+                  )}
+                </div>
+              )}
               <div>
                 <label className="text-sm font-medium text-neutral-500 dark:text-slate-400">Advogado Vinculado</label>
                 <div className="text-neutral-900 dark:text-slate-100">
@@ -1188,11 +1232,11 @@ const Monitoring: React.FC = () => {
                   {selectedPublication.monitoredOab.oabState})
                 </div>
               </div>
-              {selectedPublication.textoComunicacao && (
+              {(selectedPublication.textoLimpo || selectedPublication.textoComunicacao) && (
                 <div>
                   <label className="text-sm font-medium text-neutral-500 dark:text-slate-400">Texto da Publicação</label>
-                  <div className="mt-1 p-3 bg-neutral-50 dark:bg-slate-700 rounded-lg text-sm text-neutral-700 dark:text-slate-300 whitespace-pre-wrap">
-                    {cleanPublicationText(selectedPublication.textoComunicacao) || selectedPublication.textoComunicacao}
+                  <div className="mt-1 p-3 bg-neutral-50 dark:bg-slate-700 rounded-lg text-sm text-neutral-700 dark:text-slate-300 whitespace-pre-wrap max-h-64 overflow-y-auto">
+                    {selectedPublication.textoLimpo || cleanPublicationText(selectedPublication.textoComunicacao) || selectedPublication.textoComunicacao}
                   </div>
                 </div>
               )}

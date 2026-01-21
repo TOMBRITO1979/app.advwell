@@ -199,6 +199,14 @@ async function processNovaPublicacaoCallback(payload: any) {
         dataPublicacao: new Date(publicacao.dataPublicacao),
         tipoComunicacao: publicacao.tipoComunicacao || null,
         textoComunicacao: cleanPublicationText(publicacao.textoComunicacao),
+        // Campos extras da ADVAPI
+        textoLimpo: publicacao.textoLimpo || null,
+        comarca: publicacao.comarca || null,
+        classeProcessual: publicacao.classeProcessual || null,
+        nomeOrgao: publicacao.nomeOrgao || publicacao.orgaoJulgador || null,
+        parteAutor: publicacao.parteAutor || null,
+        parteReu: publicacao.parteReu || null,
+        dataDisponibilizacao: publicacao.dataDisponibilizacao ? new Date(publicacao.dataDisponibilizacao) : null,
       },
     });
 
@@ -293,6 +301,14 @@ async function processPublicacoesCallback(payload: any) {
             dataPublicacao: new Date(pub.dataPublicacao),
             tipoComunicacao: pub.tipoComunicacao || pub.tipo || null,
             textoComunicacao: cleanPublicationText(pub.textoComunicacao || pub.texto),
+            // Campos extras da ADVAPI
+            textoLimpo: pub.textoLimpo || null,
+            comarca: pub.comarca || null,
+            classeProcessual: pub.classeProcessual || null,
+            nomeOrgao: pub.nomeOrgao || pub.orgaoJulgador || null,
+            parteAutor: pub.parteAutor || null,
+            parteReu: pub.parteReu || null,
+            dataDisponibilizacao: pub.dataDisponibilizacao ? new Date(pub.dataDisponibilizacao) : null,
           },
         });
 

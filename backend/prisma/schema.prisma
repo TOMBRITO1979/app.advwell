@@ -2174,6 +2174,15 @@ model Publication {
   tipoComunicacao   String?       @map("tipo_comunicacao") // Ex: Intimação, Citação
   textoComunicacao  String?       @db.Text @map("texto_comunicacao") // Texto da publicação
 
+  // Campos extras da ADVAPI
+  textoLimpo            String?   @db.Text @map("texto_limpo") // Texto sem HTML/tags
+  comarca               String?   // Comarca do processo
+  classeProcessual      String?   @map("classe_processual") // Ex: Cumprimento de sentença
+  nomeOrgao             String?   @map("nome_orgao") // Órgão julgador (ex: 3ª Vara Cível)
+  parteAutor            String?   @db.Text @map("parte_autor") // Nome do autor/exequente
+  parteReu              String?   @db.Text @map("parte_reu") // Nome do réu/executado
+  dataDisponibilizacao  DateTime? @map("data_disponibilizacao") // Data de disponibilização
+
   // Status de importação
   imported          Boolean       @default(false) // Se foi importado como processo
   importedCaseId    String?       @map("imported_case_id") // ID do processo criado
