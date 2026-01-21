@@ -2320,6 +2320,8 @@ enum DocumentRequestStatus {
   REMINDED // Lembrete enviado
   RECEIVED // Documento recebido
   CANCELLED // Solicitação cancelada
+
+  @@map("document_request_status")
 }
 
 // Enum para canal de notificação
@@ -2327,6 +2329,8 @@ enum NotificationChannel {
   EMAIL
   WHATSAPP
   BOTH
+
+  @@map("notification_channel")
 }
 
 // Solicitação de Documentos - permite ao escritório solicitar documentos aos clientes

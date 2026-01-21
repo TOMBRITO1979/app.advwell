@@ -140,7 +140,7 @@ const DocumentRequests: React.FC = () => {
 
       setRequests(requestsRes.data);
       setStats(statsRes.data);
-      setClients(clientsRes.data.clients || clientsRes.data);
+      setClients(clientsRes.data.data || []);
     } catch (error: any) {
       console.error('Error loading data:', error);
       toast.error('Erro ao carregar dados');
