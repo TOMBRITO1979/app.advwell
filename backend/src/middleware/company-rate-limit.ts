@@ -74,15 +74,19 @@ export const companyRateLimit = async (
       });
     }
 
-    // Incrementar contador
-    const newCount = count + 1;
+    // Incrementar contador usando INCR (atomico)
+    // INCR cria a chave com valor 1 se nao existir
+    const newCount = await redis.incr(key);
 
-    if (count === 0) {
-      // Primeira requisicao na janela - criar chave com TTL
-      await redis.setex(key, RATE_LIMIT_WINDOW, '1');
-    } else {
-      // Incrementar sem alterar TTL
-      await redis.incr(key);
+    // Garantir que TTL esta sempre definido
+    // Isso corrige race condition onde a chave expira entre GET e INCR
+    const currentTtl = await redis.ttl(key);
+    if (currentTtl === -1) {
+      // Chave existe mas sem TTL - definir TTL
+      await redis.expire(key, RATE_LIMIT_WINDOW);
+    } else if (currentTtl === -2 || newCount === 1) {
+      // Chave nao existe ou foi criada agora - definir TTL
+      await redis.expire(key, RATE_LIMIT_WINDOW);
     }
 
     // Adicionar headers de rate limit
@@ -191,13 +195,16 @@ export const sensitiveRateLimit = async (
       });
     }
 
-    if (count === 0) {
-      await redis.setex(key, RATE_LIMIT_WINDOW, '1');
-    } else {
-      await redis.incr(key);
+    // Incrementar contador usando INCR (atomico)
+    const newCount = await redis.incr(key);
+
+    // Garantir que TTL esta sempre definido
+    const currentTtl = await redis.ttl(key);
+    if (currentTtl <= 0) {
+      await redis.expire(key, RATE_LIMIT_WINDOW);
     }
 
-    setRateLimitHeaders(res, { remaining: SENSITIVE_LIMIT - (count + 1), limit: SENSITIVE_LIMIT, reset });
+    setRateLimitHeaders(res, { remaining: SENSITIVE_LIMIT - newCount, limit: SENSITIVE_LIMIT, reset });
 
     next();
   } catch (error) {
@@ -241,13 +248,16 @@ export const backupRateLimit = async (
       });
     }
 
-    if (count === 0) {
-      await redis.setex(key, BACKUP_WINDOW, '1');
-    } else {
-      await redis.incr(key);
+    // Incrementar contador usando INCR (atomico)
+    const newCount = await redis.incr(key);
+
+    // Garantir que TTL esta sempre definido
+    const currentTtl = await redis.ttl(key);
+    if (currentTtl <= 0) {
+      await redis.expire(key, BACKUP_WINDOW);
     }
 
-    setRateLimitHeaders(res, { remaining: BACKUP_LIMIT - (count + 1), limit: BACKUP_LIMIT, reset });
+    setRateLimitHeaders(res, { remaining: BACKUP_LIMIT - newCount, limit: BACKUP_LIMIT, reset });
 
     next();
   } catch (error) {
@@ -294,13 +304,16 @@ export const csvImportRateLimit = async (
       });
     }
 
-    if (count === 0) {
-      await redis.setex(key, CSV_WINDOW, '1');
-    } else {
-      await redis.incr(key);
+    // Incrementar contador usando INCR (atomico)
+    const newCount = await redis.incr(key);
+
+    // Garantir que TTL esta sempre definido
+    const currentTtl = await redis.ttl(key);
+    if (currentTtl <= 0) {
+      await redis.expire(key, CSV_WINDOW);
     }
 
-    setRateLimitHeaders(res, { remaining: CSV_LIMIT - (count + 1), limit: CSV_LIMIT, reset });
+    setRateLimitHeaders(res, { remaining: CSV_LIMIT - newCount, limit: CSV_LIMIT, reset });
 
     next();
   } catch (error) {
