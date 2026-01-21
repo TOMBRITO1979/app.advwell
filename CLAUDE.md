@@ -42,8 +42,8 @@ VPS Principal (5.161.98.0)       VPS PostgreSQL (178.156.188.93)
 ## Commands
 
 ```bash
-# Deploy (requires sourcing .env)
-source .env && export POSTGRES_USER POSTGRES_PASSWORD POSTGRES_DB && docker stack deploy -c docker-compose.yml advtom --with-registry-auth
+# Deploy (requires sourcing .env and exporting all required vars)
+source .env && export POSTGRES_USER POSTGRES_PASSWORD POSTGRES_DB ADVAPI_BASE_URL ADVAPI_API_KEY ADVAPI_WEBHOOK_KEY ADVAPI_CALLBACK_URL && docker stack deploy -c docker-compose.yml advtom --with-registry-auth
 
 # Logs
 docker service logs advtom_backend -f
