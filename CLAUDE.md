@@ -12,7 +12,7 @@ AdvWell is a multitenant SaaS for Brazilian law firms with DataJud CNJ integrati
 - Grafana: https://grafana.advwell.pro
 - Landing Page: https://advwell.pro
 
-**Current Version:** v1.8.138 (Backend) | v1.8.222 (Frontend)
+**Current Version:** v1.8.139 (Backend) | v1.8.223 (Frontend)
 
 ## Technology Stack
 
@@ -73,6 +73,19 @@ Jobs processed by dedicated worker (not API replicas):
 - `ENABLE_QUEUE_PROCESSORS=true` on worker
 - Queues: `datajud-sync`, `email-campaign`, `whatsapp-messages`, `csv-import`, `csv-export`, `monitoring`
 - Cron Jobs: `document-request-reminder` (hourly)
+
+## Subscription Plans
+
+| Plan | Price | Storage | Monitoring |
+|------|-------|---------|------------|
+| GRATUITO | R$0/mês | 1GB | 0 |
+| STARTER | R$99/mês | 10GB | 150 |
+| PROFISSIONAL | R$299/mês | 20GB | 500 |
+| ESCRITORIO | R$499/mês | 30GB | 1000 |
+| ENTERPRISE | R$899/mês | 50GB | 2000 |
+
+- Trial: 7 days with STARTER limits
+- Stripe webhooks: `POST /api/subscription/webhook`
 
 ## Key Modules
 
