@@ -306,36 +306,58 @@ const Reports: React.FC = () => {
         }
       });
 
-      const payables = payableResponse.data.data || [];
-      const receivables = receivableResponse.data.data || [];
+      const accountsPayable = payableResponse.data.data || [];
+      const financialTransactions = receivableResponse.data.data || [];
       const now = new Date();
 
+      // Separar transações por tipo: INCOME = a receber, EXPENSE = a pagar
+      const incomeTransactions = financialTransactions.filter((t: any) => t.type === 'INCOME');
+      const expenseTransactions = financialTransactions.filter((t: any) => t.type === 'EXPENSE');
+
       const stats: FinancialStats = {
-        totalReceivable: receivables.reduce((sum: number, r: any) => sum + (parseFloat(r.amount) || 0), 0),
-        totalPayable: payables.reduce((sum: number, p: any) => sum + (parseFloat(p.amount) || 0), 0),
-        received: receivables.filter((r: any) => r.status === 'PAID').reduce((sum: number, r: any) => sum + (parseFloat(r.amount) || 0), 0),
-        paid: payables.filter((p: any) => p.status === 'PAID').reduce((sum: number, p: any) => sum + (parseFloat(p.amount) || 0), 0),
-        overdue: payables.filter((p: any) => p.status !== 'PAID' && p.status !== 'CANCELLED' && new Date(p.dueDate) < now).reduce((sum: number, p: any) => sum + (parseFloat(p.amount) || 0), 0),
+        // A receber = transações do tipo INCOME
+        totalReceivable: incomeTransactions.reduce((sum: number, r: any) => sum + (parseFloat(r.amount) || 0), 0),
+        // A pagar = contas a pagar + transações do tipo EXPENSE
+        totalPayable: accountsPayable.reduce((sum: number, p: any) => sum + (parseFloat(p.amount) || 0), 0) +
+                      expenseTransactions.reduce((sum: number, e: any) => sum + (parseFloat(e.amount) || 0), 0),
+        // Recebido = INCOME com status PAID
+        received: incomeTransactions.filter((r: any) => r.status === 'PAID').reduce((sum: number, r: any) => sum + (parseFloat(r.amount) || 0), 0),
+        // Pago = contas a pagar PAID + EXPENSE com status PAID
+        paid: accountsPayable.filter((p: any) => p.status === 'PAID').reduce((sum: number, p: any) => sum + (parseFloat(p.amount) || 0), 0) +
+              expenseTransactions.filter((e: any) => e.status === 'PAID').reduce((sum: number, e: any) => sum + (parseFloat(e.amount) || 0), 0),
+        // Vencido = contas a pagar pendentes vencidas
+        overdue: accountsPayable.filter((p: any) => p.status !== 'PAID' && p.status !== 'CANCELLED' && new Date(p.dueDate) < now).reduce((sum: number, p: any) => sum + (parseFloat(p.amount) || 0), 0),
         byMonth: [],
       };
 
       const monthData: Record<string, { income: number; expense: number }> = {};
 
-      receivables.forEach((r: any) => {
+      // Receitas pagas (INCOME com status PAID)
+      incomeTransactions.forEach((r: any) => {
         if (r.status === 'PAID') {
-          const date = new Date(r.paymentDate || r.date || r.createdAt);
+          const date = new Date(r.date || r.createdAt);
           const month = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
           if (!monthData[month]) monthData[month] = { income: 0, expense: 0 };
           monthData[month].income += parseFloat(r.amount) || 0;
         }
       });
 
-      payables.forEach((p: any) => {
+      // Despesas pagas (contas a pagar + EXPENSE com status PAID)
+      accountsPayable.forEach((p: any) => {
         if (p.status === 'PAID') {
           const date = new Date(p.paidDate || p.dueDate || p.createdAt);
           const month = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
           if (!monthData[month]) monthData[month] = { income: 0, expense: 0 };
           monthData[month].expense += parseFloat(p.amount) || 0;
+        }
+      });
+
+      expenseTransactions.forEach((e: any) => {
+        if (e.status === 'PAID') {
+          const date = new Date(e.date || e.createdAt);
+          const month = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+          if (!monthData[month]) monthData[month] = { income: 0, expense: 0 };
+          monthData[month].expense += parseFloat(e.amount) || 0;
         }
       });
 
