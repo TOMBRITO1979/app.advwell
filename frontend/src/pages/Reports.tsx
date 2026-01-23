@@ -71,6 +71,9 @@ interface CaseAdvancedStats {
   totalCases: number;
   byPhase: { phase: string; count: number }[];
   byRite: { rite: string; count: number }[];
+  byTribunal: { tribunal: string; count: number }[];
+  byNature: { nature: string; count: number }[];
+  byComarca: { comarca: string; count: number }[];
   withDeadline: {
     total: number;
     completed: number;
@@ -475,6 +478,18 @@ const Reports: React.FC = () => {
         csvContent += '\nPOR RITO\nRito,Quantidade\n';
         caseAdvancedStats.byRite.forEach(r => {
           csvContent += `${r.rite},${r.count}\n`;
+        });
+        csvContent += '\nPOR TRIBUNAL\nTribunal,Quantidade\n';
+        caseAdvancedStats.byTribunal?.forEach(t => {
+          csvContent += `${t.tribunal},${t.count}\n`;
+        });
+        csvContent += '\nPOR NATUREZA\nNatureza,Quantidade\n';
+        caseAdvancedStats.byNature?.forEach(n => {
+          csvContent += `${n.nature},${n.count}\n`;
+        });
+        csvContent += '\nPOR COMARCA\nComarca,Quantidade\n';
+        caseAdvancedStats.byComarca?.forEach(c => {
+          csvContent += `${c.comarca},${c.count}\n`;
         });
         csvContent += '\nPOR ADVOGADO\nAdvogado,Quantidade\n';
         caseAdvancedStats.byLawyer.forEach(l => {
@@ -1009,6 +1024,99 @@ const Reports: React.FC = () => {
                         <div
                           className="bg-purple-500 h-2 rounded-full"
                           style={{ width: `${(rite.count / caseAdvancedStats.totalCases) * 100}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500 dark:text-slate-400 text-center py-4">Nenhum dado disponível</p>
+            )}
+          </div>
+        </div>
+
+        {/* Por Tribunal, Natureza e Comarca */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Por Tribunal */}
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 shadow-sm">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4 flex items-center gap-2">
+              <Building2 className="w-5 h-5" />
+              Por Tribunal
+            </h3>
+            {caseAdvancedStats.byTribunal && caseAdvancedStats.byTribunal.length > 0 ? (
+              <div className="space-y-3 max-h-64 overflow-y-auto">
+                {caseAdvancedStats.byTribunal.map((item) => (
+                  <div key={item.tribunal} className="flex items-center gap-3">
+                    <div className="flex-1">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-gray-700 dark:text-slate-300 text-sm truncate" title={item.tribunal}>{item.tribunal}</span>
+                        <span className="text-gray-500 dark:text-slate-400 text-sm font-medium ml-2">{item.count}</span>
+                      </div>
+                      <div className="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-2">
+                        <div
+                          className="bg-indigo-500 h-2 rounded-full"
+                          style={{ width: `${(item.count / caseAdvancedStats.totalCases) * 100}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500 dark:text-slate-400 text-center py-4">Nenhum dado disponível</p>
+            )}
+          </div>
+
+          {/* Por Natureza */}
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 shadow-sm">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4 flex items-center gap-2">
+              <Briefcase className="w-5 h-5" />
+              Por Natureza
+            </h3>
+            {caseAdvancedStats.byNature && caseAdvancedStats.byNature.length > 0 ? (
+              <div className="space-y-3 max-h-64 overflow-y-auto">
+                {caseAdvancedStats.byNature.map((item) => (
+                  <div key={item.nature} className="flex items-center gap-3">
+                    <div className="flex-1">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-gray-700 dark:text-slate-300 text-sm truncate" title={item.nature}>{item.nature}</span>
+                        <span className="text-gray-500 dark:text-slate-400 text-sm font-medium ml-2">{item.count}</span>
+                      </div>
+                      <div className="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-2">
+                        <div
+                          className="bg-teal-500 h-2 rounded-full"
+                          style={{ width: `${(item.count / caseAdvancedStats.totalCases) * 100}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500 dark:text-slate-400 text-center py-4">Nenhum dado disponível</p>
+            )}
+          </div>
+
+          {/* Por Comarca */}
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 shadow-sm">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4 flex items-center gap-2">
+              <Scale className="w-5 h-5" />
+              Por Comarca
+            </h3>
+            {caseAdvancedStats.byComarca && caseAdvancedStats.byComarca.length > 0 ? (
+              <div className="space-y-3 max-h-64 overflow-y-auto">
+                {caseAdvancedStats.byComarca.map((item) => (
+                  <div key={item.comarca} className="flex items-center gap-3">
+                    <div className="flex-1">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-gray-700 dark:text-slate-300 text-sm truncate" title={item.comarca}>{item.comarca}</span>
+                        <span className="text-gray-500 dark:text-slate-400 text-sm font-medium ml-2">{item.count}</span>
+                      </div>
+                      <div className="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-2">
+                        <div
+                          className="bg-amber-500 h-2 rounded-full"
+                          style={{ width: `${(item.count / caseAdvancedStats.totalCases) * 100}%` }}
                         />
                       </div>
                     </div>

@@ -30,6 +30,8 @@ export const getCaseAdvancedReport = async (req: AuthRequest, res: Response) => 
         processNumber: true,
         phase: true,
         rite: true,
+        nature: true,
+        comarca: true,
         deadline: true,
         deadlineCompleted: true,
         lawyerId: true,
@@ -69,6 +71,36 @@ export const getCaseAdvancedReport = async (req: AuthRequest, res: Response) => 
     });
     const byRite = Object.entries(riteCounts)
       .map(([rite, count]) => ({ rite, count }))
+      .sort((a, b) => b.count - a.count);
+
+    // 2.1. Processos por Tribunal
+    const tribunalCounts: Record<string, number> = {};
+    allCases.forEach((c) => {
+      const tribunal = c.court || 'Não definido';
+      tribunalCounts[tribunal] = (tribunalCounts[tribunal] || 0) + 1;
+    });
+    const byTribunal = Object.entries(tribunalCounts)
+      .map(([tribunal, count]) => ({ tribunal, count }))
+      .sort((a, b) => b.count - a.count);
+
+    // 2.2. Processos por Natureza
+    const natureCounts: Record<string, number> = {};
+    allCases.forEach((c) => {
+      const nature = c.nature || 'Não definida';
+      natureCounts[nature] = (natureCounts[nature] || 0) + 1;
+    });
+    const byNature = Object.entries(natureCounts)
+      .map(([nature, count]) => ({ nature, count }))
+      .sort((a, b) => b.count - a.count);
+
+    // 2.3. Processos por Comarca
+    const comarcaCounts: Record<string, number> = {};
+    allCases.forEach((c) => {
+      const comarca = c.comarca || 'Não definida';
+      comarcaCounts[comarca] = (comarcaCounts[comarca] || 0) + 1;
+    });
+    const byComarca = Object.entries(comarcaCounts)
+      .map(([comarca, count]) => ({ comarca, count }))
       .sort((a, b) => b.count - a.count);
 
     // 3. Processos com Prazo definido
@@ -144,6 +176,9 @@ export const getCaseAdvancedReport = async (req: AuthRequest, res: Response) => 
         totalCases: allCases.length,
         byPhase,
         byRite,
+        byTribunal,
+        byNature,
+        byComarca,
         withDeadline,
         byLawyer,
         withoutMovement180Days,
