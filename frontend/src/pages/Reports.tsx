@@ -19,12 +19,15 @@ import {
   Scale,
   UserCheck,
   AlertTriangle,
-  Briefcase
+  Briefcase,
+  FileDown
 } from 'lucide-react';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import Layout from '../components/Layout';
 import { formatCurrency } from '../utils/dateFormatter';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 interface ReportFilters {
   startDate: string;
@@ -654,6 +657,134 @@ const Reports: React.FC = () => {
     link.download = filename;
     link.click();
     toast.success('Relatório exportado!');
+  };
+
+  const handleExportPDF = () => {
+    if (activeReport !== 'tasks' || !taskStats) {
+      toast.error('PDF disponível apenas para relatório de tarefas');
+      return;
+    }
+
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    let yPos = 20;
+
+    // Título
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Relatório de Produtividade', pageWidth / 2, yPos, { align: 'center' });
+    yPos += 10;
+
+    // Subtítulo com período
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    const periodo = filters.startDate && filters.endDate
+      ? `Período: ${new Date(filters.startDate).toLocaleDateString('pt-BR')} a ${new Date(filters.endDate).toLocaleDateString('pt-BR')}`
+      : 'Período: Todos os registros';
+    doc.text(periodo, pageWidth / 2, yPos, { align: 'center' });
+    yPos += 15;
+
+    // Resumo Geral
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Resumo Geral', 14, yPos);
+    yPos += 8;
+
+    const completionRate = taskStats.total > 0 ? Math.round((taskStats.completed / taskStats.total) * 100) : 0;
+
+    autoTable(doc, {
+      startY: yPos,
+      head: [['Métrica', 'Valor']],
+      body: [
+        ['Total de Tarefas', taskStats.total.toString()],
+        ['Concluídas', taskStats.completed.toString()],
+        ['Pendentes', taskStats.pending.toString()],
+        ['Atrasadas', taskStats.overdue.toString()],
+        ['Taxa de Conclusão', `${completionRate}%`],
+      ],
+      theme: 'striped',
+      headStyles: { fillColor: [59, 130, 246] },
+      margin: { left: 14, right: 14 },
+    });
+
+    yPos = (doc as any).lastAutoTable.finalY + 15;
+
+    // Tarefas por Prioridade
+    if (taskStats.byPriority.length > 0) {
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Tarefas por Prioridade', 14, yPos);
+      yPos += 8;
+
+      const priorityLabels: Record<string, string> = {
+        BAIXA: 'Baixa',
+        MEDIA: 'Média',
+        ALTA: 'Alta',
+        URGENTE: 'Urgente',
+      };
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Prioridade', 'Quantidade']],
+        body: taskStats.byPriority.map(p => [priorityLabels[p.priority] || p.priority, p.count.toString()]),
+        theme: 'striped',
+        headStyles: { fillColor: [59, 130, 246] },
+        margin: { left: 14, right: 14 },
+      });
+
+      yPos = (doc as any).lastAutoTable.finalY + 15;
+    }
+
+    // Produtividade por Usuário
+    if (taskStats.byUser && taskStats.byUser.length > 0) {
+      // Verificar se precisa de nova página
+      if (yPos > 220) {
+        doc.addPage();
+        yPos = 20;
+      }
+
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Produtividade por Usuário', 14, yPos);
+      yPos += 8;
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Usuário', 'Atribuídas', 'Concluídas', 'Pendentes', 'Atrasadas', 'Taxa']],
+        body: taskStats.byUser.map(u => [
+          u.userName,
+          u.assigned.toString(),
+          u.completed.toString(),
+          u.pending.toString(),
+          u.overdue.toString(),
+          `${u.completionRate}%`,
+        ]),
+        theme: 'striped',
+        headStyles: { fillColor: [59, 130, 246] },
+        margin: { left: 14, right: 14 },
+        columnStyles: {
+          0: { cellWidth: 50 },
+          5: { cellWidth: 25 },
+        },
+      });
+    }
+
+    // Rodapé
+    const pageCount = doc.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'normal');
+      doc.text(
+        `Gerado em ${new Date().toLocaleString('pt-BR')} - Página ${i} de ${pageCount}`,
+        pageWidth / 2,
+        doc.internal.pageSize.getHeight() - 10,
+        { align: 'center' }
+      );
+    }
+
+    doc.save('relatorio_produtividade.pdf');
+    toast.success('PDF exportado!');
   };
 
   const formatDate = (dateString: string | null) => {
@@ -1611,6 +1742,15 @@ const Reports: React.FC = () => {
               <Download className="w-4 h-4" />
               Exportar CSV
             </button>
+            {activeReport === 'tasks' && (
+              <button
+                onClick={handleExportPDF}
+                className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+              >
+                <FileDown className="w-4 h-4" />
+                Exportar PDF
+              </button>
+            )}
           </div>
         </div>
 

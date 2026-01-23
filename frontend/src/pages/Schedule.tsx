@@ -263,7 +263,8 @@ const Schedule: React.FC = () => {
     try {
       // Usar companyOnly=true para garantir que apenas usuários da mesma empresa sejam listados
       // Isso evita o erro "Usuário inválido" quando SUPER_ADMIN tenta atribuir evento
-      const response = await api.get('/users', { params: { companyOnly: 'true' } });
+      // Usar limit=1000 para garantir que todos os usuários sejam carregados
+      const response = await api.get('/users', { params: { companyOnly: 'true', limit: 1000 } });
       setCompanyUsers(response.data.data || []);
     } catch (error) {
       console.error('Erro ao buscar usuários:', error);
