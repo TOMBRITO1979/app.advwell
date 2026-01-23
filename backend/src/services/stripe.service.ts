@@ -24,59 +24,122 @@ export function isStripeConfigured(): boolean {
 
 // Storage limits in bytes
 export const STORAGE_LIMITS = {
-  MB_100: 104857600,      // 100 MB
-  MB_300: 314572800,      // 300 MB
-  GB_1: 1073741824,       // 1 GB
-  GB_5: 5368709120,       // 5 GB
-  GB_30: 32212254720,     // 30 GB
+  GB_1: 1073741824,        // 1 GB (Grátis)
+  GB_10: 10737418240,      // 10 GB (Starter)
+  GB_20: 21474836480,      // 20 GB (Profissional)
+  GB_30: 32212254720,      // 30 GB (Escritório)
+  GB_50: 53687091200,      // 50 GB (Enterprise)
+};
+
+// Monitoring limits per plan
+export const MONITORING_LIMITS = {
+  GRATUITO: 0,
+  STARTER: 150,
+  PROFISSIONAL: 500,
+  ESCRITORIO: 1000,
+  ENTERPRISE: 2000,
+};
+
+// Stripe Payment Links (with pt-BR locale)
+export const STRIPE_PAYMENT_LINKS = {
+  STARTER: 'https://buy.stripe.com/28E3cx5Sy6tp86B6SLfQI03?locale=pt-BR',
+  PROFISSIONAL: 'https://buy.stripe.com/3cI7sN80G5pl86B3GzfQI02?locale=pt-BR',
+  ESCRITORIO: 'https://buy.stripe.com/00w00lbcS1953Ql90TfQI01?locale=pt-BR',
+  ENTERPRISE: 'https://buy.stripe.com/3cI9AVbcS6tp9aF7WPfQI00?locale=pt-BR',
 };
 
 // Plan configuration
 export const SUBSCRIPTION_PLANS = {
   GRATUITO: {
-    name: 'Gratuito',
+    name: 'Grátis',
     priceBrl: 0,
-    priceUsd: 0,
-    casesLimit: 50,
-    storageLimit: STORAGE_LIMITS.MB_100,
-    storageLimitFormatted: '100 MB',
-    features: ['Até 50 processos', '100 MB de armazenamento', 'Suporte por email'],
-  },
-  BASICO: {
-    name: 'Básico',
-    priceBrl: 69,
-    priceUsd: 14, // ~R$69 converted
-    casesLimit: 150,
-    storageLimit: STORAGE_LIMITS.MB_300,
-    storageLimitFormatted: '300 MB',
-    features: ['Até 150 processos', '300 MB de armazenamento', 'Suporte por email', 'Integração DataJud'],
-  },
-  BRONZE: {
-    name: 'Bronze',
-    priceBrl: 499,
-    priceUsd: 99,
-    casesLimit: 1000,
+    casesLimit: 999999, // Ilimitado
     storageLimit: STORAGE_LIMITS.GB_1,
     storageLimitFormatted: '1 GB',
-    features: ['Até 1.000 processos', '1 GB de armazenamento', 'Suporte por email', 'Integração DataJud'],
+    monitoringLimit: MONITORING_LIMITS.GRATUITO,
+    users: 1,
+    stripeLink: null,
+    features: [
+      'Processos ilimitados',
+      '1 usuário',
+      '1 GB de armazenamento',
+      'Agenda e Kanban',
+      'Controle financeiro',
+      'Relatórios PDF/CSV',
+    ],
   },
-  PRATA: {
-    name: 'Prata',
-    priceBrl: 799,
-    priceUsd: 159,
-    casesLimit: 2500,
-    storageLimit: STORAGE_LIMITS.GB_5,
-    storageLimitFormatted: '5 GB',
-    features: ['Até 2.500 processos', '5 GB de armazenamento', 'Suporte prioritário', 'Integração DataJud', 'IA para resumos'],
+  STARTER: {
+    name: 'Starter',
+    priceBrl: 99,
+    casesLimit: 999999, // Ilimitado
+    storageLimit: STORAGE_LIMITS.GB_10,
+    storageLimitFormatted: '10 GB',
+    monitoringLimit: MONITORING_LIMITS.STARTER,
+    users: 3,
+    stripeLink: STRIPE_PAYMENT_LINKS.STARTER,
+    features: [
+      'Processos ilimitados',
+      '3 usuários',
+      '10 GB de armazenamento',
+      '150 processos monitorados',
+      'Integração DataJud',
+      'Backup automático',
+    ],
   },
-  OURO: {
-    name: 'Ouro',
-    priceBrl: 1099,
-    priceUsd: 219,
-    casesLimit: 5000,
+  PROFISSIONAL: {
+    name: 'Profissional',
+    priceBrl: 299,
+    casesLimit: 999999, // Ilimitado
+    storageLimit: STORAGE_LIMITS.GB_20,
+    storageLimitFormatted: '20 GB',
+    monitoringLimit: MONITORING_LIMITS.PROFISSIONAL,
+    users: 8,
+    stripeLink: STRIPE_PAYMENT_LINKS.PROFISSIONAL,
+    popular: true, // Mais popular
+    features: [
+      'Processos ilimitados',
+      '8 usuários',
+      '20 GB de armazenamento',
+      '500 processos monitorados',
+      'Tudo do Starter',
+      'Suporte prioritário',
+    ],
+  },
+  ESCRITORIO: {
+    name: 'Escritório',
+    priceBrl: 499,
+    casesLimit: 999999, // Ilimitado
     storageLimit: STORAGE_LIMITS.GB_30,
     storageLimitFormatted: '30 GB',
-    features: ['Até 5.000 processos', '30 GB de armazenamento', 'Suporte 24/7', 'Integração DataJud', 'IA para resumos', 'API exclusiva'],
+    monitoringLimit: MONITORING_LIMITS.ESCRITORIO,
+    users: 15,
+    stripeLink: STRIPE_PAYMENT_LINKS.ESCRITORIO,
+    features: [
+      'Processos ilimitados',
+      '15 usuários',
+      '30 GB de armazenamento',
+      '1.000 processos monitorados',
+      'Portal do Cliente',
+      'Tudo do Profissional',
+    ],
+  },
+  ENTERPRISE: {
+    name: 'Enterprise',
+    priceBrl: 899,
+    casesLimit: 999999, // Ilimitado
+    storageLimit: STORAGE_LIMITS.GB_50,
+    storageLimitFormatted: '50 GB',
+    monitoringLimit: MONITORING_LIMITS.ENTERPRISE,
+    users: 30,
+    stripeLink: STRIPE_PAYMENT_LINKS.ENTERPRISE,
+    features: [
+      'Processos ilimitados',
+      '30 usuários',
+      '50 GB de armazenamento',
+      '2.000 processos monitorados',
+      'IA para documentos',
+      'Chatwell + Suporte VIP',
+    ],
   },
 };
 
@@ -126,11 +189,18 @@ export async function getOrCreateStripeCustomer(companyId: string): Promise<stri
 }
 
 /**
- * Create checkout session for subscription
+ * Get Stripe payment link for a plan
+ */
+export function getStripePaymentLink(plan: 'STARTER' | 'PROFISSIONAL' | 'ESCRITORIO' | 'ENTERPRISE'): string | null {
+  return STRIPE_PAYMENT_LINKS[plan] || null;
+}
+
+/**
+ * Create checkout session for subscription (legacy - prefer using direct payment links)
  */
 export async function createCheckoutSession(
   companyId: string,
-  plan: 'BASICO' | 'BRONZE' | 'PRATA' | 'OURO',
+  plan: 'STARTER' | 'PROFISSIONAL' | 'ESCRITORIO' | 'ENTERPRISE',
   successUrl: string,
   cancelUrl: string
 ): Promise<string> {
@@ -142,15 +212,16 @@ export async function createCheckoutSession(
     customer: customerId,
     mode: 'subscription',
     payment_method_types: ['card'],
+    locale: 'pt-BR',
     line_items: [
       {
         price_data: {
-          currency: 'usd',
+          currency: 'brl',
           product_data: {
             name: `AdvWell ${planConfig.name}`,
             description: planConfig.features.join(', '),
           },
-          unit_amount: planConfig.priceUsd * 100, // Stripe uses cents
+          unit_amount: planConfig.priceBrl * 100, // Stripe uses centavos
           recurring: {
             interval: 'month',
           },
@@ -257,7 +328,7 @@ export async function handleWebhook(
  */
 async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
   const companyId = session.metadata?.companyId;
-  const plan = session.metadata?.plan as 'BASICO' | 'BRONZE' | 'PRATA' | 'OURO';
+  const plan = session.metadata?.plan as 'STARTER' | 'PROFISSIONAL' | 'ESCRITORIO' | 'ENTERPRISE';
 
   if (!companyId || !plan) {
     appLogger.error('Missing metadata in checkout session', new Error('Missing metadata'));
@@ -275,6 +346,7 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
       stripeSubscriptionId: session.subscription as string,
       casesLimit: planConfig.casesLimit,
       storageLimit: BigInt(planConfig.storageLimit),
+      monitoringLimit: planConfig.monitoringLimit,
       trialEndsAt: null, // Clear trial
     },
   });

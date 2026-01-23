@@ -17,11 +17,11 @@ enum SubscriptionStatus {
 
 // Enum para planos de assinatura
 enum SubscriptionPlan {
-  GRATUITO // R$0/mês - até 50 processos, 100MB storage
-  BASICO // R$69/mês - até 150 processos, 300MB storage
-  BRONZE // $99/mês - até 1000 processos, 1GB storage
-  PRATA // $159/mês - até 2500 processos, 5GB storage
-  OURO // $219/mês - até 5000 processos, 30GB storage
+  GRATUITO     // R$0/mês - Processos ilimitados, 1GB storage
+  STARTER      // R$99/mês - Processos ilimitados, 10GB storage, 150 monitoramentos
+  PROFISSIONAL // R$299/mês - Processos ilimitados, 20GB storage, 500 monitoramentos
+  ESCRITORIO   // R$499/mês - Processos ilimitados, 30GB storage, 1000 monitoramentos
+  ENTERPRISE   // R$899/mês - Processos ilimitados, 50GB storage, 2000 monitoramentos
 }
 
 // Tabela de empresas (tenants)
@@ -49,9 +49,9 @@ model Company {
   stripeCustomerId     String? // ID do cliente no Stripe
   stripeSubscriptionId String? // ID da assinatura no Stripe
   subscriptionEndsAt   DateTime? // Data de expiração da assinatura atual
-  casesLimit           Int                @default(50) // Limite de processos do plano (default: Gratuito)
-  monitoringLimit      Int                @default(500) @map("monitoring_limit") // Limite de publicações monitoradas por mês
-  storageLimit         BigInt             @default(104857600) @map("storage_limit") // Limite de armazenamento em bytes (default: 100MB - Gratuito)
+  casesLimit           Int                @default(999999) // Limite de processos do plano (default: Ilimitado)
+  monitoringLimit      Int                @default(0) @map("monitoring_limit") // Limite de publicações monitoradas por mês (0 = sem monitoramento)
+  storageLimit         BigInt             @default(1073741824) @map("storage_limit") // Limite de armazenamento em bytes (default: 1GB - Gratuito)
 
   // LGPD - Dados do DPO (Encarregado de Dados)
   dpoName  String? // Nome do DPO/Encarregado

@@ -36,7 +36,33 @@ export const getPlans = async (req: Request, res: Response) => {
 };
 
 /**
- * Create checkout session for subscription
+ * Get Stripe payment link for a plan
+ */
+export const getPaymentLink = async (req: AuthRequest, res: Response) => {
+  try {
+    const { plan } = req.params;
+
+    const validPlans = ['STARTER', 'PROFISSIONAL', 'ESCRITORIO', 'ENTERPRISE'];
+    if (!plan || !validPlans.includes(plan)) {
+      return res.status(400).json({
+        error: 'Plano inválido. Escolha: STARTER, PROFISSIONAL, ESCRITORIO ou ENTERPRISE'
+      });
+    }
+
+    const link = stripeService.getStripePaymentLink(plan as any);
+    if (!link) {
+      return res.status(404).json({ error: 'Link de pagamento não encontrado' });
+    }
+
+    res.json({ url: link, plan });
+  } catch (error) {
+    appLogger.error('Error getting payment link', error as Error);
+    res.status(500).json({ error: 'Falha ao obter link de pagamento' });
+  }
+};
+
+/**
+ * Create checkout session for subscription (legacy - prefer using direct payment links)
  */
 export const createCheckoutSession = async (req: AuthRequest, res: Response) => {
   try {
@@ -47,8 +73,11 @@ export const createCheckoutSession = async (req: AuthRequest, res: Response) => 
     }
     const companyId = req.user.companyId;
 
-    if (!plan || !['BRONZE', 'PRATA', 'OURO'].includes(plan)) {
-      return res.status(400).json({ error: 'Invalid plan. Choose: BRONZE, PRATA, or OURO' });
+    const validPlans = ['STARTER', 'PROFISSIONAL', 'ESCRITORIO', 'ENTERPRISE'];
+    if (!plan || !validPlans.includes(plan)) {
+      return res.status(400).json({
+        error: 'Plano inválido. Escolha: STARTER, PROFISSIONAL, ESCRITORIO ou ENTERPRISE'
+      });
     }
 
     const frontendUrl = process.env.FRONTEND_URL || 'https://app.advwell.pro';

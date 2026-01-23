@@ -1,23 +1,28 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Check, AlertTriangle, CreditCard, Crown, Star, Zap, HardDrive } from 'lucide-react';
+import { Check, AlertTriangle, CreditCard, Crown, Star, Zap, Building2, Rocket, HardDrive } from 'lucide-react';
 import api from '../services/api';
 import { toast } from 'react-hot-toast';
 import Layout from '../components/Layout';
 import { formatDateTime } from '../utils/dateFormatter';
 
+interface PlanDetails {
+  name: string;
+  priceBrl: number;
+  casesLimit: number;
+  storageLimit: number;
+  storageLimitFormatted: string;
+  monitoringLimit: number;
+  users: number;
+  stripeLink: string | null;
+  popular?: boolean;
+  features: string[];
+}
+
 interface SubscriptionInfo {
   status: 'TRIAL' | 'ACTIVE' | 'EXPIRED' | 'CANCELLED' | null;
-  plan: 'GRATUITO' | 'BASICO' | 'BRONZE' | 'PRATA' | 'OURO' | null;
-  planDetails: {
-    name: string;
-    priceUsd: number;
-    priceBrl?: number;
-    casesLimit: number;
-    storageLimit: number;
-    storageLimitFormatted: string;
-    features: string[];
-  } | null;
+  plan: 'GRATUITO' | 'STARTER' | 'PROFISSIONAL' | 'ESCRITORIO' | 'ENTERPRISE' | null;
+  planDetails: PlanDetails | null;
   trialEndsAt: string | null;
   subscriptionEndsAt: string | null;
   casesLimit: number;
@@ -37,32 +42,37 @@ interface SubscriptionInfo {
   isValid: boolean;
   daysRemaining?: number;
   availablePlans: {
-    GRATUITO: { name: string; priceUsd: number; priceBrl: number; casesLimit: number; storageLimit: number; storageLimitFormatted: string; features: string[] };
-    BASICO: { name: string; priceUsd: number; priceBrl: number; casesLimit: number; storageLimit: number; storageLimitFormatted: string; features: string[] };
-    BRONZE: { name: string; priceUsd: number; priceBrl: number; casesLimit: number; storageLimit: number; storageLimitFormatted: string; features: string[] };
-    PRATA: { name: string; priceUsd: number; priceBrl: number; casesLimit: number; storageLimit: number; storageLimitFormatted: string; features: string[] };
-    OURO: { name: string; priceUsd: number; priceBrl: number; casesLimit: number; storageLimit: number; storageLimitFormatted: string; features: string[] };
+    GRATUITO: PlanDetails;
+    STARTER: PlanDetails;
+    PROFISSIONAL: PlanDetails;
+    ESCRITORIO: PlanDetails;
+    ENTERPRISE: PlanDetails;
   };
   hasStripeCustomer: boolean;
   hasStripeSubscription: boolean;
 }
 
+type PlanKey = 'STARTER' | 'PROFISSIONAL' | 'ESCRITORIO' | 'ENTERPRISE';
+
 const planIcons: Record<string, React.ReactNode> = {
-  BRONZE: <Star className="h-8 w-8 text-amber-600" />,
-  PRATA: <Zap className="h-8 w-8 text-gray-400" />,
-  OURO: <Crown className="h-8 w-8 text-yellow-500" />,
+  STARTER: <Star className="h-8 w-8 text-blue-500" />,
+  PROFISSIONAL: <Zap className="h-8 w-8 text-green-500" />,
+  ESCRITORIO: <Building2 className="h-8 w-8 text-purple-500" />,
+  ENTERPRISE: <Crown className="h-8 w-8 text-yellow-500" />,
 };
 
 const planColors: Record<string, string> = {
-  BRONZE: 'border-amber-500 bg-amber-50 dark:bg-amber-900/20',
-  PRATA: 'border-gray-400 dark:border-gray-500 bg-gray-50 dark:bg-gray-700/50',
-  OURO: 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20',
+  STARTER: 'border-blue-500 bg-blue-50 dark:bg-blue-900/20',
+  PROFISSIONAL: 'border-green-500 bg-green-50 dark:bg-green-900/20',
+  ESCRITORIO: 'border-purple-500 bg-purple-50 dark:bg-purple-900/20',
+  ENTERPRISE: 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20',
 };
 
 const planButtonColors: Record<string, string> = {
-  BRONZE: 'bg-amber-600 hover:bg-amber-700',
-  PRATA: 'bg-gray-600 hover:bg-gray-700',
-  OURO: 'bg-yellow-600 hover:bg-yellow-700',
+  STARTER: 'bg-blue-600 hover:bg-blue-700',
+  PROFISSIONAL: 'bg-green-600 hover:bg-green-700',
+  ESCRITORIO: 'bg-purple-600 hover:bg-purple-700',
+  ENTERPRISE: 'bg-yellow-600 hover:bg-yellow-700',
 };
 
 export default function Subscription() {
@@ -70,7 +80,6 @@ export default function Subscription() {
   const [searchParams] = useSearchParams();
   const [info, setInfo] = useState<SubscriptionInfo | null>(null);
   const [loading, setLoading] = useState(true);
-  const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
 
   useEffect(() => {
     loadSubscriptionInfo();
@@ -98,16 +107,9 @@ export default function Subscription() {
     }
   };
 
-  const handleSubscribe = async (plan: 'BRONZE' | 'PRATA' | 'OURO') => {
-    setCheckoutLoading(plan);
-    try {
-      const response = await api.post('/subscription/checkout', { plan });
-      // Redirect to Stripe Checkout
-      window.location.href = response.data.url;
-    } catch (error) {
-      console.error('Error creating checkout:', error);
-      toast.error('Erro ao iniciar pagamento');
-      setCheckoutLoading(null);
+  const handleSubscribe = (stripeLink: string | null) => {
+    if (stripeLink) {
+      window.open(stripeLink, '_blank');
     }
   };
 
@@ -158,6 +160,11 @@ export default function Subscription() {
     CANCELLED: 'Cancelada',
   };
 
+  // Filter only paid plans for display
+  const paidPlans = Object.entries(info.availablePlans).filter(
+    ([key]) => key !== 'GRATUITO'
+  ) as [PlanKey, PlanDetails][];
+
   return (
     <Layout>
       <div className="space-y-6">
@@ -180,7 +187,7 @@ export default function Subscription() {
               </span>
               {info.plan && (
                 <span className="text-gray-600 dark:text-slate-400">
-                  Plano: <strong className="dark:text-slate-200">{info.plan}</strong>
+                  Plano: <strong className="dark:text-slate-200">{info.planDetails?.name || info.plan}</strong>
                 </span>
               )}
             </div>
@@ -218,16 +225,20 @@ export default function Subscription() {
         {/* Usage stats */}
         <div className="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="p-4 bg-gray-50 dark:bg-slate-700 rounded-lg">
-            <p className="text-sm text-gray-500 dark:text-slate-400">Processos Usados</p>
+            <p className="text-sm text-gray-500 dark:text-slate-400">Processos Cadastrados</p>
             <p className="text-2xl font-semibold text-gray-900 dark:text-slate-100">{info.casesUsed}</p>
           </div>
           <div className="p-4 bg-gray-50 dark:bg-slate-700 rounded-lg">
             <p className="text-sm text-gray-500 dark:text-slate-400">Limite de Processos</p>
-            <p className="text-2xl font-semibold text-gray-900 dark:text-slate-100">{info.casesLimit}</p>
+            <p className="text-2xl font-semibold text-gray-900 dark:text-slate-100">
+              {info.casesLimit >= 999999 ? 'Ilimitado' : info.casesLimit.toLocaleString()}
+            </p>
           </div>
           <div className="p-4 bg-gray-50 dark:bg-slate-700 rounded-lg">
-            <p className="text-sm text-gray-500 dark:text-slate-400">Restantes</p>
-            <p className="text-2xl font-semibold text-gray-900 dark:text-slate-100">{info.casesRemaining}</p>
+            <p className="text-sm text-gray-500 dark:text-slate-400">Monitoramento</p>
+            <p className="text-2xl font-semibold text-gray-900 dark:text-slate-100">
+              {info.planDetails?.monitoringLimit || 0}/mês
+            </p>
           </div>
           <div className="p-4 bg-gray-50 dark:bg-slate-700 rounded-lg">
             <p className="text-sm text-gray-500 dark:text-slate-400">
@@ -284,16 +295,20 @@ export default function Subscription() {
       <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-200 dark:border-slate-700 p-6">
         <h2 className="text-lg font-medium text-gray-900 dark:text-slate-100 mb-6">Escolha seu Plano</h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {Object.entries(info.availablePlans).map(([key, plan]) => {
-            const planKey = key as 'BRONZE' | 'PRATA' | 'OURO';
-            const isCurrentPlan = info.plan === planKey && info.status === 'ACTIVE';
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {paidPlans.map(([key, plan]) => {
+            const isCurrentPlan = info.plan === key && info.status === 'ACTIVE';
+            const isPopular = plan.popular;
 
             return (
               <div
                 key={key}
-                className={`relative rounded-xl border-2 p-6 ${
-                  isCurrentPlan ? planColors[planKey] : 'border-gray-200 dark:border-slate-600'
+                className={`relative rounded-xl border-2 p-5 ${
+                  isCurrentPlan
+                    ? planColors[key]
+                    : isPopular
+                    ? 'border-green-500 dark:border-green-400'
+                    : 'border-gray-200 dark:border-slate-600'
                 }`}
               >
                 {isCurrentPlan && (
@@ -303,54 +318,51 @@ export default function Subscription() {
                     </span>
                   </div>
                 )}
+                {isPopular && !isCurrentPlan && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                    <span className="bg-green-600 text-white text-xs font-medium px-3 py-1 rounded-full">
+                      Mais Popular
+                    </span>
+                  </div>
+                )}
 
                 <div className="text-center">
-                  <div className="flex justify-center mb-4">{planIcons[planKey]}</div>
-                  <h3 className="text-xl font-semibold text-gray-900 dark:text-slate-100">{plan.name}</h3>
+                  <div className="flex justify-center mb-3">{planIcons[key]}</div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100">{plan.name}</h3>
                   <div className="mt-2">
-                    <span className="text-4xl font-bold text-gray-900 dark:text-slate-100">${plan.priceUsd}</span>
+                    <span className="text-3xl font-bold text-gray-900 dark:text-slate-100">
+                      R${plan.priceBrl}
+                    </span>
                     <span className="text-gray-500 dark:text-slate-400">/mês</span>
                   </div>
-                  <p className="mt-2 text-sm text-gray-500 dark:text-slate-400">
-                    Até {plan.casesLimit.toLocaleString()} processos
+                  <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
+                    {plan.users} usuário{plan.users > 1 ? 's' : ''} • {plan.storageLimitFormatted}
                   </p>
                 </div>
 
-                <ul className="mt-6 space-y-3">
+                <ul className="mt-4 space-y-2">
                   {plan.features.map((feature, idx) => (
-                    <li key={idx} className="flex items-center gap-2 text-sm text-gray-600 dark:text-slate-300">
-                      <Check className="h-4 w-4 text-green-500 flex-shrink-0" />
-                      {feature}
+                    <li key={idx} className="flex items-start gap-2 text-xs text-gray-600 dark:text-slate-300">
+                      <Check className="h-4 w-4 text-green-500 flex-shrink-0 mt-0.5" />
+                      <span>{feature}</span>
                     </li>
                   ))}
                 </ul>
 
-                <div className="mt-6">
+                <div className="mt-4">
                   {isCurrentPlan ? (
                     <button
                       disabled
-                      className="w-full py-3 px-4 text-sm font-medium text-gray-500 dark:text-slate-400 bg-gray-100 dark:bg-slate-700 rounded-lg cursor-not-allowed"
+                      className="w-full py-2.5 px-4 text-sm font-medium text-gray-500 dark:text-slate-400 bg-gray-100 dark:bg-slate-700 rounded-lg cursor-not-allowed"
                     >
                       Plano Atual
                     </button>
                   ) : (
                     <button
-                      onClick={() => handleSubscribe(planKey)}
-                      disabled={checkoutLoading !== null}
-                      className={`w-full py-3 px-4 text-sm font-medium text-white rounded-lg transition-colors ${
-                        planButtonColors[planKey]
-                      } ${checkoutLoading === planKey ? 'opacity-70' : ''}`}
+                      onClick={() => handleSubscribe(plan.stripeLink)}
+                      className={`w-full py-2.5 px-4 text-sm font-medium text-white rounded-lg transition-colors ${planButtonColors[key]}`}
                     >
-                      {checkoutLoading === planKey ? (
-                        <span className="flex items-center justify-center gap-2">
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                          Processando...
-                        </span>
-                      ) : info.status === 'ACTIVE' ? (
-                        'Mudar para este plano'
-                      ) : (
-                        'Assinar Agora'
-                      )}
+                      {info.status === 'ACTIVE' ? 'Mudar para este plano' : 'Assinar Agora'}
                     </button>
                   )}
                 </div>
@@ -379,17 +391,16 @@ export default function Subscription() {
             </p>
           </div>
           <div>
-            <h3 className="font-medium text-gray-900 dark:text-slate-200">O que acontece se eu exceder o limite?</h3>
+            <h3 className="font-medium text-gray-900 dark:text-slate-200">Os processos são ilimitados?</h3>
             <p className="text-sm text-gray-600 dark:text-slate-400 mt-1">
-              Você receberá uma notificação para fazer upgrade do plano. Processos existentes não
-              serão afetados.
+              Sim! Todos os planos pagos oferecem cadastro ilimitado de processos judiciais e PNJs.
             </p>
           </div>
           <div>
-            <h3 className="font-medium text-gray-900 dark:text-slate-200">Os valores são em dólares?</h3>
+            <h3 className="font-medium text-gray-900 dark:text-slate-200">O que é monitoramento?</h3>
             <p className="text-sm text-gray-600 dark:text-slate-400 mt-1">
-              Sim, todos os preços são em dólares americanos (USD). A conversão para reais é feita
-              automaticamente pelo seu banco.
+              O monitoramento acompanha automaticamente as movimentações dos seus processos via DataJud
+              e notifica você sobre novas publicações.
             </p>
           </div>
         </div>

@@ -49,7 +49,10 @@ router.get('/info', subscriptionController.getSubscriptionInfo);
 // Check subscription status
 router.get('/status', subscriptionController.checkStatus);
 
-// Create checkout session
+// Get payment link for a specific plan
+router.get('/payment-link/:plan', subscriptionController.getPaymentLink);
+
+// Create checkout session (legacy)
 router.post('/checkout', subscriptionController.createCheckoutSession);
 
 // Create billing portal session
