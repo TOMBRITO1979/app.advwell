@@ -372,6 +372,7 @@ model Adverse {
 
   company   Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
   caseParts CasePart[] // Partes de processo onde é demandado
+  pnjs      PNJ[]      // Processos Não Judiciais onde é adverso
 
   @@index([companyId])
   @@index([companyId, cpf])
@@ -1625,6 +1626,7 @@ model PNJ {
   id        String  @id @default(uuid())
   companyId String
   clientId  String?
+  adverseId String?
 
   // Dados principais
   number      String // Número do processo
@@ -1643,9 +1645,10 @@ model PNJ {
   createdBy String?
 
   // Relacionamentos
-  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  client  Client? @relation(fields: [clientId], references: [id], onDelete: SetNull)
-  creator User?   @relation("PNJCreator", fields: [createdBy], references: [id], onDelete: SetNull)
+  company Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  client  Client?  @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  adverse Adverse? @relation(fields: [adverseId], references: [id], onDelete: SetNull)
+  creator User?    @relation("PNJCreator", fields: [createdBy], references: [id], onDelete: SetNull)
 
   parts     PNJPart[]
   movements PNJMovement[]
@@ -1653,6 +1656,7 @@ model PNJ {
 
   @@index([companyId])
   @@index([clientId])
+  @@index([adverseId])
   @@index([number])
   @@index([companyId, status])
   @@map("pnjs")

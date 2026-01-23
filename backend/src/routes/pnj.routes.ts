@@ -53,6 +53,10 @@ const pnjValidation = [
     .optional({ checkFalsy: true })
     .isUUID()
     .withMessage('ID do cliente inválido'),
+  body('adverseId')
+    .optional({ checkFalsy: true })
+    .isUUID()
+    .withMessage('ID do adverso inválido'),
   body('openDate')
     .optional({ checkFalsy: true })
     .isISO8601()

@@ -53,6 +53,13 @@ export class PNJController {
                 phone: true,
               },
             },
+            adverse: {
+              select: {
+                id: true,
+                name: true,
+                cpf: true,
+              },
+            },
             _count: {
               select: {
                 parts: true,
@@ -97,6 +104,13 @@ export class PNJController {
               name: true,
               email: true,
               phone: true,
+            },
+          },
+          adverse: {
+            select: {
+              id: true,
+              name: true,
+              cpf: true,
             },
           },
           creator: {
@@ -167,7 +181,7 @@ export class PNJController {
    */
   async create(req: AuthRequest, res: Response) {
     try {
-      const { number, protocol, title, description, status, clientId, openDate } = req.body;
+      const { number, protocol, title, description, status, clientId, adverseId, openDate } = req.body;
       const companyId = req.user!.companyId;
       const userId = req.user!.userId;
 
@@ -194,6 +208,16 @@ export class PNJController {
         }
       }
 
+      // Verificar se adverso existe (se informado)
+      if (adverseId) {
+        const adverse = await prisma.adverse.findFirst({
+          where: { id: adverseId, companyId },
+        });
+        if (!adverse) {
+          return res.status(404).json({ error: 'Adverso não encontrado' });
+        }
+      }
+
       const pnj = await prisma.pNJ.create({
         data: {
           companyId,
@@ -203,6 +227,7 @@ export class PNJController {
           description: sanitizeString(description) || null,
           status: status || 'ACTIVE',
           clientId: clientId || null,
+          adverseId: adverseId || null,
           openDate: openDate ? new Date(openDate) : new Date(),
           createdBy: userId,
         },
@@ -213,8 +238,41 @@ export class PNJController {
               name: true,
             },
           },
+          adverse: {
+            select: {
+              id: true,
+              name: true,
+              cpf: true,
+            },
+          },
         },
       });
+
+      // Sincronização: Se adverseId foi informado, criar automaticamente uma parte do tipo DEFENDANT
+      if (adverseId && pnj.adverse) {
+        // Verificar se já existe uma parte com este adverso (pelo nome)
+        const existingPart = await prisma.pNJPart.findFirst({
+          where: {
+            pnjId: pnj.id,
+            name: pnj.adverse.name,
+            type: 'DEFENDANT',
+          },
+        });
+
+        // Se não existe, criar automaticamente
+        if (!existingPart) {
+          await prisma.pNJPart.create({
+            data: {
+              pnjId: pnj.id,
+              companyId,
+              name: pnj.adverse.name,
+              document: pnj.adverse.cpf || null,
+              type: 'DEFENDANT',
+              notes: 'Criado automaticamente a partir do campo Adverso',
+            },
+          });
+        }
+      }
 
       res.status(201).json(pnj);
     } catch (error) {
@@ -230,7 +288,7 @@ export class PNJController {
     try {
       const { id } = req.params;
       const companyId = req.user!.companyId;
-      const { number, protocol, title, description, status, clientId, openDate, closeDate } = req.body;
+      const { number, protocol, title, description, status, clientId, adverseId, openDate, closeDate } = req.body;
 
       const pnj = await prisma.pNJ.findFirst({
         where: {
@@ -262,6 +320,16 @@ export class PNJController {
         }
       }
 
+      // Verificar se adverso existe (se informado)
+      if (adverseId) {
+        const adverse = await prisma.adverse.findFirst({
+          where: { id: adverseId, companyId: companyId! },
+        });
+        if (!adverse) {
+          return res.status(404).json({ error: 'Adverso não encontrado' });
+        }
+      }
+
       const updatedPNJ = await prisma.pNJ.update({
         where: { id },
         data: {
@@ -271,6 +339,7 @@ export class PNJController {
           description: sanitizeString(description) || null,
           status: status || pnj.status,
           clientId: clientId || null,
+          adverseId: adverseId || null,
           openDate: openDate ? new Date(openDate) : pnj.openDate,
           closeDate: closeDate ? new Date(closeDate) : (status === 'CLOSED' ? new Date() : null),
         },
@@ -281,8 +350,41 @@ export class PNJController {
               name: true,
             },
           },
+          adverse: {
+            select: {
+              id: true,
+              name: true,
+              cpf: true,
+            },
+          },
         },
       });
+
+      // Sincronização: Se adverseId foi informado, criar automaticamente uma parte do tipo DEFENDANT
+      if (adverseId && updatedPNJ.adverse) {
+        // Verificar se já existe uma parte com este adverso (pelo nome)
+        const existingPart = await prisma.pNJPart.findFirst({
+          where: {
+            pnjId: id,
+            name: updatedPNJ.adverse.name,
+            type: 'DEFENDANT',
+          },
+        });
+
+        // Se não existe, criar automaticamente
+        if (!existingPart) {
+          await prisma.pNJPart.create({
+            data: {
+              pnjId: id,
+              companyId: companyId!,
+              name: updatedPNJ.adverse.name,
+              document: updatedPNJ.adverse.cpf || null,
+              type: 'DEFENDANT',
+              notes: 'Criado automaticamente a partir do campo Adverso',
+            },
+          });
+        }
+      }
 
       res.json(updatedPNJ);
     } catch (error) {

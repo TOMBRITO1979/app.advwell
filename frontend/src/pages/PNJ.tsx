@@ -187,6 +187,10 @@ const PNJPage: React.FC = () => {
     type: 'AUTHOR',
     notes: '',
   });
+  // Part search/autocomplete state (searches both clients and adverses)
+  const [partPersonSearch, setPartPersonSearch] = useState('');
+  const [showPartPersonDropdown, setShowPartPersonDropdown] = useState(false);
+  const [filteredPartPersons, setFilteredPartPersons] = useState<Array<{ id: string; name: string; cpf?: string; type: 'client' | 'adverse' }>>([]);
 
   // Movement form state
   const [showMovementModal, setShowMovementModal] = useState(false);
@@ -285,6 +289,28 @@ const PNJPage: React.FC = () => {
     }
   }, [adverseSearch, adverses]);
 
+  // Filter clients and adverses for part modal based on search text
+  useEffect(() => {
+    if (partPersonSearch.trim()) {
+      const searchTerm = partPersonSearch.toLowerCase();
+      // Filter clients
+      const filteredClients = clients
+        .filter((client) => client.name.toLowerCase().includes(searchTerm))
+        .map((client) => ({ id: client.id, name: client.name, cpf: client.cpf, type: 'client' as const }));
+      // Filter adverses
+      const filteredAdverses = adverses
+        .filter((adverse) => adverse.name.toLowerCase().includes(searchTerm))
+        .map((adverse) => ({ id: adverse.id, name: adverse.name, cpf: adverse.cpf, type: 'adverse' as const }));
+      // Combine and sort by name
+      const combined = [...filteredClients, ...filteredAdverses].sort((a, b) => a.name.localeCompare(b.name));
+      setFilteredPartPersons(combined);
+      setShowPartPersonDropdown(true);
+    } else {
+      setFilteredPartPersons([]);
+      setShowPartPersonDropdown(false);
+    }
+  }, [partPersonSearch, clients, adverses]);
+
   const loadPNJs = async () => {
     try {
       const response = await api.get('/pnj', {
@@ -339,6 +365,7 @@ const PNJPage: React.FC = () => {
       type: 'AUTHOR',
       notes: '',
     });
+    setPartPersonSearch('');
   };
 
   const resetMovementForm = () => {
@@ -465,6 +492,7 @@ const PNJPage: React.FC = () => {
       type: part.type,
       notes: part.notes || '',
     });
+    setPartPersonSearch(part.name || '');
     setEditPartMode(true);
     setShowPartModal(true);
   };
@@ -1666,6 +1694,75 @@ const PNJPage: React.FC = () => {
 
             <form onSubmit={handlePartSubmit} className="modal-body">
               <div className="space-y-4">
+                {/* Buscar Cliente ou Adverso Cadastrado */}
+                <div className="relative">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
+                    Buscar Cliente ou Adverso <span className="text-error-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="Digite para buscar cliente ou adverso..."
+                      value={partPersonSearch}
+                      onChange={(e) => {
+                        setPartPersonSearch(e.target.value);
+                        if (!e.target.value) {
+                          setPartFormData({ ...partFormData, name: '', document: '' });
+                        }
+                      }}
+                      onFocus={() => {
+                        if (partPersonSearch.trim()) setShowPartPersonDropdown(true);
+                      }}
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] pr-8"
+                    />
+                    {partFormData.name && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPartFormData({ ...partFormData, name: '', document: '' });
+                          setPartPersonSearch('');
+                        }}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-neutral-400 hover:text-neutral-600"
+                      >
+                        <X size={16} />
+                      </button>
+                    )}
+                  </div>
+                  {showPartPersonDropdown && filteredPartPersons.length > 0 && (
+                    <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-800 border border-neutral-300 dark:border-slate-600 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                      {filteredPartPersons.map((person) => (
+                        <button
+                          key={`${person.type}-${person.id}`}
+                          type="button"
+                          onClick={() => {
+                            setPartFormData({
+                              ...partFormData,
+                              name: person.name,
+                              document: person.cpf || '',
+                              // Auto-set type based on selection
+                              type: person.type === 'client' ? 'AUTHOR' : 'DEFENDANT',
+                            });
+                            setPartPersonSearch(person.name);
+                            setShowPartPersonDropdown(false);
+                          }}
+                          className="w-full px-3 py-2 text-left hover:bg-neutral-100 dark:hover:bg-slate-700 flex flex-col"
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-neutral-900 dark:text-slate-100">{person.name}</span>
+                            <span className={`text-xs px-2 py-0.5 rounded-full ${person.type === 'client' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                              {person.type === 'client' ? 'Cliente' : 'Adverso'}
+                            </span>
+                          </div>
+                          {person.cpf && (
+                            <span className="text-sm text-neutral-500 dark:text-slate-400">CPF: {person.cpf}</span>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Nome (preenchido automaticamente) */}
                 <div>
                   <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                     Nome <span className="text-error-500">*</span>
@@ -1673,21 +1770,24 @@ const PNJPage: React.FC = () => {
                   <input
                     type="text"
                     required
+                    readOnly
                     value={partFormData.name}
-                    onChange={(e) => setPartFormData({ ...partFormData, name: e.target.value })}
-                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    placeholder="Selecione um adverso acima"
+                    className="w-full px-3 py-2 bg-neutral-100 dark:bg-slate-600 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none min-h-[44px] cursor-not-allowed"
                   />
                 </div>
 
+                {/* Documento (preenchido automaticamente) */}
                 <div>
                   <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
                     Documento (CPF/CNPJ)
                   </label>
                   <input
                     type="text"
+                    readOnly
                     value={partFormData.document}
-                    onChange={(e) => setPartFormData({ ...partFormData, document: e.target.value })}
-                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    placeholder="Preenchido automaticamente"
+                    className="w-full px-3 py-2 bg-neutral-100 dark:bg-slate-600 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none min-h-[44px] cursor-not-allowed"
                   />
                 </div>
 
