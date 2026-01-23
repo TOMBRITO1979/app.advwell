@@ -128,7 +128,7 @@ export class CaseController {
 
   async create(req: AuthRequest, res: Response) {
     try {
-      const { clientId, processNumber: rawProcessNumber, court, subject, value, notes, status, deadline, deadlineResponsibleId, lawyerId, informarCliente, linkProcesso, phase, nature, rite, comarca, distributionDate } = req.body;
+      const { clientId, processNumber: rawProcessNumber, court, subject, value, notes, status, deadline, deadlineResponsibleId, lawyerId, informarCliente, linkProcesso, phase, nature, rite, comarca, vara, distributionDate } = req.body;
       const companyId = req.user!.companyId;
 
       // Normalizar número do processo (apenas dígitos)
@@ -193,6 +193,7 @@ export class CaseController {
           nature: nature || null,
           rite: rite || null,
           comarca: comarca || null,
+          vara: vara || null,
           distributionDate: cleanDistributionDate,
         },
       });
@@ -483,7 +484,7 @@ export class CaseController {
     try {
       const { id } = req.params;
       const companyId = req.user!.companyId;
-      const { court, subject, value, status, deadline, deadlineResponsibleId, lawyerId, notes, informarCliente, linkProcesso, phase, nature, rite, comarca, distributionDate } = req.body;
+      const { court, subject, value, status, deadline, deadlineResponsibleId, lawyerId, notes, informarCliente, linkProcesso, phase, nature, rite, comarca, vara, distributionDate } = req.body;
 
       const oldCaseData = await prisma.case.findFirst({
         where: {
@@ -543,6 +544,7 @@ export class CaseController {
           ...(nature !== undefined && { nature: nature || null }),
           ...(rite !== undefined && { rite: rite || null }),
           ...(comarca !== undefined && { comarca: comarca || null }),
+          ...(vara !== undefined && { vara: vara || null }),
           ...(distributionDate !== undefined && { distributionDate: cleanDistributionDate }),
         },
       });
