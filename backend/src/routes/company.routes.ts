@@ -77,7 +77,7 @@ const subscriptionValidation = [
     .withMessage('ID inválido'),
   body('subscriptionPlan')
     .optional({ checkFalsy: true })
-    .isIn(['GRATUITO', 'BASICO', 'BRONZE', 'PRATA', 'OURO'])
+    .isIn(['GRATUITO', 'STARTER', 'PROFISSIONAL', 'ESCRITORIO', 'ENTERPRISE'])
     .withMessage('Plano inválido'),
   body('subscriptionStatus')
     .optional({ checkFalsy: true })

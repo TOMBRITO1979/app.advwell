@@ -520,11 +520,11 @@ export class CompanyController {
         updateData.trialEndsAt = trialEnd;
       }
 
-      // Se mudando para ACTIVE sem plano, define Bronze como padrão
+      // Se mudando para ACTIVE sem plano, define Starter como padrão
       if (subscriptionStatus === 'ACTIVE' && !subscriptionPlan && !company.subscriptionPlan) {
-        updateData.subscriptionPlan = 'BRONZE';
-        updateData.casesLimit = SUBSCRIPTION_PLANS.BRONZE.casesLimit;
-        updateData.storageLimit = BigInt(SUBSCRIPTION_PLANS.BRONZE.storageLimit);
+        updateData.subscriptionPlan = 'STARTER';
+        updateData.casesLimit = SUBSCRIPTION_PLANS.STARTER.casesLimit;
+        updateData.storageLimit = BigInt(SUBSCRIPTION_PLANS.STARTER.storageLimit);
       }
 
       const updatedCompany = await prisma.company.update({

@@ -477,16 +477,16 @@ export async function initializeTrial(companyId: string): Promise<void> {
   const trialEndsAt = new Date();
   trialEndsAt.setDate(trialEndsAt.getDate() + TRIAL_DURATION_DAYS);
 
-  // Trial gets Bronze limit (generous for testing)
-  const bronzePlan = SUBSCRIPTION_PLANS.BRONZE;
+  // Trial gets Starter limit (generous for testing)
+  const starterPlan = SUBSCRIPTION_PLANS.STARTER;
 
   await prisma.company.update({
     where: { id: companyId },
     data: {
       subscriptionStatus: 'TRIAL',
       trialEndsAt,
-      casesLimit: bronzePlan.casesLimit,
-      storageLimit: BigInt(bronzePlan.storageLimit),
+      casesLimit: starterPlan.casesLimit,
+      storageLimit: BigInt(starterPlan.storageLimit),
     },
   });
 }

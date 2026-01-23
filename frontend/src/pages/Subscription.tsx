@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Check, AlertTriangle, CreditCard, Crown, Star, Zap, Building2, Rocket, HardDrive } from 'lucide-react';
+import { Check, AlertTriangle, CreditCard, Crown, Star, Zap, Building2, HardDrive } from 'lucide-react';
 import api from '../services/api';
 import { toast } from 'react-hot-toast';
 import Layout from '../components/Layout';
