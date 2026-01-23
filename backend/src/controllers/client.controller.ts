@@ -45,7 +45,7 @@ export class ClientController {
   async create(req: AuthRequest, res: Response) {
     try {
       const {
-        personType, clientCondition, name, cpf, rg, pis, ctps, ctpsSerie, motherName,
+        personType, clientCondition, name, cpf, stateRegistration, rg, pis, ctps, ctpsSerie, motherName,
         email, phone, phone2, instagram, facebook, address, neighborhood, city, state, zipCode,
         profession, nationality, customField1, customField2, maritalStatus, birthDate,
         representativeName, representativeCpf, notes, tag, tagIds
@@ -120,6 +120,7 @@ export class ClientController {
             clientCondition: clientCondition || null,
             name,
             cpf: cleanCpf,
+            stateRegistration: stateRegistration?.trim() || null,
             rg: cleanRg,
             pis: pis?.trim() || null,
             ctps: ctps?.trim() || null,
@@ -309,7 +310,7 @@ export class ClientController {
       const { id } = req.params;
       const companyId = req.user!.companyId;
       const {
-        personType, clientCondition, name, cpf, rg, pis, ctps, ctpsSerie, motherName,
+        personType, clientCondition, name, cpf, stateRegistration, rg, pis, ctps, ctpsSerie, motherName,
         email, phone, phone2, instagram, facebook, address, neighborhood, city, state, zipCode,
         profession, nationality, customField1, customField2, maritalStatus, birthDate,
         representativeName, representativeCpf, notes, tag, tagIds
@@ -396,6 +397,7 @@ export class ClientController {
             clientCondition: clientCondition || null,
             name,
             cpf: cleanCpf,
+            stateRegistration: stateRegistration?.trim() || null,
             rg: cleanRg,
             pis: pis?.trim() || null,
             ctps: ctps?.trim() || null,

@@ -124,6 +124,11 @@ export const listTransactions = async (req: AuthRequest, res: Response) => {
               color: true,
             },
           },
+          financialTransactionTags: {
+            include: {
+              tag: { select: { id: true, name: true, color: true } },
+            },
+          },
         },
         orderBy: { date: 'desc' },
         skip,
@@ -192,6 +197,11 @@ export const getTransaction = async (req: AuthRequest, res: Response) => {
             court: true,
           },
         },
+        financialTransactionTags: {
+          include: {
+            tag: { select: { id: true, name: true, color: true } },
+          },
+        },
       },
     });
 
@@ -209,7 +219,7 @@ export const getTransaction = async (req: AuthRequest, res: Response) => {
 // Criar nova transação
 export const createTransaction = async (req: AuthRequest, res: Response) => {
   try {
-    const { clientId, caseId, costCenterId, type, status, description, amount, date, isInstallment, installmentCount, installmentInterval } = req.body;
+    const { clientId, caseId, costCenterId, type, status, description, amount, date, isInstallment, installmentCount, installmentInterval, tagIds } = req.body;
     const companyId = req.user!.companyId;
 
     if (!companyId) {
@@ -304,6 +314,18 @@ export const createTransaction = async (req: AuthRequest, res: Response) => {
       },
     });
 
+    // Criar tags se fornecidas
+    if (tagIds && Array.isArray(tagIds) && tagIds.length > 0) {
+      await prisma.financialTransactionTag.createMany({
+        data: tagIds.map((tagId: string) => ({
+          financialTransactionId: transaction.id,
+          tagId,
+          companyId,
+        })),
+        skipDuplicates: true,
+      });
+    }
+
     // Se for parcelado, criar as parcelas automaticamente
     if (isInstallment && installmentCount) {
       const installmentAmount = parseFloat(amount) / parseInt(installmentCount);
@@ -333,7 +355,28 @@ export const createTransaction = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    res.status(201).json(transaction);
+    // Retornar transação com tags
+    const transactionWithTags = await prisma.financialTransaction.findUnique({
+      where: { id: transaction.id },
+      include: {
+        client: {
+          select: { id: true, name: true, cpf: true },
+        },
+        case: {
+          select: { id: true, processNumber: true, subject: true },
+        },
+        costCenter: {
+          select: { id: true, name: true, code: true, color: true },
+        },
+        financialTransactionTags: {
+          include: {
+            tag: { select: { id: true, name: true, color: true } },
+          },
+        },
+      },
+    });
+
+    res.status(201).json(transactionWithTags);
   } catch (error) {
     appLogger.error('Erro ao criar transação', error as Error);
     res.status(500).json({ error: 'Erro ao criar transação financeira' });
@@ -344,7 +387,7 @@ export const createTransaction = async (req: AuthRequest, res: Response) => {
 export const updateTransaction = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const { clientId, caseId, costCenterId, type, status, description, amount, date } = req.body;
+    const { clientId, caseId, costCenterId, type, status, description, amount, date, tagIds } = req.body;
     const companyId = req.user!.companyId;
 
     // Verificar se a transação existe e pertence à empresa
@@ -430,7 +473,47 @@ export const updateTransaction = async (req: AuthRequest, res: Response) => {
       },
     });
 
-    res.json(transaction);
+    // Atualizar tags se fornecidas
+    if (tagIds !== undefined && Array.isArray(tagIds)) {
+      // Remover tags existentes
+      await prisma.financialTransactionTag.deleteMany({
+        where: { financialTransactionId: id, companyId: companyId! },
+      });
+      // Criar novas tags
+      if (tagIds.length > 0) {
+        await prisma.financialTransactionTag.createMany({
+          data: tagIds.map((tagId: string) => ({
+            financialTransactionId: id,
+            tagId,
+            companyId: companyId!,
+          })),
+          skipDuplicates: true,
+        });
+      }
+    }
+
+    // Retornar transação atualizada com tags
+    const transactionWithTags = await prisma.financialTransaction.findUnique({
+      where: { id },
+      include: {
+        client: {
+          select: { id: true, name: true, cpf: true },
+        },
+        case: {
+          select: { id: true, processNumber: true, subject: true },
+        },
+        costCenter: {
+          select: { id: true, name: true, code: true, color: true },
+        },
+        financialTransactionTags: {
+          include: {
+            tag: { select: { id: true, name: true, color: true } },
+          },
+        },
+      },
+    });
+
+    res.json(transactionWithTags);
   } catch (error) {
     appLogger.error('Erro ao atualizar transação', error as Error);
     res.status(500).json({ error: 'Erro ao atualizar transação' });

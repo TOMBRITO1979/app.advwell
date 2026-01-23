@@ -67,7 +67,7 @@ export class CasePartController {
   async create(req: AuthRequest, res: Response) {
     try {
       const { caseId } = req.params;
-      const { type, clientId, adverseId, lawyerId, name, cpfCnpj, phone, address, email, civilStatus, profession, rg } = req.body;
+      const { type, clientId, adverseId, lawyerId, name, cpfCnpj, phone, address, email, civilStatus, profession, rg, birthDate } = req.body;
       const companyId = req.user!.companyId;
 
       // Validações básicas
@@ -135,6 +135,7 @@ export class CasePartController {
           civilStatus,
           profession,
           rg,
+          birthDate: birthDate ? new Date(birthDate) : null,
         },
         include: {
           client: {
@@ -188,7 +189,7 @@ export class CasePartController {
   async update(req: AuthRequest, res: Response) {
     try {
       const { caseId, partId } = req.params;
-      const { type, clientId, adverseId, lawyerId, name, cpfCnpj, phone, address, email, civilStatus, profession, rg } = req.body;
+      const { type, clientId, adverseId, lawyerId, name, cpfCnpj, phone, address, email, civilStatus, profession, rg, birthDate } = req.body;
       const companyId = req.user!.companyId;
 
       // Verificar se o processo pertence à empresa
@@ -231,6 +232,7 @@ export class CasePartController {
           ...(civilStatus !== undefined && { civilStatus }),
           ...(profession !== undefined && { profession }),
           ...(rg !== undefined && { rg }),
+          ...(birthDate !== undefined && { birthDate: birthDate ? new Date(birthDate) : null }),
         },
         include: {
           client: {

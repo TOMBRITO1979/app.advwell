@@ -102,6 +102,7 @@ interface PNJ {
   parts?: PNJPart[];
   movements?: PNJMovement[];
   documents?: PNJDocument[];
+  pnjTags?: { tag: { id: string; name: string; color: string } }[];
   _count?: {
     parts: number;
     movements: number;
@@ -109,6 +110,12 @@ interface PNJ {
   };
   createdAt: string;
   updatedAt: string;
+}
+
+interface Tag {
+  id: string;
+  name: string;
+  color: string;
 }
 
 interface Client {
@@ -132,6 +139,7 @@ interface PNJFormData {
   clientId: string;
   adverseId: string;
   openDate: string;
+  tagIds: string[];
 }
 
 interface PartFormData {
@@ -211,7 +219,13 @@ const PNJPage: React.FC = () => {
     clientId: '',
     adverseId: '',
     openDate: new Date().toISOString().split('T')[0],
+    tagIds: [],
   });
+
+  // Tags state
+  const [tags, setTags] = useState<Tag[]>([]);
+  const [tagSearch, setTagSearch] = useState('');
+  const [showTagDropdown, setShowTagDropdown] = useState(false);
 
   // Client search/autocomplete state
   const [clientSearch, setClientSearch] = useState('');
@@ -254,6 +268,7 @@ const PNJPage: React.FC = () => {
     loadPNJs();
     loadClients();
     loadAdverses();
+    loadTags();
   }, [search, statusFilter, page, limit]);
 
   // Reset page when filters change
@@ -343,6 +358,15 @@ const PNJPage: React.FC = () => {
     }
   };
 
+  const loadTags = async () => {
+    try {
+      const response = await api.get('/tags');
+      setTags(response.data.data || []);
+    } catch (error) {
+      console.error('Erro ao carregar tags:', error);
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       number: '',
@@ -353,9 +377,12 @@ const PNJPage: React.FC = () => {
       clientId: '',
       adverseId: '',
       openDate: new Date().toISOString().split('T')[0],
+      tagIds: [],
     });
     setClientSearch('');
     setAdverseSearch('');
+    setTagSearch('');
+    setShowTagDropdown(false);
   };
 
   const resetPartForm = () => {
@@ -410,6 +437,7 @@ const PNJPage: React.FC = () => {
       clientId: pnj.clientId || '',
       adverseId: pnj.adverseId || '',
       openDate: pnj.openDate ? pnj.openDate.split('T')[0] : new Date().toISOString().split('T')[0],
+      tagIds: pnj.pnjTags?.map((pt) => pt.tag.id) || [],
     });
     // Set client search text for autocomplete
     setClientSearch(pnj.client?.name || '');
@@ -1249,6 +1277,97 @@ const PNJPage: React.FC = () => {
                       onChange={(e) => setFormData({ ...formData, openDate: e.target.value })}
                       className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                     />
+                  </div>
+                </div>
+
+                {/* Tags */}
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Tags</label>
+                  {/* Selected tags */}
+                  {formData.tagIds.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {formData.tagIds.map((tagId) => {
+                        const tag = tags.find((t) => t.id === tagId);
+                        if (!tag) return null;
+                        return (
+                          <span
+                            key={tag.id}
+                            className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium"
+                            style={{
+                              backgroundColor: tag.color + '30',
+                              color: tag.color,
+                              border: `1px solid ${tag.color}`,
+                            }}
+                          >
+                            {tag.name}
+                            <button
+                              type="button"
+                              onClick={() => setFormData({
+                                ...formData,
+                                tagIds: formData.tagIds.filter((id) => id !== tagId),
+                              })}
+                              className="hover:opacity-70"
+                            >
+                              <X size={14} />
+                            </button>
+                          </span>
+                        );
+                      })}
+                    </div>
+                  )}
+                  {/* Search input */}
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="Digite para buscar tags..."
+                      value={tagSearch}
+                      onChange={(e) => {
+                        setTagSearch(e.target.value);
+                        setShowTagDropdown(e.target.value.length >= 2);
+                      }}
+                      onFocus={() => {
+                        if (tagSearch.length >= 2) setShowTagDropdown(true);
+                      }}
+                      onBlur={() => setTimeout(() => setShowTagDropdown(false), 200)}
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                    />
+                    {/* Dropdown */}
+                    {showTagDropdown && (
+                      <div className="absolute z-50 w-full mt-1 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                        {tags
+                          .filter((tag) =>
+                            tag.name.toLowerCase().includes(tagSearch.toLowerCase()) &&
+                            !formData.tagIds.includes(tag.id)
+                          )
+                          .map((tag) => (
+                            <button
+                              key={tag.id}
+                              type="button"
+                              onClick={() => {
+                                setFormData({
+                                  ...formData,
+                                  tagIds: [...formData.tagIds, tag.id],
+                                });
+                                setTagSearch('');
+                                setShowTagDropdown(false);
+                              }}
+                              className="w-full px-3 py-2 text-left hover:bg-neutral-100 dark:hover:bg-slate-600 flex items-center gap-2"
+                            >
+                              <span
+                                className="w-3 h-3 rounded-full"
+                                style={{ backgroundColor: tag.color }}
+                              />
+                              <span className="text-sm text-neutral-700 dark:text-slate-300">{tag.name}</span>
+                            </button>
+                          ))}
+                        {tags.filter((tag) =>
+                          tag.name.toLowerCase().includes(tagSearch.toLowerCase()) &&
+                          !formData.tagIds.includes(tag.id)
+                        ).length === 0 && (
+                          <p className="px-3 py-2 text-sm text-neutral-500 dark:text-slate-400">Nenhuma tag encontrada</p>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

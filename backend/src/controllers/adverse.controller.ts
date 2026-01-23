@@ -9,7 +9,7 @@ export class AdverseController {
   async create(req: AuthRequest, res: Response) {
     try {
       const {
-        personType, name, cpf, rg, pis, ctps, ctpsSerie, motherName,
+        personType, name, cpf, stateRegistration, rg, pis, ctps, ctpsSerie, motherName,
         email, phone, phone2, instagram, facebook, customField1, customField2,
         address, neighborhood, city, state, zipCode,
         profession, nationality, maritalStatus, birthDate, representativeName, representativeCpf, notes
@@ -34,6 +34,7 @@ export class AdverseController {
           personType: personType || 'FISICA',
           name: name.trim(),
           cpf: cleanCpf,
+          stateRegistration: stateRegistration?.trim() || null,
           rg: rg?.trim() || null,
           pis: pis?.trim() || null,
           ctps: ctps?.trim() || null,
@@ -142,7 +143,7 @@ export class AdverseController {
       const { id } = req.params;
       const companyId = req.user!.companyId;
       const {
-        personType, name, cpf, rg, pis, ctps, ctpsSerie, motherName,
+        personType, name, cpf, stateRegistration, rg, pis, ctps, ctpsSerie, motherName,
         email, phone, phone2, instagram, facebook, customField1, customField2,
         address, neighborhood, city, state, zipCode,
         profession, nationality, maritalStatus, birthDate, representativeName, representativeCpf, notes
@@ -169,6 +170,7 @@ export class AdverseController {
           personType: personType || 'FISICA',
           name: name?.trim() || existing.name,
           cpf: cleanCpf,
+          stateRegistration: stateRegistration?.trim() || null,
           rg: rg?.trim() || null,
           pis: pis?.trim() || null,
           ctps: ctps?.trim() || null,

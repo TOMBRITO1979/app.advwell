@@ -201,14 +201,25 @@ export const getCaseAdvancedReport = async (req: AuthRequest, res: Response) => 
 export const getPnjAdversesReport = async (req: AuthRequest, res: Response) => {
   try {
     const companyId = req.user!.companyId;
+    const { startDate, endDate } = req.query;
     const now = new Date();
     const days180Ago = new Date(now.getTime() - 180 * 24 * 60 * 60 * 1000);
+
+    // Definir período de filtro
+    const dateFilter: { gte?: Date; lte?: Date } = {};
+    if (startDate) {
+      dateFilter.gte = new Date(String(startDate));
+    }
+    if (endDate) {
+      dateFilter.lte = new Date(String(endDate) + 'T23:59:59.999Z');
+    }
 
     // Buscar todos os PNJs ativos com suas partes
     const allPnjs = await prisma.pNJ.findMany({
       where: {
         companyId,
         status: { in: ['ACTIVE'] },
+        ...(Object.keys(dateFilter).length > 0 && { createdAt: dateFilter }),
       },
       select: {
         id: true,
@@ -537,8 +548,219 @@ export const getFinancialConsolidatedReport = async (req: AuthRequest, res: Resp
   }
 };
 
+/**
+ * Relatório Financeiro por Tags
+ * GET /reports/financial/by-tag
+ *
+ * Retorna:
+ * - byTag: Receita, Despesa e Saldo por tag
+ */
+export const getFinancialByTagReport = async (req: AuthRequest, res: Response) => {
+  try {
+    const companyId = req.user!.companyId;
+    const { startDate, endDate } = req.query;
+
+    // Definir período de filtro
+    const dateFilter: { gte?: Date; lte?: Date } = {};
+    if (startDate) {
+      dateFilter.gte = new Date(String(startDate));
+    }
+    if (endDate) {
+      dateFilter.lte = new Date(String(endDate) + 'T23:59:59.999Z');
+    }
+
+    // Buscar todas as tags da empresa
+    const tags = await prisma.tag.findMany({
+      where: { companyId },
+      select: {
+        id: true,
+        name: true,
+        color: true,
+      },
+    });
+
+    // Buscar transações com tags
+    const transactionsWithTags = await prisma.financialTransaction.findMany({
+      where: {
+        companyId,
+        financialTransactionTags: { some: {} }, // Apenas transações com tags
+        ...(Object.keys(dateFilter).length > 0 && { date: dateFilter }),
+      },
+      select: {
+        id: true,
+        type: true,
+        amount: true,
+        financialTransactionTags: {
+          select: {
+            tagId: true,
+          },
+        },
+      },
+    });
+
+    // Calcular totais por tag
+    const tagStats: Record<string, { tagId: string; tagName: string; tagColor: string; income: number; expense: number; transactionCount: number }> = {};
+
+    // Inicializar todas as tags
+    tags.forEach((tag) => {
+      tagStats[tag.id] = {
+        tagId: tag.id,
+        tagName: tag.name,
+        tagColor: tag.color,
+        income: 0,
+        expense: 0,
+        transactionCount: 0,
+      };
+    });
+
+    // Processar transações
+    transactionsWithTags.forEach((transaction) => {
+      transaction.financialTransactionTags.forEach((tagRel) => {
+        if (tagStats[tagRel.tagId]) {
+          tagStats[tagRel.tagId].transactionCount++;
+          if (transaction.type === 'INCOME') {
+            tagStats[tagRel.tagId].income += Number(transaction.amount);
+          } else {
+            tagStats[tagRel.tagId].expense += Number(transaction.amount);
+          }
+        }
+      });
+    });
+
+    // Converter para array e adicionar saldo
+    const byTag = Object.values(tagStats)
+      .filter((tag) => tag.transactionCount > 0)
+      .map((tag) => ({
+        ...tag,
+        balance: tag.income - tag.expense,
+      }))
+      .sort((a, b) => b.transactionCount - a.transactionCount);
+
+    // Totais gerais
+    const totalIncome = byTag.reduce((sum, t) => sum + t.income, 0);
+    const totalExpense = byTag.reduce((sum, t) => sum + t.expense, 0);
+
+    res.json({
+      success: true,
+      data: {
+        totalIncome,
+        totalExpense,
+        balance: totalIncome - totalExpense,
+        byTag,
+      },
+    });
+  } catch (error) {
+    console.error('Error in getFinancialByTagReport:', error);
+    res.status(500).json({ error: 'Erro ao gerar relatório financeiro por tags' });
+  }
+};
+
+/**
+ * Relatório de Clientes por Tags
+ * GET /reports/clients/by-tag
+ *
+ * Retorna:
+ * - byTag: Quantidade de clientes por tag
+ */
+export const getClientsByTagReport = async (req: AuthRequest, res: Response) => {
+  try {
+    const companyId = req.user!.companyId;
+    const { startDate, endDate } = req.query;
+
+    // Definir período de filtro
+    const dateFilter: { gte?: Date; lte?: Date } = {};
+    if (startDate) {
+      dateFilter.gte = new Date(String(startDate));
+    }
+    if (endDate) {
+      dateFilter.lte = new Date(String(endDate) + 'T23:59:59.999Z');
+    }
+
+    // Buscar todas as tags da empresa
+    const tags = await prisma.tag.findMany({
+      where: { companyId },
+      select: {
+        id: true,
+        name: true,
+        color: true,
+      },
+    });
+
+    // Buscar IDs dos clientes filtrados por data (se houver filtro)
+    const clientFilter: { companyId: string; active: boolean; createdAt?: { gte?: Date; lte?: Date } } = {
+      companyId: companyId!,
+      active: true,
+    };
+    if (Object.keys(dateFilter).length > 0) {
+      clientFilter.createdAt = dateFilter;
+    }
+
+    const filteredClientIds = await prisma.client.findMany({
+      where: clientFilter,
+      select: { id: true },
+    });
+    const clientIdSet = new Set(filteredClientIds.map(c => c.id));
+
+    // Buscar contagem de clientes por tag (apenas clientes filtrados)
+    const clientTagCounts = await prisma.clientTag.groupBy({
+      by: ['tagId'],
+      where: {
+        companyId,
+        clientId: { in: Array.from(clientIdSet) },
+      },
+      _count: { clientId: true },
+    });
+
+    // Mapear resultados
+    const tagCountMap: Record<string, number> = {};
+    clientTagCounts.forEach((item) => {
+      tagCountMap[item.tagId] = item._count.clientId;
+    });
+
+    // Total de clientes da empresa (com filtro de data se aplicável)
+    const totalClients = filteredClientIds.length;
+
+    // Total de clientes com tags (dentro do período filtrado)
+    const clientsWithTags = await prisma.clientTag.findMany({
+      where: {
+        companyId,
+        clientId: { in: Array.from(clientIdSet) },
+      },
+      distinct: ['clientId'],
+      select: { clientId: true },
+    });
+    const totalClientsWithTags = clientsWithTags.length;
+
+    // Construir resposta
+    const byTag = tags
+      .map((tag) => ({
+        tagId: tag.id,
+        tagName: tag.name,
+        tagColor: tag.color,
+        count: tagCountMap[tag.id] || 0,
+      }))
+      .filter((tag) => tag.count > 0)
+      .sort((a, b) => b.count - a.count);
+
+    res.json({
+      success: true,
+      data: {
+        totalClients,
+        totalClientsWithTags,
+        clientsWithoutTags: totalClients - totalClientsWithTags,
+        byTag,
+      },
+    });
+  } catch (error) {
+    console.error('Error in getClientsByTagReport:', error);
+    res.status(500).json({ error: 'Erro ao gerar relatório de clientes por tags' });
+  }
+};
+
 export default {
   getCaseAdvancedReport,
   getPnjAdversesReport,
   getFinancialConsolidatedReport,
+  getFinancialByTagReport,
+  getClientsByTagReport,
 };

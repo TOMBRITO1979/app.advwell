@@ -60,6 +60,11 @@ export class PNJController {
                 cpf: true,
               },
             },
+            pnjTags: {
+              include: {
+                tag: { select: { id: true, name: true, color: true } },
+              },
+            },
             _count: {
               select: {
                 parts: true,
@@ -144,6 +149,11 @@ export class PNJController {
               },
             },
           },
+          pnjTags: {
+            include: {
+              tag: { select: { id: true, name: true, color: true } },
+            },
+          },
         },
       });
 
@@ -181,7 +191,7 @@ export class PNJController {
    */
   async create(req: AuthRequest, res: Response) {
     try {
-      const { number, protocol, title, description, status, clientId, adverseId, openDate } = req.body;
+      const { number, protocol, title, description, status, clientId, adverseId, openDate, tagIds } = req.body;
       const companyId = req.user!.companyId;
       const userId = req.user!.userId;
 
@@ -274,7 +284,33 @@ export class PNJController {
         }
       }
 
-      res.status(201).json(pnj);
+      // Criar tags se fornecidas
+      if (tagIds && Array.isArray(tagIds) && tagIds.length > 0) {
+        await prisma.pNJTag.createMany({
+          data: tagIds.map((tagId: string) => ({
+            pnjId: pnj.id,
+            tagId,
+            companyId,
+          })),
+          skipDuplicates: true,
+        });
+      }
+
+      // Retornar PNJ com tags
+      const pnjWithTags = await prisma.pNJ.findUnique({
+        where: { id: pnj.id },
+        include: {
+          client: { select: { id: true, name: true } },
+          adverse: { select: { id: true, name: true, cpf: true } },
+          pnjTags: {
+            include: {
+              tag: { select: { id: true, name: true, color: true } },
+            },
+          },
+        },
+      });
+
+      res.status(201).json(pnjWithTags);
     } catch (error) {
       appLogger.error('Erro ao criar PNJ:', error as Error);
       res.status(500).json({ error: 'Erro ao criar PNJ' });
@@ -288,7 +324,7 @@ export class PNJController {
     try {
       const { id } = req.params;
       const companyId = req.user!.companyId;
-      const { number, protocol, title, description, status, clientId, adverseId, openDate, closeDate } = req.body;
+      const { number, protocol, title, description, status, clientId, adverseId, openDate, closeDate, tagIds } = req.body;
 
       const pnj = await prisma.pNJ.findFirst({
         where: {
@@ -386,7 +422,40 @@ export class PNJController {
         }
       }
 
-      res.json(updatedPNJ);
+      // Atualizar tags se fornecidas
+      if (tagIds !== undefined && Array.isArray(tagIds)) {
+        // Remover tags existentes
+        await prisma.pNJTag.deleteMany({
+          where: { pnjId: id, companyId: companyId! },
+        });
+        // Criar novas tags
+        if (tagIds.length > 0) {
+          await prisma.pNJTag.createMany({
+            data: tagIds.map((tagId: string) => ({
+              pnjId: id,
+              tagId,
+              companyId: companyId!,
+            })),
+            skipDuplicates: true,
+          });
+        }
+      }
+
+      // Retornar PNJ atualizado com tags
+      const pnjWithTags = await prisma.pNJ.findUnique({
+        where: { id },
+        include: {
+          client: { select: { id: true, name: true } },
+          adverse: { select: { id: true, name: true, cpf: true } },
+          pnjTags: {
+            include: {
+              tag: { select: { id: true, name: true, color: true } },
+            },
+          },
+        },
+      });
+
+      res.json(pnjWithTags);
     } catch (error) {
       appLogger.error('Erro ao atualizar PNJ:', error as Error);
       res.status(500).json({ error: 'Erro ao atualizar PNJ' });

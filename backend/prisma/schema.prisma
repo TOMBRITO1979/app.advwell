@@ -124,6 +124,9 @@ model Company {
   tags       Tag[]
   clientTags ClientTag[]
   leadTags   LeadTag[]
+  caseTags   CaseTag[]
+  pnjTags    PNJTag[]
+  financialTransactionTags FinancialTransactionTag[]
 
   // Documentos Compartilhados (Portal do Cliente)
   sharedDocuments SharedDocument[]
@@ -489,6 +492,7 @@ model Case {
   documents             Document[]
   scheduleEvents        ScheduleEvent[]
   auditLogs             CaseAuditLog[]
+  caseTags              CaseTag[]
 
   @@unique([companyId, processNumber]) // Único por empresa
   @@index([companyId])
@@ -681,6 +685,7 @@ model FinancialTransaction {
   case         Case?                @relation(fields: [caseId], references: [id], onDelete: SetNull)
   costCenter   CostCenter?          @relation(fields: [costCenterId], references: [id], onDelete: SetNull)
   installments InstallmentPayment[] // Relação com parcelas
+  financialTransactionTags FinancialTransactionTag[] // Tags da transação (many-to-many)
 
   @@index([companyId])
   @@index([clientId])
@@ -1653,6 +1658,7 @@ model PNJ {
   parts     PNJPart[]
   movements PNJMovement[]
   documents PNJDocument[]
+  pnjTags   PNJTag[]
 
   @@index([companyId])
   @@index([clientId])
@@ -1922,6 +1928,9 @@ model Tag {
   company Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
   clients ClientTag[]
   leads   LeadTag[]
+  cases   CaseTag[]
+  pnjs    PNJTag[]
+  financialTransactions FinancialTransactionTag[]
 
   @@unique([companyId, name]) // Tag names unique per company
   @@index([companyId])
@@ -1964,6 +1973,63 @@ model LeadTag {
   @@index([leadId])
   @@index([tagId])
   @@map("lead_tags")
+}
+
+// Many-to-many: Case <-> Tag (with direct companyId for tenant isolation)
+model CaseTag {
+  id        String   @id @default(uuid())
+  caseId    String
+  tagId     String
+  companyId String // Direct tenant isolation
+  createdAt DateTime @default(now())
+
+  case    Case    @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  tag     Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([caseId, tagId])
+  @@index([companyId])
+  @@index([caseId])
+  @@index([tagId])
+  @@map("case_tags")
+}
+
+// Many-to-many: PNJ <-> Tag (with direct companyId for tenant isolation)
+model PNJTag {
+  id        String   @id @default(uuid())
+  pnjId     String
+  tagId     String
+  companyId String // Direct tenant isolation
+  createdAt DateTime @default(now())
+
+  pnj     PNJ     @relation(fields: [pnjId], references: [id], onDelete: Cascade)
+  tag     Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([pnjId, tagId])
+  @@index([companyId])
+  @@index([pnjId])
+  @@index([tagId])
+  @@map("pnj_tags")
+}
+
+// Many-to-many: FinancialTransaction <-> Tag (with direct companyId for tenant isolation)
+model FinancialTransactionTag {
+  id                     String   @id @default(uuid())
+  financialTransactionId String   @map("financial_transaction_id")
+  tagId                  String   @map("tag_id")
+  companyId              String   @map("company_id") // Direct tenant isolation
+  createdAt              DateTime @default(now()) @map("created_at")
+
+  financialTransaction FinancialTransaction @relation(fields: [financialTransactionId], references: [id], onDelete: Cascade)
+  tag                  Tag                  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  company              Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([financialTransactionId, tagId])
+  @@index([companyId])
+  @@index([financialTransactionId])
+  @@index([tagId])
+  @@map("financial_transaction_tags")
 }
 
 // ============================================================================

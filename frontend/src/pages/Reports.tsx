@@ -66,6 +66,7 @@ interface CaseStats {
   completed: number;
   byPhase: { phase: string; count: number }[];
   byMonth: { month: string; count: number }[];
+  byTag: { tagId: string; tagName: string; tagColor: string; count: number }[];
 }
 
 interface FinancialStats {
@@ -209,7 +210,34 @@ interface FinancialConsolidatedStats {
   }[];
 }
 
-type ReportType = 'clients' | 'cases' | 'financial' | 'tasks' | 'casesAdvanced' | 'pnjAdverses' | 'financialConsolidated';
+interface FinancialByTagStats {
+  totalIncome: number;
+  totalExpense: number;
+  balance: number;
+  byTag: {
+    tagId: string;
+    tagName: string;
+    tagColor: string;
+    income: number;
+    expense: number;
+    balance: number;
+    transactionCount: number;
+  }[];
+}
+
+interface ClientsByTagStats {
+  totalClients: number;
+  totalClientsWithTags: number;
+  clientsWithoutTags: number;
+  byTag: {
+    tagId: string;
+    tagName: string;
+    tagColor: string;
+    count: number;
+  }[];
+}
+
+type ReportType = 'clients' | 'cases' | 'financial' | 'tasks' | 'casesAdvanced' | 'pnjAdverses' | 'financialConsolidated' | 'financialByTag' | 'clientsByTag';
 
 const Reports: React.FC = () => {
   const [activeReport, setActiveReport] = useState<ReportType>('clients');
@@ -231,6 +259,8 @@ const Reports: React.FC = () => {
   const [caseAdvancedStats, setCaseAdvancedStats] = useState<CaseAdvancedStats | null>(null);
   const [pnjAdversesStats, setPnjAdversesStats] = useState<PnjAdversesStats | null>(null);
   const [financialConsolidatedStats, setFinancialConsolidatedStats] = useState<FinancialConsolidatedStats | null>(null);
+  const [financialByTagStats, setFinancialByTagStats] = useState<FinancialByTagStats | null>(null);
+  const [clientsByTagStats, setClientsByTagStats] = useState<ClientsByTagStats | null>(null);
 
   // Lists for filters
   const [, setClients] = useState<any[]>([]);
@@ -290,6 +320,12 @@ const Reports: React.FC = () => {
           break;
         case 'financialConsolidated':
           await loadFinancialConsolidatedReport();
+          break;
+        case 'financialByTag':
+          await loadFinancialByTagReport();
+          break;
+        case 'clientsByTag':
+          await loadClientsByTagReport();
           break;
       }
     } catch (error: any) {
@@ -358,6 +394,7 @@ const Reports: React.FC = () => {
         completed: casesData.filter((c: any) => c.status === 'COMPLETED' || c.status === 'ARQUIVADO' || c.status === 'ENCERRADO').length,
         byPhase: [],
         byMonth: [],
+        byTag: [],
       };
 
       const phaseCounts: Record<string, number> = {};
@@ -382,6 +419,36 @@ const Reports: React.FC = () => {
         .map(([month, count]) => ({ month, count }))
         .sort((a, b) => a.month.localeCompare(b.month))
         .slice(-12);
+
+      // Calculate active cases by tag
+      const tagCounts: Record<string, { tagName: string; tagColor: string; count: number }> = {};
+      const activeCases = casesData.filter((c: any) => c.status === 'ACTIVE' || c.status === 'EM_ANDAMENTO');
+      activeCases.forEach((c: any) => {
+        if (c.caseTags && Array.isArray(c.caseTags)) {
+          c.caseTags.forEach((ct: any) => {
+            if (ct.tag) {
+              const tagId = ct.tag.id;
+              if (!tagCounts[tagId]) {
+                tagCounts[tagId] = {
+                  tagName: ct.tag.name,
+                  tagColor: ct.tag.color,
+                  count: 0,
+                };
+              }
+              tagCounts[tagId].count++;
+            }
+          });
+        }
+      });
+
+      stats.byTag = Object.entries(tagCounts)
+        .map(([tagId, data]) => ({
+          tagId,
+          tagName: data.tagName,
+          tagColor: data.tagColor,
+          count: data.count,
+        }))
+        .sort((a, b) => b.count - a.count);
 
       setCaseStats(stats);
     } catch (error) {
@@ -582,7 +649,12 @@ const Reports: React.FC = () => {
 
   const loadPnjAdversesReport = async () => {
     try {
-      const response = await api.get('/reports/pnj/adverses');
+      const response = await api.get('/reports/pnj/adverses', {
+        params: {
+          startDate: filters.startDate,
+          endDate: filters.endDate,
+        },
+      });
       setPnjAdversesStats(response.data.data);
     } catch (error) {
       console.error('Error loading PNJ adverses report:', error);
@@ -601,6 +673,36 @@ const Reports: React.FC = () => {
       setFinancialConsolidatedStats(response.data.data);
     } catch (error) {
       console.error('Error loading financial consolidated report:', error);
+      throw error;
+    }
+  };
+
+  const loadFinancialByTagReport = async () => {
+    try {
+      const response = await api.get('/reports/financial/by-tag', {
+        params: {
+          startDate: filters.startDate,
+          endDate: filters.endDate,
+        },
+      });
+      setFinancialByTagStats(response.data.data);
+    } catch (error) {
+      console.error('Error loading financial by tag report:', error);
+      throw error;
+    }
+  };
+
+  const loadClientsByTagReport = async () => {
+    try {
+      const response = await api.get('/reports/clients/by-tag', {
+        params: {
+          startDate: filters.startDate,
+          endDate: filters.endDate,
+        },
+      });
+      setClientsByTagStats(response.data.data);
+    } catch (error) {
+      console.error('Error loading clients by tag report:', error);
       throw error;
     }
   };
@@ -913,6 +1015,97 @@ const Reports: React.FC = () => {
     toast.success('PDF exportado!');
   };
 
+  const handleExportCasesPDF = () => {
+    if (!caseStats) {
+      toast.error('Carregue os dados primeiro');
+      return;
+    }
+
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    let yPos = 20;
+
+    // Título
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Relatório de Processos', pageWidth / 2, yPos, { align: 'center' });
+    yPos += 10;
+
+    // Subtítulo com período
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    const periodo = filters.startDate && filters.endDate
+      ? `Período: ${new Date(filters.startDate).toLocaleDateString('pt-BR')} a ${new Date(filters.endDate).toLocaleDateString('pt-BR')}`
+      : 'Período: Todos os registros';
+    doc.text(periodo, pageWidth / 2, yPos, { align: 'center' });
+    yPos += 15;
+
+    // Resumo Geral
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Resumo Geral', 14, yPos);
+    yPos += 8;
+
+    autoTable(doc, {
+      startY: yPos,
+      head: [['Métrica', 'Valor']],
+      body: [
+        ['Total de Processos', caseStats.total.toString()],
+        ['Ativos', caseStats.active.toString()],
+        ['Concluídos', caseStats.completed.toString()],
+      ],
+      theme: 'striped',
+      headStyles: { fillColor: [22, 163, 74] },
+      margin: { left: 14, right: 14 },
+    });
+
+    yPos = (doc as any).lastAutoTable.finalY + 15;
+
+    // Por Fase
+    if (caseStats.byPhase.length > 0) {
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Processos por Fase', 14, yPos);
+      yPos += 8;
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Fase', 'Quantidade']],
+        body: caseStats.byPhase.map(p => [p.phase, p.count.toString()]),
+        theme: 'striped',
+        headStyles: { fillColor: [22, 163, 74] },
+        margin: { left: 14, right: 14 },
+      });
+
+      yPos = (doc as any).lastAutoTable.finalY + 15;
+    }
+
+    // Por Tag
+    if (caseStats.byTag.length > 0) {
+      if (yPos > 220) {
+        doc.addPage();
+        yPos = 20;
+      }
+
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Processos Ativos por Tag', 14, yPos);
+      yPos += 8;
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Tag', 'Quantidade']],
+        body: caseStats.byTag.map(t => [t.tagName, t.count.toString()]),
+        theme: 'striped',
+        headStyles: { fillColor: [22, 163, 74] },
+        margin: { left: 14, right: 14 },
+      });
+    }
+
+    doc.save('relatorio_processos.pdf');
+    toast.success('PDF exportado!');
+  };
+
   const handleExportCasesAdvancedPDF = () => {
     if (!caseAdvancedStats) {
       toast.error('Carregue os dados primeiro');
@@ -1180,6 +1373,101 @@ const Reports: React.FC = () => {
     toast.success('PDF exportado!');
   };
 
+  const handleExportFinancialPDF = () => {
+    if (!financialStats) {
+      toast.error('Carregue os dados primeiro');
+      return;
+    }
+
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    let yPos = 20;
+
+    // Título
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Relatório Financeiro', pageWidth / 2, yPos, { align: 'center' });
+    yPos += 10;
+
+    // Subtítulo com período
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    const periodo = filters.startDate && filters.endDate
+      ? `Período: ${new Date(filters.startDate).toLocaleDateString('pt-BR')} a ${new Date(filters.endDate).toLocaleDateString('pt-BR')}`
+      : 'Período: Todos os registros';
+    doc.text(periodo, pageWidth / 2, yPos, { align: 'center' });
+    yPos += 15;
+
+    // Resumo Geral
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Resumo Financeiro', 14, yPos);
+    yPos += 8;
+
+    const balance = financialStats.received - financialStats.paid;
+
+    autoTable(doc, {
+      startY: yPos,
+      head: [['Métrica', 'Valor']],
+      body: [
+        ['Total a Receber', formatCurrency(financialStats.totalReceivable)],
+        ['Total a Pagar', formatCurrency(financialStats.totalPayable)],
+        ['Recebido', formatCurrency(financialStats.received)],
+        ['Pago', formatCurrency(financialStats.paid)],
+        ['Vencido', formatCurrency(financialStats.overdue)],
+        ['Saldo (Recebido - Pago)', formatCurrency(balance)],
+      ],
+      theme: 'striped',
+      headStyles: { fillColor: [22, 163, 74] },
+      margin: { left: 14, right: 14 },
+    });
+
+    yPos = (doc as any).lastAutoTable.finalY + 15;
+
+    // Movimentação por Mês
+    if (financialStats.byMonth.length > 0) {
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Movimentação por Mês', 14, yPos);
+      yPos += 8;
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Mês', 'Receitas', 'Despesas', 'Saldo']],
+        body: financialStats.byMonth.map(m => {
+          const [year, month] = m.month.split('-');
+          const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+          return [
+            `${monthNames[parseInt(month) - 1]}/${year}`,
+            formatCurrency(m.income),
+            formatCurrency(m.expense),
+            formatCurrency(m.income - m.expense),
+          ];
+        }),
+        theme: 'striped',
+        headStyles: { fillColor: [22, 163, 74] },
+        margin: { left: 14, right: 14 },
+      });
+    }
+
+    // Footer
+    const pageCount = doc.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'normal');
+      doc.text(
+        `Gerado em ${new Date().toLocaleString('pt-BR')} - Página ${i} de ${pageCount}`,
+        pageWidth / 2,
+        doc.internal.pageSize.getHeight() - 10,
+        { align: 'center' }
+      );
+    }
+
+    doc.save('relatorio_financeiro.pdf');
+    toast.success('PDF exportado!');
+  };
+
   const handleExportFinancialConsolidatedPDF = () => {
     if (!financialConsolidatedStats) {
       toast.error('Carregue os dados primeiro');
@@ -1405,6 +1693,299 @@ const Reports: React.FC = () => {
     toast.success('PDF exportado!');
   };
 
+  const handleExportClientsPDF = () => {
+    if (!clientStats) return;
+
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+
+    // Header
+    doc.setFillColor(34, 197, 94); // Verde (primary color)
+    doc.rect(0, 0, pageWidth, 30, 'F');
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Relatório de Clientes', pageWidth / 2, 18, { align: 'center' });
+
+    // Reset text color
+    doc.setTextColor(0, 0, 0);
+
+    let yPos = 40;
+
+    // Período
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    const periodo = filters.startDate && filters.endDate
+      ? `Período: ${new Date(filters.startDate).toLocaleDateString('pt-BR')} a ${new Date(filters.endDate).toLocaleDateString('pt-BR')}`
+      : 'Período: Todos os registros';
+    doc.text(periodo, pageWidth / 2, yPos, { align: 'center' });
+    yPos += 15;
+
+    // Summary
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Resumo', 14, yPos);
+    yPos += 10;
+
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Total de Clientes: ${clientStats.total}`, 14, yPos);
+    yPos += 7;
+    doc.text(`Clientes Ativos: ${clientStats.activeClients}`, 14, yPos);
+    yPos += 7;
+    doc.text(`Novos este Mês: ${clientStats.newThisMonth}`, 14, yPos);
+    yPos += 15;
+
+    // Top Cities
+    if (clientStats.topCities && clientStats.topCities.length > 0) {
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Top Cidades', 14, yPos);
+      yPos += 5;
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Cidade', 'Quantidade']],
+        body: clientStats.topCities.map(c => [c.city, c.count.toString()]),
+        theme: 'striped',
+        headStyles: { fillColor: [34, 197, 94] },
+      });
+    }
+
+    doc.save('relatorio_clientes.pdf');
+    toast.success('PDF exportado!');
+  };
+
+  const handleExportClientsByTagPDF = () => {
+    if (!clientsByTagStats) return;
+
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+
+    // Header
+    doc.setFillColor(34, 197, 94); // Verde (primary color)
+    doc.rect(0, 0, pageWidth, 30, 'F');
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Relatório de Clientes por Tag', pageWidth / 2, 18, { align: 'center' });
+
+    // Reset text color
+    doc.setTextColor(0, 0, 0);
+
+    let yPos = 40;
+
+    // Período
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    const periodo = filters.startDate && filters.endDate
+      ? `Período: ${new Date(filters.startDate).toLocaleDateString('pt-BR')} a ${new Date(filters.endDate).toLocaleDateString('pt-BR')}`
+      : 'Período: Todos os registros';
+    doc.text(periodo, pageWidth / 2, yPos, { align: 'center' });
+    yPos += 15;
+
+    // Summary
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Resumo', 14, yPos);
+    yPos += 10;
+
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Total de Clientes: ${clientsByTagStats.totalClients}`, 14, yPos);
+    yPos += 7;
+    doc.text(`Clientes com Tags: ${clientsByTagStats.totalClientsWithTags}`, 14, yPos);
+    yPos += 7;
+    doc.text(`Clientes sem Tags: ${clientsByTagStats.clientsWithoutTags}`, 14, yPos);
+    yPos += 15;
+
+    // Clients by Tag
+    if (clientsByTagStats.byTag && clientsByTagStats.byTag.length > 0) {
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Clientes por Tag', 14, yPos);
+      yPos += 5;
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Tag', 'Quantidade']],
+        body: clientsByTagStats.byTag.map(t => [t.tagName, t.count.toString()]),
+        theme: 'striped',
+        headStyles: { fillColor: [34, 197, 94] },
+      });
+    }
+
+    doc.save('relatorio_clientes_por_tag.pdf');
+    toast.success('PDF exportado!');
+  };
+
+  const handleExportFinancialByTagPDF = () => {
+    if (!financialByTagStats) return;
+
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+
+    // Header
+    doc.setFillColor(34, 197, 94); // Verde (primary color)
+    doc.rect(0, 0, pageWidth, 30, 'F');
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Relatório Financeiro por Tag', pageWidth / 2, 18, { align: 'center' });
+
+    // Reset text color
+    doc.setTextColor(0, 0, 0);
+
+    let yPos = 40;
+
+    // Período
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    const periodo = filters.startDate && filters.endDate
+      ? `Período: ${new Date(filters.startDate).toLocaleDateString('pt-BR')} a ${new Date(filters.endDate).toLocaleDateString('pt-BR')}`
+      : 'Período: Todos os registros';
+    doc.text(periodo, pageWidth / 2, yPos, { align: 'center' });
+    yPos += 15;
+
+    // Summary
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Resumo', 14, yPos);
+    yPos += 10;
+
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Total Receitas: ${formatCurrency(financialByTagStats.totalIncome)}`, 14, yPos);
+    yPos += 7;
+    doc.text(`Total Despesas: ${formatCurrency(financialByTagStats.totalExpense)}`, 14, yPos);
+    yPos += 7;
+    doc.text(`Saldo: ${formatCurrency(financialByTagStats.balance)}`, 14, yPos);
+    yPos += 15;
+
+    // Financial by Tag
+    if (financialByTagStats.byTag && financialByTagStats.byTag.length > 0) {
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Financeiro por Tag', 14, yPos);
+      yPos += 5;
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Tag', 'Receitas', 'Despesas', 'Saldo', 'Transações']],
+        body: financialByTagStats.byTag.map(t => [
+          t.tagName,
+          formatCurrency(t.income),
+          formatCurrency(t.expense),
+          formatCurrency(t.balance),
+          t.transactionCount.toString()
+        ]),
+        theme: 'striped',
+        headStyles: { fillColor: [34, 197, 94] },
+      });
+    }
+
+    doc.save('relatorio_financeiro_por_tag.pdf');
+    toast.success('PDF exportado!');
+  };
+
+  const handleExportPnjAdversesPDF = () => {
+    if (!pnjAdversesStats) return;
+
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+
+    // Header
+    doc.setFillColor(34, 197, 94); // Verde (primary color)
+    doc.rect(0, 0, pageWidth, 30, 'F');
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Relatório PNJ / Adversos', pageWidth / 2, 18, { align: 'center' });
+
+    // Reset text color
+    doc.setTextColor(0, 0, 0);
+
+    let yPos = 40;
+
+    // Período
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    const periodo = filters.startDate && filters.endDate
+      ? `Período: ${new Date(filters.startDate).toLocaleDateString('pt-BR')} a ${new Date(filters.endDate).toLocaleDateString('pt-BR')}`
+      : 'Período: Todos os registros';
+    doc.text(periodo, pageWidth / 2, yPos, { align: 'center' });
+    yPos += 15;
+
+    // Summary
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Resumo', 14, yPos);
+    yPos += 10;
+
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Total de PNJs Ativos: ${pnjAdversesStats.totalPnjs}`, 14, yPos);
+    yPos += 7;
+    doc.text(`PNJs sem Movimento (180 dias): ${pnjAdversesStats.withoutMovement180Days?.total || 0}`, 14, yPos);
+    yPos += 15;
+
+    // Top Adversos
+    if (pnjAdversesStats.topAdverses && pnjAdversesStats.topAdverses.length > 0) {
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Top 15 Adversos', 14, yPos);
+      yPos += 5;
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Adverso', 'Documento', 'Qtd. Processos']],
+        body: pnjAdversesStats.topAdverses.map(a => [
+          a.name,
+          a.document || '-',
+          a.processCount.toString()
+        ]),
+        theme: 'striped',
+        headStyles: { fillColor: [34, 197, 94] },
+      });
+
+      yPos = (doc as any).lastAutoTable.finalY + 15;
+    }
+
+    // PNJs sem movimento
+    if (pnjAdversesStats.withoutMovement180Days?.pnjs && pnjAdversesStats.withoutMovement180Days.pnjs.length > 0) {
+      // Check if we need a new page
+      if (yPos > 200) {
+        doc.addPage();
+        yPos = 20;
+      }
+
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('PNJs sem Movimento (180 dias)', 14, yPos);
+      yPos += 5;
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Número', 'Título', 'Cliente', 'Último Movimento']],
+        body: pnjAdversesStats.withoutMovement180Days.pnjs.slice(0, 30).map(p => [
+          p.number,
+          p.title?.substring(0, 30) || '-',
+          p.client || '-',
+          p.lastMovement ? new Date(p.lastMovement).toLocaleDateString('pt-BR') : 'Nunca'
+        ]),
+        theme: 'striped',
+        headStyles: { fillColor: [239, 68, 68] },
+      });
+    }
+
+    doc.save('relatorio_pnj_adversos.pdf');
+    toast.success('PDF exportado!');
+  };
+
   const formatDate = (dateString: string | null) => {
     if (!dateString) return 'Nunca';
     return new Date(dateString).toLocaleDateString('pt-BR');
@@ -1412,10 +1993,12 @@ const Reports: React.FC = () => {
 
   const reportTabs = [
     { id: 'clients' as ReportType, label: 'Clientes', icon: Users },
+    { id: 'clientsByTag' as ReportType, label: 'Clientes por Tag', icon: Users },
     { id: 'cases' as ReportType, label: 'Processos', icon: FileText },
     { id: 'casesAdvanced' as ReportType, label: 'Processos Avançado', icon: Scale },
     { id: 'financial' as ReportType, label: 'Financeiro', icon: DollarSign },
     { id: 'financialConsolidated' as ReportType, label: 'Financeiro Consolidado', icon: Wallet },
+    { id: 'financialByTag' as ReportType, label: 'Financeiro por Tag', icon: DollarSign },
     { id: 'tasks' as ReportType, label: 'Tarefas', icon: CheckCircle2 },
     { id: 'pnjAdverses' as ReportType, label: 'PNJ / Adversos', icon: Briefcase },
   ];
@@ -1566,6 +2149,41 @@ const Reports: React.FC = () => {
             <p className="text-gray-500 dark:text-slate-400 text-center py-4">Nenhum dado de fase disponível</p>
           )}
         </div>
+
+        <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 shadow-sm">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4">Processos Ativos por Tag</h3>
+          {caseStats.byTag.length > 0 ? (
+            <div className="space-y-3">
+              {caseStats.byTag.map((tag) => (
+                <div key={tag.tagId} className="flex items-center gap-3">
+                  <div className="flex-1">
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="w-3 h-3 rounded-full"
+                          style={{ backgroundColor: tag.tagColor }}
+                        />
+                        <span className="text-gray-700 dark:text-slate-300">{tag.tagName}</span>
+                      </div>
+                      <span className="text-gray-500 dark:text-slate-400 font-medium">{tag.count}</span>
+                    </div>
+                    <div className="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-2">
+                      <div
+                        className="h-2 rounded-full"
+                        style={{
+                          backgroundColor: tag.tagColor,
+                          width: `${(tag.count / caseStats.active) * 100}%`
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500 dark:text-slate-400 text-center py-4">Nenhum processo ativo com tag</p>
+          )}
+        </div>
       </div>
     );
   };
@@ -1604,102 +2222,103 @@ const Reports: React.FC = () => {
 
     return (
       <div className="space-y-6">
-        {/* Cards de resumo */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500 dark:text-slate-400">Total a Receber</p>
-                <p className="text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1">
+        {/* Cards de resumo - 2 linhas de 3 cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {/* Linha 1: A Receber, Recebido, Saldo */}
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-blue-200 dark:border-blue-800 shadow-sm h-[100px] flex items-center">
+            <div className="flex items-center justify-between w-full">
+              <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm text-gray-500 dark:text-slate-400">A Receber</p>
+                <p className="text-lg sm:text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1">
                   {formatCurrency(financialStats.totalReceivable)}
                 </p>
               </div>
-              <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-xl">
-                <TrendingUp className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              <div className="p-2 sm:p-3 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex-shrink-0 ml-2">
+                <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600 dark:text-blue-400" />
               </div>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500 dark:text-slate-400">Total a Pagar</p>
-                <p className="text-2xl font-bold text-red-600 dark:text-red-400 mt-1">
-                  {formatCurrency(financialStats.totalPayable)}
-                </p>
-              </div>
-              <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-xl">
-                <TrendingDown className="w-6 h-6 text-red-600 dark:text-red-400" />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500 dark:text-slate-400">Recebido</p>
-                <p className="text-2xl font-bold text-green-600 dark:text-green-400 mt-1">
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-green-200 dark:border-green-800 shadow-sm h-[100px] flex items-center">
+            <div className="flex items-center justify-between w-full">
+              <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm text-gray-500 dark:text-slate-400">Recebido</p>
+                <p className="text-lg sm:text-2xl font-bold text-green-600 dark:text-green-400 mt-1">
                   {formatCurrency(financialStats.received)}
                 </p>
               </div>
-              <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-xl">
-                <CheckCircle2 className="w-6 h-6 text-green-600 dark:text-green-400" />
+              <div className="p-2 sm:p-3 bg-green-100 dark:bg-green-900/30 rounded-xl flex-shrink-0 ml-2">
+                <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6 text-green-600 dark:text-green-400" />
               </div>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500 dark:text-slate-400">Pago</p>
-                <p className="text-2xl font-bold text-orange-600 dark:text-orange-400 mt-1">
+          <div className={`rounded-xl p-4 border shadow-sm h-[100px] flex items-center ${
+            balance >= 0
+              ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
+              : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
+          }`}>
+            <div className="flex items-center justify-between w-full">
+              <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm text-gray-500 dark:text-slate-400">Saldo</p>
+                <p className={`text-lg sm:text-2xl font-bold mt-1 ${
+                  balance >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                }`}>
+                  {formatCurrency(balance)}
+                </p>
+              </div>
+              <div className={`p-2 sm:p-3 rounded-xl flex-shrink-0 ml-2 ${
+                balance >= 0 ? 'bg-green-100 dark:bg-green-900/30' : 'bg-red-100 dark:bg-red-900/30'
+              }`}>
+                {balance >= 0 ? (
+                  <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-green-600 dark:text-green-400" />
+                ) : (
+                  <TrendingDown className="w-5 h-5 sm:w-6 sm:h-6 text-red-600 dark:text-red-400" />
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Linha 2: A Pagar, Pago, Vencido */}
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-red-200 dark:border-red-800 shadow-sm h-[100px] flex items-center">
+            <div className="flex items-center justify-between w-full">
+              <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm text-gray-500 dark:text-slate-400">A Pagar</p>
+                <p className="text-lg sm:text-2xl font-bold text-red-600 dark:text-red-400 mt-1">
+                  {formatCurrency(financialStats.totalPayable)}
+                </p>
+              </div>
+              <div className="p-2 sm:p-3 bg-red-100 dark:bg-red-900/30 rounded-xl flex-shrink-0 ml-2">
+                <TrendingDown className="w-5 h-5 sm:w-6 sm:h-6 text-red-600 dark:text-red-400" />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-orange-200 dark:border-orange-800 shadow-sm h-[100px] flex items-center">
+            <div className="flex items-center justify-between w-full">
+              <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm text-gray-500 dark:text-slate-400">Pago</p>
+                <p className="text-lg sm:text-2xl font-bold text-orange-600 dark:text-orange-400 mt-1">
                   {formatCurrency(financialStats.paid)}
                 </p>
               </div>
-              <div className="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-xl">
-                <Wallet className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+              <div className="p-2 sm:p-3 bg-orange-100 dark:bg-orange-900/30 rounded-xl flex-shrink-0 ml-2">
+                <Wallet className="w-5 h-5 sm:w-6 sm:h-6 text-orange-600 dark:text-orange-400" />
               </div>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500 dark:text-slate-400">Vencido</p>
-                <p className="text-2xl font-bold text-red-600 dark:text-red-400 mt-1">
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-amber-200 dark:border-amber-800 shadow-sm h-[100px] flex items-center">
+            <div className="flex items-center justify-between w-full">
+              <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm text-gray-500 dark:text-slate-400">Vencido</p>
+                <p className="text-lg sm:text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">
                   {formatCurrency(financialStats.overdue)}
                 </p>
               </div>
-              <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-xl">
-                <AlertCircle className="w-6 h-6 text-red-600 dark:text-red-400" />
+              <div className="p-2 sm:p-3 bg-amber-100 dark:bg-amber-900/30 rounded-xl flex-shrink-0 ml-2">
+                <AlertCircle className="w-5 h-5 sm:w-6 sm:h-6 text-amber-600 dark:text-amber-400" />
               </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Card Saldo */}
-        <div className={`rounded-xl p-6 border shadow-sm ${
-          balance >= 0
-            ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
-            : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
-        }`}>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600 dark:text-slate-400">Saldo do Período (Recebido - Pago)</p>
-              <p className={`text-3xl font-bold mt-1 ${
-                balance >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-              }`}>
-                {formatCurrency(balance)}
-              </p>
-            </div>
-            <div className={`p-4 rounded-xl ${
-              balance >= 0 ? 'bg-green-100 dark:bg-green-900/30' : 'bg-red-100 dark:bg-red-900/30'
-            }`}>
-              {balance >= 0 ? (
-                <TrendingUp className="w-8 h-8 text-green-600 dark:text-green-400" />
-              ) : (
-                <TrendingDown className="w-8 h-8 text-red-600 dark:text-red-400" />
-              )}
             </div>
           </div>
         </div>
@@ -2574,73 +3193,94 @@ const Reports: React.FC = () => {
 
     const { summary } = financialConsolidatedStats;
 
+    const totalSaidas = summary.totalExpenses + summary.totalAccountsPaid + summary.totalCaseExpenses;
+
     return (
       <div className="space-y-6">
-        {/* Cards de resumo */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500 dark:text-slate-400">Recebimentos</p>
-                <p className="text-2xl font-bold text-green-600 dark:text-green-400 mt-1">{formatCurrency(summary.totalIncome)}</p>
-                <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">{summary.incomeCount} lançamentos</p>
+        {/* Cards de resumo - 2 linhas de 3 cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {/* Linha 1: Recebimentos, Despesas, Resultado Líquido */}
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-green-200 dark:border-green-800 shadow-sm h-[100px] flex items-center">
+            <div className="flex items-center justify-between w-full">
+              <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm text-gray-500 dark:text-slate-400">Recebimentos</p>
+                <p className="text-lg sm:text-2xl font-bold text-green-600 dark:text-green-400 mt-1">{formatCurrency(summary.totalIncome)}</p>
+                <p className="text-xs text-gray-400 dark:text-slate-500">{summary.incomeCount} lançamentos</p>
               </div>
-              <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-xl">
-                <TrendingUp className="w-6 h-6 text-green-600 dark:text-green-400" />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500 dark:text-slate-400">Despesas</p>
-                <p className="text-2xl font-bold text-red-600 dark:text-red-400 mt-1">{formatCurrency(summary.totalExpenses)}</p>
-                <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">{summary.expensesCount} lançamentos</p>
-              </div>
-              <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-xl">
-                <TrendingDown className="w-6 h-6 text-red-600 dark:text-red-400" />
+              <div className="p-2 sm:p-3 bg-green-100 dark:bg-green-900/30 rounded-xl flex-shrink-0 ml-2">
+                <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-green-600 dark:text-green-400" />
               </div>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500 dark:text-slate-400">Contas Pagas</p>
-                <p className="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">{formatCurrency(summary.totalAccountsPaid)}</p>
-                <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">{summary.accountsPaidCount} contas</p>
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-red-200 dark:border-red-800 shadow-sm h-[100px] flex items-center">
+            <div className="flex items-center justify-between w-full">
+              <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm text-gray-500 dark:text-slate-400">Despesas</p>
+                <p className="text-lg sm:text-2xl font-bold text-red-600 dark:text-red-400 mt-1">{formatCurrency(summary.totalExpenses)}</p>
+                <p className="text-xs text-gray-400 dark:text-slate-500">{summary.expensesCount} lançamentos</p>
               </div>
-              <div className="p-3 bg-amber-100 dark:bg-amber-900/30 rounded-xl">
-                <Wallet className="w-6 h-6 text-amber-600 dark:text-amber-400" />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500 dark:text-slate-400">Gastos Processos</p>
-                <p className="text-2xl font-bold text-purple-600 dark:text-purple-400 mt-1">{formatCurrency(summary.totalCaseExpenses)}</p>
-                <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">{summary.caseExpensesCount} lançamentos</p>
-              </div>
-              <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-xl">
-                <Scale className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+              <div className="p-2 sm:p-3 bg-red-100 dark:bg-red-900/30 rounded-xl flex-shrink-0 ml-2">
+                <TrendingDown className="w-5 h-5 sm:w-6 sm:h-6 text-red-600 dark:text-red-400" />
               </div>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500 dark:text-slate-400">Resultado Líquido</p>
-                <p className={`text-2xl font-bold mt-1 ${summary.netResult >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+          <div className={`rounded-xl p-4 border shadow-sm h-[100px] flex items-center ${
+            summary.netResult >= 0
+              ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
+              : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
+          }`}>
+            <div className="flex items-center justify-between w-full">
+              <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm text-gray-500 dark:text-slate-400">Resultado Líquido</p>
+                <p className={`text-lg sm:text-2xl font-bold mt-1 ${summary.netResult >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                   {formatCurrency(summary.netResult)}
                 </p>
-                <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">Receitas - Despesas - Contas</p>
+                <p className="text-xs text-gray-400 dark:text-slate-500">Receitas - Saídas</p>
               </div>
-              <div className={`p-3 rounded-xl ${summary.netResult >= 0 ? 'bg-green-100 dark:bg-green-900/30' : 'bg-red-100 dark:bg-red-900/30'}`}>
-                <DollarSign className={`w-6 h-6 ${summary.netResult >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`} />
+              <div className={`p-2 sm:p-3 rounded-xl flex-shrink-0 ml-2 ${summary.netResult >= 0 ? 'bg-green-100 dark:bg-green-900/30' : 'bg-red-100 dark:bg-red-900/30'}`}>
+                <DollarSign className={`w-5 h-5 sm:w-6 sm:h-6 ${summary.netResult >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`} />
+              </div>
+            </div>
+          </div>
+
+          {/* Linha 2: Contas Pagas, Gastos Processos, Total Saídas */}
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-amber-200 dark:border-amber-800 shadow-sm h-[100px] flex items-center">
+            <div className="flex items-center justify-between w-full">
+              <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm text-gray-500 dark:text-slate-400">Contas Pagas</p>
+                <p className="text-lg sm:text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">{formatCurrency(summary.totalAccountsPaid)}</p>
+                <p className="text-xs text-gray-400 dark:text-slate-500">{summary.accountsPaidCount} contas</p>
+              </div>
+              <div className="p-2 sm:p-3 bg-amber-100 dark:bg-amber-900/30 rounded-xl flex-shrink-0 ml-2">
+                <Wallet className="w-5 h-5 sm:w-6 sm:h-6 text-amber-600 dark:text-amber-400" />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-purple-200 dark:border-purple-800 shadow-sm h-[100px] flex items-center">
+            <div className="flex items-center justify-between w-full">
+              <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm text-gray-500 dark:text-slate-400">Gastos Processos</p>
+                <p className="text-lg sm:text-2xl font-bold text-purple-600 dark:text-purple-400 mt-1">{formatCurrency(summary.totalCaseExpenses)}</p>
+                <p className="text-xs text-gray-400 dark:text-slate-500">{summary.caseExpensesCount} lançamentos</p>
+              </div>
+              <div className="p-2 sm:p-3 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex-shrink-0 ml-2">
+                <Scale className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600 dark:text-purple-400" />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-orange-200 dark:border-orange-800 shadow-sm h-[100px] flex items-center">
+            <div className="flex items-center justify-between w-full">
+              <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm text-gray-500 dark:text-slate-400">Total Saídas</p>
+                <p className="text-lg sm:text-2xl font-bold text-orange-600 dark:text-orange-400 mt-1">{formatCurrency(totalSaidas)}</p>
+                <p className="text-xs text-gray-400 dark:text-slate-500">Desp. + Contas + Proc.</p>
+              </div>
+              <div className="p-2 sm:p-3 bg-orange-100 dark:bg-orange-900/30 rounded-xl flex-shrink-0 ml-2">
+                <TrendingDown className="w-5 h-5 sm:w-6 sm:h-6 text-orange-600 dark:text-orange-400" />
               </div>
             </div>
           </div>
@@ -2863,6 +3503,177 @@ const Reports: React.FC = () => {
     );
   };
 
+  const renderFinancialByTagReport = () => {
+    if (!financialByTagStats) return null;
+
+    return (
+      <div className="space-y-6">
+        {/* Cards de resumo */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-green-200 dark:border-green-800 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500 dark:text-slate-400">Total Receitas</p>
+                <p className="text-2xl font-bold text-green-600 dark:text-green-400 mt-1">{formatCurrency(financialByTagStats.totalIncome)}</p>
+              </div>
+              <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-xl">
+                <TrendingUp className="w-6 h-6 text-green-600 dark:text-green-400" />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-red-200 dark:border-red-800 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500 dark:text-slate-400">Total Despesas</p>
+                <p className="text-2xl font-bold text-red-600 dark:text-red-400 mt-1">{formatCurrency(financialByTagStats.totalExpense)}</p>
+              </div>
+              <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-xl">
+                <TrendingDown className="w-6 h-6 text-red-600 dark:text-red-400" />
+              </div>
+            </div>
+          </div>
+
+          <div className={`bg-white dark:bg-slate-800 rounded-xl p-6 border shadow-sm ${
+            financialByTagStats.balance >= 0 ? 'border-green-200 dark:border-green-800' : 'border-red-200 dark:border-red-800'
+          }`}>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500 dark:text-slate-400">Saldo</p>
+                <p className={`text-2xl font-bold mt-1 ${financialByTagStats.balance >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                  {formatCurrency(financialByTagStats.balance)}
+                </p>
+              </div>
+              <div className={`p-3 rounded-xl ${financialByTagStats.balance >= 0 ? 'bg-green-100 dark:bg-green-900/30' : 'bg-red-100 dark:bg-red-900/30'}`}>
+                <DollarSign className={`w-6 h-6 ${financialByTagStats.balance >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Lista por Tag */}
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4">Financeiro por Tag</h3>
+          {financialByTagStats.byTag.length > 0 ? (
+            <div className="space-y-3">
+              {financialByTagStats.byTag.map((tag) => (
+                <div key={tag.tagId} className="flex items-center gap-3">
+                  <div className="flex-1">
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="flex items-center gap-2">
+                        <span className="w-3 h-3 rounded-full" style={{ backgroundColor: tag.tagColor }} />
+                        <span className="text-gray-700 dark:text-slate-300">{tag.tagName}</span>
+                        <span className="text-xs text-gray-400 dark:text-slate-500">({tag.transactionCount} transações)</span>
+                      </div>
+                      <div className="flex gap-4 text-sm">
+                        <span className="text-green-600 dark:text-green-400">+{formatCurrency(tag.income)}</span>
+                        <span className="text-red-600 dark:text-red-400">-{formatCurrency(tag.expense)}</span>
+                        <span className={tag.balance >= 0 ? 'text-green-600 dark:text-green-400 font-medium' : 'text-red-600 dark:text-red-400 font-medium'}>
+                          = {formatCurrency(tag.balance)}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-2">
+                      <div
+                        className="h-2 rounded-full"
+                        style={{
+                          backgroundColor: tag.tagColor,
+                          width: `${(tag.transactionCount / Math.max(...financialByTagStats.byTag.map(t => t.transactionCount))) * 100}%`
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500 dark:text-slate-400 text-center py-4">Nenhuma transação com tag encontrada</p>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const renderClientsByTagReport = () => {
+    if (!clientsByTagStats) return null;
+
+    return (
+      <div className="space-y-6">
+        {/* Cards de resumo */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500 dark:text-slate-400">Total de Clientes</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-slate-100 mt-1">{clientsByTagStats.totalClients}</p>
+              </div>
+              <div className="p-3 bg-primary-100 dark:bg-primary-900/30 rounded-xl">
+                <Users className="w-6 h-6 text-primary-600 dark:text-primary-400" />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-green-200 dark:border-green-800 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500 dark:text-slate-400">Clientes com Tags</p>
+                <p className="text-2xl font-bold text-green-600 dark:text-green-400 mt-1">{clientsByTagStats.totalClientsWithTags}</p>
+              </div>
+              <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-xl">
+                <UserCheck className="w-6 h-6 text-green-600 dark:text-green-400" />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-amber-200 dark:border-amber-800 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500 dark:text-slate-400">Clientes sem Tags</p>
+                <p className="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">{clientsByTagStats.clientsWithoutTags}</p>
+              </div>
+              <div className="p-3 bg-amber-100 dark:bg-amber-900/30 rounded-xl">
+                <AlertTriangle className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Lista por Tag */}
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4">Clientes por Tag</h3>
+          {clientsByTagStats.byTag.length > 0 ? (
+            <div className="space-y-3">
+              {clientsByTagStats.byTag.map((tag) => (
+                <div key={tag.tagId} className="flex items-center gap-3">
+                  <div className="flex-1">
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="flex items-center gap-2">
+                        <span className="w-3 h-3 rounded-full" style={{ backgroundColor: tag.tagColor }} />
+                        <span className="text-gray-700 dark:text-slate-300">{tag.tagName}</span>
+                      </div>
+                      <span className="text-gray-500 dark:text-slate-400 font-medium">{tag.count}</span>
+                    </div>
+                    <div className="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-2">
+                      <div
+                        className="h-2 rounded-full"
+                        style={{
+                          backgroundColor: tag.tagColor,
+                          width: `${(tag.count / clientsByTagStats.totalClientsWithTags) * 100}%`
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500 dark:text-slate-400 text-center py-4">Nenhum cliente com tag encontrado</p>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <Layout>
       <div className="space-y-6">
@@ -2877,77 +3688,98 @@ const Reports: React.FC = () => {
               Visualize métricas e estatísticas do seu escritório
             </p>
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleApplyFilters}
-              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-600 dark:text-slate-400 transition-colors"
-              title="Atualizar"
-            >
-              <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
-            </button>
-            <button
-              onClick={handleExportCSV}
-              className="flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors"
-            >
-              <Download className="w-4 h-4" />
-              Exportar CSV
-            </button>
-            {activeReport === 'tasks' && (
-              <button
-                onClick={handleExportPDF}
-                className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
-              >
-                <FileDown className="w-4 h-4" />
-                Exportar PDF
-              </button>
-            )}
-            {activeReport === 'casesAdvanced' && (
-              <button
-                onClick={handleExportCasesAdvancedPDF}
-                className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
-              >
-                <FileDown className="w-4 h-4" />
-                Exportar PDF
-              </button>
-            )}
-            {activeReport === 'financialConsolidated' && (
-              <button
-                onClick={handleExportFinancialConsolidatedPDF}
-                className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
-              >
-                <FileDown className="w-4 h-4" />
-                Exportar PDF
-              </button>
-            )}
-          </div>
+          <button
+            onClick={handleApplyFilters}
+            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-600 dark:text-slate-400 transition-colors self-start sm:self-center"
+            title="Atualizar"
+          >
+            <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+          </button>
         </div>
 
-        {/* Report tabs */}
-        <div className="flex flex-wrap gap-2">
-          {reportTabs.map((tab) => {
-            const Icon = tab.icon;
-            return (
+        {/* Report tabs + Export buttons - 2 rows */}
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm p-4 space-y-2">
+          {/* Row 1: Clientes, Clientes por Tag, Processos, Proc. Avançado, Financeiro */}
+          <div className="grid grid-cols-5 gap-2">
+            {reportTabs.slice(0, 5).map((tab) => {
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => {
+                    setActiveReport(tab.id);
+                    setTimeout(() => loadReportData(), 0);
+                  }}
+                  className={`flex items-center justify-center gap-2 px-2 py-3 rounded-lg font-medium transition-colors text-sm ${
+                    activeReport === tab.id
+                      ? 'bg-primary-600 text-white'
+                      : 'bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-300 hover:bg-primary-500 hover:text-white'
+                  }`}
+                >
+                  <Icon className="w-4 h-4 flex-shrink-0" />
+                  <span className="truncate hidden sm:inline">{tab.label}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Row 2: Fin. Consolidado, Fin. por Tag, Tarefas, PNJ/Adversos, Exportar CSV */}
+          <div className="grid grid-cols-5 gap-2">
+            {reportTabs.slice(5).map((tab) => {
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => {
+                    setActiveReport(tab.id);
+                    setTimeout(() => loadReportData(), 0);
+                  }}
+                  className={`flex items-center justify-center gap-2 px-2 py-3 rounded-lg font-medium transition-colors text-sm ${
+                    activeReport === tab.id
+                      ? 'bg-primary-600 text-white'
+                      : 'bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-300 hover:bg-primary-500 hover:text-white'
+                  }`}
+                >
+                  <Icon className="w-4 h-4 flex-shrink-0" />
+                  <span className="truncate hidden sm:inline">{tab.label}</span>
+                </button>
+              );
+            })}
+            <button
+              onClick={handleExportCSV}
+              className="flex items-center justify-center gap-2 px-2 py-3 bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-300 hover:bg-primary-500 hover:text-white rounded-lg font-medium transition-colors text-sm"
+            >
+              <Download className="w-4 h-4 flex-shrink-0" />
+              <span className="truncate hidden sm:inline">Exportar CSV</span>
+            </button>
+          </div>
+
+          {/* Row 3: PDF Export (when applicable) */}
+          {(activeReport === 'clients' || activeReport === 'clientsByTag' || activeReport === 'tasks' || activeReport === 'cases' || activeReport === 'casesAdvanced' || activeReport === 'financial' || activeReport === 'financialConsolidated' || activeReport === 'financialByTag' || activeReport === 'pnjAdverses') && (
+            <div className="pt-2 border-t border-gray-200 dark:border-slate-700">
               <button
-                key={tab.id}
                 onClick={() => {
-                  setActiveReport(tab.id);
-                  setTimeout(() => loadReportData(), 0);
+                  if (activeReport === 'clients') handleExportClientsPDF();
+                  else if (activeReport === 'clientsByTag') handleExportClientsByTagPDF();
+                  else if (activeReport === 'tasks') handleExportPDF();
+                  else if (activeReport === 'cases') handleExportCasesPDF();
+                  else if (activeReport === 'casesAdvanced') handleExportCasesAdvancedPDF();
+                  else if (activeReport === 'financial') handleExportFinancialPDF();
+                  else if (activeReport === 'financialConsolidated') handleExportFinancialConsolidatedPDF();
+                  else if (activeReport === 'financialByTag') handleExportFinancialByTagPDF();
+                  else if (activeReport === 'pnjAdverses') handleExportPnjAdversesPDF();
                 }}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
-                  activeReport === tab.id
-                    ? 'bg-primary-600 text-white'
-                    : 'bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-300 border border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700'
-                }`}
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors text-sm"
               >
-                <Icon className="w-4 h-4" />
-                {tab.label}
+                <FileDown className="w-4 h-4" />
+                Gerar PDF
               </button>
-            );
-          })}
+            </div>
+          )}
         </div>
 
         {/* Filters - only show for reports that use date filters */}
-        {(activeReport === 'clients' || activeReport === 'cases' || activeReport === 'financial' || activeReport === 'tasks' || activeReport === 'financialConsolidated') && (
+        {(activeReport === 'clients' || activeReport === 'clientsByTag' || activeReport === 'cases' || activeReport === 'financial' || activeReport === 'tasks' || activeReport === 'financialConsolidated' || activeReport === 'financialByTag' || activeReport === 'pnjAdverses') && (
           <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm">
             <button
               onClick={() => setFiltersOpen(!filtersOpen)}
@@ -3020,8 +3852,10 @@ const Reports: React.FC = () => {
         ) : (
           <>
             {activeReport === 'clients' && renderClientReport()}
+            {activeReport === 'clientsByTag' && renderClientsByTagReport()}
             {activeReport === 'cases' && renderCaseReport()}
             {activeReport === 'financial' && renderFinancialReport()}
+            {activeReport === 'financialByTag' && renderFinancialByTagReport()}
             {activeReport === 'tasks' && renderTaskReport()}
             {activeReport === 'casesAdvanced' && renderCaseAdvancedReport()}
             {activeReport === 'pnjAdverses' && renderPnjAdversesReport()}

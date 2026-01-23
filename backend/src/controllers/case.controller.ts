@@ -128,7 +128,7 @@ export class CaseController {
 
   async create(req: AuthRequest, res: Response) {
     try {
-      const { clientId, processNumber: rawProcessNumber, court, subject, value, notes, status, deadline, deadlineResponsibleId, lawyerId, informarCliente, linkProcesso, phase, nature, rite, comarca, vara, distributionDate } = req.body;
+      const { clientId, processNumber: rawProcessNumber, court, subject, value, notes, status, deadline, deadlineResponsibleId, lawyerId, informarCliente, linkProcesso, phase, nature, rite, comarca, vara, distributionDate, tagIds } = req.body;
       const companyId = req.user!.companyId;
 
       // Normalizar número do processo (apenas dígitos)
@@ -220,13 +220,30 @@ export class CaseController {
       // Log de auditoria genérico (AuditLog com valores completos)
       await auditLogService.logCaseCreate(caseData, req);
 
-      // Retorna o processo com as movimentações
+      // Criar tags se fornecidas
+      if (tagIds && Array.isArray(tagIds) && tagIds.length > 0) {
+        await prisma.caseTag.createMany({
+          data: tagIds.map((tagId: string) => ({
+            caseId: caseData.id,
+            tagId,
+            companyId,
+          })),
+          skipDuplicates: true,
+        });
+      }
+
+      // Retorna o processo com as movimentações e tags
       const caseWithMovements = await prisma.case.findUnique({
         where: { id: caseData.id },
         include: {
           client: true,
           movements: {
             orderBy: { movementDate: 'desc' },
+          },
+          caseTags: {
+            include: {
+              tag: { select: { id: true, name: true, color: true } },
+            },
           },
         },
       });
@@ -358,6 +375,13 @@ export class CaseController {
                 adverse: { select: { id: true, name: true } },
               }
             },
+            caseTags: {
+              include: {
+                tag: {
+                  select: { id: true, name: true, color: true },
+                },
+              },
+            },
             _count: {
               select: {
                 movements: true,
@@ -466,6 +490,11 @@ export class CaseController {
           witnesses: {
             orderBy: { createdAt: 'desc' },
           },
+          caseTags: {
+            include: {
+              tag: { select: { id: true, name: true, color: true } },
+            },
+          },
         },
       });
 
@@ -484,7 +513,7 @@ export class CaseController {
     try {
       const { id } = req.params;
       const companyId = req.user!.companyId;
-      const { court, subject, value, status, deadline, deadlineResponsibleId, lawyerId, notes, informarCliente, linkProcesso, phase, nature, rite, comarca, vara, distributionDate } = req.body;
+      const { clientId, court, subject, value, status, deadline, deadlineResponsibleId, lawyerId, notes, informarCliente, linkProcesso, phase, nature, rite, comarca, vara, distributionDate, tagIds } = req.body;
 
       const oldCaseData = await prisma.case.findFirst({
         where: {
@@ -527,6 +556,7 @@ export class CaseController {
       const updatedCase = await prisma.case.update({
         where: { id },
         data: {
+          ...(clientId !== undefined && { clientId: clientId || null }),
           court,
           ...(subject !== undefined && { subject: sanitizeString(subject) || '' }),
           value,
@@ -646,7 +676,39 @@ export class CaseController {
       // Log de auditoria genérico (AuditLog com valores completos)
       await auditLogService.logCaseUpdate(oldCaseData, updatedCase, req);
 
-      res.json(updatedCase);
+      // Atualizar tags se fornecidas
+      if (tagIds !== undefined && Array.isArray(tagIds)) {
+        // Remover tags existentes
+        await prisma.caseTag.deleteMany({
+          where: { caseId: id, companyId: companyId! },
+        });
+        // Criar novas tags
+        if (tagIds.length > 0) {
+          await prisma.caseTag.createMany({
+            data: tagIds.map((tagId: string) => ({
+              caseId: id,
+              tagId,
+              companyId: companyId!,
+            })),
+            skipDuplicates: true,
+          });
+        }
+      }
+
+      // Retornar processo atualizado com tags
+      const caseWithTags = await prisma.case.findUnique({
+        where: { id },
+        include: {
+          client: true,
+          caseTags: {
+            include: {
+              tag: { select: { id: true, name: true, color: true } },
+            },
+          },
+        },
+      });
+
+      res.json(caseWithTags);
     } catch (error) {
       appLogger.error('Erro ao atualizar processo', error as Error);
       res.status(500).json({ error: 'Erro ao atualizar processo' });

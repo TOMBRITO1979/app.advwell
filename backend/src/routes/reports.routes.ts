@@ -19,4 +19,10 @@ router.get('/pnj/adverses', reportsController.getPnjAdversesReport);
 // Relatório financeiro consolidado (contas pagas, recebimentos, despesas)
 router.get('/financial/consolidated', reportsController.getFinancialConsolidatedReport);
 
+// Relatório financeiro por tags
+router.get('/financial/by-tag', reportsController.getFinancialByTagReport);
+
+// Relatório de clientes por tags
+router.get('/clients/by-tag', reportsController.getClientsByTagReport);
+
 export default router;

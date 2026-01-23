@@ -56,8 +56,15 @@ interface Case {
   demandanteNames?: string;
   demandadoNames?: string;
   parts?: CasePart[];
+  caseTags?: { tag: { id: string; name: string; color: string } }[];
   lastSyncedAt?: string;
   createdAt: string;
+}
+
+interface Tag {
+  id: string;
+  name: string;
+  color: string;
 }
 
 interface CaseMovement {
@@ -72,6 +79,7 @@ interface CaseDetail extends Case {
   movements?: CaseMovement[];
   documents?: any[];
   parts?: CasePart[];
+  caseTags?: { tag: { id: string; name: string; color: string } }[];
 }
 
 interface CasePart {
@@ -224,7 +232,11 @@ const Cases: React.FC = () => {
     comarca: '',
     vara: '',
     distributionDate: '',
+    tagIds: [] as string[],
   });
+  const [tags, setTags] = useState<Tag[]>([]);
+  const [tagSearch, setTagSearch] = useState('');
+  const [showTagDropdown, setShowTagDropdown] = useState(false);
 
   useEffect(() => {
     loadCases();
@@ -233,6 +245,7 @@ const Cases: React.FC = () => {
     loadLawyers();
     loadAdverses();
     loadAdverseLawyers();
+    loadTags();
   }, [search, statusFilter, demandanteFilter, demandadoFilter, lawyerFilter, oabFilter, page, limit]);
 
   // Reset page when filters change
@@ -517,6 +530,15 @@ const Cases: React.FC = () => {
     }
   };
 
+  const loadTags = async () => {
+    try {
+      const response = await api.get('/tags');
+      setTags(response.data.data || []);
+    } catch (error) {
+      console.error('Erro ao carregar tags');
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       clientId: '',
@@ -539,6 +561,7 @@ const Cases: React.FC = () => {
       comarca: '',
       vara: '',
       distributionDate: '',
+      tagIds: [],
     });
     setParts([]);
     setDeletedPartIds([]); // Reset deleted parts tracking
@@ -558,6 +581,8 @@ const Cases: React.FC = () => {
     });
     setShowAddWitnessForm(false);
     setEditingWitnessIndex(null);
+    setTagSearch('');
+    setShowTagDropdown(false);
   };
 
   const handlePartEntitySelect = (entity: { id: string; name: string; extra?: string }) => {
@@ -980,6 +1005,7 @@ const Cases: React.FC = () => {
         comarca: caseDetail.comarca || '',
         vara: caseDetail.vara || '',
         distributionDate: caseDetail.distributionDate ? caseDetail.distributionDate.split('T')[0] : '',
+        tagIds: caseDetail.caseTags?.map((ct) => ct.tag.id) || [],
       });
 
       // Load parts if editing
@@ -1808,6 +1834,97 @@ const Cases: React.FC = () => {
                   className="mt-1 block w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md min-h-[44px]"
                 />
                 <p className="mt-1 text-xs text-neutral-500 dark:text-slate-400">URL do processo no site do tribunal</p>
+              </div>
+
+              {/* Tags */}
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Tags</label>
+                {/* Selected tags */}
+                {formData.tagIds.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {formData.tagIds.map((tagId) => {
+                      const tag = tags.find((t) => t.id === tagId);
+                      if (!tag) return null;
+                      return (
+                        <span
+                          key={tag.id}
+                          className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium"
+                          style={{
+                            backgroundColor: tag.color + '30',
+                            color: tag.color,
+                            border: `1px solid ${tag.color}`,
+                          }}
+                        >
+                          {tag.name}
+                          <button
+                            type="button"
+                            onClick={() => setFormData({
+                              ...formData,
+                              tagIds: formData.tagIds.filter((id) => id !== tagId),
+                            })}
+                            className="hover:opacity-70"
+                          >
+                            <X size={14} />
+                          </button>
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
+                {/* Search input */}
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Digite para buscar tags..."
+                    value={tagSearch}
+                    onChange={(e) => {
+                      setTagSearch(e.target.value);
+                      setShowTagDropdown(e.target.value.length >= 2);
+                    }}
+                    onFocus={() => {
+                      if (tagSearch.length >= 2) setShowTagDropdown(true);
+                    }}
+                    onBlur={() => setTimeout(() => setShowTagDropdown(false), 200)}
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                  />
+                  {/* Dropdown */}
+                  {showTagDropdown && (
+                    <div className="absolute z-50 w-full mt-1 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                      {tags
+                        .filter((tag) =>
+                          tag.name.toLowerCase().includes(tagSearch.toLowerCase()) &&
+                          !formData.tagIds.includes(tag.id)
+                        )
+                        .map((tag) => (
+                          <button
+                            key={tag.id}
+                            type="button"
+                            onClick={() => {
+                              setFormData({
+                                ...formData,
+                                tagIds: [...formData.tagIds, tag.id],
+                              });
+                              setTagSearch('');
+                              setShowTagDropdown(false);
+                            }}
+                            className="w-full px-3 py-2 text-left hover:bg-neutral-100 dark:hover:bg-slate-600 flex items-center gap-2"
+                          >
+                            <span
+                              className="w-3 h-3 rounded-full"
+                              style={{ backgroundColor: tag.color }}
+                            />
+                            <span className="text-sm text-neutral-700 dark:text-slate-300">{tag.name}</span>
+                          </button>
+                        ))}
+                      {tags.filter((tag) =>
+                        tag.name.toLowerCase().includes(tagSearch.toLowerCase()) &&
+                        !formData.tagIds.includes(tag.id)
+                      ).length === 0 && (
+                        <p className="px-3 py-2 text-sm text-neutral-500 dark:text-slate-400">Nenhuma tag encontrada</p>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div>
