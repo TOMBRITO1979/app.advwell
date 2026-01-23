@@ -58,12 +58,23 @@ interface FinancialStats {
   byMonth: { month: string; income: number; expense: number }[];
 }
 
+interface UserProductivity {
+  userId: string;
+  userName: string;
+  assigned: number;
+  completed: number;
+  pending: number;
+  overdue: number;
+  completionRate: number;
+}
+
 interface TaskStats {
   total: number;
   completed: number;
   pending: number;
   overdue: number;
   byPriority: { priority: string; count: number }[];
+  byUser: UserProductivity[];
 }
 
 // Interfaces para relatórios avançados
@@ -146,11 +157,14 @@ const Reports: React.FC = () => {
   const [caseAdvancedStats, setCaseAdvancedStats] = useState<CaseAdvancedStats | null>(null);
   const [pnjAdversesStats, setPnjAdversesStats] = useState<PnjAdversesStats | null>(null);
 
-  // Lists for filters (reserved for future use)
+  // Lists for filters
   const [, setClients] = useState<any[]>([]);
+  const [users, setUsers] = useState<{ id: string; name: string }[]>([]);
+  const [filterUserId, setFilterUserId] = useState<string>('');
 
   useEffect(() => {
     loadClients();
+    loadUsers();
   }, []);
 
   // Carrega dados automaticamente quando a aba muda
@@ -164,6 +178,15 @@ const Reports: React.FC = () => {
       setClients(response.data.data || []);
     } catch (error) {
       console.error('Error loading clients:', error);
+    }
+  };
+
+  const loadUsers = async () => {
+    try {
+      const response = await api.get('/users', { params: { limit: 1000 } });
+      setUsers(response.data.data || response.data || []);
+    } catch (error) {
+      console.error('Error loading users:', error);
     }
   };
 
@@ -375,33 +398,91 @@ const Reports: React.FC = () => {
 
   const loadTaskReport = async () => {
     try {
-      const response = await api.get('/schedule', {
-        params: {
-          type: 'TAREFA',
-          limit: 1000,
-          startDate: filters.startDate,
-          endDate: filters.endDate,
-        }
-      });
+      const params: any = {
+        type: 'TAREFA',
+        limit: 1000,
+        startDate: filters.startDate,
+        endDate: filters.endDate,
+      };
+
+      // Adicionar filtro por usuário se selecionado
+      if (filterUserId) {
+        params.assignedUserId = filterUserId;
+      }
+
+      const response = await api.get('/schedule', { params });
 
       const tasksData = response.data.data || [];
       const now = new Date();
 
+      // Filtrar por usuário se selecionado (fallback caso o backend não suporte o filtro)
+      let filteredTasks = tasksData;
+      if (filterUserId) {
+        filteredTasks = tasksData.filter((t: any) =>
+          t.assignedUsers?.some((au: any) => au.userId === filterUserId || au.user?.id === filterUserId)
+        );
+      }
+
       const stats: TaskStats = {
-        total: tasksData.length,
-        completed: tasksData.filter((t: any) => t.completed).length,
-        pending: tasksData.filter((t: any) => !t.completed).length,
-        overdue: tasksData.filter((t: any) => !t.completed && t.date && new Date(t.date) < now).length,
+        total: filteredTasks.length,
+        completed: filteredTasks.filter((t: any) => t.completed).length,
+        pending: filteredTasks.filter((t: any) => !t.completed).length,
+        overdue: filteredTasks.filter((t: any) => !t.completed && t.date && new Date(t.date) < now).length,
         byPriority: [],
+        byUser: [],
       };
 
+      // Contagem por prioridade
       const priorityCounts: Record<string, number> = {};
-      tasksData.forEach((t: any) => {
+      filteredTasks.forEach((t: any) => {
         priorityCounts[t.priority] = (priorityCounts[t.priority] || 0) + 1;
       });
 
       stats.byPriority = Object.entries(priorityCounts)
         .map(([priority, count]) => ({ priority, count }));
+
+      // Calcular produtividade por usuário
+      const userStats: Record<string, UserProductivity> = {};
+
+      tasksData.forEach((task: any) => {
+        const assignedUsers = task.assignedUsers || [];
+        assignedUsers.forEach((assignment: any) => {
+          const userId = assignment.userId || assignment.user?.id;
+          const userName = assignment.user?.name || 'Usuário';
+
+          if (!userId) return;
+
+          if (!userStats[userId]) {
+            userStats[userId] = {
+              userId,
+              userName,
+              assigned: 0,
+              completed: 0,
+              pending: 0,
+              overdue: 0,
+              completionRate: 0,
+            };
+          }
+
+          userStats[userId].assigned++;
+          if (task.completed) {
+            userStats[userId].completed++;
+          } else {
+            userStats[userId].pending++;
+            if (task.date && new Date(task.date) < now) {
+              userStats[userId].overdue++;
+            }
+          }
+        });
+      });
+
+      // Calcular taxa de conclusão e ordenar por produtividade
+      stats.byUser = Object.values(userStats)
+        .map(u => ({
+          ...u,
+          completionRate: u.assigned > 0 ? Math.round((u.completed / u.assigned) * 100) : 0,
+        }))
+        .sort((a, b) => b.completionRate - a.completionRate);
 
       setTaskStats(stats);
     } catch (error) {
@@ -482,12 +563,31 @@ const Reports: React.FC = () => {
 
       case 'tasks':
         if (!taskStats) return;
-        csvContent = 'Métrica,Valor\n';
+        csvContent = 'RELATÓRIO DE TAREFAS E PRODUTIVIDADE\n\n';
+        csvContent += 'RESUMO GERAL\n';
+        csvContent += 'Métrica,Valor\n';
         csvContent += `Total de Tarefas,${taskStats.total}\n`;
         csvContent += `Concluídas,${taskStats.completed}\n`;
         csvContent += `Pendentes,${taskStats.pending}\n`;
         csvContent += `Atrasadas,${taskStats.overdue}\n`;
-        filename = 'relatorio_tarefas.csv';
+        csvContent += `Taxa de Conclusão,${taskStats.total > 0 ? Math.round((taskStats.completed / taskStats.total) * 100) : 0}%\n`;
+
+        csvContent += '\nPOR PRIORIDADE\n';
+        csvContent += 'Prioridade,Quantidade\n';
+        taskStats.byPriority.forEach(p => {
+          const label = p.priority === 'BAIXA' ? 'Baixa' : p.priority === 'MEDIA' ? 'Média' : p.priority === 'ALTA' ? 'Alta' : 'Urgente';
+          csvContent += `${label},${p.count}\n`;
+        });
+
+        if (taskStats.byUser && taskStats.byUser.length > 0) {
+          csvContent += '\nPRODUTIVIDADE POR USUÁRIO\n';
+          csvContent += 'Usuário,Atribuídas,Concluídas,Pendentes,Atrasadas,Taxa de Conclusão\n';
+          taskStats.byUser.forEach(u => {
+            csvContent += `${u.userName},${u.assigned},${u.completed},${u.pending},${u.overdue},${u.completionRate}%\n`;
+          });
+        }
+
+        filename = 'relatorio_tarefas_produtividade.csv';
         break;
 
       case 'casesAdvanced':
@@ -935,6 +1035,60 @@ const Reports: React.FC = () => {
             ))}
           </div>
         </div>
+
+        {/* Produtividade por Usuário */}
+        {taskStats.byUser && taskStats.byUser.length > 0 && (
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 shadow-sm">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4">
+              <UserCheck className="w-5 h-5 inline mr-2" />
+              Produtividade por Usuário
+            </h3>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-200 dark:border-slate-700">
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-slate-300">Usuário</th>
+                    <th className="text-center py-3 px-4 text-sm font-semibold text-gray-700 dark:text-slate-300">Atribuídas</th>
+                    <th className="text-center py-3 px-4 text-sm font-semibold text-gray-700 dark:text-slate-300">Concluídas</th>
+                    <th className="text-center py-3 px-4 text-sm font-semibold text-gray-700 dark:text-slate-300">Pendentes</th>
+                    <th className="text-center py-3 px-4 text-sm font-semibold text-gray-700 dark:text-slate-300">Atrasadas</th>
+                    <th className="text-center py-3 px-4 text-sm font-semibold text-gray-700 dark:text-slate-300">Taxa de Conclusão</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {taskStats.byUser.map((user) => (
+                    <tr key={user.userId} className="border-b border-gray-100 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700">
+                      <td className="py-3 px-4 text-sm text-gray-900 dark:text-slate-100 font-medium">{user.userName}</td>
+                      <td className="py-3 px-4 text-sm text-center text-gray-600 dark:text-slate-400">{user.assigned}</td>
+                      <td className="py-3 px-4 text-sm text-center text-green-600 dark:text-green-400 font-medium">{user.completed}</td>
+                      <td className="py-3 px-4 text-sm text-center text-amber-600 dark:text-amber-400">{user.pending}</td>
+                      <td className="py-3 px-4 text-sm text-center text-red-600 dark:text-red-400">{user.overdue}</td>
+                      <td className="py-3 px-4 text-sm text-center">
+                        <div className="flex items-center justify-center gap-2">
+                          <div className="w-24 bg-gray-200 dark:bg-slate-700 rounded-full h-2">
+                            <div
+                              className={`h-2 rounded-full ${
+                                user.completionRate >= 80 ? 'bg-green-500' :
+                                user.completionRate >= 50 ? 'bg-amber-500' : 'bg-red-500'
+                              }`}
+                              style={{ width: `${user.completionRate}%` }}
+                            />
+                          </div>
+                          <span className={`font-medium ${
+                            user.completionRate >= 80 ? 'text-green-600 dark:text-green-400' :
+                            user.completionRate >= 50 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400'
+                          }`}>
+                            {user.completionRate}%
+                          </span>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </div>
     );
   };
@@ -1500,7 +1654,7 @@ const Reports: React.FC = () => {
 
             {filtersOpen && (
               <div className="p-4 pt-0 border-t border-gray-200 dark:border-slate-700">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className={`grid grid-cols-1 gap-4 ${activeReport === 'tasks' ? 'sm:grid-cols-4' : 'sm:grid-cols-3'}`}>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Data Início</label>
                     <input
@@ -1519,6 +1673,23 @@ const Reports: React.FC = () => {
                       className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100"
                     />
                   </div>
+                  {activeReport === 'tasks' && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Usuário</label>
+                      <select
+                        value={filterUserId}
+                        onChange={(e) => setFilterUserId(e.target.value)}
+                        className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100"
+                      >
+                        <option value="">Todos os usuários</option>
+                        {users.map((user) => (
+                          <option key={user.id} value={user.id}>
+                            {user.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
                   <div className="flex items-end">
                     <button
                       onClick={handleApplyFilters}
