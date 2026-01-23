@@ -311,31 +311,31 @@ const Reports: React.FC = () => {
       const now = new Date();
 
       const stats: FinancialStats = {
-        totalReceivable: receivables.reduce((sum: number, r: any) => sum + (r.amount || 0), 0),
-        totalPayable: payables.reduce((sum: number, p: any) => sum + (p.amount || 0), 0),
-        received: receivables.filter((r: any) => r.status === 'PAID' || r.status === 'PAGO').reduce((sum: number, r: any) => sum + (r.amount || 0), 0),
-        paid: payables.filter((p: any) => p.paid || p.status === 'PAGO').reduce((sum: number, p: any) => sum + (p.amount || 0), 0),
-        overdue: payables.filter((p: any) => !p.paid && new Date(p.dueDate) < now).reduce((sum: number, p: any) => sum + (p.amount || 0), 0),
+        totalReceivable: receivables.reduce((sum: number, r: any) => sum + (parseFloat(r.amount) || 0), 0),
+        totalPayable: payables.reduce((sum: number, p: any) => sum + (parseFloat(p.amount) || 0), 0),
+        received: receivables.filter((r: any) => r.status === 'PAID').reduce((sum: number, r: any) => sum + (parseFloat(r.amount) || 0), 0),
+        paid: payables.filter((p: any) => p.status === 'PAID').reduce((sum: number, p: any) => sum + (parseFloat(p.amount) || 0), 0),
+        overdue: payables.filter((p: any) => p.status !== 'PAID' && p.status !== 'CANCELLED' && new Date(p.dueDate) < now).reduce((sum: number, p: any) => sum + (parseFloat(p.amount) || 0), 0),
         byMonth: [],
       };
 
       const monthData: Record<string, { income: number; expense: number }> = {};
 
       receivables.forEach((r: any) => {
-        if (r.status === 'PAID' || r.status === 'PAGO') {
+        if (r.status === 'PAID') {
           const date = new Date(r.paymentDate || r.date || r.createdAt);
           const month = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
           if (!monthData[month]) monthData[month] = { income: 0, expense: 0 };
-          monthData[month].income += r.amount || 0;
+          monthData[month].income += parseFloat(r.amount) || 0;
         }
       });
 
       payables.forEach((p: any) => {
-        if (p.paid || p.status === 'PAGO') {
-          const date = new Date(p.paymentDate || p.dueDate || p.createdAt);
+        if (p.status === 'PAID') {
+          const date = new Date(p.paidDate || p.dueDate || p.createdAt);
           const month = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
           if (!monthData[month]) monthData[month] = { income: 0, expense: 0 };
-          monthData[month].expense += p.amount || 0;
+          monthData[month].expense += parseFloat(p.amount) || 0;
         }
       });
 
