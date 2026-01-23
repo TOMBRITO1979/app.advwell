@@ -653,18 +653,20 @@
         .pricing-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            gap: 20px;
-            max-width: 1300px;
+            gap: 12px;
+            max-width: 100%;
             margin: 0 auto;
         }
 
         .pricing-card {
-            padding: 40px 32px;
+            padding: 24px 16px;
             border-radius: 16px;
             background: white;
             border: 2px solid var(--gray-200);
             text-align: center;
             transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
         }
 
         .pricing-card.popular {
@@ -685,54 +687,54 @@
         }
 
         .pricing-card h3 {
-            font-size: 24px;
+            font-size: 18px;
             font-weight: 700;
             color: var(--secondary);
-            margin-bottom: 8px;
+            margin-bottom: 4px;
         }
 
         .pricing-card .price {
-            font-size: 48px;
+            font-size: 32px;
             font-weight: 800;
             color: var(--secondary);
-            margin: 24px 0;
+            margin: 16px 0;
         }
 
         .pricing-card .price span {
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 500;
             color: var(--gray-500);
         }
 
-        .pricing-card .price small {
-            font-size: 14px;
-            color: var(--gray-400);
-            display: block;
-        }
-
         .pricing-features {
             list-style: none;
-            margin: 32px 0;
+            margin: 20px 0;
             text-align: left;
+            flex-grow: 1;
         }
 
         .pricing-features li {
-            padding: 10px 0;
+            padding: 6px 0;
             color: var(--gray-600);
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 8px;
+            font-size: 13px;
         }
 
         .pricing-features li i {
             color: var(--success);
-            width: 20px;
-            height: 20px;
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
         }
 
         .pricing-card .btn {
             width: 100%;
             justify-content: center;
+            padding: 12px 16px;
+            font-size: 14px;
+            margin-top: auto;
         }
 
         /* Pricing Comparison Table */
@@ -981,8 +983,8 @@
             }
 
             .pricing-grid {
-                grid-template-columns: repeat(3, 1fr);
-                max-width: 900px;
+                grid-template-columns: repeat(5, 1fr);
+                gap: 8px;
             }
 
             .pricing-card.popular {
@@ -990,15 +992,25 @@
             }
 
             .pricing-card {
-                padding: 30px 20px;
+                padding: 16px 10px;
             }
 
             .pricing-card h3 {
-                font-size: 1.1rem;
+                font-size: 14px;
             }
 
             .pricing-card .price {
-                font-size: 1.5rem;
+                font-size: 22px;
+            }
+
+            .pricing-features li {
+                font-size: 11px;
+                padding: 4px 0;
+            }
+
+            .pricing-card .btn {
+                padding: 10px 8px;
+                font-size: 12px;
             }
         }
 
@@ -1068,13 +1080,31 @@
             }
 
             .pricing-grid {
-                grid-template-columns: 1fr;
-                max-width: 100%;
-                padding: 0 16px;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
             }
 
             .pricing-card {
-                padding: 24px 20px;
+                padding: 20px 16px;
+            }
+
+            .pricing-card h3 {
+                font-size: 16px;
+            }
+
+            .pricing-card .price {
+                font-size: 28px;
+                margin: 12px 0;
+            }
+
+            .pricing-features li {
+                font-size: 12px;
+                padding: 5px 0;
+            }
+
+            .pricing-card .btn {
+                padding: 12px 16px;
+                font-size: 14px;
             }
 
             .testimonials-grid {
@@ -1308,7 +1338,7 @@
             <div class="hero-content">
                 <div class="hero-text">
                     <h1>O Software Jurídico <span>Completo</span> para seu Escritório</h1>
-                    <p>Gerencie processos, clientes, financeiro, agenda e muito mais em uma única plataforma. Integração oficial com DataJud CNJ e monitoramento automático de publicações.</p>
+                    <p>Gerencie processos, clientes, financeiro, agenda e muito mais em uma única plataforma. Integração oficial com DataJud. Monitoramento automático de publicações, oferecemos a solução perfeita para a gestão completa e eficiente do seu escritório.</p>
                     <div class="hero-buttons">
                         <a href="https://app.advwell.pro/register" class="btn btn-primary">
                             <i data-lucide="rocket" style="width: 20px; height: 20px;"></i>
@@ -1377,14 +1407,14 @@
                         <i data-lucide="calendar" style="width: 28px; height: 28px;"></i>
                     </div>
                     <h3>Agenda Integrada</h3>
-                    <p>Controle de prazos, audiências e compromissos. Sincronização bidirecional com Google Calendar e notificações automáticas.</p>
+                    <p>Controle de prazos, audiências e compromissos. Agenda categorizada por tipo de evento e usuário, sincronização com Google Calendar e notificações automáticas.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">
                         <i data-lucide="bell" style="width: 28px; height: 28px;"></i>
                     </div>
-                    <h3>Monitoramento</h3>
-                    <p>Acompanhamento automático de publicações conforme publicado no DataJud, monitoradas por número de processo. Nunca mais perca um prazo importante.</p>
+                    <h3>Monitoramento Processual</h3>
+                    <p>Captura automática de publicações via DataJud. Nosso sistema monitora ininterruptamente e notifica você em primeira mão a cada nova movimentação processual.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">
@@ -1663,7 +1693,6 @@
                     <p style="color: var(--gray-500);">Para começar</p>
                     <div class="price">
                         R$0<span>/mês</span>
-                        <small>Sem cartão de crédito</small>
                     </div>
                     <ul class="pricing-features">
                         <li><i data-lucide="check"></i> Processos ilimitados</li>
@@ -1682,7 +1711,6 @@
                     <p style="color: var(--gray-500);">Para advogados autônomos</p>
                     <div class="price">
                         R$99<span>/mês</span>
-                        <small>ou R$990/ano (2 meses grátis)</small>
                     </div>
                     <ul class="pricing-features">
                         <li><i data-lucide="check"></i> Processos ilimitados</li>
@@ -1702,7 +1730,6 @@
                     <p style="color: var(--gray-500);">Para escritórios em crescimento</p>
                     <div class="price">
                         R$299<span>/mês</span>
-                        <small>ou R$2.990/ano (2 meses grátis)</small>
                     </div>
                     <ul class="pricing-features">
                         <li><i data-lucide="check"></i> Processos ilimitados</li>
@@ -1721,7 +1748,6 @@
                     <p style="color: var(--gray-500);">Para escritórios consolidados</p>
                     <div class="price">
                         R$499<span>/mês</span>
-                        <small>ou R$4.990/ano (2 meses grátis)</small>
                     </div>
                     <ul class="pricing-features">
                         <li><i data-lucide="check"></i> Processos ilimitados</li>
@@ -1740,7 +1766,6 @@
                     <p style="color: var(--gray-500);">Para grandes escritórios</p>
                     <div class="price">
                         R$899<span>/mês</span>
-                        <small>ou R$8.990/ano (2 meses grátis)</small>
                     </div>
                     <ul class="pricing-features">
                         <li><i data-lucide="check"></i> Processos ilimitados</li>
@@ -2060,7 +2085,7 @@
                             <td class="check">✓</td>
                         </tr>
                         <tr>
-                            <td>Chatwell (atendimento multicanal)</td>
+                            <td>Chat de atendimento multicanal</td>
                             <td class="x">—</td>
                             <td class="x">—</td>
                             <td class="x">—</td>
@@ -2076,7 +2101,7 @@
                             <td class="check">✓</td>
                         </tr>
                         <tr>
-                            <td>Automações para atendimento ao cliente (E-mail, WhatsApp, Instagram e Facebook)</td>
+                            <td>Automações para atendimento ao cliente<br>(E-mail, WhatsApp, Instagram e Facebook)</td>
                             <td class="x">—</td>
                             <td class="x">—</td>
                             <td class="x">—</td>
