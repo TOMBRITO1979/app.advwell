@@ -77,6 +77,7 @@ const Financial: React.FC = () => {
   const [filterEndDate, setFilterEndDate] = useState<string>('');
   const [filterStatus, setFilterStatus] = useState<string>('');
   const [filterCaseNumber, setFilterCaseNumber] = useState<string>('');
+  const [filterCaseId, setFilterCaseId] = useState<string>('');
   const [filterValueMin, setFilterValueMin] = useState<string>('');
   const [filterValueMax, setFilterValueMax] = useState<string>('');
   const [filterDescription, setFilterDescription] = useState<string>('');
@@ -132,12 +133,12 @@ const Financial: React.FC = () => {
     loadClients();
     loadCases();
     loadCostCenters();
-  }, [search, filterType, filterClientId, filterStartDate, filterEndDate, filterStatus, filterCaseNumber, filterValueMin, filterValueMax, filterDescription, filterCostCenterId, page, limit]);
+  }, [search, filterType, filterClientId, filterStartDate, filterEndDate, filterStatus, filterCaseNumber, filterCaseId, filterValueMin, filterValueMax, filterDescription, filterCostCenterId, page, limit]);
 
   // Reset page when filters change
   useEffect(() => {
     setPage(1);
-  }, [search, filterType, filterClientId, filterStartDate, filterEndDate, filterStatus, filterCaseNumber, filterValueMin, filterValueMax, filterDescription, filterCostCenterId]);
+  }, [search, filterType, filterClientId, filterStartDate, filterEndDate, filterStatus, filterCaseNumber, filterCaseId, filterValueMin, filterValueMax, filterDescription, filterCostCenterId]);
 
   // Filter clients based on search text
   useEffect(() => {
@@ -175,6 +176,7 @@ const Financial: React.FC = () => {
       if (filterEndDate) params.endDate = filterEndDate;
       if (filterStatus) params.status = filterStatus;
       if (filterCaseNumber) params.caseNumber = filterCaseNumber;
+      if (filterCaseId) params.caseId = filterCaseId;
       if (filterValueMin) params.valueMin = filterValueMin;
       if (filterValueMax) params.valueMax = filterValueMax;
       if (filterDescription) params.description = filterDescription;
@@ -372,6 +374,7 @@ const Financial: React.FC = () => {
     setFilterEndDate('');
     setFilterStatus('');
     setFilterCaseNumber('');
+    setFilterCaseId('');
     setFilterValueMin('');
     setFilterValueMax('');
     setFilterDescription('');
@@ -722,8 +725,8 @@ const Financial: React.FC = () => {
                 </div>
               </div>
 
-              {/* Linha 3: Cliente, PNJ e Centro de Custo */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Linha 3: Cliente e Centro de Custo */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Cliente</label>
                   <select
@@ -731,7 +734,7 @@ const Financial: React.FC = () => {
                     onChange={(e) => setFilterClientId(e.target.value)}
                     className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100"
                   >
-                    <option value="">Todos</option>
+                    <option value="">Todos os clientes</option>
                     {clients.map((client) => (
                       <option key={client.id} value={client.id}>
                         {client.name} {client.cpf && `(${client.cpf})`}
@@ -740,29 +743,54 @@ const Financial: React.FC = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">PNJ / Nº Processo</label>
-                  <input
-                    type="text"
-                    placeholder="Digite o número do processo..."
-                    value={filterCaseNumber}
-                    onChange={(e) => setFilterCaseNumber(e.target.value)}
-                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100 placeholder-neutral-400 dark:placeholder-slate-500"
-                  />
-                </div>
-                <div>
                   <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Centro de Custo</label>
                   <select
                     value={filterCostCenterId}
                     onChange={(e) => setFilterCostCenterId(e.target.value)}
                     className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100"
                   >
-                    <option value="">Todos</option>
+                    <option value="">Todos os centros de custo</option>
                     {costCenters.map((cc) => (
                       <option key={cc.id} value={cc.id}>
                         {cc.name} {cc.code && `(${cc.code})`}
                       </option>
                     ))}
                   </select>
+                </div>
+              </div>
+
+              {/* Linha 4: Processo (dropdown e busca por número) */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Processo (selecionar)</label>
+                  <select
+                    value={filterCaseId}
+                    onChange={(e) => {
+                      setFilterCaseId(e.target.value);
+                      if (e.target.value) setFilterCaseNumber(''); // Limpa busca por número se selecionar
+                    }}
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100"
+                  >
+                    <option value="">Todos os processos</option>
+                    {cases.map((caseItem) => (
+                      <option key={caseItem.id} value={caseItem.id}>
+                        {caseItem.processNumber} - {caseItem.subject?.substring(0, 30)}{caseItem.subject?.length > 30 ? '...' : ''} {caseItem.type === 'PNJ' ? '(PNJ)' : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">Nº Processo (busca parcial)</label>
+                  <input
+                    type="text"
+                    placeholder="Digite parte do número..."
+                    value={filterCaseNumber}
+                    onChange={(e) => {
+                      setFilterCaseNumber(e.target.value);
+                      if (e.target.value) setFilterCaseId(''); // Limpa seleção se digitar número
+                    }}
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px] bg-white dark:bg-slate-700 text-neutral-900 dark:text-slate-100 placeholder-neutral-400 dark:placeholder-slate-500"
+                  />
                 </div>
               </div>
 
