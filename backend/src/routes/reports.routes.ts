@@ -16,4 +16,7 @@ router.get('/cases/advanced', reportsController.getCaseAdvancedReport);
 // Relatório de PNJ com top adversos e processos sem movimento
 router.get('/pnj/adverses', reportsController.getPnjAdversesReport);
 
+// Relatório financeiro consolidado (contas pagas, recebimentos, despesas)
+router.get('/financial/consolidated', reportsController.getFinancialConsolidatedReport);
+
 export default router;

@@ -20,7 +20,8 @@ import {
   UserCheck,
   AlertTriangle,
   Briefcase,
-  FileDown
+  FileDown,
+  Wallet
 } from 'lucide-react';
 import api from '../services/api';
 import toast from 'react-hot-toast';
@@ -28,6 +29,21 @@ import Layout from '../components/Layout';
 import { formatCurrency } from '../utils/dateFormatter';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  PieChart,
+  Pie,
+  Cell,
+} from 'recharts';
 
 interface ReportFilters {
   startDate: string;
@@ -138,7 +154,62 @@ interface PnjAdversesStats {
   };
 }
 
-type ReportType = 'clients' | 'cases' | 'financial' | 'tasks' | 'casesAdvanced' | 'pnjAdverses';
+interface FinancialConsolidatedStats {
+  summary: {
+    totalAccountsPaid: number;
+    accountsPaidCount: number;
+    totalIncome: number;
+    incomeCount: number;
+    totalExpenses: number;
+    expensesCount: number;
+    totalCaseExpenses: number;
+    caseExpensesCount: number;
+    netResult: number;
+  };
+  accountsPaid: {
+    id: string;
+    supplier: string;
+    description: string;
+    amount: number;
+    dueDate: string;
+    paidDate: string;
+    category: string;
+    costCenter: string | null;
+  }[];
+  income: {
+    id: string;
+    description: string;
+    amount: number;
+    date: string;
+    client: string;
+    case: string | null;
+    costCenter: string | null;
+  }[];
+  expenses: {
+    id: string;
+    description: string;
+    amount: number;
+    date: string;
+    client: string;
+    case: string | null;
+    costCenter: string | null;
+    linkedToCase: boolean;
+  }[];
+  byCategory: {
+    category: string;
+    count: number;
+    total: number;
+  }[];
+  byCostCenter: {
+    id: string;
+    name: string;
+    income: number;
+    expenses: number;
+    accountsPaid: number;
+  }[];
+}
+
+type ReportType = 'clients' | 'cases' | 'financial' | 'tasks' | 'casesAdvanced' | 'pnjAdverses' | 'financialConsolidated';
 
 const Reports: React.FC = () => {
   const [activeReport, setActiveReport] = useState<ReportType>('clients');
@@ -159,6 +230,7 @@ const Reports: React.FC = () => {
   const [taskStats, setTaskStats] = useState<TaskStats | null>(null);
   const [caseAdvancedStats, setCaseAdvancedStats] = useState<CaseAdvancedStats | null>(null);
   const [pnjAdversesStats, setPnjAdversesStats] = useState<PnjAdversesStats | null>(null);
+  const [financialConsolidatedStats, setFinancialConsolidatedStats] = useState<FinancialConsolidatedStats | null>(null);
 
   // Lists for filters
   const [, setClients] = useState<any[]>([]);
@@ -216,6 +288,9 @@ const Reports: React.FC = () => {
         case 'pnjAdverses':
           await loadPnjAdversesReport();
           break;
+        case 'financialConsolidated':
+          await loadFinancialConsolidatedReport();
+          break;
       }
     } catch (error: any) {
       console.error('Error loading report:', error);
@@ -241,7 +316,7 @@ const Reports: React.FC = () => {
 
       const stats: ClientStats = {
         total: clientsData.length,
-        activeClients: clientsData.filter((c: any) => c.cases && c.cases.length > 0).length,
+        activeClients: clientsData.filter((c: any) => c._count?.cases > 0).length,
         newThisMonth: clientsData.filter((c: any) => new Date(c.createdAt) >= monthStart).length,
         topCities: [],
       };
@@ -515,6 +590,21 @@ const Reports: React.FC = () => {
     }
   };
 
+  const loadFinancialConsolidatedReport = async () => {
+    try {
+      const response = await api.get('/reports/financial/consolidated', {
+        params: {
+          startDate: filters.startDate,
+          endDate: filters.endDate,
+        },
+      });
+      setFinancialConsolidatedStats(response.data.data);
+    } catch (error) {
+      console.error('Error loading financial consolidated report:', error);
+      throw error;
+    }
+  };
+
   const handleFilterChange = (key: keyof ReportFilters, value: string) => {
     setFilters(prev => ({ ...prev, [key]: value }));
   };
@@ -649,6 +739,41 @@ const Reports: React.FC = () => {
           csvContent += `${p.number},${p.title},${p.client},${p.lastMovementDescription}\n`;
         });
         filename = 'relatorio_pnj_adversos.csv';
+        break;
+
+      case 'financialConsolidated':
+        if (!financialConsolidatedStats) return;
+        csvContent = 'RELATÓRIO FINANCEIRO CONSOLIDADO\n\n';
+        csvContent += 'RESUMO\n';
+        csvContent += `Total Contas Pagas,${formatCurrency(financialConsolidatedStats.summary.totalAccountsPaid)}\n`;
+        csvContent += `Qtd Contas Pagas,${financialConsolidatedStats.summary.accountsPaidCount}\n`;
+        csvContent += `Total Recebimentos,${formatCurrency(financialConsolidatedStats.summary.totalIncome)}\n`;
+        csvContent += `Qtd Recebimentos,${financialConsolidatedStats.summary.incomeCount}\n`;
+        csvContent += `Total Despesas,${formatCurrency(financialConsolidatedStats.summary.totalExpenses)}\n`;
+        csvContent += `Qtd Despesas,${financialConsolidatedStats.summary.expensesCount}\n`;
+        csvContent += `Total Gastos Processos,${formatCurrency(financialConsolidatedStats.summary.totalCaseExpenses)}\n`;
+        csvContent += `Resultado Líquido,${formatCurrency(financialConsolidatedStats.summary.netResult)}\n`;
+        csvContent += '\nCONTAS PAGAS\nFornecedor,Descrição,Valor,Categoria,Centro de Custo,Data Pagamento\n';
+        financialConsolidatedStats.accountsPaid.forEach(a => {
+          csvContent += `${a.supplier},${a.description},${a.amount},${a.category},${a.costCenter || ''},${new Date(a.paidDate).toLocaleDateString('pt-BR')}\n`;
+        });
+        csvContent += '\nRECEBIMENTOS\nDescrição,Valor,Cliente,Processo,Centro de Custo,Data\n';
+        financialConsolidatedStats.income.forEach(i => {
+          csvContent += `${i.description},${i.amount},${i.client},${i.case || ''},${i.costCenter || ''},${new Date(i.date).toLocaleDateString('pt-BR')}\n`;
+        });
+        csvContent += '\nDESPESAS\nDescrição,Valor,Cliente,Processo,Centro de Custo,Data,Vinculado a Processo\n';
+        financialConsolidatedStats.expenses.forEach(e => {
+          csvContent += `${e.description},${e.amount},${e.client},${e.case || ''},${e.costCenter || ''},${new Date(e.date).toLocaleDateString('pt-BR')},${e.linkedToCase ? 'Sim' : 'Não'}\n`;
+        });
+        csvContent += '\nPOR CATEGORIA (CONTAS PAGAS)\nCategoria,Quantidade,Total\n';
+        financialConsolidatedStats.byCategory.forEach(c => {
+          csvContent += `${c.category},${c.count},${c.total}\n`;
+        });
+        csvContent += '\nPOR CENTRO DE CUSTO\nCentro,Receitas,Despesas,Contas Pagas\n';
+        financialConsolidatedStats.byCostCenter.forEach(cc => {
+          csvContent += `${cc.name},${cc.income},${cc.expenses},${cc.accountsPaid}\n`;
+        });
+        filename = 'relatorio_financeiro_consolidado.csv';
         break;
     }
 
@@ -788,6 +913,498 @@ const Reports: React.FC = () => {
     toast.success('PDF exportado!');
   };
 
+  const handleExportCasesAdvancedPDF = () => {
+    if (!caseAdvancedStats) {
+      toast.error('Carregue os dados primeiro');
+      return;
+    }
+
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    let yPos = 20;
+
+    // Título
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Relatório de Processos Avançado', pageWidth / 2, yPos, { align: 'center' });
+    yPos += 10;
+
+    // Subtítulo com período
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    const periodo = filters.startDate && filters.endDate
+      ? `Período: ${new Date(filters.startDate).toLocaleDateString('pt-BR')} a ${new Date(filters.endDate).toLocaleDateString('pt-BR')}`
+      : 'Período: Todos os registros';
+    doc.text(periodo, pageWidth / 2, yPos, { align: 'center' });
+    yPos += 15;
+
+    // Resumo Geral
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Resumo Geral', 14, yPos);
+    yPos += 8;
+
+    autoTable(doc, {
+      startY: yPos,
+      head: [['Métrica', 'Valor']],
+      body: [
+        ['Total de Processos Ativos', caseAdvancedStats.totalCases.toString()],
+        ['Com Prazo Definido', caseAdvancedStats.withDeadline.total.toString()],
+        ['Prazos Cumpridos', caseAdvancedStats.withDeadline.completed.toString()],
+        ['Prazos Pendentes', caseAdvancedStats.withDeadline.pending.toString()],
+        ['Prazos Vencidos', caseAdvancedStats.withDeadline.overdue.toString()],
+        ['Sem Movimento há 180 dias', caseAdvancedStats.withoutMovement180Days.total.toString()],
+      ],
+      theme: 'striped',
+      headStyles: { fillColor: [22, 163, 74] },
+      margin: { left: 14, right: 14 },
+    });
+
+    yPos = (doc as any).lastAutoTable.finalY + 15;
+
+    // Por Fase
+    if (caseAdvancedStats.byPhase.length > 0) {
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Por Fase', 14, yPos);
+      yPos += 8;
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Fase', 'Quantidade']],
+        body: caseAdvancedStats.byPhase.map(p => [p.phase, p.count.toString()]),
+        theme: 'striped',
+        headStyles: { fillColor: [22, 163, 74] },
+        margin: { left: 14, right: 14 },
+      });
+
+      yPos = (doc as any).lastAutoTable.finalY + 10;
+    }
+
+    // Por Rito
+    if (caseAdvancedStats.byRite.length > 0) {
+      if (yPos > 220) {
+        doc.addPage();
+        yPos = 20;
+      }
+
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Por Rito', 14, yPos);
+      yPos += 8;
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Rito', 'Quantidade']],
+        body: caseAdvancedStats.byRite.map(r => [r.rite, r.count.toString()]),
+        theme: 'striped',
+        headStyles: { fillColor: [22, 163, 74] },
+        margin: { left: 14, right: 14 },
+      });
+
+      yPos = (doc as any).lastAutoTable.finalY + 10;
+    }
+
+    // Por Tribunal
+    if (caseAdvancedStats.byTribunal && caseAdvancedStats.byTribunal.length > 0) {
+      if (yPos > 220) {
+        doc.addPage();
+        yPos = 20;
+      }
+
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Por Tribunal', 14, yPos);
+      yPos += 8;
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Tribunal', 'Quantidade']],
+        body: caseAdvancedStats.byTribunal.map(t => [t.tribunal, t.count.toString()]),
+        theme: 'striped',
+        headStyles: { fillColor: [22, 163, 74] },
+        margin: { left: 14, right: 14 },
+      });
+
+      yPos = (doc as any).lastAutoTable.finalY + 10;
+    }
+
+    // Por Natureza
+    if (caseAdvancedStats.byNature && caseAdvancedStats.byNature.length > 0) {
+      if (yPos > 220) {
+        doc.addPage();
+        yPos = 20;
+      }
+
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Por Natureza', 14, yPos);
+      yPos += 8;
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Natureza', 'Quantidade']],
+        body: caseAdvancedStats.byNature.map(n => [n.nature, n.count.toString()]),
+        theme: 'striped',
+        headStyles: { fillColor: [22, 163, 74] },
+        margin: { left: 14, right: 14 },
+      });
+
+      yPos = (doc as any).lastAutoTable.finalY + 10;
+    }
+
+    // Por Comarca
+    if (caseAdvancedStats.byComarca && caseAdvancedStats.byComarca.length > 0) {
+      if (yPos > 220) {
+        doc.addPage();
+        yPos = 20;
+      }
+
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Por Comarca', 14, yPos);
+      yPos += 8;
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Comarca', 'Quantidade']],
+        body: caseAdvancedStats.byComarca.map(c => [c.comarca, c.count.toString()]),
+        theme: 'striped',
+        headStyles: { fillColor: [22, 163, 74] },
+        margin: { left: 14, right: 14 },
+      });
+
+      yPos = (doc as any).lastAutoTable.finalY + 10;
+    }
+
+    // Por Advogado
+    if (caseAdvancedStats.byLawyer.length > 0) {
+      if (yPos > 200) {
+        doc.addPage();
+        yPos = 20;
+      }
+
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Por Advogado Responsável', 14, yPos);
+      yPos += 8;
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Advogado', 'Processos']],
+        body: caseAdvancedStats.byLawyer.map(l => [l.name, l.count.toString()]),
+        theme: 'striped',
+        headStyles: { fillColor: [22, 163, 74] },
+        margin: { left: 14, right: 14 },
+      });
+
+      yPos = (doc as any).lastAutoTable.finalY + 10;
+    }
+
+    // Detalhes de Prazos
+    if (caseAdvancedStats.withDeadline.cases.length > 0) {
+      doc.addPage();
+      yPos = 20;
+
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Detalhes de Prazos', 14, yPos);
+      yPos += 8;
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Processo', 'Prazo', 'Cliente', 'Vara']],
+        body: caseAdvancedStats.withDeadline.cases.map(c => [
+          c.processNumber,
+          new Date(c.deadline).toLocaleDateString('pt-BR'),
+          c.client,
+          c.court,
+        ]),
+        theme: 'striped',
+        headStyles: { fillColor: [245, 158, 11] },
+        margin: { left: 14, right: 14 },
+        columnStyles: {
+          0: { cellWidth: 50 },
+          1: { cellWidth: 25 },
+        },
+      });
+
+      yPos = (doc as any).lastAutoTable.finalY + 10;
+    }
+
+    // Sem Movimento há 180 dias
+    if (caseAdvancedStats.withoutMovement180Days.cases.length > 0) {
+      if (yPos > 200) {
+        doc.addPage();
+        yPos = 20;
+      }
+
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Processos Sem Movimento há 180 dias', 14, yPos);
+      yPos += 8;
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Processo', 'Cliente', 'Vara', 'Última Sincronização']],
+        body: caseAdvancedStats.withoutMovement180Days.cases.map(c => [
+          c.processNumber,
+          c.client,
+          c.court,
+          c.lastSyncedAt ? new Date(c.lastSyncedAt).toLocaleDateString('pt-BR') : 'Nunca',
+        ]),
+        theme: 'striped',
+        headStyles: { fillColor: [234, 88, 12] },
+        margin: { left: 14, right: 14 },
+        columnStyles: {
+          0: { cellWidth: 50 },
+        },
+      });
+    }
+
+    // Rodapé em todas as páginas
+    const pageCount = doc.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'normal');
+      doc.text(
+        `Gerado em ${new Date().toLocaleString('pt-BR')} - Página ${i} de ${pageCount}`,
+        pageWidth / 2,
+        doc.internal.pageSize.getHeight() - 10,
+        { align: 'center' }
+      );
+    }
+
+    doc.save('relatorio_processos_avancado.pdf');
+    toast.success('PDF exportado!');
+  };
+
+  const handleExportFinancialConsolidatedPDF = () => {
+    if (!financialConsolidatedStats) {
+      toast.error('Carregue os dados primeiro');
+      return;
+    }
+
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    let yPos = 20;
+
+    // Título
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Relatório Financeiro Consolidado', pageWidth / 2, yPos, { align: 'center' });
+    yPos += 10;
+
+    // Subtítulo com período
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    const periodo = filters.startDate && filters.endDate
+      ? `Período: ${new Date(filters.startDate).toLocaleDateString('pt-BR')} a ${new Date(filters.endDate).toLocaleDateString('pt-BR')}`
+      : 'Período: Todos os registros';
+    doc.text(periodo, pageWidth / 2, yPos, { align: 'center' });
+    yPos += 15;
+
+    // Resumo Geral
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Resumo Geral', 14, yPos);
+    yPos += 8;
+
+    const { summary } = financialConsolidatedStats;
+
+    autoTable(doc, {
+      startY: yPos,
+      head: [['Métrica', 'Quantidade', 'Valor']],
+      body: [
+        ['Recebimentos (Faturamento)', summary.incomeCount.toString(), formatCurrency(summary.totalIncome)],
+        ['Despesas', summary.expensesCount.toString(), formatCurrency(summary.totalExpenses)],
+        ['Contas Pagas', summary.accountsPaidCount.toString(), formatCurrency(summary.totalAccountsPaid)],
+        ['Gastos vinculados a Processos', summary.caseExpensesCount.toString(), formatCurrency(summary.totalCaseExpenses)],
+        ['Resultado Líquido', '-', formatCurrency(summary.netResult)],
+      ],
+      theme: 'striped',
+      headStyles: { fillColor: [22, 163, 74] },
+      margin: { left: 14, right: 14 },
+    });
+
+    yPos = (doc as any).lastAutoTable.finalY + 15;
+
+    // Por Centro de Custo
+    if (financialConsolidatedStats.byCostCenter.length > 0) {
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Por Centro de Custo', 14, yPos);
+      yPos += 8;
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Centro de Custo', 'Receitas', 'Despesas', 'Contas Pagas']],
+        body: financialConsolidatedStats.byCostCenter.map(cc => [
+          cc.name,
+          formatCurrency(cc.income),
+          formatCurrency(cc.expenses),
+          formatCurrency(cc.accountsPaid),
+        ]),
+        theme: 'striped',
+        headStyles: { fillColor: [22, 163, 74] },
+        margin: { left: 14, right: 14 },
+      });
+
+      yPos = (doc as any).lastAutoTable.finalY + 10;
+    }
+
+    // Por Categoria (Contas Pagas)
+    if (financialConsolidatedStats.byCategory.length > 0) {
+      if (yPos > 200) {
+        doc.addPage();
+        yPos = 20;
+      }
+
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Contas Pagas por Categoria', 14, yPos);
+      yPos += 8;
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Categoria', 'Quantidade', 'Total']],
+        body: financialConsolidatedStats.byCategory.map(c => [
+          c.category,
+          c.count.toString(),
+          formatCurrency(c.total),
+        ]),
+        theme: 'striped',
+        headStyles: { fillColor: [22, 163, 74] },
+        margin: { left: 14, right: 14 },
+      });
+
+      yPos = (doc as any).lastAutoTable.finalY + 10;
+    }
+
+    // Recebimentos (limitado a 30)
+    if (financialConsolidatedStats.income.length > 0) {
+      doc.addPage();
+      yPos = 20;
+
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Recebimentos (Faturamento)', 14, yPos);
+      yPos += 8;
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Descrição', 'Cliente', 'Valor', 'Data']],
+        body: financialConsolidatedStats.income.slice(0, 30).map(i => [
+          i.description.substring(0, 40),
+          i.client.substring(0, 25),
+          formatCurrency(i.amount),
+          new Date(i.date).toLocaleDateString('pt-BR'),
+        ]),
+        theme: 'striped',
+        headStyles: { fillColor: [22, 163, 74] },
+        margin: { left: 14, right: 14 },
+        columnStyles: {
+          0: { cellWidth: 60 },
+          1: { cellWidth: 45 },
+          2: { cellWidth: 35 },
+          3: { cellWidth: 25 },
+        },
+      });
+
+      yPos = (doc as any).lastAutoTable.finalY + 10;
+    }
+
+    // Despesas (limitado a 30)
+    if (financialConsolidatedStats.expenses.length > 0) {
+      if (yPos > 180) {
+        doc.addPage();
+        yPos = 20;
+      }
+
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Despesas', 14, yPos);
+      yPos += 8;
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Descrição', 'Cliente', 'Valor', 'Data', 'Processo']],
+        body: financialConsolidatedStats.expenses.slice(0, 30).map(e => [
+          e.description.substring(0, 35),
+          e.client.substring(0, 20),
+          formatCurrency(e.amount),
+          new Date(e.date).toLocaleDateString('pt-BR'),
+          e.linkedToCase ? 'Sim' : 'Não',
+        ]),
+        theme: 'striped',
+        headStyles: { fillColor: [234, 88, 12] },
+        margin: { left: 14, right: 14 },
+        columnStyles: {
+          0: { cellWidth: 55 },
+          1: { cellWidth: 35 },
+          2: { cellWidth: 30 },
+          3: { cellWidth: 25 },
+          4: { cellWidth: 20 },
+        },
+      });
+
+      yPos = (doc as any).lastAutoTable.finalY + 10;
+    }
+
+    // Contas Pagas (limitado a 30)
+    if (financialConsolidatedStats.accountsPaid.length > 0) {
+      if (yPos > 180) {
+        doc.addPage();
+        yPos = 20;
+      }
+
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Contas Pagas', 14, yPos);
+      yPos += 8;
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Fornecedor', 'Descrição', 'Categoria', 'Valor', 'Pago em']],
+        body: financialConsolidatedStats.accountsPaid.slice(0, 30).map(a => [
+          a.supplier.substring(0, 25),
+          a.description.substring(0, 30),
+          a.category.substring(0, 20),
+          formatCurrency(a.amount),
+          new Date(a.paidDate).toLocaleDateString('pt-BR'),
+        ]),
+        theme: 'striped',
+        headStyles: { fillColor: [245, 158, 11] },
+        margin: { left: 14, right: 14 },
+        columnStyles: {
+          0: { cellWidth: 40 },
+          1: { cellWidth: 45 },
+          2: { cellWidth: 30 },
+          3: { cellWidth: 30 },
+          4: { cellWidth: 25 },
+        },
+      });
+    }
+
+    // Rodapé em todas as páginas
+    const pageCount = doc.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'normal');
+      doc.text(
+        `Gerado em ${new Date().toLocaleString('pt-BR')} - Página ${i} de ${pageCount}`,
+        pageWidth / 2,
+        doc.internal.pageSize.getHeight() - 10,
+        { align: 'center' }
+      );
+    }
+
+    doc.save('relatorio_financeiro_consolidado.pdf');
+    toast.success('PDF exportado!');
+  };
+
   const formatDate = (dateString: string | null) => {
     if (!dateString) return 'Nunca';
     return new Date(dateString).toLocaleDateString('pt-BR');
@@ -798,6 +1415,7 @@ const Reports: React.FC = () => {
     { id: 'cases' as ReportType, label: 'Processos', icon: FileText },
     { id: 'casesAdvanced' as ReportType, label: 'Processos Avançado', icon: Scale },
     { id: 'financial' as ReportType, label: 'Financeiro', icon: DollarSign },
+    { id: 'financialConsolidated' as ReportType, label: 'Financeiro Consolidado', icon: Wallet },
     { id: 'tasks' as ReportType, label: 'Tarefas', icon: CheckCircle2 },
     { id: 'pnjAdverses' as ReportType, label: 'PNJ / Adversos', icon: Briefcase },
   ];
@@ -957,14 +1575,42 @@ const Reports: React.FC = () => {
 
     const balance = financialStats.received - financialStats.paid;
 
+    // Preparar dados para gráficos
+    const monthlyData = financialStats.byMonth.map((m) => {
+      const [year, month] = m.month.split('-');
+      const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+      return {
+        name: `${monthNames[parseInt(month) - 1]}/${year.slice(2)}`,
+        receitas: m.income,
+        despesas: m.expense,
+        saldo: m.income - m.expense,
+      };
+    });
+
+    // Dados para gráfico de pizza
+    const summaryData = [
+      { name: 'Recebido', value: financialStats.received, color: '#22c55e' },
+      { name: 'Pago', value: financialStats.paid, color: '#ef4444' },
+      { name: 'Vencido', value: financialStats.overdue, color: '#f59e0b' },
+    ].filter(d => d.value > 0);
+
+    // Dados comparativos
+    const comparisonData = [
+      { name: 'A Receber', valor: financialStats.totalReceivable, fill: '#3b82f6' },
+      { name: 'A Pagar', valor: financialStats.totalPayable, fill: '#ef4444' },
+      { name: 'Recebido', valor: financialStats.received, fill: '#22c55e' },
+      { name: 'Pago', valor: financialStats.paid, fill: '#f97316' },
+    ];
+
     return (
       <div className="space-y-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Cards de resumo */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500 dark:text-slate-400">Total a Receber</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-slate-100 mt-1">
+                <p className="text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1">
                   {formatCurrency(financialStats.totalReceivable)}
                 </p>
               </div>
@@ -978,7 +1624,7 @@ const Reports: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500 dark:text-slate-400">Total a Pagar</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-slate-100 mt-1">
+                <p className="text-2xl font-bold text-red-600 dark:text-red-400 mt-1">
                   {formatCurrency(financialStats.totalPayable)}
                 </p>
               </div>
@@ -1005,6 +1651,20 @@ const Reports: React.FC = () => {
           <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
+                <p className="text-sm text-gray-500 dark:text-slate-400">Pago</p>
+                <p className="text-2xl font-bold text-orange-600 dark:text-orange-400 mt-1">
+                  {formatCurrency(financialStats.paid)}
+                </p>
+              </div>
+              <div className="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-xl">
+                <Wallet className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
                 <p className="text-sm text-gray-500 dark:text-slate-400">Vencido</p>
                 <p className="text-2xl font-bold text-red-600 dark:text-red-400 mt-1">
                   {formatCurrency(financialStats.overdue)}
@@ -1017,6 +1677,7 @@ const Reports: React.FC = () => {
           </div>
         </div>
 
+        {/* Card Saldo */}
         <div className={`rounded-xl p-6 border shadow-sm ${
           balance >= 0
             ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
@@ -1024,7 +1685,7 @@ const Reports: React.FC = () => {
         }`}>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 dark:text-slate-400">Saldo do Período</p>
+              <p className="text-sm text-gray-600 dark:text-slate-400">Saldo do Período (Recebido - Pago)</p>
               <p className={`text-3xl font-bold mt-1 ${
                 balance >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
               }`}>
@@ -1042,6 +1703,200 @@ const Reports: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Gráficos lado a lado */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Gráfico de Barras - Receitas vs Despesas por Mês */}
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 shadow-sm">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4 flex items-center gap-2">
+              <BarChart3 className="w-5 h-5" />
+              Receitas vs Despesas por Mês
+            </h3>
+            {monthlyData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={monthlyData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis dataKey="name" tick={{ fill: '#6b7280', fontSize: 12 }} />
+                  <YAxis tick={{ fill: '#6b7280', fontSize: 12 }} tickFormatter={(v) => `R$${(v/1000).toFixed(0)}k`} />
+                  <Tooltip
+                    formatter={(value: number) => formatCurrency(value)}
+                    contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px' }}
+                    labelStyle={{ color: '#f3f4f6' }}
+                  />
+                  <Legend />
+                  <Bar dataKey="receitas" name="Receitas" fill="#22c55e" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="despesas" name="Despesas" fill="#ef4444" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-[300px] text-gray-500 dark:text-slate-400">
+                <p>Sem dados para o período selecionado</p>
+              </div>
+            )}
+          </div>
+
+          {/* Gráfico de Linha - Evolução do Saldo */}
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 shadow-sm">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4 flex items-center gap-2">
+              <TrendingUp className="w-5 h-5" />
+              Evolução do Saldo Mensal
+            </h3>
+            {monthlyData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={monthlyData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis dataKey="name" tick={{ fill: '#6b7280', fontSize: 12 }} />
+                  <YAxis tick={{ fill: '#6b7280', fontSize: 12 }} tickFormatter={(v) => `R$${(v/1000).toFixed(0)}k`} />
+                  <Tooltip
+                    formatter={(value: number) => formatCurrency(value)}
+                    contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px' }}
+                    labelStyle={{ color: '#f3f4f6' }}
+                  />
+                  <Legend />
+                  <Line type="monotone" dataKey="saldo" name="Saldo" stroke="#3b82f6" strokeWidth={3} dot={{ fill: '#3b82f6', r: 5 }} />
+                  <Line type="monotone" dataKey="receitas" name="Receitas" stroke="#22c55e" strokeWidth={2} dot={{ fill: '#22c55e', r: 4 }} />
+                  <Line type="monotone" dataKey="despesas" name="Despesas" stroke="#ef4444" strokeWidth={2} dot={{ fill: '#ef4444', r: 4 }} />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-[300px] text-gray-500 dark:text-slate-400">
+                <p>Sem dados para o período selecionado</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Gráficos de resumo */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Gráfico de Pizza - Distribuição */}
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 shadow-sm">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4 flex items-center gap-2">
+              <DollarSign className="w-5 h-5" />
+              Distribuição de Valores
+            </h3>
+            {summaryData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={summaryData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                    outerRadius={100}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {summaryData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-[300px] text-gray-500 dark:text-slate-400">
+                <p>Sem dados para o período selecionado</p>
+              </div>
+            )}
+          </div>
+
+          {/* Gráfico de Barras Horizontal - Comparativo */}
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 shadow-sm">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4 flex items-center gap-2">
+              <Scale className="w-5 h-5" />
+              Comparativo Geral
+            </h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={comparisonData} layout="vertical" margin={{ top: 5, right: 30, left: 80, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <XAxis type="number" tick={{ fill: '#6b7280', fontSize: 12 }} tickFormatter={(v) => `R$${(v/1000).toFixed(0)}k`} />
+                <YAxis type="category" dataKey="name" tick={{ fill: '#6b7280', fontSize: 12 }} />
+                <Tooltip
+                  formatter={(value: number) => formatCurrency(value)}
+                  contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px' }}
+                  labelStyle={{ color: '#f3f4f6' }}
+                />
+                <Bar dataKey="valor" radius={[0, 4, 4, 0]}>
+                  {comparisonData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Tabela detalhada por mês */}
+        {monthlyData.length > 0 && (
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 shadow-sm">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4 flex items-center gap-2">
+              <Calendar className="w-5 h-5" />
+              Detalhamento por Mês
+            </h3>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-200 dark:border-slate-700">
+                    <th className="text-left py-3 px-4 text-gray-500 dark:text-slate-400 font-medium">Mês</th>
+                    <th className="text-right py-3 px-4 text-gray-500 dark:text-slate-400 font-medium">Receitas</th>
+                    <th className="text-right py-3 px-4 text-gray-500 dark:text-slate-400 font-medium">Despesas</th>
+                    <th className="text-right py-3 px-4 text-gray-500 dark:text-slate-400 font-medium">Saldo</th>
+                    <th className="text-center py-3 px-4 text-gray-500 dark:text-slate-400 font-medium">Variação</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-neutral-200 dark:divide-slate-700">
+                  {monthlyData.map((m, index) => {
+                    const prevSaldo = index > 0 ? monthlyData[index - 1].saldo : 0;
+                    const variation = prevSaldo !== 0 ? ((m.saldo - prevSaldo) / Math.abs(prevSaldo)) * 100 : 0;
+                    return (
+                      <tr key={m.name} className="hover:bg-neutral-50 dark:hover:bg-slate-700">
+                        <td className="py-3 px-4 text-gray-900 dark:text-slate-100 font-medium">{m.name}</td>
+                        <td className="py-3 px-4 text-right text-green-600 dark:text-green-400">{formatCurrency(m.receitas)}</td>
+                        <td className="py-3 px-4 text-right text-red-600 dark:text-red-400">{formatCurrency(m.despesas)}</td>
+                        <td className={`py-3 px-4 text-right font-medium ${m.saldo >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                          {formatCurrency(m.saldo)}
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          {index > 0 && (
+                            <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
+                              variation >= 0
+                                ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+                                : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+                            }`}>
+                              {variation >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                              {Math.abs(variation).toFixed(1)}%
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+                <tfoot className="border-t-2 border-gray-300 dark:border-slate-600">
+                  <tr className="bg-gray-50 dark:bg-slate-700/50">
+                    <td className="py-3 px-4 font-bold text-gray-900 dark:text-slate-100">Total</td>
+                    <td className="py-3 px-4 text-right font-bold text-green-600 dark:text-green-400">
+                      {formatCurrency(monthlyData.reduce((sum, m) => sum + m.receitas, 0))}
+                    </td>
+                    <td className="py-3 px-4 text-right font-bold text-red-600 dark:text-red-400">
+                      {formatCurrency(monthlyData.reduce((sum, m) => sum + m.despesas, 0))}
+                    </td>
+                    <td className={`py-3 px-4 text-right font-bold ${
+                      monthlyData.reduce((sum, m) => sum + m.saldo, 0) >= 0
+                        ? 'text-green-600 dark:text-green-400'
+                        : 'text-red-600 dark:text-red-400'
+                    }`}>
+                      {formatCurrency(monthlyData.reduce((sum, m) => sum + m.saldo, 0))}
+                    </td>
+                    <td></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+        )}
       </div>
     );
   };
@@ -1714,6 +2569,300 @@ const Reports: React.FC = () => {
     );
   };
 
+  const renderFinancialConsolidatedReport = () => {
+    if (!financialConsolidatedStats) return null;
+
+    const { summary } = financialConsolidatedStats;
+
+    return (
+      <div className="space-y-6">
+        {/* Cards de resumo */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500 dark:text-slate-400">Recebimentos</p>
+                <p className="text-2xl font-bold text-green-600 dark:text-green-400 mt-1">{formatCurrency(summary.totalIncome)}</p>
+                <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">{summary.incomeCount} lançamentos</p>
+              </div>
+              <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-xl">
+                <TrendingUp className="w-6 h-6 text-green-600 dark:text-green-400" />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500 dark:text-slate-400">Despesas</p>
+                <p className="text-2xl font-bold text-red-600 dark:text-red-400 mt-1">{formatCurrency(summary.totalExpenses)}</p>
+                <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">{summary.expensesCount} lançamentos</p>
+              </div>
+              <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-xl">
+                <TrendingDown className="w-6 h-6 text-red-600 dark:text-red-400" />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500 dark:text-slate-400">Contas Pagas</p>
+                <p className="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">{formatCurrency(summary.totalAccountsPaid)}</p>
+                <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">{summary.accountsPaidCount} contas</p>
+              </div>
+              <div className="p-3 bg-amber-100 dark:bg-amber-900/30 rounded-xl">
+                <Wallet className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500 dark:text-slate-400">Gastos Processos</p>
+                <p className="text-2xl font-bold text-purple-600 dark:text-purple-400 mt-1">{formatCurrency(summary.totalCaseExpenses)}</p>
+                <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">{summary.caseExpensesCount} lançamentos</p>
+              </div>
+              <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-xl">
+                <Scale className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500 dark:text-slate-400">Resultado Líquido</p>
+                <p className={`text-2xl font-bold mt-1 ${summary.netResult >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                  {formatCurrency(summary.netResult)}
+                </p>
+                <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">Receitas - Despesas - Contas</p>
+              </div>
+              <div className={`p-3 rounded-xl ${summary.netResult >= 0 ? 'bg-green-100 dark:bg-green-900/30' : 'bg-red-100 dark:bg-red-900/30'}`}>
+                <DollarSign className={`w-6 h-6 ${summary.netResult >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Por Centro de Custo e Por Categoria lado a lado */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Por Centro de Custo */}
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 shadow-sm">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4 flex items-center gap-2">
+              <Building2 className="w-5 h-5" />
+              Por Centro de Custo
+            </h3>
+            {financialConsolidatedStats.byCostCenter.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-200 dark:border-slate-700">
+                      <th className="text-left py-2 px-2 text-gray-500 dark:text-slate-400 font-medium">Centro</th>
+                      <th className="text-right py-2 px-2 text-gray-500 dark:text-slate-400 font-medium">Receitas</th>
+                      <th className="text-right py-2 px-2 text-gray-500 dark:text-slate-400 font-medium">Despesas</th>
+                      <th className="text-right py-2 px-2 text-gray-500 dark:text-slate-400 font-medium">Contas</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-neutral-200 dark:divide-slate-700">
+                    {financialConsolidatedStats.byCostCenter.map((cc) => (
+                      <tr key={cc.id} className="hover:bg-neutral-50 dark:hover:bg-slate-700">
+                        <td className="py-2 px-2 text-gray-900 dark:text-slate-100">{cc.name}</td>
+                        <td className="py-2 px-2 text-right text-green-600 dark:text-green-400">{formatCurrency(cc.income)}</td>
+                        <td className="py-2 px-2 text-right text-red-600 dark:text-red-400">{formatCurrency(cc.expenses)}</td>
+                        <td className="py-2 px-2 text-right text-amber-600 dark:text-amber-400">{formatCurrency(cc.accountsPaid)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="text-gray-500 dark:text-slate-400 text-center py-4">Nenhum dado por centro de custo</p>
+            )}
+          </div>
+
+          {/* Por Categoria (Contas Pagas) */}
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-slate-700 shadow-sm">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4 flex items-center gap-2">
+              <BarChart3 className="w-5 h-5" />
+              Contas Pagas por Categoria
+            </h3>
+            {financialConsolidatedStats.byCategory.length > 0 ? (
+              <div className="space-y-3 max-h-64 overflow-y-auto">
+                {financialConsolidatedStats.byCategory.map((cat) => (
+                  <div key={cat.category} className="flex items-center gap-3">
+                    <div className="flex-1">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-gray-700 dark:text-slate-300 text-sm">{cat.category}</span>
+                        <span className="text-gray-500 dark:text-slate-400 text-sm font-medium">{formatCurrency(cat.total)}</span>
+                      </div>
+                      <div className="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-2">
+                        <div
+                          className="bg-amber-500 h-2 rounded-full"
+                          style={{ width: `${(cat.total / summary.totalAccountsPaid) * 100}%` }}
+                        />
+                      </div>
+                    </div>
+                    <span className="text-xs text-gray-400 dark:text-slate-500 w-8 text-right">{cat.count}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500 dark:text-slate-400 text-center py-4">Nenhuma conta paga no período</p>
+            )}
+          </div>
+        </div>
+
+        {/* Recebimentos */}
+        <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-green-200 dark:border-green-800 shadow-sm">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4 flex items-center gap-2">
+            <TrendingUp className="w-5 h-5 text-green-500" />
+            Recebimentos (Faturamento)
+            <span className="ml-2 px-2 py-0.5 text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full">
+              {summary.incomeCount} lançamentos
+            </span>
+          </h3>
+          {financialConsolidatedStats.income.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-200 dark:border-slate-700">
+                    <th className="text-left py-2 px-2 text-gray-500 dark:text-slate-400 font-medium">Descrição</th>
+                    <th className="text-left py-2 px-2 text-gray-500 dark:text-slate-400 font-medium">Cliente</th>
+                    <th className="text-left py-2 px-2 text-gray-500 dark:text-slate-400 font-medium">Processo</th>
+                    <th className="text-left py-2 px-2 text-gray-500 dark:text-slate-400 font-medium">Centro Custo</th>
+                    <th className="text-right py-2 px-2 text-gray-500 dark:text-slate-400 font-medium">Valor</th>
+                    <th className="text-center py-2 px-2 text-gray-500 dark:text-slate-400 font-medium">Data</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-neutral-200 dark:divide-slate-700">
+                  {financialConsolidatedStats.income.slice(0, 20).map((item) => (
+                    <tr key={item.id} className="hover:bg-neutral-50 dark:hover:bg-slate-700">
+                      <td className="py-2 px-2 text-gray-900 dark:text-slate-100 max-w-xs truncate">{item.description}</td>
+                      <td className="py-2 px-2 text-gray-600 dark:text-slate-300">{item.client}</td>
+                      <td className="py-2 px-2 text-gray-500 dark:text-slate-400 text-xs font-mono">{item.case || '-'}</td>
+                      <td className="py-2 px-2 text-gray-500 dark:text-slate-400">{item.costCenter || '-'}</td>
+                      <td className="py-2 px-2 text-right text-green-600 dark:text-green-400 font-medium">{formatCurrency(item.amount)}</td>
+                      <td className="py-2 px-2 text-center text-gray-500 dark:text-slate-400">{new Date(item.date).toLocaleDateString('pt-BR')}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {financialConsolidatedStats.income.length > 20 && (
+                <p className="text-sm text-gray-500 dark:text-slate-400 text-center mt-2">
+                  Mostrando 20 de {financialConsolidatedStats.income.length} registros. Exporte para ver todos.
+                </p>
+              )}
+            </div>
+          ) : (
+            <p className="text-gray-500 dark:text-slate-400 text-center py-4">Nenhum recebimento no período</p>
+          )}
+        </div>
+
+        {/* Despesas */}
+        <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-red-200 dark:border-red-800 shadow-sm">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4 flex items-center gap-2">
+            <TrendingDown className="w-5 h-5 text-red-500" />
+            Despesas
+            <span className="ml-2 px-2 py-0.5 text-xs bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-full">
+              {summary.expensesCount} lançamentos
+            </span>
+          </h3>
+          {financialConsolidatedStats.expenses.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-200 dark:border-slate-700">
+                    <th className="text-left py-2 px-2 text-gray-500 dark:text-slate-400 font-medium">Descrição</th>
+                    <th className="text-left py-2 px-2 text-gray-500 dark:text-slate-400 font-medium">Cliente</th>
+                    <th className="text-left py-2 px-2 text-gray-500 dark:text-slate-400 font-medium">Processo</th>
+                    <th className="text-left py-2 px-2 text-gray-500 dark:text-slate-400 font-medium">Centro Custo</th>
+                    <th className="text-right py-2 px-2 text-gray-500 dark:text-slate-400 font-medium">Valor</th>
+                    <th className="text-center py-2 px-2 text-gray-500 dark:text-slate-400 font-medium">Data</th>
+                    <th className="text-center py-2 px-2 text-gray-500 dark:text-slate-400 font-medium">Vinc. Processo</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-neutral-200 dark:divide-slate-700">
+                  {financialConsolidatedStats.expenses.slice(0, 20).map((item) => (
+                    <tr key={item.id} className="hover:bg-neutral-50 dark:hover:bg-slate-700">
+                      <td className="py-2 px-2 text-gray-900 dark:text-slate-100 max-w-xs truncate">{item.description}</td>
+                      <td className="py-2 px-2 text-gray-600 dark:text-slate-300">{item.client}</td>
+                      <td className="py-2 px-2 text-gray-500 dark:text-slate-400 text-xs font-mono">{item.case || '-'}</td>
+                      <td className="py-2 px-2 text-gray-500 dark:text-slate-400">{item.costCenter || '-'}</td>
+                      <td className="py-2 px-2 text-right text-red-600 dark:text-red-400 font-medium">{formatCurrency(item.amount)}</td>
+                      <td className="py-2 px-2 text-center text-gray-500 dark:text-slate-400">{new Date(item.date).toLocaleDateString('pt-BR')}</td>
+                      <td className="py-2 px-2 text-center">
+                        {item.linkedToCase ? (
+                          <span className="px-2 py-0.5 text-xs bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 rounded-full">Sim</span>
+                        ) : (
+                          <span className="px-2 py-0.5 text-xs bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-slate-400 rounded-full">Não</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {financialConsolidatedStats.expenses.length > 20 && (
+                <p className="text-sm text-gray-500 dark:text-slate-400 text-center mt-2">
+                  Mostrando 20 de {financialConsolidatedStats.expenses.length} registros. Exporte para ver todos.
+                </p>
+              )}
+            </div>
+          ) : (
+            <p className="text-gray-500 dark:text-slate-400 text-center py-4">Nenhuma despesa no período</p>
+          )}
+        </div>
+
+        {/* Contas Pagas */}
+        <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-amber-200 dark:border-amber-800 shadow-sm">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4 flex items-center gap-2">
+            <Wallet className="w-5 h-5 text-amber-500" />
+            Contas Pagas
+            <span className="ml-2 px-2 py-0.5 text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-full">
+              {summary.accountsPaidCount} contas
+            </span>
+          </h3>
+          {financialConsolidatedStats.accountsPaid.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-200 dark:border-slate-700">
+                    <th className="text-left py-2 px-2 text-gray-500 dark:text-slate-400 font-medium">Fornecedor</th>
+                    <th className="text-left py-2 px-2 text-gray-500 dark:text-slate-400 font-medium">Descrição</th>
+                    <th className="text-left py-2 px-2 text-gray-500 dark:text-slate-400 font-medium">Categoria</th>
+                    <th className="text-left py-2 px-2 text-gray-500 dark:text-slate-400 font-medium">Centro Custo</th>
+                    <th className="text-right py-2 px-2 text-gray-500 dark:text-slate-400 font-medium">Valor</th>
+                    <th className="text-center py-2 px-2 text-gray-500 dark:text-slate-400 font-medium">Pago em</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-neutral-200 dark:divide-slate-700">
+                  {financialConsolidatedStats.accountsPaid.slice(0, 20).map((item) => (
+                    <tr key={item.id} className="hover:bg-neutral-50 dark:hover:bg-slate-700">
+                      <td className="py-2 px-2 text-gray-900 dark:text-slate-100">{item.supplier}</td>
+                      <td className="py-2 px-2 text-gray-600 dark:text-slate-300 max-w-xs truncate">{item.description}</td>
+                      <td className="py-2 px-2 text-gray-500 dark:text-slate-400">{item.category}</td>
+                      <td className="py-2 px-2 text-gray-500 dark:text-slate-400">{item.costCenter || '-'}</td>
+                      <td className="py-2 px-2 text-right text-amber-600 dark:text-amber-400 font-medium">{formatCurrency(item.amount)}</td>
+                      <td className="py-2 px-2 text-center text-gray-500 dark:text-slate-400">{new Date(item.paidDate).toLocaleDateString('pt-BR')}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {financialConsolidatedStats.accountsPaid.length > 20 && (
+                <p className="text-sm text-gray-500 dark:text-slate-400 text-center mt-2">
+                  Mostrando 20 de {financialConsolidatedStats.accountsPaid.length} registros. Exporte para ver todos.
+                </p>
+              )}
+            </div>
+          ) : (
+            <p className="text-gray-500 dark:text-slate-400 text-center py-4">Nenhuma conta paga no período</p>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <Layout>
       <div className="space-y-6">
@@ -1752,6 +2901,24 @@ const Reports: React.FC = () => {
                 Exportar PDF
               </button>
             )}
+            {activeReport === 'casesAdvanced' && (
+              <button
+                onClick={handleExportCasesAdvancedPDF}
+                className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+              >
+                <FileDown className="w-4 h-4" />
+                Exportar PDF
+              </button>
+            )}
+            {activeReport === 'financialConsolidated' && (
+              <button
+                onClick={handleExportFinancialConsolidatedPDF}
+                className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+              >
+                <FileDown className="w-4 h-4" />
+                Exportar PDF
+              </button>
+            )}
           </div>
         </div>
 
@@ -1780,7 +2947,7 @@ const Reports: React.FC = () => {
         </div>
 
         {/* Filters - only show for reports that use date filters */}
-        {(activeReport === 'clients' || activeReport === 'cases' || activeReport === 'financial' || activeReport === 'tasks') && (
+        {(activeReport === 'clients' || activeReport === 'cases' || activeReport === 'financial' || activeReport === 'tasks' || activeReport === 'financialConsolidated') && (
           <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm">
             <button
               onClick={() => setFiltersOpen(!filtersOpen)}
@@ -1858,6 +3025,7 @@ const Reports: React.FC = () => {
             {activeReport === 'tasks' && renderTaskReport()}
             {activeReport === 'casesAdvanced' && renderCaseAdvancedReport()}
             {activeReport === 'pnjAdverses' && renderPnjAdversesReport()}
+            {activeReport === 'financialConsolidated' && renderFinancialConsolidatedReport()}
           </>
         )}
       </div>

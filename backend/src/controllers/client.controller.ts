@@ -248,6 +248,9 @@ export class ClientController {
                 },
               },
             },
+            _count: {
+              select: { cases: true },
+            },
           },
         }),
         prisma.client.count({ where }),

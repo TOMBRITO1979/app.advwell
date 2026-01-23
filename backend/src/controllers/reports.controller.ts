@@ -321,7 +321,224 @@ export const getPnjAdversesReport = async (req: AuthRequest, res: Response) => {
   }
 };
 
+/**
+ * Relatório Financeiro Consolidado
+ * GET /reports/financial/consolidated
+ *
+ * Retorna:
+ * - summary: Totais consolidados
+ * - accountsPaid: Contas pagas (da tabela AccountPayable)
+ * - income: Recebimentos (FinancialTransaction tipo INCOME)
+ * - expenses: Despesas (FinancialTransaction tipo EXPENSE)
+ * - caseExpenses: Gastos vinculados a processos
+ * - byCategory: Agrupamento por categoria/centro de custo
+ */
+export const getFinancialConsolidatedReport = async (req: AuthRequest, res: Response) => {
+  try {
+    const companyId = req.user!.companyId;
+    const { startDate, endDate } = req.query;
+
+    // Definir período de filtro
+    const dateFilter: { gte?: Date; lte?: Date } = {};
+    if (startDate) {
+      dateFilter.gte = new Date(String(startDate));
+    }
+    if (endDate) {
+      dateFilter.lte = new Date(String(endDate) + 'T23:59:59.999Z');
+    }
+
+    // 1. Buscar Contas Pagas (AccountPayable com status PAID)
+    const accountsPaid = await prisma.accountPayable.findMany({
+      where: {
+        companyId,
+        status: 'PAID',
+        ...(Object.keys(dateFilter).length > 0 && { paidDate: dateFilter }),
+      },
+      select: {
+        id: true,
+        supplier: true,
+        description: true,
+        amount: true,
+        dueDate: true,
+        paidDate: true,
+        category: true,
+        costCenter: {
+          select: { id: true, name: true },
+        },
+      },
+      orderBy: { paidDate: 'desc' },
+    });
+
+    // 2. Buscar Transações Financeiras (Fluxo de Caixa)
+    const financialTransactions = await prisma.financialTransaction.findMany({
+      where: {
+        companyId,
+        status: { in: ['PAID', 'PARTIAL'] },
+        ...(Object.keys(dateFilter).length > 0 && { date: dateFilter }),
+      },
+      select: {
+        id: true,
+        type: true,
+        description: true,
+        amount: true,
+        date: true,
+        status: true,
+        caseId: true,
+        client: {
+          select: { id: true, name: true },
+        },
+        case: {
+          select: { id: true, processNumber: true },
+        },
+        costCenter: {
+          select: { id: true, name: true },
+        },
+        installments: {
+          where: { status: 'PAID' },
+          select: {
+            id: true,
+            installmentNumber: true,
+            amount: true,
+            paidAmount: true,
+            paidDate: true,
+          },
+        },
+      },
+      orderBy: { date: 'desc' },
+    });
+
+    // Separar em receitas e despesas
+    const incomeTransactions = financialTransactions.filter((t) => t.type === 'INCOME');
+    const expenseTransactions = financialTransactions.filter((t) => t.type === 'EXPENSE');
+    const caseExpenses = expenseTransactions.filter((t) => t.caseId !== null);
+
+    // Calcular totais
+    const totalAccountsPaid = accountsPaid.reduce((sum, a) => sum + Number(a.amount), 0);
+    const totalIncome = incomeTransactions.reduce((sum, t) => {
+      // Se tem parcelas pagas, soma o valor pago das parcelas
+      if (t.installments && t.installments.length > 0) {
+        return sum + t.installments.reduce((pSum, inst) => pSum + Number(inst.paidAmount || inst.amount), 0);
+      }
+      return sum + Number(t.amount);
+    }, 0);
+    const totalExpenses = expenseTransactions.reduce((sum, t) => {
+      if (t.installments && t.installments.length > 0) {
+        return sum + t.installments.reduce((pSum, inst) => pSum + Number(inst.paidAmount || inst.amount), 0);
+      }
+      return sum + Number(t.amount);
+    }, 0);
+    const totalCaseExpenses = caseExpenses.reduce((sum, t) => {
+      if (t.installments && t.installments.length > 0) {
+        return sum + t.installments.reduce((pSum, inst) => pSum + Number(inst.paidAmount || inst.amount), 0);
+      }
+      return sum + Number(t.amount);
+    }, 0);
+
+    // Agrupar contas pagas por categoria
+    const accountsByCategory: Record<string, { count: number; total: number }> = {};
+    accountsPaid.forEach((a) => {
+      const cat = a.category || 'Sem categoria';
+      if (!accountsByCategory[cat]) {
+        accountsByCategory[cat] = { count: 0, total: 0 };
+      }
+      accountsByCategory[cat].count++;
+      accountsByCategory[cat].total += Number(a.amount);
+    });
+
+    // Agrupar por centro de custo
+    const byCostCenter: Record<string, { name: string; income: number; expenses: number; accountsPaid: number }> = {};
+
+    // Contas pagas por centro de custo
+    accountsPaid.forEach((a) => {
+      const ccId = a.costCenter?.id || 'sem-centro';
+      const ccName = a.costCenter?.name || 'Sem centro de custo';
+      if (!byCostCenter[ccId]) {
+        byCostCenter[ccId] = { name: ccName, income: 0, expenses: 0, accountsPaid: 0 };
+      }
+      byCostCenter[ccId].accountsPaid += Number(a.amount);
+    });
+
+    // Transações por centro de custo
+    financialTransactions.forEach((t) => {
+      const ccId = t.costCenter?.id || 'sem-centro';
+      const ccName = t.costCenter?.name || 'Sem centro de custo';
+      if (!byCostCenter[ccId]) {
+        byCostCenter[ccId] = { name: ccName, income: 0, expenses: 0, accountsPaid: 0 };
+      }
+      const amount = t.installments && t.installments.length > 0
+        ? t.installments.reduce((sum, inst) => sum + Number(inst.paidAmount || inst.amount), 0)
+        : Number(t.amount);
+
+      if (t.type === 'INCOME') {
+        byCostCenter[ccId].income += amount;
+      } else {
+        byCostCenter[ccId].expenses += amount;
+      }
+    });
+
+    res.json({
+      success: true,
+      data: {
+        summary: {
+          totalAccountsPaid,
+          accountsPaidCount: accountsPaid.length,
+          totalIncome,
+          incomeCount: incomeTransactions.length,
+          totalExpenses,
+          expensesCount: expenseTransactions.length,
+          totalCaseExpenses,
+          caseExpensesCount: caseExpenses.length,
+          netResult: totalIncome - totalExpenses - totalAccountsPaid,
+        },
+        accountsPaid: accountsPaid.map((a) => ({
+          id: a.id,
+          supplier: a.supplier,
+          description: a.description,
+          amount: Number(a.amount),
+          dueDate: a.dueDate,
+          paidDate: a.paidDate,
+          category: a.category || 'Sem categoria',
+          costCenter: a.costCenter?.name || null,
+        })),
+        income: incomeTransactions.map((t) => ({
+          id: t.id,
+          description: t.description,
+          amount: t.installments && t.installments.length > 0
+            ? t.installments.reduce((sum, inst) => sum + Number(inst.paidAmount || inst.amount), 0)
+            : Number(t.amount),
+          date: t.date,
+          client: t.client?.name || 'Sem cliente',
+          case: t.case?.processNumber || null,
+          costCenter: t.costCenter?.name || null,
+        })),
+        expenses: expenseTransactions.map((t) => ({
+          id: t.id,
+          description: t.description,
+          amount: t.installments && t.installments.length > 0
+            ? t.installments.reduce((sum, inst) => sum + Number(inst.paidAmount || inst.amount), 0)
+            : Number(t.amount),
+          date: t.date,
+          client: t.client?.name || 'Sem cliente',
+          case: t.case?.processNumber || null,
+          costCenter: t.costCenter?.name || null,
+          linkedToCase: t.caseId !== null,
+        })),
+        byCategory: Object.entries(accountsByCategory)
+          .map(([category, data]) => ({ category, ...data }))
+          .sort((a, b) => b.total - a.total),
+        byCostCenter: Object.entries(byCostCenter)
+          .map(([id, data]) => ({ id, ...data }))
+          .sort((a, b) => (b.income + b.expenses + b.accountsPaid) - (a.income + a.expenses + a.accountsPaid)),
+      },
+    });
+  } catch (error) {
+    console.error('Error in getFinancialConsolidatedReport:', error);
+    res.status(500).json({ error: 'Erro ao gerar relatório financeiro consolidado' });
+  }
+};
+
 export default {
   getCaseAdvancedReport,
   getPnjAdversesReport,
+  getFinancialConsolidatedReport,
 };
