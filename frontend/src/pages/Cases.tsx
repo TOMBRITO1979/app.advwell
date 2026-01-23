@@ -102,6 +102,29 @@ interface CaseWitness {
   mobile?: string;
 }
 
+// Calcula o tempo médio entre movimentações em dias
+const calcularTempoMedioMovimentacao = (movements: CaseMovement[]): number | null => {
+  if (!movements || movements.length < 2) return null;
+
+  // Ordenar por data (mais antiga primeiro)
+  const sorted = [...movements].sort((a, b) =>
+    new Date(a.movementDate).getTime() - new Date(b.movementDate).getTime()
+  );
+
+  // Calcular diferenças entre movimentações consecutivas
+  const diferencas: number[] = [];
+  for (let i = 1; i < sorted.length; i++) {
+    const dataAnterior = new Date(sorted[i - 1].movementDate);
+    const dataAtual = new Date(sorted[i].movementDate);
+    const diffDias = Math.abs(dataAtual.getTime() - dataAnterior.getTime()) / (1000 * 60 * 60 * 24);
+    diferencas.push(diffDias);
+  }
+
+  // Calcular média
+  const soma = diferencas.reduce((acc, val) => acc + val, 0);
+  return Math.round(soma / diferencas.length);
+};
+
 const Cases: React.FC = () => {
   const location = useLocation();
   const [cases, setCases] = useState<Case[]>([]);
@@ -2496,9 +2519,15 @@ const Cases: React.FC = () => {
                         Andamento do Processo
                       </h3>
                       {selectedCase.movements && selectedCase.movements.length > 0 && (
-                        <span className="text-sm text-neutral-500 dark:text-slate-400">
-                          {selectedCase.movements.length} movimentação(ões)
-                        </span>
+                        <div className="flex flex-col items-end text-sm text-neutral-500 dark:text-slate-400">
+                          <span>{selectedCase.movements.length} movimentação(ões)</span>
+                          {calcularTempoMedioMovimentacao(selectedCase.movements) !== null && (
+                            <span className="flex items-center gap-1 text-xs mt-0.5">
+                              <Clock size={12} />
+                              Tempo médio: {calcularTempoMedioMovimentacao(selectedCase.movements)} dias
+                            </span>
+                          )}
+                        </div>
                       )}
                     </div>
 
