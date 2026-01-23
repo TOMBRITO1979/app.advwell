@@ -704,7 +704,7 @@ const Reports: React.FC = () => {
         ['Taxa de Conclusão', `${completionRate}%`],
       ],
       theme: 'striped',
-      headStyles: { fillColor: [59, 130, 246] },
+      headStyles: { fillColor: [22, 163, 74] },
       margin: { left: 14, right: 14 },
     });
 
@@ -729,7 +729,7 @@ const Reports: React.FC = () => {
         head: [['Prioridade', 'Quantidade']],
         body: taskStats.byPriority.map(p => [priorityLabels[p.priority] || p.priority, p.count.toString()]),
         theme: 'striped',
-        headStyles: { fillColor: [59, 130, 246] },
+        headStyles: { fillColor: [22, 163, 74] },
         margin: { left: 14, right: 14 },
       });
 
@@ -761,7 +761,7 @@ const Reports: React.FC = () => {
           `${u.completionRate}%`,
         ]),
         theme: 'striped',
-        headStyles: { fillColor: [59, 130, 246] },
+        headStyles: { fillColor: [22, 163, 74] },
         margin: { left: 14, right: 14 },
         columnStyles: {
           0: { cellWidth: 50 },
