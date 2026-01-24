@@ -33,6 +33,13 @@ interface Document {
     id: string;
     name: string;
   };
+  // Campos para documentos unificados
+  source?: 'upload' | 'shared';
+  sourceLabel?: string;
+  status?: string;
+  requiresSignature?: boolean;
+  signedAt?: string;
+  uploadedByClient?: boolean;
 }
 
 const Documents: React.FC = () => {
@@ -144,12 +151,19 @@ const Documents: React.FC = () => {
 
     setLoading(true);
     try {
-      const params: any = {};
-      if (selectedClient) params.clientId = selectedClient.id;
-      if (selectedCase) params.caseId = selectedCase.id;
+      let response;
 
-      const response = await api.get('/documents/search', { params });
-      setDocuments(response.data || []);
+      if (selectedClient) {
+        // Usar endpoint unificado para clientes (Document + SharedDocument)
+        response = await api.get(`/documents/client/${selectedClient.id}/unified`);
+        setDocuments(response.data.data || []);
+      } else if (selectedCase) {
+        // Manter comportamento atual para processos
+        const params = { caseId: selectedCase.id };
+        response = await api.get('/documents/search', { params });
+        setDocuments(response.data || []);
+      }
+
       setShowViewModal(true);
     } catch (error: any) {
       toast.error('Erro ao buscar documentos');
@@ -521,15 +535,30 @@ const Documents: React.FC = () => {
                             <p className="text-sm text-neutral-600 dark:text-slate-400 mt-1">{doc.description}</p>
                           )}
                         </div>
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-medium ${
-                            doc.storageType === 'upload'
-                              ? 'bg-success-100 dark:bg-success-900/30 text-success-800 dark:text-success-400'
-                              : 'bg-success-100 dark:bg-success-900/30 text-success-800 dark:text-success-400'
-                          }`}
-                        >
-                          {getStorageTypeLabel(doc.storageType)}
-                        </span>
+                        <div className="flex gap-2 flex-wrap">
+                          <span
+                            className={`px-3 py-1 rounded-full text-xs font-medium ${
+                              doc.storageType === 'upload'
+                                ? 'bg-success-100 dark:bg-success-900/30 text-success-800 dark:text-success-400'
+                                : 'bg-info-100 dark:bg-info-900/30 text-info-800 dark:text-info-400'
+                            }`}
+                          >
+                            {getStorageTypeLabel(doc.storageType)}
+                          </span>
+                          {doc.source && (
+                            <span
+                              className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                doc.source === 'shared'
+                                  ? doc.uploadedByClient
+                                    ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-400'
+                                    : 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-400'
+                                  : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-800 dark:text-neutral-300'
+                              }`}
+                            >
+                              {doc.sourceLabel}
+                            </span>
+                          )}
+                        </div>
                       </div>
 
                       <div className="grid grid-cols-2 gap-4 mt-3 text-sm">

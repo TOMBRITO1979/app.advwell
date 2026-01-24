@@ -111,8 +111,8 @@ export class SharedDocumentController {
         });
       }
 
-      // Upload para S3
-      const fileKey = `shared-documents/${companyId}/${clientId}/${Date.now()}-${req.file.originalname}`;
+      // Upload para S3 (path unificado com Document)
+      const fileKey = `companies/${companyId}/clients/${clientId}/documents/${Date.now()}-${req.file.originalname}`;
       const fileUrl = await uploadBufferToS3(req.file.buffer, fileKey, req.file.mimetype);
 
       // Criar registro no banco
@@ -496,8 +496,8 @@ export class SharedDocumentController {
       // Aguardar geração do PDF
       const pdfBuffer = await pdfPromise;
 
-      // Upload para S3
-      const fileKey = `shared-documents/${companyId}/${clientId}/${Date.now()}-${legalDoc.title.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
+      // Upload para S3 (path unificado com Document)
+      const fileKey = `companies/${companyId}/clients/${clientId}/documents/${Date.now()}-${legalDoc.title.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
       const fileUrl = await uploadBufferToS3(pdfBuffer, fileKey, 'application/pdf');
 
       // Criar registro de documento compartilhado

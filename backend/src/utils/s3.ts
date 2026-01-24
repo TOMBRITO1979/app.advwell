@@ -49,6 +49,35 @@ export const uploadToS3 = async (
   return { key, url };
 };
 
+// Upload organizado por entidade (cliente ou processo)
+export const uploadToS3Organized = async (
+  file: Express.Multer.File,
+  companyId: string,
+  entityType: 'client' | 'case',
+  entityId: string
+): Promise<{ key: string; url: string }> => {
+  const fileExtension = file.originalname.split('.').pop();
+  const fileName = `${crypto.randomUUID()}.${fileExtension}`;
+
+  // Novo formato organizado: companies/{companyId}/clients/{clientId}/documents/{uuid}.{ext}
+  // ou: companies/{companyId}/cases/{caseId}/documents/{uuid}.{ext}
+  const key = `companies/${companyId}/${entityType}s/${entityId}/documents/${fileName}`;
+
+  const command = new PutObjectCommand({
+    Bucket: config.aws.s3BucketName,
+    Key: key,
+    Body: file.buffer,
+    ContentType: file.mimetype,
+    ServerSideEncryption: 'AES256',
+  });
+
+  await s3Client.send(command);
+
+  const url = `https://${config.aws.s3BucketName}.s3.${config.aws.region}.amazonaws.com/${key}`;
+
+  return { key, url };
+};
+
 // Upload de buffer com key customizada (para assinaturas e documentos compartilhados)
 export const uploadBufferToS3 = async (
   buffer: Buffer,

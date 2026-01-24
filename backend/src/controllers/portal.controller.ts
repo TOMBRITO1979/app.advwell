@@ -911,9 +911,9 @@ export class PortalController {
         return res.status(404).json({ error: 'Cliente não encontrado' });
       }
 
-      // Upload para S3
+      // Upload para S3 (path unificado com Document)
       const { uploadBufferToS3 } = await import('../utils/s3');
-      const fileKey = `shared-documents/${companyId}/${clientId}/uploads/${Date.now()}-${req.file.originalname}`;
+      const fileKey = `companies/${companyId}/clients/${clientId}/documents/${Date.now()}-${req.file.originalname}`;
       const fileUrl = await uploadBufferToS3(req.file.buffer, fileKey, req.file.mimetype);
 
       // Criar registro no banco

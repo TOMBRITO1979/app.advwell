@@ -15,6 +15,7 @@ import {
   searchDocuments,
   uploadDocument,
   getDownloadUrl,
+  getUnifiedDocumentsByClient,
 } from '../controllers/document.controller';
 
 const router = Router();
@@ -100,6 +101,7 @@ const idParamValidation = [
 // Rotas de documentos
 router.get('/', listDocuments);                              // Listar documentos com filtros
 router.get('/search', searchDocuments);                      // Buscar por cliente ou processo
+router.get('/client/:clientId/unified', getUnifiedDocumentsByClient); // Documentos unificados por cliente
 router.post('/upload', upload.single('file'), validateUploadContent, uploadDocument); // Upload de arquivo para S3
 router.get('/:id/download', idParamValidation, validate, getDownloadUrl);                 // Gerar URL de download
 router.get('/:id', idParamValidation, validate, getDocument);                             // Buscar documento por ID

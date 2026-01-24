@@ -371,6 +371,112 @@ export const deleteDocument = async (req: AuthRequest, res: Response) => {
   }
 };
 
+// Buscar documentos unificados (Document + SharedDocument) por cliente
+export const getUnifiedDocumentsByClient = async (req: AuthRequest, res: Response) => {
+  try {
+    const { clientId } = req.params;
+    const companyId = req.user!.companyId;
+
+    if (!clientId) {
+      return res.status(400).json({ error: 'clientId é obrigatório' });
+    }
+
+    // Verificar se cliente pertence à empresa
+    const client = await prisma.client.findFirst({
+      where: { id: clientId, companyId },
+    });
+    if (!client) {
+      return res.status(404).json({ error: 'Cliente não encontrado' });
+    }
+
+    // Buscar documentos da tabela Document
+    const documents = await prisma.document.findMany({
+      where: { companyId, clientId },
+      include: {
+        client: { select: { id: true, name: true, cpf: true } },
+        case: { select: { id: true, processNumber: true, subject: true } },
+        user: { select: { id: true, name: true, email: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    // Buscar documentos da tabela SharedDocument
+    const sharedDocuments = await prisma.sharedDocument.findMany({
+      where: { companyId, clientId },
+      include: {
+        client: { select: { id: true, name: true, cpf: true } },
+        sharedBy: { select: { id: true, name: true, email: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    // Gerar URLs assinadas
+    const { getSignedS3Url } = await import('../utils/s3');
+
+    // Processar documentos
+    const processedDocuments = await Promise.all(
+      documents.map(async (doc) => {
+        let fileUrl = doc.fileUrl;
+        if (doc.storageType === 'upload' && doc.fileKey) {
+          fileUrl = await getSignedS3Url(doc.fileKey);
+        }
+        return {
+          ...doc,
+          fileUrl,
+          source: 'upload' as const,
+          sourceLabel: 'Upload Interno',
+        };
+      })
+    );
+
+    // Processar shared documents
+    const processedSharedDocs = await Promise.all(
+      sharedDocuments.map(async (doc) => {
+        let fileUrl = doc.fileUrl;
+        if (doc.fileKey) {
+          fileUrl = await getSignedS3Url(doc.fileKey);
+        }
+        return {
+          id: doc.id,
+          name: doc.name,
+          description: doc.description,
+          storageType: 'upload' as const,
+          fileUrl,
+          fileKey: doc.fileKey,
+          fileSize: doc.fileSize,
+          fileType: doc.fileType,
+          createdAt: doc.createdAt,
+          client: doc.client,
+          user: doc.sharedBy,
+          status: doc.status,
+          requiresSignature: doc.requiresSignature,
+          signedAt: doc.signedAt,
+          uploadedByClient: doc.uploadedByClient,
+          source: 'shared' as const,
+          sourceLabel: doc.uploadedByClient ? 'Enviado pelo Cliente' : 'Compartilhado',
+        };
+      })
+    );
+
+    // Combinar e ordenar por data
+    const allDocuments = [...processedDocuments, ...processedSharedDocs].sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+
+    res.json({
+      data: allDocuments,
+      summary: {
+        total: allDocuments.length,
+        uploads: processedDocuments.length,
+        shared: processedSharedDocs.length,
+      }
+    });
+  } catch (error: any) {
+    appLogger.error('Erro ao buscar documentos unificados', error as Error);
+    res.status(500).json({ error: 'Erro ao buscar documentos unificados' });
+  }
+};
+
 // Buscar documentos por cliente ou processo (para autocomplete)
 export const searchDocuments = async (req: AuthRequest, res: Response) => {
   try {
@@ -556,13 +662,37 @@ export const uploadDocument = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    // Upload para S3 usando companyId como pasta
-    appLogger.info('Fazendo upload de arquivo', {
-      fileName: file.originalname,
-      sizeBytes: file.size,
-      s3Path: `companies/${companyId}/documents/`
-    });
-    const { key, url } = await uploadToS3(file, companyId);
+    // Upload para S3 organizado por entidade
+    let key: string;
+    let url: string;
+
+    if (clientId) {
+      // Upload organizado por cliente
+      const { uploadToS3Organized } = await import('../utils/s3');
+      appLogger.info('Fazendo upload de arquivo (organizado por cliente)', {
+        fileName: file.originalname,
+        sizeBytes: file.size,
+        s3Path: `companies/${companyId}/clients/${clientId}/documents/`
+      });
+      ({ key, url } = await uploadToS3Organized(file, companyId, 'client', clientId));
+    } else if (caseId) {
+      // Upload organizado por processo
+      const { uploadToS3Organized } = await import('../utils/s3');
+      appLogger.info('Fazendo upload de arquivo (organizado por processo)', {
+        fileName: file.originalname,
+        sizeBytes: file.size,
+        s3Path: `companies/${companyId}/cases/${caseId}/documents/`
+      });
+      ({ key, url } = await uploadToS3Organized(file, companyId, 'case', caseId));
+    } else {
+      // Fallback para formato antigo (não deveria acontecer devido às validações)
+      appLogger.info('Fazendo upload de arquivo (formato legado)', {
+        fileName: file.originalname,
+        sizeBytes: file.size,
+        s3Path: `companies/${companyId}/documents/`
+      });
+      ({ key, url } = await uploadToS3(file, companyId));
+    }
     appLogger.info('Arquivo enviado para S3 com sucesso', { s3Key: key });
 
     // Criar registro no banco
