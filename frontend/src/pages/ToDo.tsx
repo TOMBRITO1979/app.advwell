@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Plus, Search, CheckCircle, Circle, Edit2, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Calendar, Plus, Search, CheckCircle, Circle, Edit2, Trash2, ChevronLeft, ChevronRight, Briefcase, Users } from 'lucide-react';
 import ActionsDropdown from '../components/ui/ActionsDropdown';
 import KanbanStatusDropdown from '../components/ui/KanbanStatusDropdown';
 import api from '../services/api';
@@ -42,6 +42,16 @@ const ToDo: React.FC = () => {
   const [companyUsers, setCompanyUsers] = useState<any[]>([]);
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
 
+  // Client and Case autocomplete states
+  const [clients, setClients] = useState<any[]>([]);
+  const [cases, setCases] = useState<any[]>([]);
+  const [selectedClient, setSelectedClient] = useState<any | null>(null);
+  const [selectedCase, setSelectedCase] = useState<any | null>(null);
+  const [clientSearch, setClientSearch] = useState('');
+  const [caseSearch, setCaseSearch] = useState('');
+  const [showClientDropdown, setShowClientDropdown] = useState(false);
+  const [showCaseDropdown, setShowCaseDropdown] = useState(false);
+
   const [formData, setFormData] = useState<TodoFormData>({
     title: '',
     description: '',
@@ -63,12 +73,43 @@ const ToDo: React.FC = () => {
     setPage(1);
   }, [searchTerm, filterCompleted]);
 
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setShowClientDropdown(false);
+      setShowCaseDropdown(false);
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
+
   const fetchCompanyUsers = async () => {
     try {
       const response = await api.get('/users', { params: { companyOnly: 'true' } });
       setCompanyUsers(response.data.data || []);
     } catch (error) {
       console.error('Erro ao buscar usuários:', error);
+    }
+  };
+
+  const fetchClients = async (search?: string) => {
+    try {
+      const response = await api.get('/clients', { params: { search, limit: 20 } });
+      setClients(response.data.data || []);
+    } catch (error) {
+      console.error('Erro ao buscar clientes:', error);
+    }
+  };
+
+  const fetchCases = async (search?: string) => {
+    try {
+      const params: any = { limit: 20 };
+      if (search) params.search = search;
+      if (selectedClient) params.clientId = selectedClient.id;
+      const response = await api.get('/cases', { params });
+      setCases(response.data.data || []);
+    } catch (error) {
+      console.error('Erro ao buscar processos:', error);
     }
   };
 
@@ -133,9 +174,9 @@ const ToDo: React.FC = () => {
         kanbanStatus: formData.kanbanStatus,
         type: 'TAREFA',
         date: dateWithTime,
-        // Converter strings vazias para null/undefined para evitar erro de validação UUID
-        clientId: formData.clientId || undefined,
-        caseId: formData.caseId || undefined,
+        // Use selectedClient/selectedCase IDs from autocomplete
+        clientId: selectedClient?.id || undefined,
+        caseId: selectedCase?.id || undefined,
         completed: isCompleted,
         assignedUserIds: selectedUserIds,
       };
@@ -195,6 +236,11 @@ const ToDo: React.FC = () => {
       assignedUserIds: todo.assignedUsers?.map(au => au.user.id) || [],
     });
     setSelectedUserIds(todo.assignedUsers?.map(au => au.user.id) || []);
+    // Set selected client and case for autocomplete display
+    setSelectedClient(todo.client || null);
+    setSelectedCase(todo.case || null);
+    setClientSearch(todo.client?.name || '');
+    setCaseSearch(todo.case?.processNumber || '');
     setEditMode(true);
     setShowModal(true);
   };
@@ -211,6 +257,10 @@ const ToDo: React.FC = () => {
       assignedUserIds: [],
     });
     setSelectedUserIds([]);
+    setSelectedClient(null);
+    setSelectedCase(null);
+    setClientSearch('');
+    setCaseSearch('');
     setEditMode(false);
     setSelectedTodo(null);
   };
@@ -534,6 +584,121 @@ const ToDo: React.FC = () => {
                       <option value="IN_PROGRESS">🔄 Em Andamento</option>
                       <option value="DONE">✅ Concluído</option>
                     </select>
+                  </div>
+
+                  {/* Client and Case Selection */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Cliente */}
+                    <div className="relative" onClick={(e) => e.stopPropagation()}>
+                      <label className="block text-sm font-medium mb-1">
+                        <Users className="inline w-4 h-4 mr-1" />
+                        Cliente (opcional)
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Buscar cliente..."
+                        value={clientSearch}
+                        onChange={(e) => {
+                          setClientSearch(e.target.value);
+                          fetchClients(e.target.value);
+                          setShowClientDropdown(true);
+                        }}
+                        onFocus={() => {
+                          fetchClients(clientSearch);
+                          setShowClientDropdown(true);
+                        }}
+                        className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                      />
+                      {showClientDropdown && clients.length > 0 && (
+                        <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                          {clients.map((client) => (
+                            <button
+                              key={client.id}
+                              type="button"
+                              onClick={() => {
+                                setSelectedClient(client);
+                                setClientSearch(client.name);
+                                setShowClientDropdown(false);
+                                // Clear case when client changes
+                                setSelectedCase(null);
+                                setCaseSearch('');
+                              }}
+                              className="w-full px-3 py-2 text-left hover:bg-neutral-100 dark:hover:bg-slate-600 text-sm"
+                            >
+                              {client.name}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      {selectedClient && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedClient(null);
+                            setClientSearch('');
+                            setSelectedCase(null);
+                            setCaseSearch('');
+                          }}
+                          className="absolute right-2 top-8 text-neutral-400 hover:text-neutral-600"
+                        >
+                          ×
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Processo */}
+                    <div className="relative" onClick={(e) => e.stopPropagation()}>
+                      <label className="block text-sm font-medium mb-1">
+                        <Briefcase className="inline w-4 h-4 mr-1" />
+                        Processo (opcional)
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Buscar processo..."
+                        value={caseSearch}
+                        onChange={(e) => {
+                          setCaseSearch(e.target.value);
+                          fetchCases(e.target.value);
+                          setShowCaseDropdown(true);
+                        }}
+                        onFocus={() => {
+                          fetchCases(caseSearch);
+                          setShowCaseDropdown(true);
+                        }}
+                        className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                      />
+                      {showCaseDropdown && cases.length > 0 && (
+                        <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                          {cases.map((caseItem) => (
+                            <button
+                              key={caseItem.id}
+                              type="button"
+                              onClick={() => {
+                                setSelectedCase(caseItem);
+                                setCaseSearch(caseItem.processNumber);
+                                setShowCaseDropdown(false);
+                              }}
+                              className="w-full px-3 py-2 text-left hover:bg-neutral-100 dark:hover:bg-slate-600 text-sm"
+                            >
+                              <div>{caseItem.processNumber}</div>
+                              {caseItem.title && <div className="text-xs text-neutral-500">{caseItem.title}</div>}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      {selectedCase && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedCase(null);
+                            setCaseSearch('');
+                          }}
+                          className="absolute right-2 top-8 text-neutral-400 hover:text-neutral-600"
+                        >
+                          ×
+                        </button>
+                      )}
+                    </div>
                   </div>
 
                   {/* Assigned Users */}
