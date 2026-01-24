@@ -176,7 +176,14 @@ const Users: React.FC = () => {
       resetForm();
       loadUsers();
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Erro ao criar usuário');
+      const errorData = error.response?.data;
+      if (errorData?.details && Array.isArray(errorData.details)) {
+        // Mostrar erros de validação detalhados
+        const messages = errorData.details.map((d: any) => d.msg).join('\n');
+        toast.error(messages, { duration: 6000 });
+      } else {
+        toast.error(errorData?.error || 'Erro ao criar usuário');
+      }
     }
   };
 
@@ -525,9 +532,11 @@ const Users: React.FC = () => {
                         <input
                           type={showPassword ? 'text' : 'password'}
                           required
+                          minLength={12}
                           value={formData.password}
                           onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                           className="block w-full px-3 py-2 pr-10 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md min-h-[44px]"
+                          placeholder="Mínimo 12 caracteres"
                         />
                         <button
                           type="button"
@@ -537,6 +546,9 @@ const Users: React.FC = () => {
                           {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                         </button>
                       </div>
+                      <p className="text-xs text-neutral-500 dark:text-slate-400 mt-1">
+                        Mínimo 12 caracteres, com maiúscula, minúscula, número e símbolo (!@#$%...)
+                      </p>
                     </div>
                   )}
                 </div>
