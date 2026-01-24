@@ -51,6 +51,14 @@ interface WhatsAppConfig {
   accessToken: string;
 }
 
+interface WhatsAppTemplate {
+  id: string;
+  name: string;
+  status: string;
+  category: string;
+  language: string;
+}
+
 class WhatsAppService {
   /**
    * Formata número de telefone para o padrão internacional do WhatsApp
@@ -121,6 +129,51 @@ class WhatsAppService {
   // Alias para compatibilidade
   formatBrazilianPhone(phone: string): string {
     return this.formatPhone(phone);
+  }
+
+  /**
+   * Busca templates aprovados da Meta WhatsApp Business API
+   */
+  async getApprovedTemplates(companyId: string): Promise<WhatsAppTemplate[]> {
+    try {
+      const config = await this.getConfig(companyId);
+
+      const response = await axios.get(
+        `${META_API_BASE_URL}/${config.businessAccountId}/message_templates`,
+        {
+          headers: {
+            Authorization: `Bearer ${config.accessToken}`,
+          },
+          params: {
+            limit: 100,
+          },
+        }
+      );
+
+      const templates = response.data.data || [];
+
+      // Filtrar apenas templates aprovados
+      const approvedTemplates = templates
+        .filter((t: any) => t.status === 'APPROVED')
+        .map((t: any) => ({
+          id: t.id,
+          name: t.name,
+          status: t.status,
+          category: t.category,
+          language: t.language,
+        }));
+
+      appLogger.info('Templates WhatsApp carregados', {
+        companyId,
+        total: templates.length,
+        approved: approvedTemplates.length,
+      });
+
+      return approvedTemplates;
+    } catch (error) {
+      appLogger.error('Erro ao buscar templates WhatsApp', error as Error, { companyId });
+      throw error;
+    }
   }
 
   /**
@@ -408,8 +461,11 @@ class WhatsAppService {
       dueDate,
       isOverdue,
       companyName,
-      templateName = 'document_request_reminder', // Nome padrão do template
+      templateName, // Usar o template selecionado ou o padrão
     } = params;
+
+    // Usar template padrão se nenhum foi especificado
+    const finalTemplateName = templateName || 'document_request_reminder';
 
     // Formatar data para exibição
     const dateFormatter = new Intl.DateTimeFormat('pt-BR', {
@@ -424,7 +480,7 @@ class WhatsAppService {
     return this.sendTemplate({
       companyId,
       phone,
-      templateName,
+      templateName: finalTemplateName,
       variables: {
         nome: clientName,
         documento: documentName,

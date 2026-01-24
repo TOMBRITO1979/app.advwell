@@ -22,6 +22,7 @@ interface DocumentRequestForReminder {
   dueDate: Date;
   status: string;
   notificationChannel: string | null;
+  whatsappTemplateId: string | null;
   autoRemind: boolean;
   reminderCount: number;
   lastReminderAt: Date | null;
@@ -363,6 +364,7 @@ async function sendWhatsAppReminder(request: DocumentRequestForReminder, isOverd
       dueDate: new Date(request.dueDate),
       isOverdue,
       companyName: request.company.name,
+      templateName: request.whatsappTemplateId || undefined,
     });
 
     if (result.success) {

@@ -58,8 +58,17 @@ interface DocumentRequestFormData {
   internalNotes: string;
   dueDate: string;
   notificationChannel: 'EMAIL' | 'WHATSAPP' | 'BOTH' | '';
+  whatsappTemplateId: string;
   autoRemind: boolean;
   autoFollowup: boolean;
+}
+
+interface WhatsAppTemplate {
+  id: string;
+  name: string;
+  status: string;
+  category: string;
+  language: string;
 }
 
 interface Stats {
@@ -101,6 +110,8 @@ const DocumentRequests: React.FC = () => {
   const [requests, setRequests] = useState<DocumentRequest[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
+  const [whatsappTemplates, setWhatsappTemplates] = useState<WhatsAppTemplate[]>([]);
+  const [whatsappConfigured, setWhatsappConfigured] = useState(false);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
@@ -117,6 +128,7 @@ const DocumentRequests: React.FC = () => {
     internalNotes: '',
     dueDate: '',
     notificationChannel: '',
+    whatsappTemplateId: '',
     autoRemind: true,
     autoFollowup: true,
   });
@@ -141,6 +153,20 @@ const DocumentRequests: React.FC = () => {
       setRequests(requestsRes.data);
       setStats(statsRes.data);
       setClients(clientsRes.data.data || []);
+
+      // Carregar templates WhatsApp (silencioso - não bloqueia se falhar)
+      try {
+        const templatesRes = await api.get('/whatsapp-config/templates');
+        const approvedTemplates = (templatesRes.data || []).filter(
+          (t: WhatsAppTemplate) => t.status === 'APPROVED'
+        );
+        setWhatsappTemplates(approvedTemplates);
+        setWhatsappConfigured(true);
+      } catch {
+        // WhatsApp não configurado - ignorar
+        setWhatsappTemplates([]);
+        setWhatsappConfigured(false);
+      }
     } catch (error: any) {
       console.error('Error loading data:', error);
       toast.error('Erro ao carregar dados');
@@ -161,6 +187,7 @@ const DocumentRequests: React.FC = () => {
       const payload = {
         ...formData,
         notificationChannel: formData.notificationChannel || null,
+        whatsappTemplateId: formData.whatsappTemplateId || null,
       };
 
       if (editingRequest) {
@@ -189,6 +216,7 @@ const DocumentRequests: React.FC = () => {
       internalNotes: request.internalNotes || '',
       dueDate: format(parseISO(request.dueDate), 'yyyy-MM-dd'),
       notificationChannel: request.notificationChannel || '',
+      whatsappTemplateId: (request as any).whatsappTemplateId || '',
       autoRemind: request.autoRemind,
       autoFollowup: request.autoFollowup,
     });
@@ -243,6 +271,7 @@ const DocumentRequests: React.FC = () => {
       internalNotes: '',
       dueDate: '',
       notificationChannel: '',
+      whatsappTemplateId: '',
       autoRemind: true,
       autoFollowup: true,
     });
@@ -706,16 +735,50 @@ const DocumentRequests: React.FC = () => {
                       setFormData({
                         ...formData,
                         notificationChannel: e.target.value as any,
+                        whatsappTemplateId: e.target.value === 'EMAIL' || e.target.value === '' ? '' : formData.whatsappTemplateId,
                       })
                     }
                     className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
                   >
                     <option value="">Não notificar</option>
                     <option value="EMAIL">Email</option>
-                    <option value="WHATSAPP">WhatsApp</option>
-                    <option value="BOTH">Email e WhatsApp</option>
+                    {whatsappConfigured && <option value="WHATSAPP">WhatsApp</option>}
+                    {whatsappConfigured && <option value="BOTH">Email e WhatsApp</option>}
                   </select>
                 </div>
+
+                {/* Template WhatsApp (só mostra se WhatsApp selecionado) */}
+                {(formData.notificationChannel === 'WHATSAPP' || formData.notificationChannel === 'BOTH') && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
+                      Template WhatsApp (Meta)
+                    </label>
+                    {whatsappTemplates.length > 0 ? (
+                      <select
+                        value={formData.whatsappTemplateId}
+                        onChange={(e) =>
+                          setFormData({ ...formData, whatsappTemplateId: e.target.value })
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
+                      >
+                        <option value="">Template padrão (document_request_reminder)</option>
+                        {whatsappTemplates.map((template) => (
+                          <option key={template.id} value={template.name}>
+                            {template.name} ({template.language})
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <div className="text-sm text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 p-3 rounded-lg">
+                        <p className="font-medium">Nenhum template aprovado encontrado</p>
+                        <p className="mt-1">
+                          Vá em Configurações &gt; WhatsApp &gt; Sincronizar Templates
+                          ou crie um template no Meta Business Suite.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* Automação */}
                 <div className="flex gap-4">
