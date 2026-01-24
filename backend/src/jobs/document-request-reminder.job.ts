@@ -34,6 +34,12 @@ interface DocumentRequestForReminder {
   company: {
     id: string;
     name: string;
+    email: string;
+    phone: string | null;
+    address: string | null;
+    city: string | null;
+    state: string | null;
+    logo: string | null;
   };
 }
 
@@ -91,6 +97,12 @@ export async function findRequestsNeedingReminder(): Promise<DocumentRequestForR
         select: {
           id: true,
           name: true,
+          email: true,
+          phone: true,
+          address: true,
+          city: true,
+          state: true,
+          logo: true,
         },
       },
     },
@@ -103,6 +115,164 @@ export async function findRequestsNeedingReminder(): Promise<DocumentRequestForR
   });
 
   return filteredRequests as DocumentRequestForReminder[];
+}
+
+/**
+ * Gera o template HTML profissional do email
+ */
+function generateEmailTemplate(request: DocumentRequestForReminder, isOverdue: boolean): string {
+  const formattedDate = new Date(request.dueDate).toLocaleDateString('pt-BR');
+  const company = request.company;
+
+  // Formatar endereço completo
+  const addressParts = [company.address, company.city, company.state].filter(Boolean);
+  const fullAddress = addressParts.length > 0 ? addressParts.join(' - ') : '';
+
+  // Cor do tema baseada no status
+  const primaryColor = isOverdue ? '#dc2626' : '#2563eb';
+  const bgColor = isOverdue ? '#fef2f2' : '#eff6ff';
+
+  // Status badge
+  const statusBadge = isOverdue
+    ? '<span style="background-color: #fee2e2; color: #dc2626; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">PRAZO VENCIDO</span>'
+    : '<span style="background-color: #dbeafe; color: #2563eb; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">LEMBRETE</span>';
+
+  return `
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width: 600px; margin: 0 auto; background-color: #ffffff;">
+    <!-- Header -->
+    <tr>
+      <td style="background-color: ${primaryColor}; padding: 24px; text-align: center;">
+        ${company.logo
+          ? `<img src="${company.logo}" alt="${company.name}" style="max-height: 50px; max-width: 200px;">`
+          : `<h1 style="color: #ffffff; margin: 0; font-size: 24px;">${company.name}</h1>`
+        }
+      </td>
+    </tr>
+
+    <!-- Status Badge -->
+    <tr>
+      <td style="padding: 20px 24px 0; text-align: center;">
+        ${statusBadge}
+      </td>
+    </tr>
+
+    <!-- Content -->
+    <tr>
+      <td style="padding: 24px;">
+        <h2 style="color: #1f2937; margin: 0 0 16px; font-size: 20px;">
+          Solicitação de Documento
+        </h2>
+
+        <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin: 0 0 16px;">
+          Prezado(a) <strong>${request.client.name}</strong>,
+        </p>
+
+        <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin: 0 0 16px;">
+          Esperamos que esteja bem.
+        </p>
+
+        <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin: 0 0 16px;">
+          ${isOverdue
+            ? 'Verificamos que o prazo para envio do(s) documento(s) solicitado(s) já expirou. Pedimos a gentileza de enviar o mais breve possível:'
+            : 'Gostaríamos de informar que estamos aguardando o(s) seguinte(s) documento(s):'
+          }
+        </p>
+
+        <!-- Document Box -->
+        <div style="background-color: ${bgColor}; border-left: 4px solid ${primaryColor}; padding: 16px; margin: 16px 0; border-radius: 0 8px 8px 0;">
+          <p style="color: ${primaryColor}; font-weight: 600; margin: 0 0 8px; font-size: 14px;">
+            DOCUMENTO(S) SOLICITADO(S):
+          </p>
+          <p style="color: #1f2937; font-size: 16px; margin: 0; font-weight: 500;">
+            ${request.documentName}
+          </p>
+          ${request.description ? `
+          <p style="color: #6b7280; font-size: 14px; margin: 8px 0 0; font-style: italic;">
+            ${request.description}
+          </p>
+          ` : ''}
+        </div>
+
+        <!-- Deadline -->
+        <div style="background-color: #f9fafb; padding: 16px; margin: 16px 0; border-radius: 8px; text-align: center;">
+          <p style="color: #6b7280; font-size: 12px; margin: 0 0 4px; text-transform: uppercase; letter-spacing: 1px;">
+            Prazo de Entrega
+          </p>
+          <p style="color: ${isOverdue ? '#dc2626' : '#1f2937'}; font-size: 20px; font-weight: 700; margin: 0;">
+            ${formattedDate}
+          </p>
+          ${isOverdue ? '<p style="color: #dc2626; font-size: 12px; margin: 4px 0 0;">Prazo expirado</p>' : ''}
+        </div>
+
+        <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin: 16px 0;">
+          ${isOverdue
+            ? 'Caso já tenha enviado o documento, por favor desconsidere esta mensagem.'
+            : 'Caso já tenha enviado o documento ou tenha alguma dificuldade, por favor nos informe.'
+          }
+        </p>
+
+        <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin: 16px 0 0;">
+          Agradecemos a atenção e permanecemos à disposição para qualquer esclarecimento.
+        </p>
+      </td>
+    </tr>
+
+    <!-- Contact Section -->
+    <tr>
+      <td style="padding: 0 24px 24px;">
+        <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px;">
+          <p style="color: #1f2937; font-weight: 600; margin: 0 0 12px; font-size: 14px;">
+            Em caso de dúvidas, entre em contato:
+          </p>
+          <table role="presentation" cellspacing="0" cellpadding="0" style="width: 100%;">
+            ${company.email ? `
+            <tr>
+              <td style="padding: 4px 0;">
+                <span style="color: #6b7280; font-size: 14px;">📧</span>
+                <a href="mailto:${company.email}" style="color: #2563eb; text-decoration: none; font-size: 14px; margin-left: 8px;">${company.email}</a>
+              </td>
+            </tr>
+            ` : ''}
+            ${company.phone ? `
+            <tr>
+              <td style="padding: 4px 0;">
+                <span style="color: #6b7280; font-size: 14px;">📞</span>
+                <a href="tel:${company.phone.replace(/\D/g, '')}" style="color: #2563eb; text-decoration: none; font-size: 14px; margin-left: 8px;">${company.phone}</a>
+              </td>
+            </tr>
+            ` : ''}
+          </table>
+        </div>
+      </td>
+    </tr>
+
+    <!-- Footer -->
+    <tr>
+      <td style="background-color: #1f2937; padding: 24px; text-align: center;">
+        <p style="color: #ffffff; font-size: 16px; font-weight: 600; margin: 0 0 8px;">
+          ${company.name}
+        </p>
+        ${fullAddress ? `
+        <p style="color: #9ca3af; font-size: 12px; margin: 0;">
+          ${fullAddress}
+        </p>
+        ` : ''}
+        <p style="color: #6b7280; font-size: 11px; margin: 16px 0 0;">
+          Esta é uma mensagem automática. Por favor, não responda diretamente a este email.
+        </p>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+`;
 }
 
 /**
@@ -123,30 +293,14 @@ async function sendEmailReminder(request: DocumentRequestForReminder): Promise<b
     }
 
     const isOverdue = new Date(request.dueDate) < new Date();
-    const formattedDate = new Date(request.dueDate).toLocaleDateString('pt-BR');
 
+    // Assunto do email
     const subject = isOverdue
-      ? `[URGENTE] Documento pendente: ${request.documentName}`
-      : `Lembrete: Prazo para documento "${request.documentName}"`;
+      ? `[URGENTE] Documento Pendente - ${request.documentName}`
+      : `Solicitação de Documento - ${request.documentName}`;
 
-    const html = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: ${isOverdue ? '#dc2626' : '#2563eb'};">
-          ${isOverdue ? 'Documento com prazo vencido' : 'Lembrete de documento'}
-        </h2>
-        <p>Olá <strong>${request.client.name}</strong>,</p>
-        <p>
-          ${isOverdue
-            ? `O prazo para envio do documento <strong>"${request.documentName}"</strong> venceu em <strong>${formattedDate}</strong>.`
-            : `Lembramos que o prazo para envio do documento <strong>"${request.documentName}"</strong> é <strong>${formattedDate}</strong>.`
-          }
-        </p>
-        ${request.description ? `<p><em>${request.description}</em></p>` : ''}
-        <p>Por favor, ${isOverdue ? 'envie o documento o mais rápido possível' : 'não esqueça de enviar o documento dentro do prazo'}.</p>
-        <br>
-        <p>Atenciosamente,<br><strong>${request.company.name}</strong></p>
-      </div>
-    `;
+    // Gerar HTML do email
+    const html = generateEmailTemplate(request, isOverdue);
 
     // Criar transporter com configuração da empresa
     const transporter = nodemailer.createTransport({
@@ -169,6 +323,7 @@ async function sendEmailReminder(request: DocumentRequestForReminder): Promise<b
     appLogger.info('Email de lembrete enviado', {
       requestId: request.id,
       clientEmail: request.client.email,
+      isOverdue,
     });
 
     return true;
