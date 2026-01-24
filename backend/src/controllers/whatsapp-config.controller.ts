@@ -48,36 +48,45 @@ export class WhatsAppConfigController {
         return res.status(403).json({ error: 'Usuário não possui empresa associada' });
       }
 
-      // Validações básicas
-      if (!phoneNumberId || !businessAccountId || !accessToken) {
-        return res.status(400).json({
-          error: 'Campos obrigatórios: phoneNumberId, businessAccountId, accessToken',
-        });
-      }
-
-      // Criptografar accessToken
-      const encryptedToken = encrypt(accessToken);
-
       // Verificar se já existe configuração
       const existing = await prisma.whatsAppConfig.findUnique({
         where: { companyId },
       });
 
+      // Validações básicas - accessToken obrigatório apenas para nova configuração
+      const isTokenUnchanged = accessToken === 'unchanged';
+      if (!phoneNumberId || !businessAccountId) {
+        return res.status(400).json({
+          error: 'Campos obrigatórios: phoneNumberId, businessAccountId',
+        });
+      }
+
+      // Access token obrigatório apenas se não existe configuração ou se está sendo alterado
+      if (!existing && !accessToken) {
+        return res.status(400).json({
+          error: 'Access Token é obrigatório para nova configuração WhatsApp',
+        });
+      }
+
       let config;
       if (existing) {
         // Atualizar configuração existente
+        // Se accessToken é "unchanged", manter o token existente
+        const tokenToSave = isTokenUnchanged ? existing.accessToken : encrypt(accessToken);
+
         config = await prisma.whatsAppConfig.update({
           where: { companyId },
           data: {
             phoneNumberId,
             businessAccountId,
-            accessToken: encryptedToken,
+            accessToken: tokenToSave,
             webhookVerifyToken: webhookVerifyToken || null,
             isActive: true,
           },
         });
       } else {
-        // Criar nova configuração
+        // Criar nova configuração - accessToken obrigatório
+        const encryptedToken = encrypt(accessToken);
         config = await prisma.whatsAppConfig.create({
           data: {
             companyId,
