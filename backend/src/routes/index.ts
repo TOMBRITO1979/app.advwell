@@ -47,6 +47,7 @@ import reportsRoutes from './reports.routes';
 import documentRequestRoutes from './document-request.routes';
 import servicePlanRoutes from './service-plan.routes';
 import clientSubscriptionRoutes from './client-subscription.routes';
+import stripeConfigRoutes from './stripe-config.routes';
 
 const router = Router();
 
@@ -107,5 +108,6 @@ router.use('/reports', reportsRoutes); // Relatórios avançados (processos por 
 router.use('/document-requests', documentRequestRoutes); // Solicitação de documentos aos clientes
 router.use('/service-plans', servicePlanRoutes); // Planos de serviço (assinaturas de clientes)
 router.use('/client-subscriptions', clientSubscriptionRoutes); // Assinaturas de clientes
+router.use('/stripe-config', stripeConfigRoutes); // Configuração Stripe por empresa (ADMIN)
 
 export default router;
