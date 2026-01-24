@@ -116,7 +116,7 @@ const MyData: React.FC = () => {
 
   const handleCreateRequest = async () => {
     if (!requestType) {
-      toast.error('Selecione o tipo de solicitacao');
+      toast.error('Selecione o tipo de solicitação');
       return;
     }
 
@@ -126,13 +126,13 @@ const MyData: React.FC = () => {
         requestType,
         description: requestDescription,
       });
-      toast.success('Solicitacao criada com sucesso');
+      toast.success('Solicitação criada com sucesso');
       setShowRequestModal(false);
       setRequestType('');
       setRequestDescription('');
       fetchData();
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Erro ao criar solicitacao');
+      toast.error(error.response?.data?.error || 'Erro ao criar solicitação');
     } finally {
       setSubmitting(false);
     }
@@ -140,7 +140,7 @@ const MyData: React.FC = () => {
 
   const getConsentTypeLabel = (type: string) => {
     const labels: Record<string, string> = {
-      PRIVACY_POLICY: 'Politica de Privacidade',
+      PRIVACY_POLICY: 'Política de Privacidade',
       TERMS_OF_USE: 'Termos de Uso',
       MARKETING_EMAIL: 'Emails de Marketing',
       DATA_PROCESSING: 'Processamento de Dados',
@@ -151,10 +151,10 @@ const MyData: React.FC = () => {
   const getRequestTypeLabel = (type: string) => {
     const labels: Record<string, string> = {
       ACCESS: 'Acesso aos Dados',
-      CORRECTION: 'Correcao de Dados',
-      DELETION: 'Exclusao de Dados',
+      CORRECTION: 'Correção de Dados',
+      DELETION: 'Exclusão de Dados',
       PORTABILITY: 'Portabilidade',
-      REVOKE_CONSENT: 'Revogacao de Consentimento',
+      REVOKE_CONSENT: 'Revogação de Consentimento',
     };
     return labels[type] || type;
   };
@@ -231,7 +231,7 @@ const MyData: React.FC = () => {
                   <p className="font-medium text-neutral-800 dark:text-slate-200">{userData.user.email}</p>
                 </div>
                 <div>
-                  <label className="text-sm text-neutral-500 dark:text-slate-400">Funcao</label>
+                  <label className="text-sm text-neutral-500 dark:text-slate-400">Função</label>
                   <p className="font-medium text-neutral-800 dark:text-slate-200">{userData.user.role}</p>
                 </div>
                 <div>
@@ -336,7 +336,7 @@ const MyData: React.FC = () => {
                           {getConsentTypeLabel(consent.consentType)}
                         </p>
                         <p className="text-sm text-neutral-500 dark:text-slate-400">
-                          Versao {consent.version} - Aceito em {formatDate(consent.consentedAt)}
+                          Versão {consent.version} - Aceito em {formatDate(consent.consentedAt)}
                           {consent.revokedAt && (
                             <span className="text-danger-600">
                               {' '}| Revogado em {formatDate(consent.revokedAt)}
@@ -368,7 +368,7 @@ const MyData: React.FC = () => {
           >
             <div className="flex items-center gap-3">
               <FileText className="w-5 h-5 text-primary-600" />
-              <span className="font-semibold text-neutral-800 dark:text-slate-200">Minhas Solicitacoes</span>
+              <span className="font-semibold text-neutral-800 dark:text-slate-200">Minhas Solicitações</span>
               {requests.filter(r => r.status === 'PENDING' || r.status === 'IN_PROGRESS').length > 0 && (
                 <span className="bg-warning-100 text-warning-700 text-xs px-2 py-0.5 rounded-full">
                   {requests.filter(r => r.status === 'PENDING' || r.status === 'IN_PROGRESS').length} em andamento
@@ -384,7 +384,7 @@ const MyData: React.FC = () => {
           {expandedSection === 'requests' && (
             <div className="px-6 pb-6 border-t border-neutral-100 dark:border-slate-600">
               {requests.length === 0 ? (
-                <p className="text-neutral-500 dark:text-slate-400 mt-4">Nenhuma solicitacao realizada</p>
+                <p className="text-neutral-500 dark:text-slate-400 mt-4">Nenhuma solicitação realizada</p>
               ) : (
                 <div className="space-y-3 mt-4">
                   {requests.map((request) => (
@@ -406,12 +406,12 @@ const MyData: React.FC = () => {
                       )}
                       {request.notes && (
                         <p className="text-sm text-primary-600 mb-2">
-                          <strong>Observacao:</strong> {request.notes}
+                          <strong>Observação:</strong> {request.notes}
                         </p>
                       )}
                       {request.rejectionReason && (
                         <p className="text-sm text-danger-600 mb-2">
-                          <strong>Motivo da rejeicao:</strong> {request.rejectionReason}
+                          <strong>Motivo da rejeição:</strong> {request.rejectionReason}
                         </p>
                       )}
                       {request.resultUrl && (
@@ -435,7 +435,7 @@ const MyData: React.FC = () => {
 
         {/* Actions Section */}
         <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm dark:shadow-slate-700/20 border border-neutral-200 dark:border-slate-700 dark:border-slate-700 p-6">
-          <h2 className="font-semibold text-neutral-800 dark:text-slate-200 mb-4">Acoes Disponiveis</h2>
+          <h2 className="font-semibold text-neutral-800 dark:text-slate-200 mb-4">Ações Disponíveis</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <button
               onClick={() => {
@@ -447,7 +447,7 @@ const MyData: React.FC = () => {
               <Eye className="w-5 h-5 text-primary-600" />
               <div>
                 <p className="font-medium text-neutral-800 dark:text-slate-200">Acessar Meus Dados</p>
-                <p className="text-sm text-neutral-500 dark:text-slate-400">Solicitar copia completa</p>
+                <p className="text-sm text-neutral-500 dark:text-slate-400">Solicitar cópia completa</p>
               </div>
             </button>
             <button
@@ -460,7 +460,7 @@ const MyData: React.FC = () => {
               <Edit3 className="w-5 h-5 text-primary-600" />
               <div>
                 <p className="font-medium text-neutral-800 dark:text-slate-200">Corrigir Dados</p>
-                <p className="text-sm text-neutral-500 dark:text-slate-400">Solicitar correcao</p>
+                <p className="text-sm text-neutral-500 dark:text-slate-400">Solicitar correção</p>
               </div>
             </button>
             <button
@@ -486,7 +486,7 @@ const MyData: React.FC = () => {
               <Trash2 className="w-5 h-5 text-danger-600" />
               <div>
                 <p className="font-medium text-danger-700">Excluir Conta</p>
-                <p className="text-sm text-danger-500">Solicitar exclusao</p>
+                <p className="text-sm text-danger-500">Solicitar exclusão</p>
               </div>
             </button>
           </div>
@@ -497,12 +497,12 @@ const MyData: React.FC = () => {
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
             <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl dark:shadow-slate-900/50 max-w-md w-full p-6 max-h-[90vh] overflow-y-auto my-4">
               <h3 className="text-lg font-semibold text-neutral-800 dark:text-slate-200 mb-4">
-                Nova Solicitacao LGPD
+                Nova Solicitação LGPD
               </h3>
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2">
-                    Tipo de Solicitacao
+                    Tipo de Solicitação
                   </label>
                   <select
                     value={requestType}
@@ -511,21 +511,21 @@ const MyData: React.FC = () => {
                   >
                     <option value="">Selecione...</option>
                     <option value="ACCESS">Acesso aos Dados</option>
-                    <option value="CORRECTION">Correcao de Dados</option>
-                    <option value="DELETION">Exclusao de Dados</option>
+                    <option value="CORRECTION">Correção de Dados</option>
+                    <option value="DELETION">Exclusão de Dados</option>
                     <option value="PORTABILITY">Portabilidade</option>
-                    <option value="REVOKE_CONSENT">Revogacao de Consentimento</option>
+                    <option value="REVOKE_CONSENT">Revogação de Consentimento</option>
                   </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2">
-                    Descricao (opcional)
+                    Descrição (opcional)
                   </label>
                   <textarea
                     value={requestDescription}
                     onChange={(e) => setRequestDescription(e.target.value)}
                     rows={3}
-                    placeholder="Descreva sua solicitacao..."
+                    placeholder="Descreva sua solicitação..."
                     className="w-full px-3 py-2 border border-neutral-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   />
                 </div>
@@ -534,7 +534,7 @@ const MyData: React.FC = () => {
                     <div className="flex items-start gap-2">
                       <AlertCircle className="w-5 h-5 text-danger-600 flex-shrink-0 mt-0.5" />
                       <p className="text-sm text-danger-700">
-                        <strong>Atencao:</strong> A exclusao de dados e irreversivel. Todos os seus dados serao permanentemente removidos.
+                        <strong>Atenção:</strong> A exclusão de dados é irreversível. Todos os seus dados serão permanentemente removidos.
                       </p>
                     </div>
                   </div>
@@ -556,7 +556,7 @@ const MyData: React.FC = () => {
                   disabled={submitting || !requestType}
                   className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50"
                 >
-                  {submitting ? 'Enviando...' : 'Enviar Solicitacao'}
+                  {submitting ? 'Enviando...' : 'Enviar Solicitação'}
                 </button>
               </div>
             </div>
