@@ -7,6 +7,14 @@ import { uploadToS3, deleteFromS3, getSignedS3Url } from '../utils/s3';
 import { parse } from 'csv-parse/sync';
 import { enqueueCsvImport, getImportStatus } from '../queues/csv-import.queue';
 
+// Função para corrigir timezone de datas (evita que data mude de dia por causa de UTC)
+function fixDateTimezone(dateString: string): Date {
+  // Adiciona T12:00:00Z para evitar problemas de timezone
+  // Ex: "2024-01-15" -> "2024-01-15T12:00:00Z"
+  const dateOnly = dateString.split('T')[0];
+  return new Date(`${dateOnly}T12:00:00Z`);
+}
+
 export class PNJController {
   /**
    * Listar PNJs com paginação e busca
@@ -238,7 +246,7 @@ export class PNJController {
           status: status || 'ACTIVE',
           clientId: clientId || null,
           adverseId: adverseId || null,
-          openDate: openDate ? new Date(openDate) : new Date(),
+          openDate: openDate ? fixDateTimezone(openDate) : new Date(),
           createdBy: userId,
         },
         include: {
@@ -376,8 +384,8 @@ export class PNJController {
           status: status || pnj.status,
           clientId: clientId || null,
           adverseId: adverseId || null,
-          openDate: openDate ? new Date(openDate) : pnj.openDate,
-          closeDate: closeDate ? new Date(closeDate) : (status === 'CLOSED' ? new Date() : null),
+          openDate: openDate ? fixDateTimezone(openDate) : pnj.openDate,
+          closeDate: closeDate ? fixDateTimezone(closeDate) : (status === 'CLOSED' ? new Date() : null),
         },
         include: {
           client: {
@@ -681,7 +689,7 @@ export class PNJController {
         data: {
           pnjId: id,
           companyId: companyId!, // ISSUE 2 FIX: Isolamento direto de tenant
-          date: date ? new Date(date) : new Date(),
+          date: date ? fixDateTimezone(date) : new Date(),
           description: sanitizeString(description) || description.trim(),
           notes: sanitizeString(notes) || null,
           createdBy: userId,
@@ -744,7 +752,7 @@ export class PNJController {
       const updatedMovement = await prisma.pNJMovement.update({
         where: { id: movementId },
         data: {
-          date: date ? new Date(date) : movement.date,
+          date: date ? fixDateTimezone(date) : movement.date,
           description: sanitizeString(description) || description.trim(),
           notes: sanitizeString(notes) || null,
         },
