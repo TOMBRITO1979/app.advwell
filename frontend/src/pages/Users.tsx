@@ -22,6 +22,7 @@ interface User {
   role: string;
   active: boolean;
   hideSidebar: boolean;
+  telegramChatId?: string;
   createdAt: string;
   permissions: Permission[];
 }
@@ -93,6 +94,7 @@ const Users: React.FC = () => {
     email: '',
     password: '',
     hideSidebar: false,
+    telegramChatId: '',
   });
 
   const [permissions, setPermissions] = useState<Permission[]>([]);
@@ -131,6 +133,7 @@ const Users: React.FC = () => {
       email: '',
       password: '',
       hideSidebar: false,
+      telegramChatId: '',
     });
     setPermissions([]);
   };
@@ -143,6 +146,7 @@ const Users: React.FC = () => {
         email: formData.email,
         password: formData.password,
         hideSidebar: formData.hideSidebar,
+        telegramChatId: formData.telegramChatId || null,
         permissions,
       });
       toast.success('Usuário criado com sucesso!');
@@ -164,6 +168,7 @@ const Users: React.FC = () => {
         email: formData.email,
         active: selectedUser.active,
         hideSidebar: formData.hideSidebar,
+        telegramChatId: formData.telegramChatId || null,
         permissions,
       });
       toast.success('Usuário atualizado com sucesso!');
@@ -184,6 +189,7 @@ const Users: React.FC = () => {
       email: user.email,
       password: '',
       hideSidebar: user.hideSidebar || false,
+      telegramChatId: user.telegramChatId || '',
     });
     setPermissions(user.permissions || []);
     setEditMode(true);
@@ -521,6 +527,24 @@ const Users: React.FC = () => {
                 </div>
                 <p className="text-xs text-neutral-500 dark:text-slate-400 mt-2">
                   Quando ativado, a barra lateral de navegação não será exibida para este usuário.
+                </p>
+              </div>
+
+              {/* Telegram */}
+              <div>
+                <label htmlFor="telegramChatId" className="block text-sm font-medium text-neutral-700 dark:text-slate-300">
+                  Telegram Chat ID (opcional)
+                </label>
+                <input
+                  type="text"
+                  id="telegramChatId"
+                  value={formData.telegramChatId}
+                  onChange={(e) => setFormData({ ...formData, telegramChatId: e.target.value })}
+                  placeholder="Ex: 123456789"
+                  className="mt-1 block w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md min-h-[44px]"
+                />
+                <p className="text-xs text-neutral-500 dark:text-slate-400 mt-1">
+                  Receberá notificações de eventos/tarefas via Telegram
                 </p>
               </div>
 

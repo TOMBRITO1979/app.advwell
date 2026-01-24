@@ -12,7 +12,7 @@ AdvWell is a multitenant SaaS for Brazilian law firms with DataJud CNJ integrati
 - Grafana: https://grafana.advwell.pro
 - Landing Page: https://advwell.pro
 
-**Current Version:** v1.8.154 (Backend) | v1.8.254 (Frontend)
+**Current Version:** v1.8.156 (Backend) | v1.8.256 (Frontend)
 
 ## Technology Stack
 
@@ -43,7 +43,7 @@ VPS Principal (5.161.98.0)       VPS PostgreSQL (178.156.188.93)
 
 ```bash
 # Deploy (requires sourcing .env and exporting all required vars)
-source .env && export POSTGRES_USER POSTGRES_PASSWORD POSTGRES_DB ADVAPI_BASE_URL ADVAPI_API_KEY ADVAPI_WEBHOOK_KEY ADVAPI_CALLBACK_URL && docker stack deploy -c docker-compose.yml advtom --with-registry-auth
+source .env && export AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_REGION S3_BUCKET_NAME POSTGRES_USER POSTGRES_PASSWORD POSTGRES_DB ADVAPI_BASE_URL ADVAPI_API_KEY ADVAPI_WEBHOOK_KEY ADVAPI_CALLBACK_URL JWT_SECRET ENCRYPTION_KEY SMTP_HOST SMTP_PORT SMTP_USER SMTP_PASSWORD SMTP_FROM STRIPE_SECRET_KEY STRIPE_WEBHOOK_SECRET GOOGLE_CLIENT_ID GOOGLE_CLIENT_SECRET GOOGLE_REDIRECT_URI WHATSAPP_ACCESS_TOKEN WHATSAPP_PHONE_NUMBER_ID WHATSAPP_VERIFY_TOKEN FRONTEND_URL PORTAL_URL API_URL && docker stack deploy -c docker-compose.yml advtom --with-registry-auth
 
 # Logs
 docker service logs advtom_backend -f

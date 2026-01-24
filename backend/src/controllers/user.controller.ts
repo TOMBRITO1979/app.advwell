@@ -89,7 +89,7 @@ export class UserController {
         return res.status(403).json({ error: 'Usuário não possui empresa associada' });
       }
       const companyId: string = req.user!.companyId;
-      const { name, email, password, permissions, hideSidebar } = req.body;
+      const { name, email, password, permissions, hideSidebar, telegramChatId } = req.body;
 
       // Verifica se o email já existe na mesma empresa
       const existingUser = await prisma.user.findFirst({
@@ -110,6 +110,7 @@ export class UserController {
           role: 'USER',
           companyId,
           hideSidebar: hideSidebar || false,
+          telegramChatId: telegramChatId || null,
           emailVerified: true, // Usuários criados por admin não precisam verificar email
         },
         select: {
@@ -119,6 +120,7 @@ export class UserController {
           role: true,
           active: true,
           hideSidebar: true,
+          telegramChatId: true,
           createdAt: true,
         },
       });
@@ -177,7 +179,7 @@ export class UserController {
         return res.status(403).json({ error: 'Usuário sem empresa associada' });
       }
       const companyId: string = req.user!.companyId;
-      const { name, email, active, permissions, hideSidebar } = req.body;
+      const { name, email, active, permissions, hideSidebar, telegramChatId } = req.body;
 
       // Verifica se o usuário pertence à mesma empresa
       const user = await prisma.user.findFirst({
@@ -203,6 +205,7 @@ export class UserController {
           email,
           active,
           hideSidebar: hideSidebar !== undefined ? hideSidebar : undefined,
+          telegramChatId: telegramChatId !== undefined ? (telegramChatId || null) : undefined,
         },
         select: {
           id: true,
@@ -211,6 +214,7 @@ export class UserController {
           role: true,
           active: true,
           hideSidebar: true,
+          telegramChatId: true,
         },
       });
 

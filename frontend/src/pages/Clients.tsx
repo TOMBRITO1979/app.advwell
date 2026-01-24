@@ -46,6 +46,7 @@ interface Client {
   phone2?: string;
   instagram?: string;
   facebook?: string;
+  telegramChatId?: string;
   address?: string;
   city?: string;
   state?: string;
@@ -80,6 +81,7 @@ interface ClientFormData {
   phone2: string;
   instagram: string;
   facebook: string;
+  telegramChatId: string;
   customField1: string;
   customField2: string;
   address: string;
@@ -186,6 +188,7 @@ const Clients: React.FC = () => {
     phone2: '',
     instagram: '',
     facebook: '',
+    telegramChatId: '',
     customField1: '',
     customField2: '',
     address: '',
@@ -432,6 +435,7 @@ const Clients: React.FC = () => {
       phone2: '',
       instagram: '',
       facebook: '',
+      telegramChatId: '',
       customField1: '',
       customField2: '',
       address: '',
@@ -489,6 +493,7 @@ const Clients: React.FC = () => {
       phone2: client.phone2 || '',
       instagram: client.instagram || '',
       facebook: client.facebook || '',
+      telegramChatId: client.telegramChatId || '',
       customField1: (client as any).customField1 || '',
       customField2: (client as any).customField2 || '',
       address: client.address || '',
@@ -1478,6 +1483,22 @@ const Clients: React.FC = () => {
                         placeholder="URL ou nome de usuário"
                         className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                       />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
+                        Telegram Chat ID
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.telegramChatId || ''}
+                        onChange={(e) => setFormData({ ...formData, telegramChatId: e.target.value })}
+                        placeholder="Ex: 123456789"
+                        className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
+                      />
+                      <p className="mt-1 text-xs text-neutral-500 dark:text-slate-400">
+                        Receberá notificações de compromissos via Telegram
+                      </p>
                     </div>
 
                     <div>

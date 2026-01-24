@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
 import api from '../services/api';
 import toast from 'react-hot-toast';
-import { Building2, MapPin, Save, Key, Copy, RefreshCw, Eye, EyeOff, ExternalLink, Shield, Trash2, AlertTriangle } from 'lucide-react';
+import { Building2, MapPin, Save, Key, Copy, RefreshCw, Eye, EyeOff, ExternalLink, Shield, Trash2, AlertTriangle, Send, CheckCircle, XCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 interface CompanySettings {
@@ -46,11 +46,23 @@ const Settings: React.FC = () => {
   const [confirmName, setConfirmName] = useState('');
   const [deleting, setDeleting] = useState(false);
 
+  // Telegram states
+  const [telegramConfig, setTelegramConfig] = useState<{
+    configured: boolean;
+    botUsername?: string;
+    isActive?: boolean;
+  }>({ configured: false });
+  const [telegramToken, setTelegramToken] = useState('');
+  const [savingTelegram, setSavingTelegram] = useState(false);
+  const [testingTelegram, setTestingTelegram] = useState(false);
+  const [telegramTestChatId, setTelegramTestChatId] = useState('');
+
   const { logout } = useAuth();
 
   useEffect(() => {
     loadSettings();
     loadApiKey();
+    loadTelegramConfig();
   }, []);
 
   const loadSettings = async () => {
@@ -70,6 +82,66 @@ const Settings: React.FC = () => {
       setApiKey(response.data.apiKey);
     } catch (error) {
       console.error('Erro ao carregar API Key:', error);
+    }
+  };
+
+  const loadTelegramConfig = async () => {
+    try {
+      const response = await api.get('/telegram/config');
+      setTelegramConfig(response.data);
+    } catch (error) {
+      console.error('Erro ao carregar config Telegram:', error);
+    }
+  };
+
+  const handleSaveTelegram = async () => {
+    if (!telegramToken.trim()) {
+      toast.error('Informe o token do bot');
+      return;
+    }
+
+    setSavingTelegram(true);
+    try {
+      const response = await api.post('/telegram/config', {
+        botToken: telegramToken,
+        isActive: true,
+      });
+      setTelegramConfig(response.data);
+      setTelegramToken('');
+      toast.success('Bot Telegram configurado com sucesso!');
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Erro ao configurar Telegram');
+    } finally {
+      setSavingTelegram(false);
+    }
+  };
+
+  const handleToggleTelegram = async () => {
+    try {
+      const response = await api.put('/telegram/toggle', {
+        isActive: !telegramConfig.isActive,
+      });
+      setTelegramConfig(prev => ({ ...prev, isActive: response.data.isActive }));
+      toast.success(response.data.message);
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Erro ao alterar status');
+    }
+  };
+
+  const handleTestTelegram = async () => {
+    if (!telegramTestChatId.trim()) {
+      toast.error('Informe o Chat ID para testar');
+      return;
+    }
+
+    setTestingTelegram(true);
+    try {
+      await api.post('/telegram/test', { chatId: telegramTestChatId });
+      toast.success('Mensagem de teste enviada! Verifique seu Telegram.');
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Erro ao enviar teste');
+    } finally {
+      setTestingTelegram(false);
     }
   };
 
@@ -464,6 +536,163 @@ const Settings: React.FC = () => {
                     O campo <code className="bg-orange-100 dark:bg-orange-800/30 text-orange-900 dark:text-orange-200 px-1 rounded">informarCliente</code> contém a "Informação para o Cliente" de cada processo.
                   </p>
                 </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Telegram Bot Configuration */}
+          <div className="mt-6 bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20-md p-6">
+            <h2 className="text-lg font-semibold text-neutral-700 dark:text-slate-300 mb-4 flex items-center gap-2">
+              <Send size={20} className="text-blue-500" />
+              Integração Telegram
+              {telegramConfig.configured && (
+                <span className={`ml-2 px-2 py-0.5 text-xs font-medium rounded-full ${
+                  telegramConfig.isActive
+                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                    : 'bg-neutral-100 text-neutral-600 dark:bg-slate-700 dark:text-slate-400'
+                }`}>
+                  {telegramConfig.isActive ? 'Ativo' : 'Inativo'}
+                </span>
+              )}
+            </h2>
+            <p className="text-sm text-neutral-600 dark:text-slate-400 mb-4">
+              Configure um bot do Telegram para enviar notificações automáticas de eventos e tarefas para usuários e clientes.
+            </p>
+
+            {telegramConfig.configured ? (
+              <div className="space-y-4">
+                {/* Status atual */}
+                <div className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                  <CheckCircle className="text-green-600" size={24} />
+                  <div>
+                    <p className="font-medium text-green-800 dark:text-green-200">Bot configurado!</p>
+                    <p className="text-sm text-green-700 dark:text-green-300">
+                      Username: <code className="bg-green-100 dark:bg-green-800/30 px-1 rounded">{telegramConfig.botUsername}</code>
+                    </p>
+                  </div>
+                </div>
+
+                {/* Toggle ativo/inativo */}
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-neutral-700 dark:text-slate-300">Notificações ativas</span>
+                  <button
+                    onClick={handleToggleTelegram}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      telegramConfig.isActive ? 'bg-green-500' : 'bg-neutral-300 dark:bg-slate-600'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        telegramConfig.isActive ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                </div>
+
+                {/* Testar envio */}
+                <div className="border-t dark:border-slate-700 pt-4">
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2">
+                    Testar envio de mensagem
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={telegramTestChatId}
+                      onChange={(e) => setTelegramTestChatId(e.target.value)}
+                      placeholder="Informe seu Chat ID"
+                      className="flex-1 px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md min-h-[44px]"
+                    />
+                    <button
+                      onClick={handleTestTelegram}
+                      disabled={testingTelegram || !telegramConfig.isActive}
+                      className="inline-flex items-center gap-2 px-4 py-2 min-h-[44px] bg-blue-100 text-blue-700 border border-blue-200 hover:bg-blue-200 font-medium rounded-lg disabled:opacity-50"
+                    >
+                      <Send size={18} />
+                      {testingTelegram ? 'Enviando...' : 'Testar'}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Reconfigurar */}
+                <div className="border-t dark:border-slate-700 pt-4">
+                  <p className="text-sm text-neutral-500 dark:text-slate-400 mb-2">
+                    Para trocar o bot, informe um novo token:
+                  </p>
+                  <div className="flex gap-2">
+                    <input
+                      type="password"
+                      value={telegramToken}
+                      onChange={(e) => setTelegramToken(e.target.value)}
+                      placeholder="Novo token do bot"
+                      className="flex-1 px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md min-h-[44px]"
+                    />
+                    <button
+                      onClick={handleSaveTelegram}
+                      disabled={savingTelegram}
+                      className="inline-flex items-center gap-2 px-4 py-2 min-h-[44px] bg-orange-100 text-orange-700 border border-orange-200 hover:bg-orange-200 font-medium rounded-lg disabled:opacity-50"
+                    >
+                      <RefreshCw size={18} className={savingTelegram ? 'animate-spin' : ''} />
+                      {savingTelegram ? 'Salvando...' : 'Atualizar'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {/* Não configurado */}
+                <div className="flex items-center gap-3 p-4 bg-neutral-50 dark:bg-slate-700 border border-neutral-200 dark:border-slate-600 rounded-lg">
+                  <XCircle className="text-neutral-400" size={24} />
+                  <div>
+                    <p className="font-medium text-neutral-700 dark:text-slate-300">Bot não configurado</p>
+                    <p className="text-sm text-neutral-500 dark:text-slate-400">
+                      Configure um bot para enviar notificações
+                    </p>
+                  </div>
+                </div>
+
+                {/* Formulário de configuração */}
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2">
+                    Token do Bot *
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="password"
+                      value={telegramToken}
+                      onChange={(e) => setTelegramToken(e.target.value)}
+                      placeholder="Cole o token do BotFather aqui"
+                      className="flex-1 px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md min-h-[44px]"
+                    />
+                    <button
+                      onClick={handleSaveTelegram}
+                      disabled={savingTelegram}
+                      className="inline-flex items-center gap-2 px-4 py-2 min-h-[44px] bg-blue-600 text-white hover:bg-blue-700 font-medium rounded-lg disabled:opacity-50"
+                    >
+                      <Save size={18} />
+                      {savingTelegram ? 'Salvando...' : 'Configurar'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Instruções */}
+            <div className="mt-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+              <h4 className="font-medium text-blue-900 dark:text-blue-200 mb-2">Como criar um bot:</h4>
+              <ol className="text-sm text-blue-800 dark:text-blue-300 space-y-1 list-decimal ml-4">
+                <li>Abra o Telegram e procure por <strong>@BotFather</strong></li>
+                <li>Envie o comando <code className="bg-blue-100 dark:bg-blue-800/30 px-1 rounded">/newbot</code></li>
+                <li>Siga as instruções para criar seu bot</li>
+                <li>Copie o <strong>token</strong> fornecido e cole acima</li>
+              </ol>
+              <div className="mt-3 pt-3 border-t border-blue-200 dark:border-blue-700">
+                <h4 className="font-medium text-blue-900 dark:text-blue-200 mb-2">Como obter o Chat ID:</h4>
+                <ol className="text-sm text-blue-800 dark:text-blue-300 space-y-1 list-decimal ml-4">
+                  <li>O usuário/cliente deve iniciar uma conversa com o bot</li>
+                  <li>Enviar qualquer mensagem (ex: /start)</li>
+                  <li>Acessar: <code className="bg-blue-100 dark:bg-blue-800/30 px-1 rounded text-xs">https://api.telegram.org/bot[TOKEN]/getUpdates</code></li>
+                  <li>O Chat ID aparecerá no campo <code className="bg-blue-100 dark:bg-blue-800/30 px-1 rounded">"chat":{"{"}"id":123456789{"}"}</code></li>
+                </ol>
               </div>
             </div>
           </div>

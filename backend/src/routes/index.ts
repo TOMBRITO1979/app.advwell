@@ -35,6 +35,7 @@ import googleCalendarConfigRoutes from './google-calendar-config.routes';
 import whatsappConfigRoutes from './whatsapp-config.routes';
 import whatsappCampaignRoutes from './whatsapp-campaign.routes';
 import whatsappWebhookRoutes from './whatsapp-webhook.routes';
+import telegramRoutes from './telegram.routes';
 import sharedDocumentRoutes from './shared-document.routes';
 import clientMessageRoutes from './client-message.routes';
 import monitoringRoutes from './monitoring.routes';
@@ -93,6 +94,7 @@ router.use('/google-calendar', googleCalendarRoutes); // Integração Google Cal
 router.use('/google-calendar-config', googleCalendarConfigRoutes); // Configuração Google Calendar por empresa (ADMIN)
 router.use('/whatsapp-config', whatsappConfigRoutes); // Configuração WhatsApp Business API por empresa (ADMIN)
 router.use('/whatsapp-campaigns', whatsappCampaignRoutes); // Campanhas de marketing WhatsApp (ADMIN)
+router.use('/telegram', telegramRoutes); // Configuração Telegram Bot por empresa
 router.use('/', sharedDocumentRoutes); // Documentos compartilhados entre escritório e cliente (Portal)
 router.use('/client-messages', clientMessageRoutes); // Mensagens bidirecionais entre clientes e escritório
 router.use('/monitoring', monitoringRoutes); // Monitoramento de OABs e publicações (ADVAPI v2)

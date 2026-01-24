@@ -116,6 +116,9 @@ model Company {
   // WhatsApp Business API
   whatsAppConfig             WhatsAppConfig?
   whatsAppTemplates          WhatsAppTemplate[]
+
+  // Telegram Bot API
+  telegramConfig             TelegramConfig?
   whatsAppCampaigns          WhatsAppCampaign[]
   whatsAppCampaignRecipients WhatsAppCampaignRecipient[]
   whatsAppMessages           WhatsAppMessage[]
@@ -192,6 +195,9 @@ model User {
 
   // Configurações de interface
   hideSidebar Boolean @default(false) // Esconder sidebar para este usuário
+
+  // Telegram para notificações
+  telegramChatId String? @map("telegram_chat_id") // ID do chat Telegram para receber notificações
 
   // Vínculo com cliente (para usuários do tipo CLIENT no portal)
   clientId String? @unique // ID do cliente vinculado (apenas para role=CLIENT)
@@ -279,6 +285,7 @@ model Client {
   phone2             String? // Telefone 2
   instagram          String? // Instagram
   facebook           String? // Facebook
+  telegramChatId     String? @map("telegram_chat_id") // ID do chat Telegram para notificações
   address            String?
   neighborhood       String? // Bairro
   city               String?
@@ -1780,6 +1787,27 @@ model WhatsAppConfig {
   company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   @@map("whatsapp_configs")
+}
+
+// Configuração do Telegram por empresa
+model TelegramConfig {
+  id        String @id @default(uuid())
+  companyId String @unique // Uma configuração por empresa
+
+  // Credenciais do Bot
+  botToken    String  @db.Text // Token do bot (criptografado AES-256)
+  botUsername String? // Username do bot (ex: @MeuBotAdvwell)
+
+  // Status
+  isActive Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+  @@map("telegram_configs")
 }
 
 // Templates pré-aprovados pela Meta

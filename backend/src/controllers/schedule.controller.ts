@@ -9,6 +9,7 @@ import { appLogger } from '../utils/logger';
 import * as pdfStyles from '../utils/pdfStyles';
 import { enqueueCsvImport, getImportStatus } from '../queues/csv-import.queue';
 import { sendEventAssignmentNotification } from '../utils/email';
+import { enqueueTelegramEventNotification } from '../queues/telegram.queue';
 
 export class ScheduleController {
   async create(req: AuthRequest, res: Response) {
@@ -182,7 +183,7 @@ export class ScheduleController {
           assignedUsers: {
             include: {
               user: {
-                select: { id: true, name: true, email: true }
+                select: { id: true, name: true, email: true, telegramChatId: true }
               }
             }
           }
@@ -220,6 +221,52 @@ export class ScheduleController {
             appLogger.error('Erro ao enviar email de atribuição de evento', err as Error, {
               eventId: event.id,
               userId: assignment.user.id
+            });
+          });
+
+          // Enviar notificação Telegram para usuários atribuídos (se tiver telegramChatId)
+          if (assignment.user.telegramChatId) {
+            enqueueTelegramEventNotification({
+              companyId: companyId!,
+              recipientType: 'user',
+              chatId: assignment.user.telegramChatId,
+              eventTitle: event.title,
+              eventDate: event.date.toISOString(),
+              eventType: event.type,
+              companyName: companyName || 'Sua Empresa',
+            }).catch(err => {
+              appLogger.error('Erro ao enfileirar notificação Telegram', err as Error, {
+                eventId: event.id,
+                userId: assignment.user.id
+              });
+            });
+          }
+        }
+      }
+
+      // Enviar notificação Telegram para cliente atribuído (se tiver telegramChatId)
+      if (clientId) {
+        const client = await prisma.client.findUnique({
+          where: { id: clientId },
+          select: { telegramChatId: true },
+        });
+        if (client?.telegramChatId) {
+          const company = await prisma.company.findUnique({
+            where: { id: companyId! },
+            select: { name: true },
+          });
+          enqueueTelegramEventNotification({
+            companyId: companyId!,
+            recipientType: 'client',
+            chatId: client.telegramChatId,
+            eventTitle: event.title,
+            eventDate: event.date.toISOString(),
+            eventType: event.type,
+            companyName: company?.name || 'Sua Empresa',
+          }).catch(err => {
+            appLogger.error('Erro ao enfileirar notificação Telegram para cliente', err as Error, {
+              eventId: event.id,
+              clientId
             });
           });
         }
@@ -724,7 +771,7 @@ export class ScheduleController {
           assignedUsers: {
             include: {
               user: {
-                select: { id: true, name: true, email: true }
+                select: { id: true, name: true, email: true, telegramChatId: true }
               }
             }
           }
@@ -786,6 +833,24 @@ export class ScheduleController {
                 userId: assignment.user.id
               });
             });
+
+            // Enviar notificação Telegram para usuários novos atribuídos (se tiver telegramChatId)
+            if (assignment.user.telegramChatId) {
+              enqueueTelegramEventNotification({
+                companyId: companyId!,
+                recipientType: 'user',
+                chatId: assignment.user.telegramChatId,
+                eventTitle: updatedEvent.title,
+                eventDate: updatedEvent.date.toISOString(),
+                eventType: updatedEvent.type,
+                companyName: companyName || 'Sua Empresa',
+              }).catch(err => {
+                appLogger.error('Erro ao enfileirar notificação Telegram', err as Error, {
+                  eventId: updatedEvent.id,
+                  userId: assignment.user.id
+                });
+              });
+            }
           }
         }
       }
