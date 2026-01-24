@@ -383,15 +383,15 @@ const Settings: React.FC = () => {
               </div>
             </div>
 
-            {/* Configuracao DPO/LGPD */}
+            {/* Configuração DPO/LGPD */}
             <div className="mb-6">
               <h2 className="text-lg font-semibold text-neutral-700 dark:text-slate-300 mb-4 flex items-center gap-2">
                 <Shield size={20} className="text-primary-600" />
                 Encarregado de Dados (DPO) - LGPD
               </h2>
               <p className="text-sm text-neutral-600 dark:text-slate-400 mb-4">
-                Conforme a LGPD (Lei 13.709/2018), e recomendado que empresas indiquem um Encarregado de Protecao de Dados (DPO).
-                Estas informacoes serao exibidas na Politica de Privacidade.
+                Conforme a LGPD (Lei 13.709/2018), é recomendado que empresas indiquem um Encarregado de Proteção de Dados (DPO).
+                Estas informações serão exibidas na Política de Privacidade.
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -403,7 +403,7 @@ const Settings: React.FC = () => {
                     name="dpoName"
                     value={settings.dpoName || ''}
                     onChange={handleChange}
-                    placeholder="Nome completo do responsavel"
+                    placeholder="Nome completo do responsável"
                     className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                   />
                 </div>
@@ -424,8 +424,8 @@ const Settings: React.FC = () => {
               </div>
               <div className="mt-3 bg-info-50 dark:bg-info-700/20 border border-info-200 dark:border-info-700 rounded-lg p-3">
                 <p className="text-sm text-info-700 dark:text-info-200">
-                  <strong>O que e o DPO?</strong> O Encarregado de Dados (DPO) e a pessoa responsavel por garantir a conformidade
-                  com a LGPD na sua empresa. Ele e o ponto de contato entre a empresa, os titulares dos dados e a ANPD.
+                  <strong>O que é o DPO?</strong> O Encarregado de Dados (DPO) é a pessoa responsável por garantir a conformidade
+                  com a LGPD na sua empresa. Ele é o ponto de contato entre a empresa, os titulares dos dados e a ANPD.
                 </p>
               </div>
             </div>
@@ -768,8 +768,8 @@ const Settings: React.FC = () => {
               Zona de Perigo
             </h2>
             <p className="text-sm text-neutral-600 dark:text-slate-400 mb-4">
-              Ao excluir sua empresa, todos os dados serao permanentemente removidos, incluindo usuarios, clientes, processos, documentos e transacoes financeiras.
-              <strong className="text-red-600"> Esta acao e irreversivel.</strong>
+              Ao excluir sua empresa, todos os dados serão permanentemente removidos, incluindo usuários, clientes, processos, documentos e transações financeiras.
+              <strong className="text-red-600"> Esta ação é irreversível.</strong>
             </p>
 
             <button
@@ -784,7 +784,7 @@ const Settings: React.FC = () => {
         </div>
       </div>
 
-      {/* Modal de Confirmacao de Exclusao */}
+      {/* Modal de Confirmação de Exclusão */}
       {showDeleteModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
           <div className="bg-white dark:bg-slate-800 rounded-lg max-w-md w-full p-6 max-h-[90vh] overflow-y-auto my-4">
@@ -797,13 +797,13 @@ const Settings: React.FC = () => {
             </h3>
 
             <p className="text-sm text-neutral-600 dark:text-slate-400 text-center mb-4">
-              Voce esta prestes a excluir permanentemente a empresa <strong>{settings.name}</strong> e todos os seus dados.
+              Você está prestes a excluir permanentemente a empresa <strong>{settings.name}</strong> e todos os seus dados.
             </p>
 
             <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md p-3 mb-4">
-              <p className="text-sm text-yellow-800 dark:text-yellow-200 font-medium mb-2">Esta acao e IRREVERSIVEL!</p>
+              <p className="text-sm text-yellow-800 dark:text-yellow-200 font-medium mb-2">Esta ação é IRREVERSÍVEL!</p>
               <p className="text-xs text-yellow-700 dark:text-yellow-300">
-                Todos os usuarios, clientes, processos, documentos, transacoes e demais dados serao permanentemente excluidos.
+                Todos os usuários, clientes, processos, documentos, transações e demais dados serão permanentemente excluídos.
               </p>
             </div>
 
