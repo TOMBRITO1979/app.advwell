@@ -395,7 +395,7 @@ const Companies: React.FC = () => {
     };
     const labels: Record<string, string> = {
       GRATUITO: 'Gratuito',
-      BASICO: 'Basico',
+      BASICO: 'Básico',
       BRONZE: 'Bronze',
       PRATA: 'Prata',
       OURO: 'Ouro',
@@ -652,7 +652,7 @@ const Companies: React.FC = () => {
                     fields: [
                       { label: 'Assinatura', value: company.subscriptionStatus || '-' },
                       { label: 'Plano', value: company.subscriptionPlan || '-' },
-                      { label: 'Usuarios', value: String(company._count.users) },
+                      { label: 'Usuários', value: String(company._count.users) },
                       { label: 'Clientes', value: String(company._count.clients) },
                       { label: 'Processos', value: String(company._count.cases) },
                       { label: 'Criada em', value: formatDate(company.createdAt) || '-' },
@@ -1331,10 +1331,10 @@ const Companies: React.FC = () => {
                 >
                   <option value="">Sem plano</option>
                   <option value="GRATUITO">Gratuito (R$0 - 50 processos, 100MB)</option>
-                  <option value="BASICO">Basico (R$69/mes - 150 processos, 300MB)</option>
-                  <option value="BRONZE">Bronze ($99/mes - 1.000 processos, 1GB)</option>
-                  <option value="PRATA">Prata ($159/mes - 2.500 processos, 5GB)</option>
-                  <option value="OURO">Ouro ($219/mes - 5.000 processos, 30GB)</option>
+                  <option value="BASICO">Básico (R$69/mês - 150 processos, 300MB)</option>
+                  <option value="BRONZE">Bronze (R$99/mês - 1.000 processos, 1GB)</option>
+                  <option value="PRATA">Prata (R$159/mês - 2.500 processos, 5GB)</option>
+                  <option value="OURO">Ouro (R$219/mês - 5.000 processos, 30GB)</option>
                 </select>
               </div>
 
@@ -1370,7 +1370,7 @@ const Companies: React.FC = () => {
                   className="mt-1 block w-full px-3 py-2 border border-neutral-300 rounded-md min-h-[44px]"
                 >
                   <option value="104857600">100 MB (Gratuito)</option>
-                  <option value="314572800">300 MB (Basico)</option>
+                  <option value="314572800">300 MB (Básico)</option>
                   <option value="1073741824">1 GB (Bronze)</option>
                   <option value="5368709120">5 GB (Prata)</option>
                   <option value="32212254720">30 GB (Ouro)</option>
@@ -1488,7 +1488,7 @@ const Companies: React.FC = () => {
                       <option value="">Selecione...</option>
                       {availableClients.map((client) => (
                         <option key={client.id} value={client.id}>
-                          {client.name} {client.hasOwnAIConfig && '(tem IA propria)'}
+                          {client.name} {client.hasOwnAIConfig && '(tem IA própria)'}
                         </option>
                       ))}
                     </select>
