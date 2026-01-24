@@ -55,6 +55,7 @@ export class UserController {
             role: true,
             active: true,
             hideSidebar: true,
+            telegramChatId: true,
             createdAt: true,
             permissions: true,
             companyId: true,
