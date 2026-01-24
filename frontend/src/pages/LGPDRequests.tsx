@@ -65,7 +65,7 @@ const LGPDRequests: React.FC = () => {
       setRequests(response.data.requests || []);
     } catch (error) {
       console.error('Error fetching requests:', error);
-      toast.error('Erro ao carregar solicitacoes');
+      toast.error('Erro ao carregar solicitações');
       setRequests([]);
     } finally {
       setLoading(false);
@@ -85,7 +85,7 @@ const LGPDRequests: React.FC = () => {
     if (!selectedRequest || !newStatus) return;
 
     if (newStatus === 'REJECTED' && !rejectionReason) {
-      toast.error('Informe o motivo da rejeicao');
+      toast.error('Informe o motivo da rejeição');
       return;
     }
 
@@ -97,11 +97,11 @@ const LGPDRequests: React.FC = () => {
         rejectionReason: newStatus === 'REJECTED' ? rejectionReason : undefined,
         resultUrl: newStatus === 'COMPLETED' ? resultUrl : undefined,
       });
-      toast.success('Solicitacao processada com sucesso');
+      toast.success('Solicitação processada com sucesso');
       setShowModal(false);
       fetchRequests();
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Erro ao processar solicitacao');
+      toast.error(error.response?.data?.error || 'Erro ao processar solicitação');
     } finally {
       setProcessing(false);
     }
@@ -110,10 +110,10 @@ const LGPDRequests: React.FC = () => {
   const getRequestTypeLabel = (type: string) => {
     const labels: Record<string, { label: string; icon: React.ReactNode; color: string }> = {
       ACCESS: { label: 'Acesso aos Dados', icon: <Eye className="w-4 h-4" />, color: 'bg-blue-100 text-blue-700' },
-      CORRECTION: { label: 'Correcao de Dados', icon: <Edit3 className="w-4 h-4" />, color: 'bg-yellow-100 text-yellow-700' },
-      DELETION: { label: 'Exclusao de Dados', icon: <Trash2 className="w-4 h-4" />, color: 'bg-red-100 text-red-700' },
+      CORRECTION: { label: 'Correção de Dados', icon: <Edit3 className="w-4 h-4" />, color: 'bg-yellow-100 text-yellow-700' },
+      DELETION: { label: 'Exclusão de Dados', icon: <Trash2 className="w-4 h-4" />, color: 'bg-red-100 text-red-700' },
       PORTABILITY: { label: 'Portabilidade', icon: <Download className="w-4 h-4" />, color: 'bg-purple-100 text-purple-700' },
-      REVOKE_CONSENT: { label: 'Revogacao', icon: <XCircle className="w-4 h-4" />, color: 'bg-orange-100 text-orange-700' },
+      REVOKE_CONSENT: { label: 'Revogação', icon: <XCircle className="w-4 h-4" />, color: 'bg-orange-100 text-orange-700' },
     };
     return labels[type] || { label: type, icon: <FileText className="w-4 h-4" />, color: 'bg-neutral-100 text-neutral-700 dark:text-slate-300' };
   };
@@ -162,8 +162,8 @@ const LGPDRequests: React.FC = () => {
             <div className="flex items-center gap-3">
               <Shield className="w-8 h-8 text-primary-600" />
               <div>
-                <h1 className="text-2xl font-bold text-neutral-800 dark:text-slate-200">Solicitacoes LGPD</h1>
-                <p className="text-neutral-600 dark:text-slate-400">Gerencie as solicitacoes de direitos dos titulares</p>
+                <h1 className="text-2xl font-bold text-neutral-800 dark:text-slate-200">Solicitações LGPD</h1>
+                <p className="text-neutral-600 dark:text-slate-400">Gerencie as solicitações de direitos dos titulares</p>
               </div>
             </div>
             <button
@@ -209,7 +209,7 @@ const LGPDRequests: React.FC = () => {
                 <p className="text-2xl font-bold text-neutral-800 dark:text-slate-200">
                   {requests.filter(r => r.status === 'COMPLETED').length}
                 </p>
-                <p className="text-sm text-neutral-500 dark:text-slate-400">Concluidas</p>
+                <p className="text-sm text-neutral-500 dark:text-slate-400">Concluídas</p>
               </div>
             </div>
           </div>
@@ -251,10 +251,10 @@ const LGPDRequests: React.FC = () => {
             >
               <option value="">Todos os Tipos</option>
               <option value="ACCESS">Acesso</option>
-              <option value="CORRECTION">Correcao</option>
-              <option value="DELETION">Exclusao</option>
+              <option value="CORRECTION">Correção</option>
+              <option value="DELETION">Exclusão</option>
               <option value="PORTABILITY">Portabilidade</option>
-              <option value="REVOKE_CONSENT">Revogacao</option>
+              <option value="REVOKE_CONSENT">Revogação</option>
             </select>
             {(filterStatus || filterType) && (
               <button
@@ -275,7 +275,7 @@ const LGPDRequests: React.FC = () => {
           {filteredRequests.length === 0 ? (
             <div className="p-12 text-center">
               <Shield className="w-16 h-16 text-neutral-300 mx-auto mb-4" />
-              <p className="text-neutral-500 dark:text-slate-400">Nenhuma solicitacao encontrada</p>
+              <p className="text-neutral-500 dark:text-slate-400">Nenhuma solicitação encontrada</p>
             </div>
           ) : (
             <>
@@ -306,7 +306,7 @@ const LGPDRequests: React.FC = () => {
                       onView: () => handleOpenModal(request),
                     };
                   })}
-                  emptyMessage="Nenhuma solicitacao encontrada"
+                  emptyMessage="Nenhuma solicitação encontrada"
                 />
               </div>
 
@@ -319,7 +319,7 @@ const LGPDRequests: React.FC = () => {
                       <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">Tipo</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">Status</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">Data</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">Acoes</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase">Ações</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-neutral-200 dark:divide-slate-700 bg-white dark:bg-slate-800">
@@ -380,7 +380,7 @@ const LGPDRequests: React.FC = () => {
             <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl dark:shadow-slate-900/50 max-w-lg w-full max-h-[90vh] overflow-y-auto">
               <div className="p-6">
                 <h3 className="text-lg font-semibold text-neutral-800 dark:text-slate-200 mb-4">
-                  Processar Solicitacao LGPD
+                  Processar Solicitação LGPD
                 </h3>
 
                 {/* Request Info */}
@@ -398,7 +398,7 @@ const LGPDRequests: React.FC = () => {
                       </p>
                     </div>
                     <div>
-                      <label className="text-xs text-neutral-500 dark:text-slate-400">Data da Solicitacao</label>
+                      <label className="text-xs text-neutral-500 dark:text-slate-400">Data da Solicitação</label>
                       <p className="font-medium text-neutral-800 dark:text-slate-200">
                         {formatDate(selectedRequest.requestedAt)}
                       </p>
@@ -410,7 +410,7 @@ const LGPDRequests: React.FC = () => {
                   </div>
                   {selectedRequest.description && (
                     <div className="mt-4">
-                      <label className="text-xs text-neutral-500 dark:text-slate-400">Descricao do Solicitante</label>
+                      <label className="text-xs text-neutral-500 dark:text-slate-400">Descrição do Solicitante</label>
                       <p className="text-sm text-neutral-700 dark:text-slate-300 mt-1">{selectedRequest.description}</p>
                     </div>
                   )}
@@ -436,28 +436,28 @@ const LGPDRequests: React.FC = () => {
 
                     <div>
                       <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2">
-                        Observacoes (visivel para o solicitante)
+                        Observações (visível para o solicitante)
                       </label>
                       <textarea
                         value={notes}
                         onChange={(e) => setNotes(e.target.value)}
                         rows={3}
                         className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 text-neutral-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-primary-500"
-                        placeholder="Informacoes sobre o processamento..."
+                        placeholder="Informações sobre o processamento..."
                       />
                     </div>
 
                     {newStatus === 'REJECTED' && (
                       <div>
                         <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2">
-                          Motivo da Rejeicao *
+                          Motivo da Rejeição *
                         </label>
                         <textarea
                           value={rejectionReason}
                           onChange={(e) => setRejectionReason(e.target.value)}
                           rows={3}
                           className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-danger-300 dark:border-danger-700 text-neutral-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-danger-500"
-                          placeholder="Explique o motivo da rejeicao..."
+                          placeholder="Explique o motivo da rejeição..."
                           required
                         />
                       </div>
@@ -483,8 +483,8 @@ const LGPDRequests: React.FC = () => {
                         <div className="flex items-start gap-2">
                           <AlertCircle className="w-5 h-5 text-danger-600 flex-shrink-0 mt-0.5" />
                           <p className="text-sm text-danger-700">
-                            <strong>Atencao:</strong> Ao concluir esta solicitacao, os dados do usuario serao permanentemente anonimizados.
-                            Esta acao e irreversivel.
+                            <strong>Atenção:</strong> Ao concluir esta solicitação, os dados do usuário serão permanentemente anonimizados.
+                            Esta ação é irreversível.
                           </p>
                         </div>
                       </div>
@@ -497,13 +497,13 @@ const LGPDRequests: React.FC = () => {
                   <div className="space-y-4">
                     {selectedRequest.notes && (
                       <div>
-                        <label className="text-sm font-medium text-neutral-700 dark:text-slate-300">Observacoes</label>
+                        <label className="text-sm font-medium text-neutral-700 dark:text-slate-300">Observações</label>
                         <p className="text-sm text-neutral-600 dark:text-slate-400 mt-1">{selectedRequest.notes}</p>
                       </div>
                     )}
                     {selectedRequest.rejectionReason && (
                       <div>
-                        <label className="text-sm font-medium text-danger-700">Motivo da Rejeicao</label>
+                        <label className="text-sm font-medium text-danger-700">Motivo da Rejeição</label>
                         <p className="text-sm text-danger-600 mt-1">{selectedRequest.rejectionReason}</p>
                       </div>
                     )}
