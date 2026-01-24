@@ -46,7 +46,7 @@ export class ClientController {
     try {
       const {
         personType, clientCondition, name, cpf, stateRegistration, rg, pis, ctps, ctpsSerie, motherName,
-        email, phone, phone2, instagram, facebook, address, neighborhood, city, state, zipCode,
+        email, phone, phone2, instagram, facebook, telegramChatId, address, neighborhood, city, state, zipCode,
         profession, nationality, customField1, customField2, maritalStatus, birthDate,
         representativeName, representativeCpf, notes, tag, tagIds
       } = req.body;
@@ -131,6 +131,7 @@ export class ClientController {
             phone2: phone2?.trim() || null,
             instagram: instagram?.trim() || null,
             facebook: facebook?.trim() || null,
+            telegramChatId: telegramChatId?.trim() || null,
             customField1: customField1?.trim() || null,
             customField2: customField2?.trim() || null,
             address: sanitizeString(address) || null,
@@ -141,7 +142,7 @@ export class ClientController {
             profession: sanitizeString(profession) || null,
             nationality: nationality?.trim() || null,
             maritalStatus: sanitizeString(maritalStatus) || null,
-            birthDate: birthDate ? new Date(birthDate) : null,
+            birthDate: birthDate ? new Date(birthDate + 'T12:00:00Z') : null,
             representativeName: sanitizeString(representativeName) || null,
             representativeCpf: cleanRepresentativeCpf,
             notes: sanitizeString(notes) || null,
@@ -311,7 +312,7 @@ export class ClientController {
       const companyId = req.user!.companyId;
       const {
         personType, clientCondition, name, cpf, stateRegistration, rg, pis, ctps, ctpsSerie, motherName,
-        email, phone, phone2, instagram, facebook, address, neighborhood, city, state, zipCode,
+        email, phone, phone2, instagram, facebook, telegramChatId, address, neighborhood, city, state, zipCode,
         profession, nationality, customField1, customField2, maritalStatus, birthDate,
         representativeName, representativeCpf, notes, tag, tagIds
       } = req.body;
@@ -408,6 +409,7 @@ export class ClientController {
             phone2: phone2?.trim() || null,
             instagram: instagram?.trim() || null,
             facebook: facebook?.trim() || null,
+            telegramChatId: telegramChatId?.trim() || null,
             customField1: customField1?.trim() || null,
             customField2: customField2?.trim() || null,
             address: sanitizeString(address) || null,
@@ -418,7 +420,7 @@ export class ClientController {
             profession: sanitizeString(profession) || null,
             nationality: nationality?.trim() || null,
             maritalStatus: sanitizeString(maritalStatus) || null,
-            birthDate: birthDate ? new Date(birthDate) : null,
+            birthDate: birthDate ? new Date(birthDate + 'T12:00:00Z') : null,
             representativeName: sanitizeString(representativeName) || null,
             representativeCpf: cleanRepresentativeCpf,
             notes: sanitizeString(notes) || null,
