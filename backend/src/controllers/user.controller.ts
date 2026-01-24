@@ -89,7 +89,10 @@ export class UserController {
         return res.status(403).json({ error: 'Usuário não possui empresa associada' });
       }
       const companyId: string = req.user!.companyId;
-      const { name, email, password, permissions, hideSidebar, telegramChatId } = req.body;
+      const { name, email, password, permissions, hideSidebar, telegramChatId, role } = req.body;
+
+      // Validar role: só pode ser USER ou ADMIN (não SUPER_ADMIN)
+      const validRole = role === 'ADMIN' ? 'ADMIN' : 'USER';
 
       // Verifica se o email já existe na mesma empresa
       const existingUser = await prisma.user.findFirst({
@@ -107,7 +110,7 @@ export class UserController {
           name,
           email,
           password: hashedPassword,
-          role: 'USER',
+          role: validRole,
           companyId,
           hideSidebar: hideSidebar || false,
           telegramChatId: telegramChatId || null,
@@ -159,7 +162,7 @@ export class UserController {
         req.user!.userId,
         companyId,
         email,
-        'USER',
+        validRole,
         req.ip
       );
 
@@ -179,7 +182,7 @@ export class UserController {
         return res.status(403).json({ error: 'Usuário sem empresa associada' });
       }
       const companyId: string = req.user!.companyId;
-      const { name, email, active, permissions, hideSidebar, telegramChatId } = req.body;
+      const { name, email, active, permissions, hideSidebar, telegramChatId, role } = req.body;
 
       // Verifica se o usuário pertence à mesma empresa
       const user = await prisma.user.findFirst({
@@ -193,10 +196,13 @@ export class UserController {
         return res.status(404).json({ error: 'Usuário não encontrado' });
       }
 
-      // Não permite alterar admins
-      if (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') {
-        return res.status(403).json({ error: 'Não é possível alterar administradores' });
+      // Não permite alterar SUPER_ADMIN (apenas plataforma pode)
+      if (user.role === 'SUPER_ADMIN') {
+        return res.status(403).json({ error: 'Não é possível alterar super administradores' });
       }
+
+      // Validar role: só pode ser USER ou ADMIN (não SUPER_ADMIN)
+      const validRole = role === 'ADMIN' ? 'ADMIN' : (role === 'USER' ? 'USER' : undefined);
 
       const updatedUser = await prisma.user.update({
         where: { id },
@@ -204,6 +210,7 @@ export class UserController {
           name,
           email,
           active,
+          role: validRole,
           hideSidebar: hideSidebar !== undefined ? hideSidebar : undefined,
           telegramChatId: telegramChatId !== undefined ? (telegramChatId || null) : undefined,
         },
@@ -256,6 +263,7 @@ export class UserController {
       if (name !== user.name) changes.push('name');
       if (email !== user.email) changes.push('email');
       if (active !== user.active) changes.push('active');
+      if (validRole && validRole !== user.role) changes.push('role');
       if (hideSidebar !== user.hideSidebar) changes.push('hideSidebar');
       if (permissions) changes.push('permissions');
 

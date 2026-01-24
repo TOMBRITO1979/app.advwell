@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
 import api from '../services/api';
 import toast from 'react-hot-toast';
-import { Plus, Search, Edit, Trash2, X, Shield, Eye, Edit as EditIcon, Trash, EyeOff, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, X, Shield, Eye, Edit as EditIcon, Trash, EyeOff, ChevronLeft, ChevronRight, CheckSquare } from 'lucide-react';
 import { ActionsDropdown } from '../components/ui';
 import MobileCardList, { MobileCardItem } from '../components/MobileCardList';
 import { formatDate } from '../utils/dateFormatter';
@@ -98,6 +98,8 @@ const Users: React.FC = () => {
   });
 
   const [permissions, setPermissions] = useState<Permission[]>([]);
+  const [makeAdmin, setMakeAdmin] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // Pagination
   const [page, setPage] = useState(1);
@@ -136,6 +138,25 @@ const Users: React.FC = () => {
       telegramChatId: '',
     });
     setPermissions([]);
+    setMakeAdmin(false);
+    setShowPassword(false);
+  };
+
+  // Função para conceder todas as permissões
+  const handleGrantAllPermissions = () => {
+    const allPermissions: Permission[] = AVAILABLE_RESOURCES.map(resource => ({
+      resource: resource.value,
+      canView: true,
+      canEdit: true,
+      canDelete: true,
+    }));
+    setPermissions(allPermissions);
+    toast.success('Todas as permissões concedidas!');
+  };
+
+  // Função para remover todas as permissões
+  const handleRemoveAllPermissions = () => {
+    setPermissions([]);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -147,7 +168,8 @@ const Users: React.FC = () => {
         password: formData.password,
         hideSidebar: formData.hideSidebar,
         telegramChatId: formData.telegramChatId || null,
-        permissions,
+        role: makeAdmin ? 'ADMIN' : 'USER',
+        permissions: makeAdmin ? [] : permissions, // ADMIN não precisa de permissões individuais
       });
       toast.success('Usuário criado com sucesso!');
       setShowModal(false);
@@ -169,7 +191,8 @@ const Users: React.FC = () => {
         active: selectedUser.active,
         hideSidebar: formData.hideSidebar,
         telegramChatId: formData.telegramChatId || null,
-        permissions,
+        role: makeAdmin ? 'ADMIN' : 'USER',
+        permissions: makeAdmin ? [] : permissions,
       });
       toast.success('Usuário atualizado com sucesso!');
       setShowModal(false);
@@ -192,6 +215,7 @@ const Users: React.FC = () => {
       telegramChatId: user.telegramChatId || '',
     });
     setPermissions(user.permissions || []);
+    setMakeAdmin(user.role === 'ADMIN');
     setEditMode(true);
     setShowModal(true);
   };
@@ -497,13 +521,22 @@ const Users: React.FC = () => {
                   {!editMode && (
                     <div>
                       <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300">Senha <span className="text-error-500">*</span></label>
-                      <input
-                        type="password"
-                        required
-                        value={formData.password}
-                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                        className="mt-1 block w-full px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md min-h-[44px]"
-                      />
+                      <div className="relative mt-1">
+                        <input
+                          type={showPassword ? 'text' : 'password'}
+                          required
+                          value={formData.password}
+                          onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                          className="block w-full px-3 py-2 pr-10 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md min-h-[44px]"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute inset-y-0 right-0 flex items-center pr-3 text-neutral-400 hover:text-neutral-600 dark:text-slate-500 dark:hover:text-slate-300"
+                        >
+                          {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -548,23 +581,67 @@ const Users: React.FC = () => {
                 </p>
               </div>
 
-              {/* Permissões */}
+              {/* Tornar Administrador */}
               <div className="border-t border-neutral-200 dark:border-slate-700 pt-6">
-                <div className="flex justify-between items-center mb-3">
+                <h3 className="text-lg font-semibold text-neutral-900 dark:text-slate-100 mb-3">Nível de Acesso</h3>
+                <div className="flex items-center gap-3 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md">
+                  <input
+                    type="checkbox"
+                    id="makeAdmin"
+                    checked={makeAdmin}
+                    onChange={(e) => setMakeAdmin(e.target.checked)}
+                    className="h-5 w-5 text-amber-600 focus:ring-amber-500 border-amber-300 dark:border-amber-600 rounded"
+                  />
+                  <label htmlFor="makeAdmin" className="flex-1">
+                    <span className="flex items-center gap-2 text-sm font-medium text-amber-800 dark:text-amber-200">
+                      <Shield size={18} />
+                      Tornar Administrador
+                    </span>
+                    <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                      Administradores têm acesso total a todos os recursos da empresa. Não é necessário configurar permissões individuais.
+                    </p>
+                  </label>
+                </div>
+              </div>
+
+              {/* Permissões - só mostra se não for admin */}
+              {!makeAdmin && (
+              <div className="border-t border-neutral-200 dark:border-slate-700 pt-6">
+                <div className="flex flex-wrap justify-between items-center gap-2 mb-3">
                   <h3 className="text-lg font-semibold text-neutral-900 dark:text-slate-100">Permissões</h3>
-                  <button
-                    type="button"
-                    onClick={handleAddPermission}
-                    className="flex items-center gap-1 text-primary-600 hover:text-primary-800 text-sm font-medium"
-                  >
-                    <Plus size={16} />
-                    <span>Adicionar Permissão</span>
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handleGrantAllPermissions}
+                      className="flex items-center gap-1 text-green-600 hover:text-green-800 text-sm font-medium px-2 py-1 bg-green-50 dark:bg-green-900/20 rounded"
+                    >
+                      <CheckSquare size={16} />
+                      <span>Conceder Todas</span>
+                    </button>
+                    {permissions.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={handleRemoveAllPermissions}
+                        className="flex items-center gap-1 text-red-600 hover:text-red-800 text-sm font-medium px-2 py-1 bg-red-50 dark:bg-red-900/20 rounded"
+                      >
+                        <X size={16} />
+                        <span>Remover Todas</span>
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={handleAddPermission}
+                      className="flex items-center gap-1 text-primary-600 hover:text-primary-800 text-sm font-medium px-2 py-1 bg-primary-50 dark:bg-primary-900/20 rounded"
+                    >
+                      <Plus size={16} />
+                      <span>Adicionar</span>
+                    </button>
+                  </div>
                 </div>
 
                 {permissions.length === 0 ? (
                   <p className="text-sm text-neutral-500 dark:text-slate-400 text-center py-4 bg-neutral-50 dark:bg-slate-700 rounded-md">
-                    Nenhuma permissão configurada. Clique em "Adicionar Permissão" para conceder acesso.
+                    Nenhuma permissão configurada. Clique em "Conceder Todas" ou "Adicionar" para conceder acesso.
                   </p>
                 ) : (
                   <div className="space-y-3">
@@ -642,6 +719,7 @@ const Users: React.FC = () => {
                   </div>
                 )}
               </div>
+              )}
 
               <div className="flex justify-end gap-3 pt-6 border-t border-neutral-200 dark:border-slate-700">
                 <button
