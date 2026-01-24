@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Phone, Mail, Calendar, Camera, Save } from 'lucide-react';
+import { User, Phone, Mail, Calendar, Camera, Save, MessageCircle } from 'lucide-react';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import Layout from '../components/Layout';
@@ -12,6 +12,7 @@ interface UserProfile {
   phone?: string;
   mobile?: string;
   birthDate?: string;
+  telegramChatId?: string;
   profilePhoto?: string;
   profilePhotoUrl?: string;
   company?: {
@@ -31,6 +32,7 @@ const Profile: React.FC = () => {
     phone: '',
     mobile: '',
     birthDate: '',
+    telegramChatId: '',
   });
 
   useEffect(() => {
@@ -46,6 +48,7 @@ const Profile: React.FC = () => {
         phone: response.data.phone || '',
         mobile: response.data.mobile || '',
         birthDate: response.data.birthDate ? response.data.birthDate.split('T')[0] : '',
+        telegramChatId: response.data.telegramChatId || '',
       });
     } catch (error) {
       console.error('Erro ao buscar perfil:', error);
@@ -286,6 +289,26 @@ const Profile: React.FC = () => {
                       className="w-full pl-10 pr-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                     />
                   </div>
+                </div>
+
+                {/* Telegram Chat ID */}
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    Telegram Chat ID
+                  </label>
+                  <div className="relative">
+                    <MessageCircle className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400" size={20} />
+                    <input
+                      type="text"
+                      value={formData.telegramChatId}
+                      onChange={(e) => setFormData({ ...formData, telegramChatId: e.target.value })}
+                      className="w-full pl-10 pr-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      placeholder="Ex: 123456789"
+                    />
+                  </div>
+                  <p className="text-xs text-neutral-500 mt-1">
+                    Para receber notificações via Telegram, envie /start para o bot da empresa e insira o Chat ID recebido
+                  </p>
                 </div>
 
                 {/* Submit Button */}

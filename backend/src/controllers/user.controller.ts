@@ -321,6 +321,7 @@ export class UserController {
           phone: true,
           mobile: true,
           birthDate: true,
+          telegramChatId: true,
           profilePhoto: true,
           profilePhotoUrl: true,
           createdAt: true,
@@ -348,7 +349,7 @@ export class UserController {
   async updateProfile(req: AuthRequest, res: Response) {
     try {
       const userId = req.user!.userId;
-      const { name, phone, mobile, birthDate } = req.body;
+      const { name, phone, mobile, birthDate, telegramChatId } = req.body;
 
       const updatedUser = await prisma.user.update({
         where: { id: userId },
@@ -357,6 +358,7 @@ export class UserController {
           phone: phone || null,
           mobile: mobile || null,
           birthDate: birthDate ? new Date(birthDate) : null,
+          telegramChatId: telegramChatId || null,
         },
         select: {
           id: true,
@@ -366,6 +368,7 @@ export class UserController {
           phone: true,
           mobile: true,
           birthDate: true,
+          telegramChatId: true,
           profilePhoto: true,
           profilePhotoUrl: true,
         },
