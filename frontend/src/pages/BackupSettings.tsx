@@ -22,8 +22,8 @@ const BackupSettings: React.FC = () => {
       setHasSmtpConfig(response.data.hasSmtpConfig);
     } catch (error: any) {
       if (error.response?.status !== 404) {
-        console.error('Erro ao carregar configuracao:', error);
-        toast.error('Erro ao carregar configuracao de backup');
+        console.error('Erro ao carregar configuração:', error);
+        toast.error('Erro ao carregar configuração de backup');
       }
     } finally {
       setInitialLoading(false);
@@ -34,7 +34,7 @@ const BackupSettings: React.FC = () => {
     e.preventDefault();
 
     if (backupEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(backupEmail)) {
-      toast.error('Email invalido');
+      toast.error('Email inválido');
       return;
     }
 
@@ -43,7 +43,7 @@ const BackupSettings: React.FC = () => {
       const response = await api.put('/backup-email', { backupEmail: backupEmail || null });
       toast.success(response.data.message);
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Erro ao salvar configuracao');
+      toast.error(error.response?.data?.error || 'Erro ao salvar configuração');
     } finally {
       setLoading(false);
     }
@@ -85,7 +85,7 @@ const BackupSettings: React.FC = () => {
               Email de Backup
             </h1>
             <p className="text-neutral-600 dark:text-slate-400 mt-1">
-              Configure o envio automatico de backup dos seus dados
+              Configure o envio automático de backup dos seus dados
             </p>
           </div>
           <Database size={32} className="text-primary-600" />
@@ -100,14 +100,14 @@ const BackupSettings: React.FC = () => {
           <ul className="text-sm text-info-600 space-y-1">
             <li className="flex items-center gap-2">
               <Clock size={14} />
-              Backups sao enviados automaticamente as <strong>12h</strong> e <strong>18h</strong> todos os dias
+              Backups são enviados automaticamente às <strong>12h</strong> e <strong>18h</strong> todos os dias
             </li>
-            <li>Cada backup contem 3 planilhas CSV em anexo:</li>
+            <li>Cada backup contém 3 planilhas CSV em anexo:</li>
             <li className="ml-4">- <strong>Clientes:</strong> Todos os clientes cadastrados</li>
             <li className="ml-4">- <strong>Processos:</strong> Todos os processos com dados do cliente</li>
             <li className="ml-4">- <strong>Agenda:</strong> Todos os eventos agendados</li>
             <li>As planilhas podem ser abertas no Excel, Google Sheets ou qualquer leitor de CSV</li>
-            <li>Os dados sao exportados com codificacao UTF-8 para suporte a acentos</li>
+            <li>Os dados são exportados com codificação UTF-8 para suporte a acentos</li>
           </ul>
         </div>
 
@@ -126,7 +126,7 @@ const BackupSettings: React.FC = () => {
                 className="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-primary-500 min-h-[44px]"
               />
               <p className="text-sm text-neutral-500 dark:text-slate-400 mt-2">
-                Deixe em branco para desativar o backup automatico
+                Deixe em branco para desativar o backup automático
               </p>
             </div>
 
@@ -147,7 +147,7 @@ const BackupSettings: React.FC = () => {
                 className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-primary-100 text-primary-700 border border-primary-200 hover:bg-primary-200 font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Save size={20} />
-                {loading ? 'Salvando...' : 'Salvar Configuracao'}
+                {loading ? 'Salvando...' : 'Salvar Configuração'}
               </button>
             </div>
           </form>
@@ -160,8 +160,8 @@ const BackupSettings: React.FC = () => {
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
             <div className="bg-white dark:bg-slate-800 p-3 rounded">
-              <div className="font-medium text-neutral-900 dark:text-slate-100">Seguranca</div>
-              <div className="text-neutral-600 dark:text-slate-400">Tenha uma copia dos seus dados sempre a mao</div>
+              <div className="font-medium text-neutral-900 dark:text-slate-100">Segurança</div>
+              <div className="text-neutral-600 dark:text-slate-400">Tenha uma cópia dos seus dados sempre à mão</div>
             </div>
             <div className="bg-white dark:bg-slate-800 p-3 rounded">
               <div className="font-medium text-neutral-900 dark:text-slate-100">Praticidade</div>
