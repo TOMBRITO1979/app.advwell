@@ -52,10 +52,22 @@ export const upsertConfig = async (req: AuthRequest, res: Response) => {
     const companyId = req.user!.companyId!;
     const { provider, apiKey, model, enabled, autoSummarize } = req.body;
 
-    // Validate required fields
-    if (!provider || !apiKey || !model) {
+    // Check if config already exists
+    const existing = await prisma.aIConfig.findUnique({
+      where: { companyId },
+    });
+
+    // Validate required fields - apiKey required only for new config
+    if (!provider || !model) {
       return res.status(400).json({
-        error: 'Campos obrigatórios: provider, apiKey, model',
+        error: 'Campos obrigatórios: provider, model',
+      });
+    }
+
+    // API Key required for new config
+    if (!existing && !apiKey) {
+      return res.status(400).json({
+        error: 'API Key é obrigatória para nova configuração',
       });
     }
 
@@ -67,37 +79,55 @@ export const upsertConfig = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    // Encrypt API key
-    const encryptedApiKey = encrypt(apiKey);
+    let config;
+    if (existing) {
+      // Update existing config
+      // If apiKey is provided, encrypt and update it; otherwise keep existing
+      const apiKeyToSave = apiKey ? encrypt(apiKey) : existing.apiKey;
 
-    // Upsert configuration
-    const config = await prisma.aIConfig.upsert({
-      where: { companyId },
-      create: {
-        companyId,
-        provider,
-        apiKey: encryptedApiKey,
-        model,
-        enabled: enabled !== undefined ? enabled : true,
-        autoSummarize: autoSummarize !== undefined ? autoSummarize : true,
-      },
-      update: {
-        provider,
-        apiKey: encryptedApiKey,
-        model,
-        enabled: enabled !== undefined ? enabled : undefined,
-        autoSummarize: autoSummarize !== undefined ? autoSummarize : undefined,
-      },
-      select: {
-        id: true,
-        provider: true,
-        model: true,
-        enabled: true,
-        autoSummarize: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
+      config = await prisma.aIConfig.update({
+        where: { companyId },
+        data: {
+          provider,
+          apiKey: apiKeyToSave,
+          model,
+          enabled: enabled !== undefined ? enabled : undefined,
+          autoSummarize: autoSummarize !== undefined ? autoSummarize : undefined,
+        },
+        select: {
+          id: true,
+          provider: true,
+          model: true,
+          enabled: true,
+          autoSummarize: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+    } else {
+      // Create new config - apiKey already validated as required
+      const encryptedApiKey = encrypt(apiKey);
+
+      config = await prisma.aIConfig.create({
+        data: {
+          companyId,
+          provider,
+          apiKey: encryptedApiKey,
+          model,
+          enabled: enabled !== undefined ? enabled : true,
+          autoSummarize: autoSummarize !== undefined ? autoSummarize : true,
+        },
+        select: {
+          id: true,
+          provider: true,
+          model: true,
+          enabled: true,
+          autoSummarize: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+    }
 
     res.json({
       message: 'Configuração de IA salva com sucesso',

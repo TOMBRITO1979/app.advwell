@@ -18,8 +18,9 @@ router.use(requireAdmin);
 const configValidation = [
   body('provider').isIn(['openai', 'gemini', 'anthropic', 'groq']).withMessage('Provider inválido'),
   body('model').trim().notEmpty().withMessage('Modelo é obrigatório').isLength({ max: 100 }),
-  body('apiKey').trim().notEmpty().withMessage('API Key é obrigatória').isLength({ min: 10 }),
+  body('apiKey').optional().trim().isLength({ min: 10 }).withMessage('API Key deve ter pelo menos 10 caracteres'),
   body('autoSummarize').optional().isBoolean().withMessage('autoSummarize deve ser booleano'),
+  body('enabled').optional().isBoolean().withMessage('enabled deve ser booleano'),
   validate,
 ];
 
