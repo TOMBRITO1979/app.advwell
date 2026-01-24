@@ -1288,11 +1288,13 @@ export class CaseController {
   async getDeadlines(req: AuthRequest, res: Response) {
     try {
       const companyId = req.user!.companyId;
-      const { search = '' } = req.query;
+      const { search = '', page = 1, limit = 50 } = req.query;
 
       if (!companyId) {
         return res.status(403).json({ error: 'Usuário não possui empresa associada' });
       }
+
+      const skip = (Number(page) - 1) * Number(limit);
 
       // Calcular data limite para prazos cumpridos (24 horas atrás)
       const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
@@ -1321,31 +1323,42 @@ export class CaseController {
         }),
       };
 
-      const cases = await prisma.case.findMany({
-        where,
-        orderBy: [
-          { deadlineCompleted: 'asc' }, // Não cumpridos primeiro
-          { deadline: 'asc' }, // Ordenar por prazo mais próximo
-        ],
-        include: {
-          client: {
-            select: {
-              id: true,
-              name: true,
-              cpf: true,
+      const [cases, total] = await Promise.all([
+        prisma.case.findMany({
+          where,
+          skip,
+          take: Number(limit),
+          orderBy: [
+            { deadlineCompleted: 'asc' }, // Não cumpridos primeiro
+            { deadline: 'asc' }, // Ordenar por prazo mais próximo
+          ],
+          include: {
+            client: {
+              select: {
+                id: true,
+                name: true,
+                cpf: true,
+              },
+            },
+            deadlineResponsible: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
             },
           },
-          deadlineResponsible: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-            },
-          },
-        },
-      });
+        }),
+        prisma.case.count({ where }),
+      ]);
 
-      res.json(cases);
+      res.json({
+        data: cases,
+        total,
+        page: Number(page),
+        limit: Number(limit),
+        totalPages: Math.ceil(total / Number(limit)),
+      });
     } catch (error) {
       appLogger.error('Erro ao buscar prazos', error as Error);
       res.status(500).json({ error: 'Erro ao buscar prazos' });
