@@ -1792,17 +1792,17 @@ model WhatsAppConfig {
 // Configuração do Telegram por empresa
 model TelegramConfig {
   id        String @id @default(uuid())
-  companyId String @unique // Uma configuração por empresa
+  companyId String @unique @map("company_id") // Uma configuração por empresa
 
   // Credenciais do Bot
-  botToken    String  @db.Text // Token do bot (criptografado AES-256)
-  botUsername String? // Username do bot (ex: @MeuBotAdvwell)
+  botToken    String  @db.Text @map("bot_token") // Token do bot (criptografado AES-256)
+  botUsername String? @map("bot_username") // Username do bot (ex: @MeuBotAdvwell)
 
   // Status
-  isActive Boolean @default(false)
+  isActive Boolean @default(false) @map("is_active")
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
