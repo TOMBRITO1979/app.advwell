@@ -6,6 +6,12 @@ import { appLogger } from '../utils/logger';
 import { parse } from 'csv-parse/sync';
 import { enqueueCsvImport, getImportStatus } from '../queues/csv-import.queue';
 
+// Função para corrigir timezone de datas (evita que data mude de dia por causa de UTC)
+function fixDateTimezone(dateString: string): Date {
+  const dateOnly = dateString.split('T')[0];
+  return new Date(`${dateOnly}T12:00:00Z`);
+}
+
 // Helper para construir filtros de busca (fora da classe para evitar problemas com this)
 function buildLeadWhereClause(companyId: string, query: any) {
   const { search = '', status = '', tagId = '', dateFrom = '', dateTo = '' } = query;
@@ -539,7 +545,7 @@ export class LeadController {
             zipCode: zipCode?.trim() || null,
             profession: sanitizeString(profession) || null,
             maritalStatus: sanitizeString(maritalStatus) || null,
-            birthDate: birthDate ? new Date(birthDate) : null,
+            birthDate: birthDate ? fixDateTimezone(birthDate) : null,
             notes: sanitizeString(
               [lead.contactReason, lead.notes, additionalNotes]
                 .filter(Boolean)
