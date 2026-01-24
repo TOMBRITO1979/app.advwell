@@ -48,38 +48,47 @@ export class SMTPConfigController {
         return res.status(403).json({ error: 'Usuário não possui empresa associada' });
       }
 
-      // Validações básicas
-      if (!host || !port || !user || !password || !fromEmail) {
-        return res.status(400).json({
-          error: 'Campos obrigatórios: host, port, user, password, fromEmail',
-        });
-      }
-
-      // Criptografar senha
-      const encryptedPassword = encrypt(password);
-
       // Verificar se já existe configuração
       const existing = await prisma.sMTPConfig.findUnique({
         where: { companyId },
       });
 
+      // Validações básicas - senha obrigatória apenas para nova configuração
+      const isPasswordUnchanged = password === 'unchanged';
+      if (!host || !port || !user || !fromEmail) {
+        return res.status(400).json({
+          error: 'Campos obrigatórios: host, port, user, fromEmail',
+        });
+      }
+
+      // Senha obrigatória apenas se não existe configuração ou se está sendo alterada
+      if (!existing && !password) {
+        return res.status(400).json({
+          error: 'Senha é obrigatória para nova configuração SMTP',
+        });
+      }
+
       let config;
       if (existing) {
         // Atualizar configuração existente
+        // Se password é "unchanged", manter a senha existente
+        const passwordToSave = isPasswordUnchanged ? existing.password : encrypt(password);
+
         config = await prisma.sMTPConfig.update({
           where: { companyId },
           data: {
             host,
             port: parseInt(port),
             user,
-            password: encryptedPassword,
+            password: passwordToSave,
             fromEmail,
             fromName: fromName || null,
             isActive: true,
           },
         });
       } else {
-        // Criar nova configuração
+        // Criar nova configuração - senha obrigatória
+        const encryptedPassword = encrypt(password);
         config = await prisma.sMTPConfig.create({
           data: {
             companyId,
