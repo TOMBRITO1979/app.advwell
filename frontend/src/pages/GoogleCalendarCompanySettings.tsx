@@ -47,12 +47,12 @@ const GoogleCalendarCompanySettings: React.FC = () => {
         setRedirectUri(config.redirectUri || '');
         setHasConfig(true);
       } else {
-        // Buscar redirect URI padrao
+        // Buscar redirect URI padrão
         setRedirectUri(`${window.location.origin.replace('app.', 'api.')}/api/google-calendar/callback`);
       }
     } catch (error: any) {
       if (error.response?.status !== 404) {
-        console.error('Erro ao carregar configuracao:', error);
+        console.error('Erro ao carregar configuração:', error);
       }
       // Default redirect URI
       setRedirectUri(`${window.location.origin.replace('app.', 'api.')}/api/google-calendar/callback`);
@@ -61,16 +61,16 @@ const GoogleCalendarCompanySettings: React.FC = () => {
 
   const handleTest = async () => {
     if (!formData.clientId) {
-      toast.error('Client ID e obrigatorio');
+      toast.error('Client ID é obrigatório');
       return;
     }
 
     setTesting(true);
     try {
       const response = await api.post('/google-calendar-config/test');
-      toast.success(response.data.message || 'Configuracao valida!');
+      toast.success(response.data.message || 'Configuração válida!');
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Falha ao testar configuracao');
+      toast.error(error.response?.data?.error || 'Falha ao testar configuração');
     } finally {
       setTesting(false);
     }
@@ -80,19 +80,19 @@ const GoogleCalendarCompanySettings: React.FC = () => {
     e.preventDefault();
 
     if (!formData.clientSecret && !hasConfig) {
-      toast.error('Client Secret e obrigatorio');
+      toast.error('Client Secret é obrigatório');
       return;
     }
 
     setLoading(true);
     try {
       await api.post('/google-calendar-config', formData);
-      toast.success('Configuracao salva com sucesso!');
+      toast.success('Configuração salva com sucesso!');
       setHasConfig(true);
       setFormData({ ...formData, clientSecret: '' }); // Limpar secret do formulario
       loadConfig(); // Recarregar para atualizar o redirectUri
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Erro ao salvar configuracao');
+      toast.error(error.response?.data?.error || 'Erro ao salvar configuração');
     } finally {
       setLoading(false);
     }
@@ -111,10 +111,10 @@ const GoogleCalendarCompanySettings: React.FC = () => {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">
-              Configuracao Google Calendar
+              Configuração Google Calendar
             </h1>
             <p className="text-neutral-600 dark:text-slate-400 mt-1">
-              Configure as credenciais OAuth para integracao com Google Calendar
+              Configure as credenciais OAuth para integração com Google Calendar
             </p>
           </div>
           <Calendar size={32} className="text-blue-600" />
@@ -213,11 +213,11 @@ const GoogleCalendarCompanySettings: React.FC = () => {
                 type="text"
                 value={formData.redirectUri}
                 onChange={(e) => setFormData({ ...formData, redirectUri: e.target.value })}
-                placeholder="Deixe em branco para usar o padrao"
+                placeholder="Deixe em branco para usar o padrão"
                 className="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-blue-500 text-neutral-900 dark:text-white min-h-[44px]"
               />
               <p className="text-xs text-neutral-500 dark:text-slate-400 mt-1">
-                Use apenas se precisar de um URI diferente do padrao
+                Use apenas se precisar de um URI diferente do padrão
               </p>
             </div>
 
@@ -231,7 +231,7 @@ const GoogleCalendarCompanySettings: React.FC = () => {
                 className="w-5 h-5 rounded border-gray-300 dark:border-slate-600 text-blue-600 focus:ring-blue-500"
               />
               <label htmlFor="isActive" className="text-sm font-medium text-neutral-700 dark:text-slate-300">
-                Integracao ativa
+                Integração ativa
               </label>
             </div>
 
@@ -244,7 +244,7 @@ const GoogleCalendarCompanySettings: React.FC = () => {
                 className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 hover:bg-blue-200 dark:hover:bg-blue-900/50 font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <RefreshCw size={20} className={testing ? 'animate-spin' : ''} />
-                {testing ? 'Testando...' : 'Testar Configuracao'}
+                {testing ? 'Testando...' : 'Testar Configuração'}
               </button>
               <button
                 type="submit"
@@ -258,23 +258,23 @@ const GoogleCalendarCompanySettings: React.FC = () => {
           </form>
         </div>
 
-        {/* Informacoes */}
+        {/* Informações */}
         <div className="bg-neutral-50 dark:bg-slate-700 rounded-lg p-4">
           <h3 className="font-semibold text-neutral-900 dark:text-white mb-3">
-            Informacoes importantes
+            Informações importantes
           </h3>
           <ul className="text-sm text-neutral-600 dark:text-slate-400 space-y-2">
             <li>
-              <strong>Scopes necessarios:</strong> Apenas <code className="bg-neutral-200 dark:bg-slate-600 px-1 rounded">calendar.events</code> (criar/editar eventos)
+              <strong>Scopes necessários:</strong> Apenas <code className="bg-neutral-200 dark:bg-slate-600 px-1 rounded">calendar.events</code> (criar/editar eventos)
             </li>
             <li>
               <strong>Tela de consentimento:</strong> Configure como "Externo" para permitir qualquer conta Google
             </li>
             <li>
-              <strong>Status de publicacao:</strong> Mantenha em "Em teste" ate estar pronto para producao
+              <strong>Status de publicação:</strong> Mantenha em "Em teste" até estar pronto para produção
             </li>
             <li>
-              <strong>Seguranca:</strong> O Client Secret e criptografado com AES-256 no banco de dados
+              <strong>Segurança:</strong> O Client Secret é criptografado com AES-256 no banco de dados
             </li>
           </ul>
         </div>
