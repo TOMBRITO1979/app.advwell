@@ -53,29 +53,29 @@ interface UserOption {
   email: string;
 }
 
-// Labels amigaveis para campos
+// Labels amigáveis para campos
 const FIELD_LABELS: Record<string, string> = {
   name: 'Nome',
   email: 'E-mail',
   phone: 'Telefone',
   cpf: 'CPF',
   rg: 'RG',
-  address: 'Endereco',
+  address: 'Endereço',
   city: 'Cidade',
   state: 'Estado',
   zipCode: 'CEP',
   birthDate: 'Data de Nascimento',
-  profession: 'Profissao',
+  profession: 'Profissão',
   nationality: 'Nacionalidade',
   maritalStatus: 'Estado Civil',
-  notes: 'Observacoes',
+  notes: 'Observações',
   tag: 'Tag',
   active: 'Ativo',
   personType: 'Tipo de Pessoa',
-  stateRegistration: 'Inscricao Estadual',
+  stateRegistration: 'Inscrição Estadual',
   representativeName: 'Nome do Representante',
   representativeCpf: 'CPF do Representante',
-  processNumber: 'Numero do Processo',
+  processNumber: 'Número do Processo',
   court: 'Tribunal',
   subject: 'Assunto',
   value: 'Valor da Causa',
@@ -114,7 +114,7 @@ const AuditLogs: React.FC = () => {
   const [filterEndDate, setFilterEndDate] = useState<string>('');
   const [search, setSearch] = useState<string>('');
 
-  // Paginacao
+  // Paginação
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
@@ -192,7 +192,7 @@ const AuditLogs: React.FC = () => {
       link.click();
       link.remove();
 
-      toast.success('Exportacao concluida');
+      toast.success('Exportação concluída');
     } catch (error) {
       console.error('Error exporting CSV:', error);
       toast.error('Erro ao exportar logs');
@@ -211,9 +211,9 @@ const AuditLogs: React.FC = () => {
 
   const getActionConfig = (action: string) => {
     const configs: Record<string, { color: string; icon: React.ReactNode; label: string }> = {
-      CREATE: { color: 'bg-success-100 text-success-700', icon: <Plus className="w-4 h-4" />, label: 'Criacao' },
-      UPDATE: { color: 'bg-warning-100 text-warning-700', icon: <Edit3 className="w-4 h-4" />, label: 'Edicao' },
-      DELETE: { color: 'bg-danger-100 text-danger-700', icon: <Trash2 className="w-4 h-4" />, label: 'Exclusao' },
+      CREATE: { color: 'bg-success-100 text-success-700', icon: <Plus className="w-4 h-4" />, label: 'Criação' },
+      UPDATE: { color: 'bg-warning-100 text-warning-700', icon: <Edit3 className="w-4 h-4" />, label: 'Edição' },
+      DELETE: { color: 'bg-danger-100 text-danger-700', icon: <Trash2 className="w-4 h-4" />, label: 'Exclusão' },
     };
     return configs[action] || { color: 'bg-neutral-100 text-neutral-700 dark:text-slate-300', icon: <History className="w-4 h-4" />, label: action };
   };
@@ -229,14 +229,14 @@ const AuditLogs: React.FC = () => {
 
   const formatValue = (value: any): string => {
     if (value === null || value === undefined) return '(vazio)';
-    if (typeof value === 'boolean') return value ? 'Sim' : 'Nao';
+    if (typeof value === 'boolean') return value ? 'Sim' : 'Não';
     if (typeof value === 'object') {
       if (value instanceof Date) {
         return formatDate(value);
       }
       return JSON.stringify(value);
     }
-    // Verifica se e uma data ISO string
+    // Verifica se é uma data ISO string
     if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(value)) {
       return formatDate(value);
     }
@@ -267,8 +267,8 @@ const AuditLogs: React.FC = () => {
                 <h1 className="text-2xl font-bold text-neutral-800 dark:text-slate-200">Logs de Auditoria</h1>
                 <p className="text-neutral-600 dark:text-slate-400">
                   {isAdmin
-                    ? 'Historico de todas as acoes em clientes, processos e agenda'
-                    : 'Historico das suas acoes em clientes, processos e agenda'}
+                    ? 'Histórico de todas as ações em clientes, processos e agenda'
+                    : 'Histórico das suas ações em clientes, processos e agenda'}
                 </p>
               </div>
             </div>
@@ -454,7 +454,7 @@ const AuditLogs: React.FC = () => {
                               </span>
                             </div>
                             <p className="mt-1 text-sm text-neutral-800 dark:text-slate-200">
-                              <span className="font-medium">{log.userName || log.user?.name || 'Usuario'}</span>
+                              <span className="font-medium">{log.userName || log.user?.name || 'Usuário'}</span>
                               {' '}
                               {log.description || `${actionConfig.label.toLowerCase()} ${entityConfig.label.toLowerCase()}`}
                             </p>
@@ -556,7 +556,7 @@ const AuditLogs: React.FC = () => {
                           {log.action === 'DELETE' && log.oldValues && (
                             <div className="space-y-2">
                               <p className="text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wide">
-                                Dados excluidos:
+                                Dados excluídos:
                               </p>
                               <div className="grid grid-cols-2 gap-2 text-sm">
                                 {Object.entries(log.oldValues).map(([field, value]) => (
@@ -635,7 +635,7 @@ const AuditLogs: React.FC = () => {
               disabled={page === totalPages}
               className="inline-flex items-center gap-1 px-3 py-2 text-sm text-neutral-600 dark:text-slate-400 hover:bg-neutral-100 dark:hover:bg-slate-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Proximo
+              Próximo
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
