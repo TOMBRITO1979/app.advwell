@@ -45,6 +45,8 @@ import manualRoutes from './manual.routes';
 import costCenterRoutes from './costCenter.routes';
 import reportsRoutes from './reports.routes';
 import documentRequestRoutes from './document-request.routes';
+import servicePlanRoutes from './service-plan.routes';
+import clientSubscriptionRoutes from './client-subscription.routes';
 
 const router = Router();
 
@@ -103,5 +105,7 @@ router.use('/manual', manualRoutes); // Manual do usuário e FAQ (público + adm
 router.use('/cost-centers', costCenterRoutes); // Centros de custo (categorização de despesas/receitas)
 router.use('/reports', reportsRoutes); // Relatórios avançados (processos por fase, rito, prazo, etc.)
 router.use('/document-requests', documentRequestRoutes); // Solicitação de documentos aos clientes
+router.use('/service-plans', servicePlanRoutes); // Planos de serviço (assinaturas de clientes)
+router.use('/client-subscriptions', clientSubscriptionRoutes); // Assinaturas de clientes
 
 export default router;
