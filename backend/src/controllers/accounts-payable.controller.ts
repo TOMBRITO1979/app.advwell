@@ -8,6 +8,13 @@ import { appLogger } from '../utils/logger';
 import * as pdfStyles from '../utils/pdfStyles';
 import { enqueueCsvImport, getImportStatus } from '../queues/csv-import.queue';
 
+// Helper para corrigir timezone em datas (evita mudança de dia por fuso horário)
+// Recebe "YYYY-MM-DD" e retorna Date com hora 12:00:00 UTC (meio-dia evita problemas de timezone)
+function fixDateTimezone(dateString: string): Date {
+  const dateOnly = dateString.split('T')[0];
+  return new Date(`${dateOnly}T12:00:00Z`);
+}
+
 export class AccountsPayableController {
   // Criar nova conta a pagar
   async create(req: AuthRequest, res: Response) {
@@ -29,7 +36,7 @@ export class AccountsPayableController {
           supplier,
           description,
           amount: parseFloat(amount),
-          dueDate: new Date(dueDate),
+          dueDate: fixDateTimezone(dueDate),
           category,
           notes,
           createdBy,
@@ -208,8 +215,8 @@ export class AccountsPayableController {
           supplier,
           description,
           amount: amount !== undefined ? parseFloat(amount) : undefined,
-          dueDate: dueDate ? new Date(dueDate) : undefined,
-          paidDate: paidDate ? new Date(paidDate) : null,
+          dueDate: dueDate ? fixDateTimezone(dueDate) : undefined,
+          paidDate: paidDate ? fixDateTimezone(paidDate) : null,
           status,
           category,
           notes,
@@ -275,7 +282,7 @@ export class AccountsPayableController {
         where: { id },
         data: {
           status: 'PAID',
-          paidDate: paidDate ? new Date(paidDate) : new Date(),
+          paidDate: paidDate ? fixDateTimezone(paidDate) : new Date(),
         },
       });
 

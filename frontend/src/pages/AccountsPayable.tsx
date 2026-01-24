@@ -908,6 +908,18 @@ const AccountsPayable: React.FC = () => {
                       placeholder="Ex: Aluguel, Salários..."
                     />
                   </div>
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-1">
+                      Observações
+                    </label>
+                    <textarea
+                      value={formData.notes}
+                      onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                      rows={3}
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-md"
+                      placeholder="Observações adicionais..."
+                    />
+                  </div>
 
                   {/* Recorrência */}
                   <div className="border-t border-gray-200 pt-4">
