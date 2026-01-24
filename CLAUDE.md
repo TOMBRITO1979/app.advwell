@@ -71,7 +71,7 @@ Row-level multitenancy with `companyId` on all models. Middleware `validateTenan
 Jobs processed by dedicated worker (not API replicas):
 - `ENABLE_QUEUE_PROCESSORS=false` on API replicas
 - `ENABLE_QUEUE_PROCESSORS=true` on worker
-- Queues: `datajud-sync`, `email-campaign`, `whatsapp-messages`, `csv-import`, `csv-export`, `monitoring`
+- Queues: `datajud-sync`, `email-campaign`, `whatsapp-messages`, `telegram-notifications`, `csv-import`, `csv-export`, `monitoring`
 - Cron Jobs: `document-request-reminder` (hourly)
 
 ## Subscription Plans
@@ -99,6 +99,7 @@ Jobs processed by dedicated worker (not API replicas):
 | Document Requests | Request documents from clients with deadlines and auto-reminders |
 | Reports | Filtered reports with CSV export |
 | LGPD | Data privacy requests |
+| Telegram | Bot notifications for events (webhook at /api/telegram/webhook/:companyId) |
 
 ## ADVAPI Integration
 
