@@ -1,9 +1,10 @@
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import prisma from '../utils/prisma';
-import { encrypt } from '../utils/encryption';
+import { encrypt, decrypt } from '../utils/encryption';
 import { appLogger } from '../utils/logger';
-import { validateBotToken } from '../services/telegram.service';
+import { validateBotToken, setWebhook, processIncomingMessage } from '../services/telegram.service';
+import { config } from '../config';
 
 /**
  * Buscar configuração do Telegram da empresa
@@ -61,7 +62,15 @@ export const saveConfig = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ error: validation.error || 'Token do bot inválido' });
     }
 
-    const config = await prisma.telegramConfig.upsert({
+    // Configurar webhook para o bot responder /start
+    const webhookUrl = `${config.urls.api}/api/telegram/webhook/${companyId}`;
+    const webhookResult = await setWebhook(botToken, webhookUrl);
+    if (!webhookResult.success) {
+      appLogger.warn('Falha ao configurar webhook Telegram', { companyId, error: webhookResult.error });
+      // Não bloquear salvamento por causa do webhook
+    }
+
+    const savedConfig = await prisma.telegramConfig.upsert({
       where: { companyId },
       update: {
         botToken: encrypt(botToken),
@@ -76,12 +85,17 @@ export const saveConfig = async (req: AuthRequest, res: Response) => {
       },
     });
 
-    appLogger.info('Configuração Telegram salva', { companyId, botUsername: config.botUsername });
+    appLogger.info('Configuração Telegram salva', {
+      companyId,
+      botUsername: savedConfig.botUsername,
+      webhookConfigured: webhookResult.success
+    });
 
     res.json({
       configured: true,
-      botUsername: config.botUsername,
-      isActive: config.isActive,
+      botUsername: savedConfig.botUsername,
+      isActive: savedConfig.isActive,
+      webhookConfigured: webhookResult.success,
     });
   } catch (error) {
     appLogger.error('Erro ao salvar config Telegram', error as Error);
@@ -167,4 +181,47 @@ export const testMessage = async (req: AuthRequest, res: Response) => {
   }
 };
 
-export default { getConfig, saveConfig, toggleActive, testMessage };
+/**
+ * Webhook para receber mensagens do Telegram
+ * POST /api/telegram/webhook/:companyId
+ * Este endpoint é público (sem autenticação) pois é chamado pelo Telegram
+ */
+export const webhook = async (req: Request, res: Response) => {
+  try {
+    const { companyId } = req.params;
+    const update = req.body;
+
+    // Responder imediatamente ao Telegram
+    res.status(200).json({ ok: true });
+
+    // Validar se é uma mensagem de texto
+    if (!update?.message?.text || !update?.message?.chat?.id) {
+      return;
+    }
+
+    const chatId = String(update.message.chat.id);
+    const text = update.message.text;
+    const firstName = update.message.from?.first_name || '';
+
+    // Buscar config da empresa
+    const telegramConfig = await prisma.telegramConfig.findUnique({
+      where: { companyId },
+    });
+
+    if (!telegramConfig || !telegramConfig.isActive) {
+      appLogger.warn('Webhook recebido para empresa sem Telegram configurado', { companyId });
+      return;
+    }
+
+    // Descriptografar token e processar mensagem
+    const botToken = decrypt(telegramConfig.botToken);
+    await processIncomingMessage(botToken, chatId, text, firstName);
+
+    appLogger.info('Webhook Telegram processado', { companyId, chatId });
+  } catch (error) {
+    appLogger.error('Erro ao processar webhook Telegram', error as Error);
+    // Não retornar erro para o Telegram
+  }
+};
+
+export default { getConfig, saveConfig, toggleActive, testMessage, webhook };

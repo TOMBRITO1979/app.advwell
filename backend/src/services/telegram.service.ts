@@ -170,10 +170,86 @@ export async function validateBotToken(botToken: string): Promise<{ valid: boole
   }
 }
 
+/**
+ * Configura o webhook do bot para receber mensagens
+ */
+export async function setWebhook(botToken: string, webhookUrl: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const response = await fetch(`https://api.telegram.org/bot${botToken}/setWebhook`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        url: webhookUrl,
+        allowed_updates: ['message'],
+      }),
+    });
+
+    const data = await response.json() as { ok: boolean; description?: string };
+
+    if (!data.ok) {
+      return { success: false, error: data.description || 'Erro ao configurar webhook' };
+    }
+
+    appLogger.info('Telegram webhook configurado', { webhookUrl });
+    return { success: true };
+  } catch (error) {
+    appLogger.error('Erro ao configurar webhook Telegram', error as Error);
+    return { success: false, error: 'Erro ao conectar com a API do Telegram' };
+  }
+}
+
+/**
+ * Remove o webhook do bot
+ */
+export async function deleteWebhook(botToken: string): Promise<boolean> {
+  try {
+    const response = await fetch(`https://api.telegram.org/bot${botToken}/deleteWebhook`);
+    const data = await response.json() as { ok: boolean };
+    return data.ok;
+  } catch (error) {
+    appLogger.error('Erro ao remover webhook Telegram', error as Error);
+    return false;
+  }
+}
+
+/**
+ * Processa mensagem recebida do Telegram
+ */
+export async function processIncomingMessage(
+  botToken: string,
+  chatId: string,
+  text: string,
+  firstName: string
+): Promise<void> {
+  const lowerText = text.toLowerCase().trim();
+
+  if (lowerText === '/start' || lowerText === 'oi' || lowerText === 'olá' || lowerText === 'ola') {
+    const responseText = `
+👋 <b>Olá${firstName ? `, ${escapeHtml(firstName)}` : ''}!</b>
+
+Seu <b>Chat ID</b> é:
+
+<code>${chatId}</code>
+
+📋 <b>Como usar:</b>
+1. Copie o número acima
+2. Cole no campo "Telegram Chat ID" no seu perfil do sistema AdvWell
+3. Pronto! Você receberá notificações aqui.
+
+Se precisar do Chat ID novamente, basta enviar /start
+    `.trim();
+
+    await sendTelegramMessage(botToken, { chatId, text: responseText });
+  }
+}
+
 export default {
   getTelegramConfig,
   sendTelegramMessage,
   formatEventNotificationForUser,
   formatEventNotificationForClient,
   validateBotToken,
+  setWebhook,
+  deleteWebhook,
+  processIncomingMessage,
 };

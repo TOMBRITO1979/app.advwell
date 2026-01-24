@@ -39,6 +39,8 @@ const EXEMPT_ROUTES = [
   '/whatsapp-webhook',              // Sem prefixo /api
   '/api/advapi-webhook',            // ADVAPI webhook (valida por X-API-Key)
   '/advapi-webhook',                // Sem prefixo /api
+  '/api/telegram/webhook',          // Telegram webhook (chamado pelo Telegram)
+  '/telegram/webhook',              // Sem prefixo /api
   '/health',                        // Health checks
 ];
 
