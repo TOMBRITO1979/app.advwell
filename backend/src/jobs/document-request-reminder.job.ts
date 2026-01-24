@@ -128,14 +128,14 @@ function generateEmailTemplate(request: DocumentRequestForReminder, isOverdue: b
   const addressParts = [company.address, company.city, company.state].filter(Boolean);
   const fullAddress = addressParts.length > 0 ? addressParts.join(' - ') : '';
 
-  // Cor do tema baseada no status
-  const primaryColor = isOverdue ? '#dc2626' : '#2563eb';
-  const bgColor = isOverdue ? '#fef2f2' : '#eff6ff';
+  // Cor do tema baseada no status (Verde do sistema: #43A047)
+  const primaryColor = isOverdue ? '#dc2626' : '#43A047';
+  const bgColor = isOverdue ? '#fef2f2' : '#E8F5E9';
 
-  // Status badge
+  // Status badge (Verde do sistema para lembretes normais)
   const statusBadge = isOverdue
     ? '<span style="background-color: #fee2e2; color: #dc2626; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">PRAZO VENCIDO</span>'
-    : '<span style="background-color: #dbeafe; color: #2563eb; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">LEMBRETE</span>';
+    : '<span style="background-color: #C8E6C9; color: #2E7D32; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">LEMBRETE</span>';
 
   return `
 <!DOCTYPE html>
