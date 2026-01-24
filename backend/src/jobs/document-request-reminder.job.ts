@@ -1,6 +1,7 @@
 import prisma from '../utils/prisma';
 import { appLogger } from '../utils/logger';
 import nodemailer from 'nodemailer';
+import { whatsappService } from '../services/whatsapp.service';
 
 /**
  * Configurações do job de lembretes de documentos
@@ -336,6 +337,57 @@ async function sendEmailReminder(request: DocumentRequestForReminder): Promise<b
 }
 
 /**
+ * Envia lembrete por WhatsApp usando a API do Meta
+ */
+async function sendWhatsAppReminder(request: DocumentRequestForReminder, isOverdue: boolean): Promise<boolean> {
+  if (!request.client.phone) return false;
+
+  try {
+    // Verificar se a empresa tem WhatsApp configurado
+    const whatsappConfig = await prisma.whatsAppConfig.findUnique({
+      where: { companyId: request.companyId },
+    });
+
+    if (!whatsappConfig || !whatsappConfig.isActive) {
+      appLogger.debug('WhatsApp não configurado para empresa', { companyId: request.companyId });
+      return false;
+    }
+
+    const result = await whatsappService.sendDocumentRequestReminder({
+      companyId: request.companyId,
+      documentRequestId: request.id,
+      clientId: request.client.id,
+      phone: request.client.phone,
+      clientName: request.client.name,
+      documentName: request.documentName,
+      dueDate: new Date(request.dueDate),
+      isOverdue,
+      companyName: request.company.name,
+    });
+
+    if (result.success) {
+      appLogger.info('WhatsApp de lembrete enviado', {
+        requestId: request.id,
+        clientPhone: request.client.phone,
+        isOverdue,
+      });
+      return true;
+    } else {
+      appLogger.warn('Falha ao enviar WhatsApp de lembrete', {
+        requestId: request.id,
+        error: result.error,
+      });
+      return false;
+    }
+  } catch (error) {
+    appLogger.error('Erro ao enviar lembrete WhatsApp', error as Error, {
+      requestId: request.id,
+    });
+    return false;
+  }
+}
+
+/**
  * Processa lembretes de solicitação de documentos
  * Chamado pelo cron job a cada hora
  */
@@ -368,9 +420,9 @@ export async function processDocumentRequestReminders(): Promise<{
         let sent = false;
 
         const channel = request.notificationChannel;
+        const isOverdue = new Date(request.dueDate) < new Date();
 
-        // Por enquanto, apenas Email está implementado
-        // WhatsApp será adicionado quando integrarmos com a Meta API
+        // Enviar Email se configurado
         if (channel === 'EMAIL' || channel === 'BOTH' || !channel) {
           if (request.client.email) {
             if (await sendEmailReminder(request)) {
@@ -379,10 +431,14 @@ export async function processDocumentRequestReminders(): Promise<{
           }
         }
 
-        // TODO: Implementar WhatsApp quando integração estiver completa
-        // if (channel === 'WHATSAPP' || channel === 'BOTH') {
-        //   if (await sendWhatsAppReminder(request)) sent = true;
-        // }
+        // Enviar WhatsApp se configurado
+        if (channel === 'WHATSAPP' || channel === 'BOTH') {
+          if (request.client.phone) {
+            if (await sendWhatsAppReminder(request, isOverdue)) {
+              sent = true;
+            }
+          }
+        }
 
         if (sent) {
           // Atualizar solicitação

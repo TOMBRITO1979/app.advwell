@@ -384,6 +384,60 @@ class WhatsAppService {
   }
 
   /**
+   * Envia lembrete de solicitação de documento
+   */
+  async sendDocumentRequestReminder(params: {
+    companyId: string;
+    documentRequestId: string;
+    clientId: string;
+    phone: string;
+    clientName: string;
+    documentName: string;
+    dueDate: Date;
+    isOverdue: boolean;
+    companyName: string;
+    templateName?: string;
+  }): Promise<SendTemplateResult> {
+    const {
+      companyId,
+      documentRequestId,
+      clientId,
+      phone,
+      clientName,
+      documentName,
+      dueDate,
+      isOverdue,
+      companyName,
+      templateName = 'document_request_reminder', // Nome padrão do template
+    } = params;
+
+    // Formatar data para exibição
+    const dateFormatter = new Intl.DateTimeFormat('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    });
+
+    const formattedDate = dateFormatter.format(dueDate);
+    const status = isOverdue ? 'VENCIDO' : 'pendente';
+
+    return this.sendTemplate({
+      companyId,
+      phone,
+      templateName,
+      variables: {
+        nome: clientName,
+        documento: documentName,
+        prazo: formattedDate,
+        status: status,
+        empresa: companyName,
+      },
+      clientId,
+      messageType: 'REMINDER',
+    });
+  }
+
+  /**
    * Atualiza status da mensagem via webhook
    * Chamado quando recebemos webhook da Meta com status updates
    */
