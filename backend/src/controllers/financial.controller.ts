@@ -16,6 +16,13 @@ const toNumber = (value: Decimal | number | null | undefined): number => {
   return value.toNumber();
 };
 
+// Helper para corrigir timezone em datas (evita mudança de dia por fuso horário)
+// Recebe "YYYY-MM-DD" e retorna Date com hora 12:00:00 UTC (meio-dia evita problemas de timezone)
+function fixDateTimezone(dateString: string): Date {
+  const dateOnly = dateString.split('T')[0];
+  return new Date(`${dateOnly}T12:00:00Z`);
+}
+
 // Listar transações financeiras com filtros e paginação
 export const listTransactions = async (req: AuthRequest, res: Response) => {
   try {
@@ -283,7 +290,7 @@ export const createTransaction = async (req: AuthRequest, res: Response) => {
         status: transactionStatus,
         description: sanitizeString(description) || '',
         amount: parseFloat(amount),
-        date: date ? new Date(date) : new Date(),
+        date: date ? fixDateTimezone(date) : new Date(),
         isInstallment: isInstallment || false,
         installmentCount: isInstallment ? parseInt(installmentCount) : null,
         installmentInterval: isInstallment ? (installmentInterval ? parseInt(installmentInterval) : 30) : null,
@@ -330,7 +337,7 @@ export const createTransaction = async (req: AuthRequest, res: Response) => {
     if (isInstallment && installmentCount) {
       const installmentAmount = parseFloat(amount) / parseInt(installmentCount);
       const interval = installmentInterval ? parseInt(installmentInterval) : 30;
-      const startDate = date ? new Date(date) : new Date();
+      const startDate = date ? fixDateTimezone(date) : new Date();
 
       const installments = [];
       for (let i = 1; i <= parseInt(installmentCount); i++) {
@@ -445,7 +452,7 @@ export const updateTransaction = async (req: AuthRequest, res: Response) => {
         ...(status && validStatuses.includes(status) && { status }),
         ...(description && { description: sanitizeString(description) }),
         ...(amount && { amount: parseFloat(amount) }),
-        ...(date && { date: new Date(date) }),
+        ...(date && { date: fixDateTimezone(date) }),
       },
       include: {
         client: {
@@ -979,7 +986,7 @@ export const createInstallment = async (req: AuthRequest, res: Response) => {
         financialTransactionId: transactionId,
         installmentNumber: nextNumber,
         amount: parseFloat(amount),
-        dueDate: new Date(dueDate),
+        dueDate: fixDateTimezone(dueDate),
         status: 'PENDING',
       },
     });
@@ -1032,7 +1039,7 @@ export const updateInstallment = async (req: AuthRequest, res: Response) => {
     const updatedInstallment = await prisma.installmentPayment.update({
       where: { id: installmentId },
       data: {
-        ...(paidDate !== undefined && { paidDate: paidDate ? new Date(paidDate) : null }),
+        ...(paidDate !== undefined && { paidDate: paidDate ? fixDateTimezone(paidDate) : null }),
         ...(paidAmount !== undefined && { paidAmount: paidAmount ? parseFloat(paidAmount) : null }),
         ...(status && { status }),
         ...(notes !== undefined && { notes }),
