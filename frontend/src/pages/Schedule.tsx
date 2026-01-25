@@ -697,7 +697,7 @@ const Schedule: React.FC = () => {
               title="Visualização em Tabela"
             >
               <List size={18} />
-              <span className="hidden sm:inline text-sm">Tabela</span>
+              <span className="hidden sm:inline text-sm whitespace-nowrap">Tabela</span>
             </button>
             <button
               onClick={() => setViewMode('calendar')}
@@ -709,7 +709,7 @@ const Schedule: React.FC = () => {
               title="Visualização em Calendário"
             >
               <Grid3X3 size={18} />
-              <span className="hidden sm:inline text-sm">Calendário</span>
+              <span className="hidden sm:inline text-sm whitespace-nowrap">Calendário</span>
             </button>
           </div>
           {/* Import Button */}
