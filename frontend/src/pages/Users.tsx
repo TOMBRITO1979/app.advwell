@@ -162,15 +162,20 @@ const Users: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await api.post('/users', {
+      // Montar payload - não enviar permissions quando é ADMIN para preservar permissões existentes
+      const payload: Record<string, unknown> = {
         name: formData.name,
         email: formData.email,
         password: formData.password,
         hideSidebar: formData.hideSidebar,
         telegramChatId: formData.telegramChatId || null,
         role: makeAdmin ? 'ADMIN' : 'USER',
-        permissions: makeAdmin ? [] : permissions, // ADMIN não precisa de permissões individuais
-      });
+      };
+      // Só enviar permissions se não for ADMIN
+      if (!makeAdmin) {
+        payload.permissions = permissions;
+      }
+      await api.post('/users', payload);
       toast.success('Usuário criado com sucesso!');
       setShowModal(false);
       resetForm();
@@ -192,15 +197,20 @@ const Users: React.FC = () => {
     if (!selectedUser) return;
 
     try {
-      await api.put(`/users/${selectedUser.id}`, {
+      // Montar payload - não enviar permissions quando é ADMIN para preservar permissões existentes
+      const payload: Record<string, unknown> = {
         name: formData.name,
         email: formData.email,
         active: selectedUser.active,
         hideSidebar: formData.hideSidebar,
         telegramChatId: formData.telegramChatId || null,
         role: makeAdmin ? 'ADMIN' : 'USER',
-        permissions: makeAdmin ? [] : permissions,
-      });
+      };
+      // Só enviar permissions se não for ADMIN
+      if (!makeAdmin) {
+        payload.permissions = permissions;
+      }
+      await api.put(`/users/${selectedUser.id}`, payload);
       toast.success('Usuário atualizado com sucesso!');
       setShowModal(false);
       setEditMode(false);

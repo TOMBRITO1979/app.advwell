@@ -226,8 +226,9 @@ export class UserController {
         },
       });
 
-      // Atualizar permissões se fornecidas
-      if (permissions && Array.isArray(permissions)) {
+      // Atualizar permissões se fornecidas E não vazias
+      // IMPORTANTE: Não deletar permissões se array vazio (proteção contra perda acidental)
+      if (permissions && Array.isArray(permissions) && permissions.length > 0) {
         // Deleta permissões antigas
         await prisma.permission.deleteMany({
           where: { userId: id },
