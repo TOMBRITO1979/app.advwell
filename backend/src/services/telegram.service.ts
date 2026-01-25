@@ -1,6 +1,7 @@
 import { appLogger } from '../utils/logger';
 import prisma from '../utils/prisma';
 import { decrypt } from '../utils/encryption';
+import { config } from '../config';
 
 interface TelegramMessage {
   chatId: string;
@@ -11,25 +12,40 @@ interface TelegramMessage {
 interface TelegramConfig {
   botToken: string;
   isActive: boolean;
+  isSystemDefault: boolean;
 }
 
 /**
- * Busca configuração do Telegram da empresa
+ * Busca configuração do Telegram da empresa com fallback para bot padrão
  */
 export async function getTelegramConfig(companyId: string): Promise<TelegramConfig | null> {
   try {
-    const config = await prisma.telegramConfig.findUnique({
+    // 1. Tentar config da empresa
+    const companyConfig = await prisma.telegramConfig.findUnique({
       where: { companyId },
     });
 
-    if (!config || !config.isActive) {
-      return null;
+    // 2. Se empresa tem config ATIVO → usa bot da empresa
+    if (companyConfig && companyConfig.isActive) {
+      return {
+        botToken: decrypt(companyConfig.botToken),
+        isActive: true,
+        isSystemDefault: false,
+      };
     }
 
-    return {
-      botToken: decrypt(config.botToken),
-      isActive: config.isActive,
-    };
+    // 3. FALLBACK → usa bot padrão do sistema
+    if (config.telegram.defaultBotToken) {
+      appLogger.info('Usando bot Telegram padrão do sistema', { companyId });
+      return {
+        botToken: config.telegram.defaultBotToken,
+        isActive: true,
+        isSystemDefault: true,
+      };
+    }
+
+    // 4. Sem config da empresa E sem bot padrão
+    return null;
   } catch (error) {
     appLogger.error('Erro ao buscar config Telegram', error as Error);
     return null;

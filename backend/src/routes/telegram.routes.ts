@@ -6,7 +6,12 @@ import telegramController from '../controllers/telegram.controller';
 const router = Router();
 
 // Webhook do Telegram (público - sem autenticação)
-// Esta rota DEVE vir antes do middleware de autenticação
+// Estas rotas DEVEM vir antes do middleware de autenticação
+
+// Webhook do bot PADRÃO do sistema (deve vir ANTES da rota com :companyId)
+router.post('/webhook/system', telegramController.systemWebhook);
+
+// Webhook específico da empresa
 router.post('/webhook/:companyId', telegramController.webhook);
 
 // Aplicar autenticação e validação de tenant nas demais rotas

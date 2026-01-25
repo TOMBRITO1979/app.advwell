@@ -58,4 +58,9 @@ export const config = {
     clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
     redirectUri: process.env.GOOGLE_REDIRECT_URI || 'https://api.advwell.pro/api/google-calendar/callback',
   },
+
+  telegram: {
+    defaultBotToken: process.env.TELEGRAM_DEFAULT_BOT_TOKEN || '',
+    defaultBotUsername: process.env.TELEGRAM_DEFAULT_BOT_USERNAME || '',
+  },
 };

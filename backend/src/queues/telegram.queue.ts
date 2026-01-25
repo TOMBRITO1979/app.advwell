@@ -50,11 +50,16 @@ if (ENABLE_QUEUE_PROCESSORS) {
       jobId: job.id,
     });
 
-    // Buscar config da empresa
+    // Buscar config da empresa (com fallback para bot padrão)
     const config = await getTelegramConfig(companyId);
     if (!config) {
-      appLogger.warn('Telegram não configurado ou inativo para empresa', { companyId });
+      appLogger.warn('Telegram não configurado e sem bot padrão', { companyId });
       return { success: false, reason: 'Telegram não configurado' };
+    }
+
+    // Log para monitoramento quando usa bot padrão
+    if (config.isSystemDefault) {
+      appLogger.info('Notificação via bot Telegram padrão', { companyId, chatId });
     }
 
     // Formatar mensagem

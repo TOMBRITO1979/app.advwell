@@ -224,4 +224,43 @@ export const webhook = async (req: Request, res: Response) => {
   }
 };
 
-export default { getConfig, saveConfig, toggleActive, testMessage, webhook };
+/**
+ * Webhook do bot PADRÃO do sistema
+ * POST /api/telegram/webhook/system
+ */
+export const systemWebhook = async (req: Request, res: Response) => {
+  try {
+    const update = req.body;
+
+    // Responder imediatamente ao Telegram
+    res.status(200).json({ ok: true });
+
+    // Validar se é uma mensagem de texto
+    if (!update?.message?.text || !update?.message?.chat?.id) {
+      return;
+    }
+
+    const chatId = String(update.message.chat.id);
+    const text = update.message.text;
+    const firstName = update.message.from?.first_name || '';
+
+    if (!config.telegram.defaultBotToken) {
+      appLogger.warn('Webhook system recebido mas bot padrão não configurado');
+      return;
+    }
+
+    await processIncomingMessage(
+      config.telegram.defaultBotToken,
+      chatId,
+      text,
+      firstName
+    );
+
+    appLogger.info('Webhook Telegram (bot padrão) processado', { chatId });
+  } catch (error) {
+    appLogger.error('Erro webhook Telegram padrão', error as Error);
+    // Não retornar erro para o Telegram
+  }
+};
+
+export default { getConfig, saveConfig, toggleActive, testMessage, webhook, systemWebhook };
