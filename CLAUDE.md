@@ -99,7 +99,7 @@ Jobs processed by dedicated worker (not API replicas):
 | Document Requests | Request documents from clients with deadlines and auto-reminders |
 | Reports | Filtered reports with CSV export |
 | LGPD | Data privacy requests |
-| Telegram | Bot notifications for events (webhook at /api/telegram/webhook/:companyId) |
+| Telegram | Bot notifications with system fallback (webhooks: /api/telegram/webhook/:companyId and /api/telegram/webhook/system) |
 
 ## ADVAPI Integration
 
@@ -128,6 +128,13 @@ External API for scraping CNJ lawyer publications from Diário Oficial.
 source .env && curl -s "${ADVAPI_BASE_URL}/health" -H "x-api-key: ${ADVAPI_API_KEY}"
 ```
 
+## Docker Hub
+
+- **Repository**: `tomautomations/advwell-backend` and `tomautomations/advwell-frontend`
+- **Tag format**: `v1.8.XXX` (incrementing)
+- Build: `docker build --no-cache -t tomautomations/advwell-backend:vX.X.X .`
+- Push: `docker push tomautomations/advwell-backend:vX.X.X`
+
 ## Key Files
 
 | Purpose | Location |
@@ -137,7 +144,7 @@ source .env && curl -s "${ADVAPI_BASE_URL}/health" -H "x-api-key: ${ADVAPI_API_K
 | Queue config | `backend/src/queues/*.ts` |
 | Auth middleware | `backend/src/middleware/auth.ts` |
 | Docker config | `docker-compose.yml` |
-| Shared types | `frontend/src/types/schedule.ts` |
+| Telegram service | `backend/src/services/telegram.service.ts` |
 
 ## Adding Features
 
