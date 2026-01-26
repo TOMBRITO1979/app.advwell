@@ -106,7 +106,7 @@ export class AuthController {
           });
 
           const message = `
-<b>🆕 Novo Cadastro no AdvWell</b>
+<b>⚠️🆕 Novo Cadastro no AdvWell</b>
 
 <b>Empresa:</b> ${companyName}
 <b>Usuário:</b> ${name}
