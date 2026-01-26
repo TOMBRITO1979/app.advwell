@@ -6,6 +6,8 @@ import { sendPasswordResetEmail, sendWelcomeEmail, sendEmailVerification } from 
 import { AuthRequest } from '../middleware/auth';
 import { securityLogger, appLogger } from '../utils/logger';
 import { TRIAL_DURATION_DAYS } from '../services/stripe.service';
+import { sendTelegramMessage } from '../services/telegram.service';
+import { config } from '../config';
 
 export class AuthController {
   async register(req: Request, res: Response) {
@@ -89,6 +91,44 @@ export class AuthController {
       } catch (error: any) {
         appLogger.error('Erro ao enviar email de verificação', error as Error, { email });
         // Logged above
+      }
+
+      // Notifica SUPER_ADMINs via Telegram sobre novo cadastro
+      try {
+        const botToken = config.telegram.defaultBotToken;
+        if (botToken) {
+          const superAdmins = await prisma.user.findMany({
+            where: {
+              role: 'SUPER_ADMIN',
+              telegramChatId: { not: null },
+            },
+            select: { telegramChatId: true },
+          });
+
+          const message = `
+<b>🆕 Novo Cadastro no AdvWell</b>
+
+<b>Empresa:</b> ${companyName}
+<b>Usuário:</b> ${name}
+<b>Email:</b> ${email}
+<b>CNPJ:</b> ${cnpj || 'Não informado'}
+<b>Data:</b> ${new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
+          `.trim();
+
+          for (const admin of superAdmins) {
+            if (admin.telegramChatId) {
+              await sendTelegramMessage(botToken, {
+                chatId: admin.telegramChatId,
+                text: message,
+                parseMode: 'HTML',
+              });
+            }
+          }
+          appLogger.info('Notificação Telegram enviada para SUPER_ADMINs', { companyName, email });
+        }
+      } catch (error: any) {
+        appLogger.error('Erro ao notificar SUPER_ADMINs via Telegram', error as Error);
+        // Não bloqueia o registro se a notificação falhar
       }
 
       res.status(201).json({

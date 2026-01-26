@@ -34,11 +34,12 @@ export class UserController {
         where.companyId = companyId;
       }
 
-      // Adicionar filtro de busca
+      // Adicionar filtro de busca (nome, email ou empresa)
       if (search) {
         where.OR = [
           { name: { contains: String(search), mode: 'insensitive' as const } },
           { email: { contains: String(search), mode: 'insensitive' as const } },
+          { company: { name: { contains: String(search), mode: 'insensitive' as const } } },
         ];
       }
 
