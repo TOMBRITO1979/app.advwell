@@ -686,7 +686,7 @@ const Schedule: React.FC = () => {
         </div>
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
           {/* Toggle View Mode */}
-          <div className="flex rounded-lg border border-neutral-200 dark:border-slate-700 overflow-hidden">
+          <div className="flex flex-shrink-0 rounded-lg border border-neutral-200 dark:border-slate-700 overflow-hidden">
             <button
               onClick={() => setViewMode('table')}
               className={`flex items-center gap-2 px-4 py-2 min-h-[44px] transition-colors ${
