@@ -1658,7 +1658,7 @@
             <div class="vídeo-container">
                 <div class="vídeo-wrapper">
                     <iframe
-                        src="https://www.youtube.com/embed/E0SYu_sR00c"
+                        src="https://www.youtube.com/embed/kPLWUOljT-w"
                         title="AdvWell - Demonstração"
                         frameborder="0"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -2526,6 +2526,23 @@
         document.querySelectorAll('.feature-card, .module-card, .pricing-card, .testimonial-card').forEach(el => {
             observer.observe(el);
         });
+    </script>
+
+    <!-- Chatwoot Widget -->
+    <script>
+      (function(d,t) {
+        var BASE_URL="https://chatwell.pro";
+        var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
+        g.src=BASE_URL+"/packs/js/sdk.js";
+        g.async = true;
+        s.parentNode.insertBefore(g,s);
+        g.onload=function(){
+          window.chatwootSDK.run({
+            websiteToken: '76xJN2oD2LkgDGtihUqTXbLX',
+            baseUrl: BASE_URL
+          })
+        }
+      })(document,"script");
     </script>
 </body>
 </html>
