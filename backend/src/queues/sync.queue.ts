@@ -185,7 +185,7 @@ syncQueue.process('sync-case', SYNC_CONCURRENCY, async (job) => {
 // Process batch sync (enqueues individual jobs)
 syncQueue.process('sync-batch', async (job) => {
   // ESCALABILIDADE: Usar SYNC_BATCH_SIZE como default
-  const { companyId, batchSize = SYNC_BATCH_SIZE, offset = 0 } = job.data;
+  const { companyId, batchSize = SYNC_BATCH_SIZE, offset = 0, monitoringLimit } = job.data;
 
   try {
     const whereClause: any = { status: 'ACTIVE' };
@@ -193,7 +193,46 @@ syncQueue.process('sync-batch', async (job) => {
       whereClause.companyId = companyId;
     }
 
-    // Get cases to sync
+    // Buscar limite de monitoramento da empresa se não veio no job
+    let limit = monitoringLimit;
+    if (limit === undefined && companyId) {
+      const company = await prisma.company.findUnique({
+        where: { id: companyId },
+        select: { monitoringLimit: true },
+      });
+      limit = company?.monitoringLimit || 0;
+    }
+
+    // Contar total de processos ativos
+    const totalCases = await prisma.case.count({ where: whereClause });
+
+    // Calcular quantos processos podem ser sincronizados
+    // Se limite = 0, significa ilimitado; senão, usa o limite do plano
+    const maxCasesToSync = limit > 0 ? Math.min(limit, totalCases) : totalCases;
+
+    // Se já processamos até o limite, parar
+    if (limit > 0 && offset >= limit) {
+      appLogger.info('Sync limit reached for company', {
+        companyId,
+        limit,
+        totalCases,
+        message: `Limite do plano: ${limit} processos. Total na empresa: ${totalCases}`
+      });
+      return {
+        success: true,
+        message: `Limite do plano atingido: ${limit} processos sincronizados de ${totalCases} ativos`,
+        enqueued: 0,
+        limitReached: true,
+        limit,
+        totalCases
+      };
+    }
+
+    // Calcular quantos buscar neste batch (respeitar o limite)
+    const remainingQuota = limit > 0 ? limit - offset : batchSize;
+    const casesToFetch = Math.min(batchSize, remainingQuota);
+
+    // Get cases to sync - ordenar por data de cadastro (mais antigos primeiro)
     const cases = await prisma.case.findMany({
       where: whereClause,
       select: {
@@ -202,8 +241,8 @@ syncQueue.process('sync-batch', async (job) => {
         companyId: true,
       },
       skip: offset,
-      take: batchSize,
-      orderBy: { lastSyncedAt: 'asc' }, // Prioritize oldest synced
+      take: casesToFetch,
+      orderBy: { createdAt: 'asc' }, // Processos mais antigos primeiro
     });
 
     if (cases.length === 0) {
@@ -228,15 +267,19 @@ syncQueue.process('sync-batch', async (job) => {
 
     await Promise.all(jobs);
 
-    // Schedule next batch if there are more cases
-    const totalCases = await prisma.case.count({ where: whereClause });
-    if (offset + batchSize < totalCases) {
+    // Schedule next batch if there are more cases AND within limit
+    const nextOffset = offset + cases.length;
+    const hasMoreCases = nextOffset < totalCases;
+    const withinLimit = limit === 0 || nextOffset < limit;
+
+    if (hasMoreCases && withinLimit) {
       await syncQueue.add(
         'sync-batch',
         {
           companyId,
           batchSize,
-          offset: offset + batchSize,
+          offset: nextOffset,
+          monitoringLimit: limit,
         },
         {
           delay: 60000, // Wait 1 minute before next batch
@@ -249,6 +292,9 @@ syncQueue.process('sync-batch', async (job) => {
       enqueued: cases.length,
       offset,
       total: totalCases,
+      limit: limit || 'unlimited',
+      syncedSoFar: nextOffset,
+      limitReached: limit > 0 && nextOffset >= limit,
     };
   } catch (error: any) {
     appLogger.error('Batch sync error', error as Error);
@@ -282,6 +328,7 @@ syncQueue.on('stalled', (job) => {
 
 // Helper functions
 // SEGURANCA: Sync diario agora itera por empresa para garantir isolamento de tenant
+// LIMITE: Respeita o monitoringLimit do plano da empresa
 export const enqueueDailySync = async () => {
   appLogger.info('Enqueueing daily sync...');
 
@@ -291,26 +338,42 @@ export const enqueueDailySync = async () => {
       active: true,
       subscriptionStatus: { in: ['ACTIVE', 'TRIAL'] },
     },
-    select: { id: true, name: true },
+    select: { id: true, name: true, monitoringLimit: true },
   });
 
   appLogger.info('Found active companies for daily sync', { count: activeCompanies.length });
 
   // Enfileirar sync para cada empresa separadamente
   for (const company of activeCompanies) {
+    // Contar processos ativos da empresa para log
+    const activeCasesCount = await prisma.case.count({
+      where: { companyId: company.id, status: 'ACTIVE' },
+    });
+
+    const limit = company.monitoringLimit || 0;
+    const casesToSync = limit > 0 ? Math.min(limit, activeCasesCount) : activeCasesCount;
+
+    appLogger.info('Enqueuing sync for company', {
+      companyId: company.id,
+      companyName: company.name,
+      activeCases: activeCasesCount,
+      monitoringLimit: limit || 'unlimited',
+      willSync: casesToSync,
+    });
+
     await syncQueue.add(
       'sync-batch',
       {
-        companyId: company.id, // SEGURANCA: Sempre especificar companyId
+        companyId: company.id,
         batchSize: 50,
         offset: 0,
+        monitoringLimit: limit, // Passar o limite para o processador
       },
       {
         jobId: `daily-sync-${company.id}-${Date.now()}`,
         delay: Math.random() * 5000, // Delay aleatorio para distribuir carga
       }
     );
-    appLogger.info('Enqueued sync for company', { companyId: company.id, companyName: company.name });
   }
 };
 
