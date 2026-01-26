@@ -1138,10 +1138,18 @@ export class CaseController {
   async getPendingUpdates(req: AuthRequest, res: Response) {
     try {
       const companyId = req.user!.companyId;
+      const { page = 1, limit = 50 } = req.query;
+      const skip = (Number(page) - 1) * Number(limit);
 
       if (!companyId) {
         return res.status(403).json({ error: 'Usuário não possui empresa associada' });
       }
+
+      // Buscar limite de monitoramento da empresa
+      const company = await prisma.company.findUnique({
+        where: { id: companyId },
+        select: { monitoringLimit: true },
+      });
 
       // Busca processos onde:
       // 1. lastSyncedAt não é null (foi sincronizado)
@@ -1189,7 +1197,16 @@ export class CaseController {
         return c.lastSyncedAt > c.lastAcknowledgedAt;
       });
 
-      res.json(filtered);
+      // Aplicar paginação
+      const paginatedData = filtered.slice(skip, skip + Number(limit));
+
+      res.json({
+        data: paginatedData,
+        total: filtered.length,
+        page: Number(page),
+        limit: Number(limit),
+        monitoringLimit: company?.monitoringLimit || 0,
+      });
     } catch (error) {
       appLogger.error('Erro ao buscar atualizações pendentes', error as Error);
       res.status(500).json({ error: 'Erro ao buscar atualizações pendentes' });

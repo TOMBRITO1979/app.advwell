@@ -34,6 +34,7 @@ const Updates: React.FC = () => {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(50);
   const [total, setTotal] = useState(0);
+  const [monitoringLimit, setMonitoringLimit] = useState(0);
 
   useEffect(() => {
     fetchUpdates();
@@ -47,6 +48,7 @@ const Updates: React.FC = () => {
       });
       setUpdates(response.data.data || response.data);
       setTotal(response.data.total || response.data.length || 0);
+      setMonitoringLimit(response.data.monitoringLimit || 0);
     } catch (error) {
       console.error('Erro ao carregar atualizações:', error);
       toast.error('Erro ao carregar atualizações');
@@ -109,7 +111,10 @@ const Updates: React.FC = () => {
         </div>
         {total > 0 && (
           <div className="bg-success-100 dark:bg-success-900/30 text-success-800 dark:text-success-400 px-4 py-2 rounded-lg md:rounded-full font-semibold text-center">
-            {total} {total === 1 ? 'atualização' : 'atualizações'}
+            {monitoringLimit > 0
+              ? `${total}/${monitoringLimit} atualizações possíveis`
+              : `${total} ${total === 1 ? 'atualização' : 'atualizações'}`
+            }
           </div>
         )}
       </div>
