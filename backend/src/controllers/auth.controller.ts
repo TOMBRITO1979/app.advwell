@@ -186,6 +186,14 @@ export class AuthController {
           include: {
             company: true,
             linkedClient: true,
+            permissions: {
+              select: {
+                resource: true,
+                canView: true,
+                canEdit: true,
+                canDelete: true,
+              },
+            },
           },
         });
       } else {
@@ -196,6 +204,14 @@ export class AuthController {
           include: {
             company: true,
             linkedClient: true,
+            permissions: {
+              select: {
+                resource: true,
+                canView: true,
+                canEdit: true,
+                canDelete: true,
+              },
+            },
           },
         });
       }
@@ -300,6 +316,7 @@ export class AuthController {
         role: user.role,
         companyId: user.companyId,
         companyName: user.company?.name,
+        permissions: user.permissions,
       };
 
       // Adicionar informações do cliente vinculado se for CLIENT
