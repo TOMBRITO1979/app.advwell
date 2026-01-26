@@ -338,7 +338,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     ...(hasPermission('document-requests') ? [{ path: '/document-requests', label: 'Solicitações', icon: ClipboardList }] : []),
     ...(hasPermission('adverses') ? [{ path: '/adverses', label: 'Adversos', icon: UserPlus }] : []),
     ...(hasPermission('lawyers') ? [{ path: '/lawyers', label: 'Advogados', icon: Scale }] : []),
-    ...(hasPermission('users') ? [{ path: '/users', label: 'Usuários', icon: UserCog }] : []),
+    // Usuários: acesso restrito a SUPER_ADMIN e ADMIN (não usa hasPermission)
+    ...((user?.role === 'SUPER_ADMIN' || user?.role === 'ADMIN') ? [{ path: '/users', label: 'Usuários', icon: UserCog }] : []),
   ];
 
   // Submenu Processos (dropdown) - filtra por permissão
