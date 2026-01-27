@@ -24,7 +24,8 @@ export PORTAL_URL="${PORTAL_URL:-https://cliente.advwell.pro}"
 
 # Monitoring services defaults
 export GRAFANA_ADMIN_USER="${GRAFANA_ADMIN_USER:-admin}"
-export GRAFANA_ADMIN_PASSWORD="${GRAFANA_ADMIN_PASSWORD:-AdvWell@2024}"
+# GRAFANA_ADMIN_PASSWORD must be set in .env file - no default for security
+export GRAFANA_ADMIN_PASSWORD="${GRAFANA_ADMIN_PASSWORD:?GRAFANA_ADMIN_PASSWORD must be set in .env}"
 export ALERT_EMAIL="${ALERT_EMAIL:-admin@advwell.pro}"
 export SMTP_FROM_EMAIL="${SMTP_FROM_EMAIL:-noreply@advwell.pro}"
 
