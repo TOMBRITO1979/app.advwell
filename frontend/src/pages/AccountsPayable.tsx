@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Check, Circle, Repeat, FileText, Download, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Edit2, Trash2, Check, Circle, Repeat, FileText, Download, ChevronLeft, ChevronRight, X, MessageCircle } from 'lucide-react';
 import ActionsDropdown from '../components/ui/ActionsDropdown';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import Layout from '../components/Layout';
 import MobileCardList, { MobileCardItem } from '../components/MobileCardList';
 import { formatDate } from '../utils/dateFormatter';
+import { useAuth } from '../contexts/AuthContext';
 
 interface AccountPayable {
   id: string;
@@ -35,10 +36,17 @@ interface FormData {
 }
 
 const AccountsPayable: React.FC = () => {
+  const { user } = useAuth();
   const [accounts, setAccounts] = useState<AccountPayable[]>([]);
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [editingAccount, setEditingAccount] = useState<AccountPayable | null>(null);
+
+  // Telegram banner state
+  const [showTelegramBanner, setShowTelegramBanner] = useState(false);
+  const [telegramBannerDismissed, setTelegramBannerDismissed] = useState(
+    localStorage.getItem('telegramBannerDismissed') === 'true'
+  );
   const [filterStatus, setFilterStatus] = useState<string>('');
   const [filterSupplier, setFilterSupplier] = useState('');
   const [filterDescription, setFilterDescription] = useState('');
@@ -112,6 +120,31 @@ const AccountsPayable: React.FC = () => {
       fetchCategories();
     }
   }, [showStatementModal]);
+
+  // Check if user has Telegram configured (only for ADMIN)
+  useEffect(() => {
+    const checkTelegramConfig = async () => {
+      if (telegramBannerDismissed) return;
+      if (user?.role !== 'ADMIN' && user?.role !== 'SUPER_ADMIN') return;
+
+      try {
+        const response = await api.get('/users/profile');
+        if (!response.data.telegramChatId) {
+          setShowTelegramBanner(true);
+        }
+      } catch (error) {
+        // Silently fail - don't show banner on error
+      }
+    };
+
+    checkTelegramConfig();
+  }, [user, telegramBannerDismissed]);
+
+  const dismissTelegramBanner = () => {
+    localStorage.setItem('telegramBannerDismissed', 'true');
+    setTelegramBannerDismissed(true);
+    setShowTelegramBanner(false);
+  };
 
   const fetchCategories = async () => {
     try {
@@ -348,6 +381,46 @@ const AccountsPayable: React.FC = () => {
             </button>
           </div>
         </div>
+
+        {/* Banner Telegram */}
+        {showTelegramBanner && (
+          <div className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-slate-800 dark:to-slate-700 border border-blue-200 dark:border-slate-600 rounded-lg p-4 shadow-sm">
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 p-2 bg-blue-100 dark:bg-slate-600 rounded-full">
+                <MessageCircle className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-100">
+                  Receba avisos no Telegram!
+                </h3>
+                <p className="mt-1 text-sm text-blue-700 dark:text-blue-300">
+                  Para receber notificações de contas vencendo e compromissos atribuídos, envie{' '}
+                  <code className="px-1.5 py-0.5 bg-blue-100 dark:bg-slate-600 rounded text-blue-800 dark:text-blue-200 font-mono text-xs">/start</code>{' '}
+                  para{' '}
+                  <a
+                    href="https://t.me/advwell_bot"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-medium text-blue-800 dark:text-blue-200 underline hover:text-blue-900 dark:hover:text-blue-100"
+                  >
+                    @advwell_bot
+                  </a>{' '}
+                  e copie seu Chat ID para o seu{' '}
+                  <a href="/profile" className="font-medium text-blue-800 dark:text-blue-200 underline hover:text-blue-900 dark:hover:text-blue-100">
+                    perfil
+                  </a>.
+                </p>
+              </div>
+              <button
+                onClick={dismissTelegramBanner}
+                className="flex-shrink-0 p-1 text-blue-400 hover:text-blue-600 dark:text-blue-300 dark:hover:text-blue-100 transition-colors"
+                title="Não mostrar novamente"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Filtros */}
         <div className="bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 p-4">

@@ -21,6 +21,7 @@ import databaseBackupService from './services/database-backup.service';
 import auditCleanupService from './services/audit-cleanup.service';
 import { processAppointmentReminders } from './jobs/appointment-reminder.job';
 import { processDocumentRequestReminders } from './jobs/document-request-reminder.job';
+import { processAccountsPayableReminders } from './jobs/accounts-payable-reminder.job';
 import { errorHandler, notFoundHandler } from './middleware/error-handler';
 import { csrfProtection, getCsrfToken } from './middleware/csrf';
 import { appLogger } from './utils/logger';
@@ -746,6 +747,30 @@ CRON_ENABLED && cron.schedule('0 * * * *', async () => {
     });
   } catch (error) {
     appLogger.error('Error in document request reminder job', error as Error, { instanceId: INSTANCE_ID });
+  }
+}, { timezone: CRON_TIMEZONE });
+
+// Accounts payable reminders - runs every hour
+CRON_ENABLED && cron.schedule('0 * * * *', async () => {
+  const { isLeader, fencingToken } = await tryBecomeLeader();
+
+  if (!isLeader) {
+    appLogger.debug('Not leader, skipping accounts payable reminders', { instanceId: INSTANCE_ID });
+    return;
+  }
+
+  appLogger.info('Starting accounts payable reminder job', { instanceId: INSTANCE_ID, fencingToken });
+
+  try {
+    const result = await processAccountsPayableReminders();
+    appLogger.info('Accounts payable reminder job completed', {
+      instanceId: INSTANCE_ID,
+      processed: result.processed,
+      success: result.success,
+      failed: result.failed,
+    });
+  } catch (error) {
+    appLogger.error('Error in accounts payable reminder job', error as Error, { instanceId: INSTANCE_ID });
   }
 }, { timezone: CRON_TIMEZONE });
 

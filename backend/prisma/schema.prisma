@@ -940,6 +940,10 @@ model AccountPayable {
   recurrencePeriod RecurrencePeriod? // Período de recorrência
   parentId         String? // ID da conta original (para rastreamento)
 
+  // Lembretes
+  lastReminderAt DateTime? // Última vez que lembrete foi enviado
+  reminderCount  Int       @default(0) // Contador de lembretes enviados
+
   // Metadados
   createdBy String? // Quem criou
   createdAt DateTime @default(now())
