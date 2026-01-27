@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import Layout from '../components/Layout';
 import MobileCardList, { MobileCardItem } from '../components/MobileCardList';
 import { formatDateFull, fromSaoPauloToISO, toDatetimeLocal } from '../utils/dateFormatter';
+import { ExportButton } from '../components/ui';
 
 interface Client {
   id: string;
@@ -104,6 +105,10 @@ const Hearings: React.FC = () => {
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [selectedCase, setSelectedCase] = useState<Case | null>(null);
   const [selectedEditUserId, setSelectedEditUserId] = useState<string>('');
+
+  // Export states
+  const [exportingCSV, setExportingCSV] = useState(false);
+  const [exportingPDF, setExportingPDF] = useState(false);
 
   const priorityColors = {
     BAIXA: 'border-l-green-500 bg-success-50',
@@ -420,6 +425,104 @@ const Hearings: React.FC = () => {
   // Wrapper para usar formatDateFull do utilitário centralizado
   const formatDateDisplay = (dateString: string) => formatDateFull(dateString + 'T00:00:00');
 
+  // Exportar para CSV
+  const handleExportCSV = async () => {
+    setExportingCSV(true);
+    try {
+      const params: any = {
+        type: 'AUDIENCIA',
+      };
+
+      // Adicionar filtros de data baseado no modo de visualização
+      if (viewMode === 'list') {
+        params.startDate = selectedDate;
+        params.endDate = selectedDate;
+      } else {
+        const weekDays = getWeekDays();
+        params.startDate = weekDays[0].toISOString().split('T')[0];
+        params.endDate = weekDays[6].toISOString().split('T')[0];
+      }
+
+      // Adicionar filtro de advogado se selecionado
+      if (selectedUserId) {
+        params.userId = selectedUserId;
+      }
+
+      const response = await api.get('/schedule/export/csv', {
+        params,
+        responseType: 'blob',
+      });
+
+      const selectedUser = companyUsers.find(u => u.id === selectedUserId);
+      const userSuffix = selectedUser ? `_${selectedUser.name.replace(/\s+/g, '_')}` : '';
+      const dateSuffix = viewMode === 'list' ? selectedDate : `semana_${selectedDate}`;
+
+      const url = window.URL.createObjectURL(new Blob([response.data], { type: 'text/csv;charset=utf-8' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `audiencias_${dateSuffix}${userSuffix}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      toast.success('CSV exportado com sucesso!');
+    } catch (error) {
+      console.error('Erro ao exportar CSV:', error);
+      toast.error('Erro ao exportar CSV');
+    } finally {
+      setExportingCSV(false);
+    }
+  };
+
+  // Exportar para PDF
+  const handleExportPDF = async () => {
+    setExportingPDF(true);
+    try {
+      const params: any = {
+        type: 'AUDIENCIA',
+      };
+
+      // Adicionar filtros de data baseado no modo de visualização
+      if (viewMode === 'list') {
+        params.startDate = selectedDate;
+        params.endDate = selectedDate;
+      } else {
+        const weekDays = getWeekDays();
+        params.startDate = weekDays[0].toISOString().split('T')[0];
+        params.endDate = weekDays[6].toISOString().split('T')[0];
+      }
+
+      // Adicionar filtro de advogado se selecionado
+      if (selectedUserId) {
+        params.userId = selectedUserId;
+      }
+
+      const response = await api.get('/schedule/export/pdf', {
+        params,
+        responseType: 'blob',
+      });
+
+      const selectedUser = companyUsers.find(u => u.id === selectedUserId);
+      const userSuffix = selectedUser ? `_${selectedUser.name.replace(/\s+/g, '_')}` : '';
+      const dateSuffix = viewMode === 'list' ? selectedDate : `semana_${selectedDate}`;
+
+      const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `audiencias_${dateSuffix}${userSuffix}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      toast.success('PDF exportado com sucesso!');
+    } catch (error) {
+      console.error('Erro ao exportar PDF:', error);
+      toast.error('Erro ao exportar PDF');
+    } finally {
+      setExportingPDF(false);
+    }
+  };
+
   return (
     <Layout>
       <div className="space-y-6">
@@ -435,8 +538,22 @@ const Hearings: React.FC = () => {
             </p>
           </div>
 
-          {/* Toggle de Visualização */}
-          <div className="flex bg-neutral-100 dark:bg-slate-700 rounded-lg p-1">
+          {/* Botões de Exportação e Toggle */}
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Botões de Exportação */}
+            <ExportButton
+              type="csv"
+              onClick={handleExportCSV}
+              loading={exportingCSV}
+            />
+            <ExportButton
+              type="pdf"
+              onClick={handleExportPDF}
+              loading={exportingPDF}
+            />
+
+            {/* Toggle de Visualização */}
+            <div className="flex bg-neutral-100 dark:bg-slate-700 rounded-lg p-1">
             <button
               onClick={() => setViewMode('list')}
               className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
@@ -459,6 +576,7 @@ const Hearings: React.FC = () => {
               <CalendarDays size={18} />
               Semana
             </button>
+          </div>
           </div>
         </div>
 

@@ -1160,7 +1160,7 @@ export class ScheduleController {
   // Exportar agenda para PDF
   async exportPDF(req: AuthRequest, res: Response) {
     try {
-      const { search, type, completed, clientId, caseId, startDate, endDate } = req.query;
+      const { search, type, completed, clientId, caseId, startDate, endDate, userId } = req.query;
       const companyId = req.user!.companyId;
 
       if (!companyId) {
@@ -1181,6 +1181,15 @@ export class ScheduleController {
       if (completed !== undefined) where.completed = completed === 'true';
       if (clientId) where.clientId = String(clientId);
       if (caseId) where.caseId = String(caseId);
+
+      // Filtro por advogado/usuário atribuído
+      if (userId) {
+        where.assignedUsers = {
+          some: {
+            userId: String(userId),
+          },
+        };
+      }
 
       if (startDate || endDate) {
         where.date = {};
@@ -1336,7 +1345,7 @@ export class ScheduleController {
   // Exportar agenda para CSV
   async exportCSV(req: AuthRequest, res: Response) {
     try {
-      const { search, type, completed, clientId, caseId, startDate, endDate } = req.query;
+      const { search, type, completed, clientId, caseId, startDate, endDate, userId } = req.query;
       const companyId = req.user!.companyId;
 
       if (!companyId) {
@@ -1357,6 +1366,15 @@ export class ScheduleController {
       if (completed !== undefined) where.completed = completed === 'true';
       if (clientId) where.clientId = String(clientId);
       if (caseId) where.caseId = String(caseId);
+
+      // Filtro por advogado/usuário atribuído
+      if (userId) {
+        where.assignedUsers = {
+          some: {
+            userId: String(userId),
+          },
+        };
+      }
 
       if (startDate || endDate) {
         where.date = {};
