@@ -4,23 +4,30 @@ This file provides guidance to Claude Code when working with this repository.
 
 ## IMPORTANTE - LEIA ANTES DE QUALQUER DEPLOY
 
-**NUNCA crie o worker manualmente com `docker service create`!**
-
-Sempre use o comando de deploy completo:
+### SEMPRE use o script de deploy:
 ```bash
-(
-  set -a
-  source /root/advwell/.env
-  set +a
-  docker stack deploy -c docker-compose.yml advtom
-)
+cd /root/advwell && ./deploy.sh
 ```
 
-O `set -a` exporta TODAS as variáveis do .env. Sem isso, o worker não recebe variáveis críticas como:
-- DATAJUD_API_KEY (sync DataJud)
-- ADVAPI_* (monitoramento OAB)
-- TELEGRAM_DEFAULT_BOT_TOKEN (notificações)
-- STRIPE_* (pagamentos)
+### NUNCA faça deploy manual:
+```bash
+# ❌ ERRADO - variáveis não serão exportadas
+docker stack deploy -c docker-compose.yml advtom
+
+# ❌ ERRADO - não crie serviços manualmente
+docker service create ...
+```
+
+### Por que?
+O `deploy.sh` automaticamente:
+1. Exporta TODAS as variáveis do `.env` com `set -a`
+2. Usa `envsubst` para interpolar variáveis no docker-compose.yml
+3. Garante que o worker recebe variáveis críticas:
+   - DATAJUD_API_KEY (sync DataJud)
+   - ADVAPI_* (monitoramento OAB)
+   - TELEGRAM_DEFAULT_BOT_TOKEN (notificações)
+   - STRIPE_* (pagamentos)
+   - SMTP_* (emails)
 
 **Este lembrete só pode ser removido por solicitação expressa do usuário.**
 
@@ -66,8 +73,8 @@ VPS Principal (5.161.98.0)       VPS PostgreSQL (178.156.188.93)
 ## Commands
 
 ```bash
-# Deploy (requires sourcing .env and exporting all required vars)
-source .env && export AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_REGION S3_BUCKET_NAME POSTGRES_USER POSTGRES_PASSWORD POSTGRES_DB ADVAPI_BASE_URL ADVAPI_API_KEY ADVAPI_WEBHOOK_KEY ADVAPI_CALLBACK_URL JWT_SECRET ENCRYPTION_KEY SMTP_HOST SMTP_PORT SMTP_USER SMTP_PASSWORD SMTP_FROM STRIPE_SECRET_KEY STRIPE_WEBHOOK_SECRET GOOGLE_CLIENT_ID GOOGLE_CLIENT_SECRET GOOGLE_REDIRECT_URI WHATSAPP_ACCESS_TOKEN WHATSAPP_PHONE_NUMBER_ID WHATSAPP_VERIFY_TOKEN FRONTEND_URL PORTAL_URL API_URL && docker stack deploy -c docker-compose.yml advtom --with-registry-auth
+# Deploy (usa o script que exporta todas variáveis automaticamente)
+cd /root/advwell && ./deploy.sh
 
 # Logs
 docker service logs advtom_backend -f
