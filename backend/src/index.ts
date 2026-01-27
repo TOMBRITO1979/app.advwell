@@ -22,6 +22,7 @@ import auditCleanupService from './services/audit-cleanup.service';
 import { processAppointmentReminders } from './jobs/appointment-reminder.job';
 import { processDocumentRequestReminders } from './jobs/document-request-reminder.job';
 import { processAccountsPayableReminders } from './jobs/accounts-payable-reminder.job';
+import { processDeadlineReminders } from './jobs/deadline-reminder.job';
 import { errorHandler, notFoundHandler } from './middleware/error-handler';
 import { csrfProtection, getCsrfToken } from './middleware/csrf';
 import { appLogger } from './utils/logger';
@@ -771,6 +772,31 @@ CRON_ENABLED && cron.schedule('0 * * * *', async () => {
     });
   } catch (error) {
     appLogger.error('Error in accounts payable reminder job', error as Error, { instanceId: INSTANCE_ID });
+  }
+}, { timezone: CRON_TIMEZONE });
+
+// Deadline/Task reminder job - runs every hour at minute 30
+// Sends email and Telegram to assigned users for PRAZO and TAREFA events
+CRON_ENABLED && cron.schedule('30 * * * *', async () => {
+  const { isLeader, fencingToken } = await tryBecomeLeader();
+  if (!isLeader) {
+    appLogger.debug('Skipping deadline reminder job (not leader)', { instanceId: INSTANCE_ID });
+    return;
+  }
+
+  appLogger.info('Starting deadline reminder job', { instanceId: INSTANCE_ID, fencingToken });
+
+  try {
+    const result = await processDeadlineReminders();
+    appLogger.info('Deadline reminder job completed', {
+      instanceId: INSTANCE_ID,
+      processed: result.processed,
+      emailsSent: result.emailsSent,
+      telegramSent: result.telegramSent,
+      failed: result.failed,
+    });
+  } catch (error) {
+    appLogger.error('Error in deadline reminder job', error as Error, { instanceId: INSTANCE_ID });
   }
 }, { timezone: CRON_TIMEZONE });
 

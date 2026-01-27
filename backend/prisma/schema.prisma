@@ -849,6 +849,10 @@ model ScheduleEvent {
   // Google Calendar Sync
   googleEventId String? // ID do evento no Google Calendar (para sincronização)
 
+  // Campos de lembrete (para PRAZO e TAREFA)
+  reminderCount  Int       @default(0) // Contador de lembretes enviados
+  lastReminderAt DateTime? // Data/hora do último lembrete
+
   // Metadados
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

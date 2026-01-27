@@ -796,3 +796,124 @@ export const sendEventAssignmentNotification = async (
 
   await transporter.sendMail(mailOptions);
 };
+
+/**
+ * Envia email de lembrete de prazo/tarefa
+ */
+export const sendDeadlineReminderEmail = async (
+  userEmail: string,
+  userName: string,
+  eventTitle: string,
+  eventDate: Date,
+  eventType: string,
+  eventDescription: string | null,
+  companyName: string,
+  isOverdue: boolean = false
+) => {
+  const safeName = sanitizeForEmail(userName);
+  const safeEventTitle = sanitizeForEmail(eventTitle);
+  const safeDescription = sanitizeForEmail(eventDescription || '');
+  const safeCompanyName = sanitizeForEmail(companyName);
+
+  // Formatar data em português
+  const formattedDate = eventDate.toLocaleDateString('pt-BR', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'America/Sao_Paulo'
+  });
+
+  // Mapear tipos de evento para labels em português
+  const typeLabels: Record<string, string> = {
+    'PRAZO': 'Prazo',
+    'TAREFA': 'Tarefa',
+  };
+  const eventTypeLabel = typeLabels[eventType] || eventType;
+
+  // Cores por tipo de evento
+  const typeColors: Record<string, string> = {
+    'PRAZO': '#EF4444',
+    'TAREFA': '#10B981',
+  };
+  const typeColor = typeColors[eventType] || '#EF4444';
+
+  // Definir cores e textos baseado se está vencido ou não
+  const headerColor = isOverdue ? '#DC2626' : '#F59E0B';
+  const headerGradient = isOverdue
+    ? 'linear-gradient(135deg, #DC2626 0%, #991B1B 100%)'
+    : 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)';
+  const statusIcon = isOverdue ? '🚨' : '⏰';
+  const headerTitle = isOverdue ? 'Prazo Vencido!' : 'Lembrete de Prazo';
+
+  const mailOptions = {
+    from: config.smtp.from,
+    to: userEmail,
+    subject: `${statusIcon} ${isOverdue ? 'VENCIDO' : 'LEMBRETE'}: ${safeEventTitle} - ${safeCompanyName}`,
+    html: `
+      <!DOCTYPE html>
+      <html lang="pt-BR">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>${headerTitle} - ${safeCompanyName}</title>
+      </head>
+      <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f3f4f6;">
+        <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #f3f4f6;">
+          <tr>
+            <td style="padding: 40px 20px;">
+              <table role="presentation" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); overflow: hidden;">
+                <tr>
+                  <td style="background-color: ${headerColor}; background: ${headerGradient}; padding: 40px 30px; text-align: center;">
+                    <div style="font-size: 48px; margin-bottom: 16px;">${statusIcon}</div>
+                    <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700;">${headerTitle}</h1>
+                    <p style="margin: 8px 0 0 0; color: #ffffff; font-size: 14px; opacity: 0.9;">${safeCompanyName}</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 40px 30px;">
+                    <p style="margin: 0 0 24px 0; color: #4b5563; font-size: 16px;">Olá <strong>${safeName}</strong>,</p>
+                    <p style="margin: 0 0 24px 0; color: #6b7280; font-size: 15px;">
+                      ${isOverdue
+                        ? 'O seguinte prazo/tarefa atribuído a você está <strong style="color: #DC2626;">VENCIDO</strong>:'
+                        : 'Este é um lembrete sobre um prazo/tarefa atribuído a você que <strong style="color: #F59E0B;">vence em breve</strong>:'
+                      }
+                    </p>
+                    <div style="background-color: ${isOverdue ? '#FEF2F2' : '#FFFBEB'}; border-radius: 8px; padding: 24px; margin-bottom: 24px; border-left: 4px solid ${typeColor};">
+                      <div style="margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                        <span style="display: inline-block; padding: 4px 12px; background-color: ${typeColor}; color: #ffffff; font-size: 12px; font-weight: 600; border-radius: 4px;">${eventTypeLabel}</span>
+                        ${isOverdue ? '<span style="display: inline-block; padding: 4px 12px; background-color: #DC2626; color: #ffffff; font-size: 12px; font-weight: 600; border-radius: 4px;">VENCIDO</span>' : ''}
+                      </div>
+                      <p style="margin: 0 0 16px 0; color: #111827; font-size: 20px; font-weight: 700;">${safeEventTitle}</p>
+                      <div style="margin-bottom: 12px;">
+                        <span style="color: ${isOverdue ? '#DC2626' : '#6b7280'}; font-size: 14px; font-weight: ${isOverdue ? '600' : '400'};">
+                          🗓️ <strong>${isOverdue ? 'Venceu em:' : 'Vence em:'}</strong> ${formattedDate}
+                        </span>
+                      </div>
+                      ${safeDescription ? `<div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid ${isOverdue ? '#FECACA' : '#FDE68A'};"><p style="margin: 0 0 8px 0; color: #374151; font-size: 13px; font-weight: 600;">Descrição:</p><p style="margin: 0; color: #6b7280; font-size: 14px;">${safeDescription}</p></div>` : ''}
+                    </div>
+                    <div style="text-align: center; margin: 32px 0;">
+                      <a href="${config.urls.frontend}/deadlines" style="display: inline-block; padding: 16px 48px; background-color: ${headerColor}; background: ${headerGradient}; color: #ffffff !important; text-decoration: none; border-radius: 8px; font-size: 16px; font-weight: 600;">Ver Prazos</a>
+                    </div>
+                    <p style="margin: 32px 0 0 0; color: #6b7280; font-size: 14px; text-align: center;">Atenciosamente,<br><strong style="color: #43A047;">${safeCompanyName}</strong></p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 30px; background-color: #f9fafb; border-top: 1px solid #e5e7eb;">
+                    <p style="margin: 0 0 8px 0; color: #6b7280; font-size: 13px; text-align: center;">Este é um email automático de lembrete.</p>
+                    <p style="margin: 0; color: #9ca3af; font-size: 12px; text-align: center;">© 2025 ${safeCompanyName}. Todos os direitos reservados.</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+      </html>
+    `,
+  };
+
+  await transporter.sendMail(mailOptions);
+};

@@ -259,11 +259,51 @@ Se precisar do Chat ID novamente, basta enviar /start
   }
 }
 
+/**
+ * Formata lembrete de prazo/tarefa para usuário
+ */
+export function formatDeadlineReminderForUser(
+  eventTitle: string,
+  eventDate: Date,
+  eventType: string,
+  companyName: string,
+  isOverdue: boolean
+): string {
+  const dateStr = eventDate.toLocaleDateString('pt-BR', {
+    weekday: 'long',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+
+  const typeLabels: Record<string, string> = {
+    TAREFA: 'Tarefa',
+    PRAZO: 'Prazo',
+  };
+
+  const icon = isOverdue ? '🚨' : '⏰';
+  const status = isOverdue ? 'VENCIDO' : 'Vence em breve';
+  const typeLabel = typeLabels[eventType] || 'Prazo';
+
+  return `
+<b>${icon} ${status}: ${typeLabel}</b>
+
+<b>Título:</b> ${escapeHtml(eventTitle)}
+<b>${isOverdue ? 'Venceu em' : 'Vence em'}:</b> ${dateStr}
+<b>Empresa:</b> ${escapeHtml(companyName)}
+
+${isOverdue ? '⚠️ <i>Este prazo está vencido! Por favor, verifique imediatamente.</i>' : '💡 <i>Lembre-se de concluir antes do vencimento.</i>'}
+  `.trim();
+}
+
 export default {
   getTelegramConfig,
   sendTelegramMessage,
   formatEventNotificationForUser,
   formatEventNotificationForClient,
+  formatDeadlineReminderForUser,
   validateBotToken,
   setWebhook,
   deleteWebhook,

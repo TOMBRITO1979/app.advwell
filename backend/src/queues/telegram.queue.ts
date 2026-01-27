@@ -6,6 +6,7 @@ import {
   sendTelegramMessage,
   formatEventNotificationForUser,
   formatEventNotificationForClient,
+  formatDeadlineReminderForUser,
 } from '../services/telegram.service';
 
 // Controle de processadores para evitar duplicação em múltiplas replicas
@@ -20,6 +21,8 @@ interface TelegramEventNotificationJob {
   eventDate: string; // ISO string
   eventType: string;
   companyName: string;
+  isReminder?: boolean; // Se é um lembrete automático
+  isOverdue?: boolean; // Se o prazo/tarefa está vencido
 }
 
 // Criar fila usando createRedisClient (suporta Sentinel)
@@ -41,13 +44,15 @@ if (ENABLE_QUEUE_PROCESSORS) {
   appLogger.info('Registering Telegram queue processors...');
 
   telegramQueue.process('send-event-notification', 5, async (job) => {
-    const { companyId, recipientType, chatId, eventTitle, eventDate, eventType, companyName } = job.data;
+    const { companyId, recipientType, chatId, eventTitle, eventDate, eventType, companyName, isReminder, isOverdue } = job.data;
 
     appLogger.info('Processando notificação Telegram', {
       companyId,
       recipientType,
       chatId,
       jobId: job.id,
+      isReminder,
+      isOverdue,
     });
 
     // Buscar config da empresa (com fallback para bot padrão)
@@ -63,9 +68,14 @@ if (ENABLE_QUEUE_PROCESSORS) {
     }
 
     // Formatar mensagem
-    const text = recipientType === 'user'
-      ? formatEventNotificationForUser(eventTitle, new Date(eventDate), eventType, companyName)
-      : formatEventNotificationForClient(eventTitle, new Date(eventDate), companyName);
+    let text: string;
+    if (isReminder) {
+      text = formatDeadlineReminderForUser(eventTitle, new Date(eventDate), eventType, companyName, isOverdue || false);
+    } else if (recipientType === 'user') {
+      text = formatEventNotificationForUser(eventTitle, new Date(eventDate), eventType, companyName);
+    } else {
+      text = formatEventNotificationForClient(eventTitle, new Date(eventDate), companyName);
+    }
 
     // Enviar
     const success = await sendTelegramMessage(config.botToken, { chatId, text });
