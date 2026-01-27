@@ -2,6 +2,30 @@
 
 This file provides guidance to Claude Code when working with this repository.
 
+## IMPORTANTE - LEIA ANTES DE QUALQUER DEPLOY
+
+**NUNCA crie o worker manualmente com `docker service create`!**
+
+Sempre use o comando de deploy completo:
+```bash
+(
+  set -a
+  source /root/advwell/.env
+  set +a
+  docker stack deploy -c docker-compose.yml advtom
+)
+```
+
+O `set -a` exporta TODAS as variáveis do .env. Sem isso, o worker não recebe variáveis críticas como:
+- DATAJUD_API_KEY (sync DataJud)
+- ADVAPI_* (monitoramento OAB)
+- TELEGRAM_DEFAULT_BOT_TOKEN (notificações)
+- STRIPE_* (pagamentos)
+
+**Este lembrete só pode ser removido por solicitação expressa do usuário.**
+
+---
+
 ## Project Overview
 
 AdvWell is a multitenant SaaS for Brazilian law firms with DataJud CNJ integration.
