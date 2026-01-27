@@ -242,7 +242,7 @@ services:
 
   # OTIMIZADO: 16GB server - 2 replicas para 50-80 escritorios
   backend:
-    image: tomautomations/advwell-backend:v1.8.201
+    image: tomautomations/advwell-backend:v1.8.203
     environment:
       # Timezone Brasil (São Paulo)
       - TZ=${TZ}
@@ -375,7 +375,7 @@ services:
   # ISSUE 1 FIX: Separa processamento de jobs das replicas API
   # ===========================================
   backend-worker:
-    image: tomautomations/advwell-backend:v1.8.201
+    image: tomautomations/advwell-backend:v1.8.203
     environment:
       - TZ=${TZ}
       # ISSUE 3 FIX: sslmode=require para conexao criptografada
@@ -464,7 +464,7 @@ services:
       - health_check_key
 
   frontend:
-    image: tomautomations/advwell-frontend:v1.8.284
+    image: tomautomations/advwell-frontend:v1.8.286
     environment:
       - TZ=${TZ}
       - VITE_API_URL=${VITE_API_URL}

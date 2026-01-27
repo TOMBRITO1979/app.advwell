@@ -22,6 +22,7 @@ import {
   Globe,
   CalendarDays,
   CreditCard,
+  FileText,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -209,6 +210,41 @@ const AuditLogs: React.FC = () => {
     }
   };
 
+  const handleExportPDF = async () => {
+    try {
+      const params = new URLSearchParams();
+      if (filterEntityType) params.append('entityType', filterEntityType);
+      if (filterAction) params.append('action', filterAction);
+      if (filterUserId) {
+        params.append('userId', filterUserId);
+        // Encontra o nome do usuário selecionado para mostrar no PDF
+        const selectedUser = users.find(u => u.id === filterUserId);
+        if (selectedUser) {
+          params.append('userName', selectedUser.name);
+        }
+      }
+      if (filterStartDate) params.append('startDate', filterStartDate);
+      if (filterEndDate) params.append('endDate', filterEndDate);
+
+      const response = await api.get(`/audit-logs/export/pdf?${params.toString()}`, {
+        responseType: 'blob',
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `logs_auditoria_${new Date().toISOString().split('T')[0]}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      toast.success('PDF exportado com sucesso');
+    } catch (error) {
+      console.error('Error exporting PDF:', error);
+      toast.error('Erro ao exportar PDF');
+    }
+  };
+
   const clearFilters = () => {
     setFilterEntityType('');
     setFilterAction('');
@@ -289,7 +325,14 @@ const AuditLogs: React.FC = () => {
                 className="inline-flex items-center gap-2 px-4 py-2 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-lg transition-colors border border-primary-200"
               >
                 <Download className="w-4 h-4" />
-                Exportar CSV
+                CSV
+              </button>
+              <button
+                onClick={handleExportPDF}
+                className="inline-flex items-center gap-2 px-4 py-2 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-lg transition-colors border border-primary-200"
+              >
+                <FileText className="w-4 h-4" />
+                PDF
               </button>
               <button
                 onClick={fetchLogs}

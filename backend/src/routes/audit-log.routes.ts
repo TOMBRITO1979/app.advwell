@@ -21,6 +21,9 @@ router.get('/users', auditLogController.getUsersForFilter);
 // Exporta logs em CSV
 router.get('/export/csv', auditLogController.exportCSV);
 
+// Exporta logs em PDF
+router.get('/export/pdf', auditLogController.exportPDF);
+
 // Lista logs de uma entidade específica
 router.get('/:type/:entityId', auditLogController.getByEntity);
 

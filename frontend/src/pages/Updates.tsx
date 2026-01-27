@@ -138,7 +138,7 @@ const Updates: React.FC = () => {
           {/* Mobile Card View */}
           <div className="mobile-card-view p-4 space-y-3">
             {updates.map((update) => (
-              <div key={update.id} className="bg-white dark:bg-slate-800 border border-neutral-200 dark:border-slate-700 rounded-lg p-4 shadow-sm">
+              <div key={update.id} className="bg-white dark:bg-slate-700 border border-neutral-200 dark:border-slate-600 rounded-lg p-4 shadow-sm">
                 <div className="flex justify-between items-start mb-2">
                   <div>
                     <h3 className="font-semibold text-neutral-900 dark:text-slate-100">{formatProcessNumber(update.processNumber)}</h3>
@@ -170,7 +170,7 @@ const Updates: React.FC = () => {
                 <button
                   onClick={() => handleAcknowledge(update.id, update.processNumber)}
                   disabled={acknowledging === update.id}
-                  className="w-full mt-3 inline-flex items-center justify-center gap-2 px-4 py-2 bg-success-100 text-success-700 border border-success-200 hover:bg-success-200 font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                  className="w-full mt-3 inline-flex items-center justify-center gap-2 px-4 py-2 bg-success-100 dark:bg-success-900/30 text-success-700 dark:text-success-400 border border-success-200 dark:border-success-700 hover:bg-success-200 dark:hover:bg-success-900/50 font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                 >
                   <CheckCircle size={16} />
                   {acknowledging === update.id ? 'Processando...' : 'Ciente'}
@@ -268,7 +268,7 @@ const Updates: React.FC = () => {
                       <button
                         onClick={() => handleAcknowledge(update.id, update.processNumber)}
                         disabled={acknowledging === update.id}
-                        className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-success-100 text-success-700 border border-success-200 hover:bg-success-200 font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                        className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-success-100 dark:bg-success-900/30 text-success-700 dark:text-success-400 border border-success-200 dark:border-success-700 hover:bg-success-200 dark:hover:bg-success-900/50 font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                       >
                         {acknowledging === update.id ? (
                           <>
@@ -302,7 +302,7 @@ const Updates: React.FC = () => {
                     setLimit(Number(e.target.value));
                     setPage(1);
                   }}
-                  className="px-2 py-1 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="px-2 py-1 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 text-neutral-900 dark:text-slate-100 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
                   <option value={25}>25</option>
                   <option value={50}>50</option>
@@ -336,10 +336,10 @@ const Updates: React.FC = () => {
       )}
 
       {/* Info Box */}
-      <div className="bg-success-50 border border-primary-200 rounded-lg p-4">
+      <div className="bg-success-50 dark:bg-success-900/20 border border-primary-200 dark:border-primary-700 rounded-lg p-4">
         <div className="flex items-start gap-3">
-          <Bell className="w-5 h-5 text-primary-600 flex-shrink-0 mt-0.5" />
-          <div className="text-sm text-success-800">
+          <Bell className="w-5 h-5 text-primary-600 dark:text-primary-400 flex-shrink-0 mt-0.5" />
+          <div className="text-sm text-success-800 dark:text-success-300">
             <p className="font-medium mb-1">Como funciona:</p>
             <ul className="list-disc list-inside space-y-1">
               <li>Processos atualizados via sincronização com DataJud aparecem aqui automaticamente</li>
