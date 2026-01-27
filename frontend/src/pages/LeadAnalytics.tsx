@@ -15,6 +15,7 @@ import {
   ResponsiveContainer
 } from 'recharts';
 import Layout from '../components/Layout';
+import { useTheme } from '../contexts/ThemeContext';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import {
@@ -77,6 +78,7 @@ const PERIOD_OPTIONS = [
 ];
 
 const LeadAnalytics: React.FC = () => {
+  const { theme } = useTheme();
   const [loading, setLoading] = useState(true);
   const [exportingCSV, setExportingCSV] = useState(false);
   const [exportingPDF, setExportingPDF] = useState(false);
@@ -99,6 +101,15 @@ const LeadAnalytics: React.FC = () => {
   const COLORS = ['#4CAF50', '#5C6BC0', '#FF7043', '#26A69A', '#AB47BC', '#FFB74D', '#78909C', '#EC407A'];
   const PRIMARY_COLOR = '#4CAF50';
   const SECONDARY_COLOR = '#5C6BC0';
+
+  // Cores para dark mode nos gráficos
+  const isDark = theme === 'dark';
+  const chartColors = {
+    text: isDark ? '#cbd5e1' : '#525252',
+    grid: isDark ? '#475569' : '#e5e5e5',
+    tooltipBg: isDark ? '#1e293b' : '#ffffff',
+    tooltipBorder: isDark ? '#475569' : '#e5e5e5',
+  };
 
   useEffect(() => {
     loadData();
@@ -299,21 +310,21 @@ const LeadAnalytics: React.FC = () => {
               <Tag className="text-primary-600" size={20} />
               Leads Convertidos por Tag
             </h2>
-            <p className="text-xs sm:text-sm text-neutral-600 mb-2 sm:mb-4">
+            <p className="text-xs sm:text-sm text-neutral-600 dark:text-slate-400 mb-2 sm:mb-4">
               Distribuição por tags
             </p>
             {convertedByTags.length > 0 ? (
               <ResponsiveContainer width="100%" height={250}>
                 <BarChart data={convertedByTags} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis type="number" tick={{ fontSize: 12 }} />
+                  <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
+                  <XAxis type="number" tick={{ fontSize: 12, fill: chartColors.text }} />
                   <YAxis
                     dataKey="tagName"
                     type="category"
                     width={100}
-                    tick={{ fontSize: 11 }}
+                    tick={{ fontSize: 11, fill: chartColors.text }}
                   />
-                  <Tooltip />
+                  <Tooltip contentStyle={{ backgroundColor: chartColors.tooltipBg, borderColor: chartColors.tooltipBorder, color: chartColors.text }} />
                   <Bar dataKey="count" name="Leads">
                     {convertedByTags.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.tagColor || COLORS[index % COLORS.length]} />
@@ -322,7 +333,7 @@ const LeadAnalytics: React.FC = () => {
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex items-center justify-center h-[250px] text-neutral-500">
+              <div className="flex items-center justify-center h-[250px] text-neutral-500 dark:text-slate-400">
                 Nenhum lead convertido com tags
               </div>
             )}
@@ -334,21 +345,21 @@ const LeadAnalytics: React.FC = () => {
               <Tag className="text-orange-600" size={20} />
               Leads Não Convertidos por Tag
             </h2>
-            <p className="text-xs sm:text-sm text-neutral-600 mb-2 sm:mb-4">
+            <p className="text-xs sm:text-sm text-neutral-600 dark:text-slate-400 mb-2 sm:mb-4">
               Em processo de conversão
             </p>
             {nonConvertedByTags.length > 0 ? (
               <ResponsiveContainer width="100%" height={250}>
                 <BarChart data={nonConvertedByTags} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis type="number" tick={{ fontSize: 12 }} />
+                  <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
+                  <XAxis type="number" tick={{ fontSize: 12, fill: chartColors.text }} />
                   <YAxis
                     dataKey="tagName"
                     type="category"
                     width={100}
-                    tick={{ fontSize: 11 }}
+                    tick={{ fontSize: 11, fill: chartColors.text }}
                   />
-                  <Tooltip />
+                  <Tooltip contentStyle={{ backgroundColor: chartColors.tooltipBg, borderColor: chartColors.tooltipBorder, color: chartColors.text }} />
                   <Bar dataKey="count" name="Leads">
                     {nonConvertedByTags.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.tagColor || COLORS[index % COLORS.length]} />
@@ -357,7 +368,7 @@ const LeadAnalytics: React.FC = () => {
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex items-center justify-center h-[250px] text-neutral-500">
+              <div className="flex items-center justify-center h-[250px] text-neutral-500 dark:text-slate-400">
                 Nenhum lead não convertido com tags
               </div>
             )}
@@ -372,7 +383,7 @@ const LeadAnalytics: React.FC = () => {
               <Users className="text-primary-600" size={20} />
               Leads por Origem
             </h2>
-            <p className="text-xs sm:text-sm text-neutral-600 mb-2 sm:mb-4">
+            <p className="text-xs sm:text-sm text-neutral-600 dark:text-slate-400 mb-2 sm:mb-4">
               De onde vêm seus leads
             </p>
             {bySource.length > 0 ? (
@@ -391,11 +402,11 @@ const LeadAnalytics: React.FC = () => {
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip />
+                  <Tooltip contentStyle={{ backgroundColor: chartColors.tooltipBg, borderColor: chartColors.tooltipBorder, color: chartColors.text }} />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex items-center justify-center h-[250px] text-neutral-500">
+              <div className="flex items-center justify-center h-[250px] text-neutral-500 dark:text-slate-400">
                 Nenhum lead registrado
               </div>
             )}
@@ -407,17 +418,17 @@ const LeadAnalytics: React.FC = () => {
               <TrendingUp className="text-primary-600" size={20} />
               Timeline de Conversões
             </h2>
-            <p className="text-xs sm:text-sm text-neutral-600 mb-2 sm:mb-4">
+            <p className="text-xs sm:text-sm text-neutral-600 dark:text-slate-400 mb-2 sm:mb-4">
               Leads e conversões ao longo do tempo
             </p>
             {timeline.length > 0 ? (
               <ResponsiveContainer width="100%" height={250}>
                 <LineChart data={timeline}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-                  <YAxis tick={{ fontSize: 12 }} />
-                  <Tooltip />
-                  <Legend wrapperStyle={{ fontSize: '12px' }} />
+                  <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
+                  <XAxis dataKey="month" tick={{ fontSize: 11, fill: chartColors.text }} />
+                  <YAxis tick={{ fontSize: 12, fill: chartColors.text }} />
+                  <Tooltip contentStyle={{ backgroundColor: chartColors.tooltipBg, borderColor: chartColors.tooltipBorder, color: chartColors.text }} />
+                  <Legend wrapperStyle={{ fontSize: '12px', color: chartColors.text }} />
                   <Line
                     type="monotone"
                     dataKey="total"
@@ -437,7 +448,7 @@ const LeadAnalytics: React.FC = () => {
                 </LineChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex items-center justify-center h-[250px] text-neutral-500">
+              <div className="flex items-center justify-center h-[250px] text-neutral-500 dark:text-slate-400">
                 Sem dados no período
               </div>
             )}
@@ -450,7 +461,7 @@ const LeadAnalytics: React.FC = () => {
             <Tag className="text-primary-600" size={20} />
             Taxa de Conversão por Tag
           </h2>
-          <p className="text-xs sm:text-sm text-neutral-600 mb-2 sm:mb-4">
+          <p className="text-xs sm:text-sm text-neutral-600 dark:text-slate-400 mb-2 sm:mb-4">
             Efetividade de cada tag na conversão de leads
           </p>
 
@@ -509,7 +520,7 @@ const LeadAnalytics: React.FC = () => {
               </table>
             </div>
           ) : (
-            <div className="flex items-center justify-center h-32 text-neutral-500">
+            <div className="flex items-center justify-center h-32 text-neutral-500 dark:text-slate-400">
               Nenhuma tag com leads no período
             </div>
           )}

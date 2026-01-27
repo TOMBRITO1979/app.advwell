@@ -464,7 +464,7 @@ services:
       - health_check_key
 
   frontend:
-    image: tomautomations/advwell-frontend:v1.8.287
+    image: tomautomations/advwell-frontend:v1.8.288
     environment:
       - TZ=${TZ}
       - VITE_API_URL=${VITE_API_URL}
