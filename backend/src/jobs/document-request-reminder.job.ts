@@ -2,6 +2,7 @@ import prisma from '../utils/prisma';
 import { appLogger } from '../utils/logger';
 import nodemailer from 'nodemailer';
 import { whatsappService } from '../services/whatsapp.service';
+import { decrypt } from '../utils/encryption';
 
 /**
  * Configurações do job de lembretes de documentos
@@ -311,7 +312,7 @@ async function sendEmailReminder(request: DocumentRequestForReminder): Promise<b
       secure: smtpConfig.port === 465,
       auth: {
         user: smtpConfig.user,
-        pass: smtpConfig.password,
+        pass: decrypt(smtpConfig.password),
       },
     });
 
@@ -488,6 +489,16 @@ export async function processDocumentRequestReminders(): Promise<{
     throw error;
   }
 }
+
+// Exportar funções para uso no controller de lembrete manual
+export {
+  sendEmailReminder,
+  sendWhatsAppReminder,
+  generateEmailTemplate,
+};
+
+// Exportar tipo para reuso
+export type { DocumentRequestForReminder };
 
 export default {
   processDocumentRequestReminders,

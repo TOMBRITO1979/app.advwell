@@ -2,6 +2,11 @@ import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import prisma from '../utils/prisma';
 import { appLogger } from '../utils/logger';
+import {
+  sendEmailReminder,
+  sendWhatsAppReminder,
+  type DocumentRequestForReminder,
+} from '../jobs/document-request-reminder.job';
 
 /**
  * Controller para solicitações de documentos aos clientes
@@ -322,7 +327,26 @@ export class DocumentRequestController {
       const documentRequest = await prisma.documentRequest.findFirst({
         where: { id, companyId },
         include: {
-          client: true,
+          client: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              phone: true,
+            },
+          },
+          company: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              phone: true,
+              address: true,
+              city: true,
+              state: true,
+              logo: true,
+            },
+          },
         },
       });
 
@@ -337,7 +361,69 @@ export class DocumentRequestController {
         });
       }
 
-      // TODO: Implementar envio de lembrete via WhatsApp/Email usando os templates configurados
+      // Preparar objeto para envio (formato esperado pelas funções de envio)
+      const requestForReminder: DocumentRequestForReminder = {
+        id: documentRequest.id,
+        documentName: documentRequest.documentName,
+        description: documentRequest.description,
+        dueDate: documentRequest.dueDate,
+        status: documentRequest.status,
+        notificationChannel: documentRequest.notificationChannel,
+        whatsappTemplateId: documentRequest.whatsappTemplateId,
+        autoRemind: documentRequest.autoRemind,
+        reminderCount: documentRequest.reminderCount,
+        lastReminderAt: documentRequest.lastReminderAt,
+        companyId: documentRequest.companyId,
+        client: documentRequest.client,
+        company: documentRequest.company,
+      };
+
+      const isOverdue = new Date(documentRequest.dueDate) < new Date();
+      const channel = documentRequest.notificationChannel;
+      let emailSent = false;
+      let whatsappSent = false;
+      const errors: string[] = [];
+
+      // Enviar Email se configurado
+      if (channel === 'EMAIL' || channel === 'BOTH' || !channel) {
+        if (documentRequest.client.email) {
+          try {
+            emailSent = await sendEmailReminder(requestForReminder);
+            if (!emailSent) {
+              errors.push('Email: SMTP não configurado ou erro no envio');
+            }
+          } catch (err: any) {
+            errors.push(`Email: ${err.message}`);
+          }
+        } else {
+          errors.push('Email: Cliente não possui email cadastrado');
+        }
+      }
+
+      // Enviar WhatsApp se configurado
+      if (channel === 'WHATSAPP' || channel === 'BOTH') {
+        if (documentRequest.client.phone) {
+          try {
+            whatsappSent = await sendWhatsAppReminder(requestForReminder, isOverdue);
+            if (!whatsappSent) {
+              errors.push('WhatsApp: Não configurado ou erro no envio');
+            }
+          } catch (err: any) {
+            errors.push(`WhatsApp: ${err.message}`);
+          }
+        } else {
+          errors.push('WhatsApp: Cliente não possui telefone cadastrado');
+        }
+      }
+
+      // Se nenhum canal foi enviado com sucesso
+      if (!emailSent && !whatsappSent) {
+        appLogger.warn('Nenhum lembrete enviado', { id, errors });
+        return res.status(400).json({
+          error: 'Não foi possível enviar o lembrete',
+          details: errors,
+        });
+      }
 
       // Atualizar dados do lembrete
       await prisma.documentRequest.update({
@@ -349,9 +435,19 @@ export class DocumentRequestController {
         },
       });
 
-      appLogger.info('Lembrete enviado para solicitação', { id, clientId: documentRequest.clientId });
+      appLogger.info('Lembrete enviado para solicitação', {
+        id,
+        clientId: documentRequest.clientId,
+        emailSent,
+        whatsappSent,
+      });
 
-      res.json({ message: 'Lembrete enviado com sucesso' });
+      res.json({
+        message: 'Lembrete enviado com sucesso',
+        emailSent,
+        whatsappSent,
+        warnings: errors.length > 0 ? errors : undefined,
+      });
     } catch (error) {
       appLogger.error('Erro ao enviar lembrete', error as Error);
       res.status(500).json({ error: 'Erro ao enviar lembrete' });

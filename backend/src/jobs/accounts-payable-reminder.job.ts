@@ -2,6 +2,7 @@ import prisma from '../utils/prisma';
 import { appLogger } from '../utils/logger';
 import nodemailer from 'nodemailer';
 import { getTelegramConfig, sendTelegramMessage } from '../services/telegram.service';
+import { decrypt } from '../utils/encryption';
 
 /**
  * Configurações do job de lembretes de contas a pagar
@@ -313,7 +314,7 @@ async function getSmtpConfig(companyId: string, companyName: string): Promise<Sm
       host: companySmtp.host,
       port: companySmtp.port,
       user: companySmtp.user,
-      password: companySmtp.password,
+      password: decrypt(companySmtp.password), // Descriptografar senha do banco
       fromEmail: companySmtp.fromEmail,
       fromName: companySmtp.fromName || companyName,
       isSystemDefault: false,
