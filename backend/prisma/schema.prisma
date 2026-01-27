@@ -912,6 +912,7 @@ enum AccountPayableStatus {
 }
 
 enum RecurrencePeriod {
+  DAYS_7 // 7 dias (semanal)
   DAYS_15 // 15 dias
   DAYS_30 // 30 dias (mensal)
   MONTHS_6 // 6 meses (semestral)
