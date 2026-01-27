@@ -1160,7 +1160,7 @@ export class ScheduleController {
   // Exportar agenda para PDF
   async exportPDF(req: AuthRequest, res: Response) {
     try {
-      const { search, type, completed, clientId, caseId, startDate, endDate, userId } = req.query;
+      const { search, type, completed, clientId, caseId, startDate, endDate, userId, userName } = req.query;
       const companyId = req.user!.companyId;
 
       if (!companyId) {
@@ -1256,7 +1256,41 @@ export class ScheduleController {
       doc.pipe(res);
 
       // ==================== HEADER MODERNO ====================
-      pdfStyles.addHeader(doc, 'Agenda', `Total de eventos: ${events.length}`, company?.name);
+      // Construir subtítulo com filtros aplicados
+      const filterParts: string[] = [];
+
+      // Adicionar período
+      if (startDate && endDate) {
+        const start = new Date(String(startDate)).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+        const end = new Date(String(endDate)).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+        if (start === end) {
+          filterParts.push(`Data: ${start}`);
+        } else {
+          filterParts.push(`Período: ${start} a ${end}`);
+        }
+      } else if (startDate) {
+        const start = new Date(String(startDate)).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+        filterParts.push(`A partir de: ${start}`);
+      } else if (endDate) {
+        const end = new Date(String(endDate)).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+        filterParts.push(`Até: ${end}`);
+      }
+
+      // Adicionar advogado
+      if (userName) {
+        filterParts.push(`Advogado: ${String(userName)}`);
+      }
+
+      // Adicionar tipo se for específico
+      if (type && type === 'AUDIENCIA') {
+        filterParts.push('Tipo: Audiências');
+      }
+
+      const subtitle = filterParts.length > 0
+        ? `${filterParts.join(' | ')} | Total: ${events.length}`
+        : `Total de eventos: ${events.length}`;
+
+      pdfStyles.addHeader(doc, 'Agenda', subtitle, company?.name);
 
       // ==================== DADOS DA EMPRESA ====================
       if (company) {

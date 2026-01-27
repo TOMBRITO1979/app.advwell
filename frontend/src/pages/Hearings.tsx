@@ -493,8 +493,12 @@ const Hearings: React.FC = () => {
       }
 
       // Adicionar filtro de advogado se selecionado
+      const selectedUser = companyUsers.find(u => u.id === selectedUserId);
       if (selectedUserId) {
         params.userId = selectedUserId;
+        if (selectedUser) {
+          params.userName = selectedUser.name;
+        }
       }
 
       const response = await api.get('/schedule/export/pdf', {
@@ -502,7 +506,6 @@ const Hearings: React.FC = () => {
         responseType: 'blob',
       });
 
-      const selectedUser = companyUsers.find(u => u.id === selectedUserId);
       const userSuffix = selectedUser ? `_${selectedUser.name.replace(/\s+/g, '_')}` : '';
       const dateSuffix = viewMode === 'list' ? selectedDate : `semana_${selectedDate}`;
 
