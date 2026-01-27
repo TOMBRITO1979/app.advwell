@@ -7,6 +7,7 @@ import { sanitizeString } from '../utils/sanitize';
 import { appLogger } from '../utils/logger';
 import * as pdfStyles from '../utils/pdfStyles';
 import { enqueueCsvImport, getImportStatus } from '../queues/csv-import.queue';
+import { auditLogService } from '../services/audit-log.service';
 
 // Helper para corrigir timezone em datas (evita mudança de dia por fuso horário)
 // Recebe "YYYY-MM-DD" e retorna Date com hora 12:00:00 UTC (meio-dia evita problemas de timezone)
@@ -45,6 +46,15 @@ export class AccountsPayableController {
           parentId: parentId || null,
         },
       });
+
+      // Registrar log de auditoria
+      await auditLogService.logCreate(
+        req,
+        'ACCOUNT_PAYABLE',
+        account.id,
+        `${supplier} - R$ ${parseFloat(amount).toFixed(2)}`,
+        account
+      );
 
       res.status(201).json(account);
     } catch (error) {
@@ -223,6 +233,16 @@ export class AccountsPayableController {
         },
       });
 
+      // Registrar log de auditoria
+      await auditLogService.logUpdate(
+        req,
+        'ACCOUNT_PAYABLE',
+        account.id,
+        `${updatedAccount.supplier} - R$ ${Number(updatedAccount.amount).toFixed(2)}`,
+        account,
+        updatedAccount
+      );
+
       res.json(updatedAccount);
     } catch (error) {
       appLogger.error('Erro ao atualizar conta:', error as Error);
@@ -250,6 +270,15 @@ export class AccountsPayableController {
       await prisma.accountPayable.delete({
         where: { id },
       });
+
+      // Registrar log de auditoria
+      await auditLogService.logDelete(
+        req,
+        'ACCOUNT_PAYABLE',
+        account.id,
+        `${account.supplier} - R$ ${Number(account.amount).toFixed(2)}`,
+        account
+      );
 
       res.json({ message: 'Conta excluída com sucesso' });
     } catch (error) {
@@ -286,11 +315,21 @@ export class AccountsPayableController {
         },
       });
 
+      // Registrar log de auditoria (marcar como pago)
+      await auditLogService.logUpdate(
+        req,
+        'ACCOUNT_PAYABLE',
+        account.id,
+        `${account.supplier} - R$ ${Number(account.amount).toFixed(2)} (Pago)`,
+        account,
+        updatedAccount
+      );
+
       // Se for recorrente, criar a próxima conta
       if (account.isRecurring && account.recurrencePeriod) {
         const nextDueDate = this.calculateNextDueDate(account.dueDate, account.recurrencePeriod);
 
-        await prisma.accountPayable.create({
+        const newRecurringAccount = await prisma.accountPayable.create({
           data: {
             companyId: account.companyId,
             supplier: account.supplier,
@@ -305,6 +344,15 @@ export class AccountsPayableController {
             parentId: account.parentId || account.id, // Mantém o ID da conta original
           },
         });
+
+        // Registrar log da conta recorrente criada
+        await auditLogService.logCreate(
+          req,
+          'ACCOUNT_PAYABLE',
+          newRecurringAccount.id,
+          `${newRecurringAccount.supplier} - R$ ${Number(newRecurringAccount.amount).toFixed(2)} (Recorrente)`,
+          newRecurringAccount
+        );
       }
 
       res.json(updatedAccount);

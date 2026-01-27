@@ -1520,6 +1520,7 @@ enum AuditEntityType {
   CLIENT // Clientes
   CASE // Processos
   SCHEDULE_EVENT // Eventos da Agenda
+  ACCOUNT_PAYABLE // Contas a Pagar
 }
 
 // Enum para ação de auditoria

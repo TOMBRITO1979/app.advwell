@@ -81,6 +81,15 @@ const FIELD_LABELS: Record<string, string> = {
   googleMeetLink: 'Link Google Meet',
   clientId: 'Cliente',
   caseId: 'Processo',
+  // Account Payable fields
+  supplier: 'Fornecedor',
+  amount: 'Valor',
+  dueDate: 'Vencimento',
+  paidDate: 'Data de Pagamento',
+  category: 'Categoria',
+  isRecurring: 'Recorrente',
+  recurrencePeriod: 'Período de Recorrência',
+  parentId: 'Conta Original',
 };
 
 class AuditLogService {
@@ -388,6 +397,114 @@ class AuditLogService {
       action: AuditAction.DELETE,
       description: `${typeLabel} "${event.title}" excluído`,
       oldValues: this.scheduleEventToRecord(event),
+      ipAddress,
+      userAgent,
+    });
+  }
+
+  // ============================================
+  // Métodos de Account Payable (Contas a Pagar)
+  // ============================================
+
+  private accountPayableToRecord(account: any): Record<string, any> {
+    return {
+      supplier: account.supplier,
+      description: account.description,
+      amount: account.amount ? Number(account.amount) : null,
+      dueDate: account.dueDate,
+      paidDate: account.paidDate,
+      status: account.status,
+      category: account.category,
+      notes: account.notes,
+      isRecurring: account.isRecurring,
+      recurrencePeriod: account.recurrencePeriod,
+    };
+  }
+
+  async logCreate(
+    req: Request,
+    entityType: 'ACCOUNT_PAYABLE',
+    entityId: string,
+    entityName: string,
+    newValues: any
+  ): Promise<void> {
+    const { ipAddress, userAgent } = this.getRequestContext(req);
+    const user = (req as any).user;
+    const userName = await this.getUserName(user.userId);
+
+    await this.log({
+      companyId: user.companyId,
+      entityType: AuditEntityType.ACCOUNT_PAYABLE,
+      entityId,
+      entityName,
+      userId: user.userId,
+      userName,
+      action: AuditAction.CREATE,
+      description: `Conta a pagar "${entityName}" criada`,
+      newValues: this.accountPayableToRecord(newValues),
+      ipAddress,
+      userAgent,
+    });
+  }
+
+  async logUpdate(
+    req: Request,
+    entityType: 'ACCOUNT_PAYABLE',
+    entityId: string,
+    entityName: string,
+    oldValues: any,
+    newValues: any
+  ): Promise<void> {
+    const { ipAddress, userAgent } = this.getRequestContext(req);
+    const user = (req as any).user;
+    const userName = await this.getUserName(user.userId);
+
+    const oldRecord = this.accountPayableToRecord(oldValues);
+    const newRecord = this.accountPayableToRecord(newValues);
+    const changedFields = this.calculateChangedFields(oldRecord, newRecord);
+
+    if (changedFields.length === 0) {
+      return; // Nada mudou
+    }
+
+    await this.log({
+      companyId: user.companyId,
+      entityType: AuditEntityType.ACCOUNT_PAYABLE,
+      entityId,
+      entityName,
+      userId: user.userId,
+      userName,
+      action: AuditAction.UPDATE,
+      description: `Conta a pagar "${entityName}" atualizada`,
+      oldValues: oldRecord,
+      newValues: newRecord,
+      changedFields,
+      ipAddress,
+      userAgent,
+    });
+  }
+
+  async logDelete(
+    req: Request,
+    entityType: 'ACCOUNT_PAYABLE',
+    entityId: string,
+    entityName: string,
+    oldValues: any
+  ): Promise<void> {
+    const { ipAddress, userAgent } = this.getRequestContext(req);
+    const user = (req as any).user;
+    const userName = await this.getUserName(user.userId);
+
+    await this.log({
+      companyId: user.companyId,
+      entityType: AuditEntityType.ACCOUNT_PAYABLE,
+      entityId,
+      entityName,
+      userId: user.userId,
+      userName,
+      action: AuditAction.DELETE,
+      description: `Conta a pagar "${entityName}" excluída`,
+      oldValues: this.accountPayableToRecord(oldValues),
       ipAddress,
       userAgent,
     });

@@ -21,6 +21,7 @@ import {
   ChevronRight,
   Globe,
   CalendarDays,
+  CreditCard,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -97,6 +98,15 @@ const FIELD_LABELS: Record<string, string> = {
   googleMeetLink: 'Link Google Meet',
   clientId: 'Cliente',
   caseId: 'Processo',
+  // Campos de contas a pagar
+  supplier: 'Fornecedor',
+  amount: 'Valor',
+  dueDate: 'Vencimento',
+  paidDate: 'Data de Pagamento',
+  category: 'Categoria',
+  isRecurring: 'Recorrente',
+  recurrencePeriod: 'Período de Recorrência',
+  parentId: 'Conta Original',
 };
 
 const AuditLogs: React.FC = () => {
@@ -223,6 +233,7 @@ const AuditLogs: React.FC = () => {
       CLIENT: { color: 'bg-blue-100 text-blue-700', icon: <Users className="w-4 h-4" />, label: 'Cliente' },
       CASE: { color: 'bg-purple-100 text-purple-700', icon: <Briefcase className="w-4 h-4" />, label: 'Processo' },
       SCHEDULE_EVENT: { color: 'bg-green-100 text-green-700', icon: <CalendarDays className="w-4 h-4" />, label: 'Agenda' },
+      ACCOUNT_PAYABLE: { color: 'bg-orange-100 text-orange-700', icon: <CreditCard className="w-4 h-4" />, label: 'Conta a Pagar' },
     };
     return configs[entityType] || { color: 'bg-neutral-100 text-neutral-700 dark:text-slate-300', icon: <History className="w-4 h-4" />, label: entityType };
   };
@@ -319,6 +330,7 @@ const AuditLogs: React.FC = () => {
               <option value="CLIENT">Clientes</option>
               <option value="CASE">Processos</option>
               <option value="SCHEDULE_EVENT">Agenda</option>
+              <option value="ACCOUNT_PAYABLE">Contas a Pagar</option>
             </select>
 
             <select
