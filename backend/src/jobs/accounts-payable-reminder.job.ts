@@ -287,7 +287,68 @@ function escapeHtml(text: string): string {
 }
 
 /**
- * Envia lembrete por Email usando SMTP da empresa
+ * Configuração de SMTP (empresa ou sistema)
+ */
+interface SmtpSettings {
+  host: string;
+  port: number;
+  user: string;
+  password: string;
+  fromEmail: string;
+  fromName: string;
+  isSystemDefault: boolean;
+}
+
+/**
+ * Obtém configuração SMTP (empresa ou fallback do sistema)
+ */
+async function getSmtpConfig(companyId: string, companyName: string): Promise<SmtpSettings | null> {
+  // Tentar buscar SMTP da empresa primeiro
+  const companySmtp = await prisma.sMTPConfig.findUnique({
+    where: { companyId },
+  });
+
+  if (companySmtp) {
+    return {
+      host: companySmtp.host,
+      port: companySmtp.port,
+      user: companySmtp.user,
+      password: companySmtp.password,
+      fromEmail: companySmtp.fromEmail,
+      fromName: companySmtp.fromName || companyName,
+      isSystemDefault: false,
+    };
+  }
+
+  // Fallback: usar SMTP do sistema
+  const systemHost = process.env.SMTP_HOST;
+  const systemUser = process.env.SMTP_USER;
+  const systemPassword = process.env.SMTP_PASSWORD;
+  const systemFrom = process.env.SMTP_FROM;
+
+  if (!systemHost || !systemUser || !systemPassword || !systemFrom) {
+    appLogger.debug('SMTP do sistema não configurado', { companyId });
+    return null;
+  }
+
+  // Extrair nome e email do SMTP_FROM (formato: "Nome <email@example.com>")
+  const fromMatch = systemFrom.match(/^(?:"?([^"<]*)"?\s*)?<?([^>]+)>?$/);
+  const fromName = fromMatch?.[1]?.trim() || 'AdvWell';
+  const fromEmail = fromMatch?.[2]?.trim() || systemUser;
+
+  return {
+    host: systemHost,
+    port: parseInt(process.env.SMTP_PORT || '587', 10),
+    user: systemUser,
+    password: systemPassword,
+    fromEmail,
+    fromName,
+    isSystemDefault: true,
+  };
+}
+
+/**
+ * Envia lembrete por Email usando SMTP da empresa ou do sistema
  */
 async function sendEmailReminder(
   account: AccountPayableForReminder,
@@ -295,13 +356,11 @@ async function sendEmailReminder(
   isOverdue: boolean
 ): Promise<boolean> {
   try {
-    // Buscar configuração SMTP da empresa
-    const smtpConfig = await prisma.sMTPConfig.findUnique({
-      where: { companyId: account.companyId },
-    });
+    // Buscar configuração SMTP (empresa ou sistema)
+    const smtpConfig = await getSmtpConfig(account.companyId, account.company.name);
 
     if (!smtpConfig) {
-      appLogger.debug('SMTP não configurado para empresa', { companyId: account.companyId });
+      appLogger.debug('Nenhum SMTP disponível (empresa nem sistema)', { companyId: account.companyId });
       return false;
     }
 
@@ -313,7 +372,7 @@ async function sendEmailReminder(
     // Gerar HTML do email
     const html = generateEmailTemplate(account, isOverdue);
 
-    // Criar transporter com configuração da empresa
+    // Criar transporter com configuração obtida
     const transporter = nodemailer.createTransport({
       host: smtpConfig.host,
       port: smtpConfig.port,
@@ -325,7 +384,7 @@ async function sendEmailReminder(
     });
 
     await transporter.sendMail({
-      from: `"${smtpConfig.fromName || account.company.name}" <${smtpConfig.fromEmail}>`,
+      from: `"${smtpConfig.fromName}" <${smtpConfig.fromEmail}>`,
       to: admin.email,
       subject,
       html,
@@ -335,6 +394,7 @@ async function sendEmailReminder(
       accountId: account.id,
       adminEmail: admin.email,
       isOverdue,
+      usedSystemSmtp: smtpConfig.isSystemDefault,
     });
 
     return true;
