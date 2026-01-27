@@ -115,6 +115,6 @@ router.get('/', accountsPayableController.list);
 router.get('/:id', accountsPayableController.get);
 router.put('/:id', updateValidation, validate, accountsPayableController.update);
 router.delete('/:id', accountsPayableController.delete);
-router.post('/:id/pay', accountsPayableController.markAsPaid);
+router.post('/:id/pay', accountsPayableController.markAsPaid.bind(accountsPayableController));
 
 export default router;
