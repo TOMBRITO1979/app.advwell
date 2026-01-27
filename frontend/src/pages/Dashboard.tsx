@@ -16,6 +16,7 @@ import {
 } from 'recharts';
 import Layout from '../components/Layout';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import { formatDate } from '../utils/dateFormatter';
@@ -113,6 +114,7 @@ const formatStatusName = (status: string): string => {
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
+  const { theme } = useTheme();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<Stats>({
@@ -181,6 +183,15 @@ const Dashboard: React.FC = () => {
   const PRIMARY_COLOR = '#4CAF50';   // Verde principal
   const SECONDARY_COLOR = '#5C6BC0'; // Índigo suave
 
+  // Cores para dark mode nos gráficos
+  const isDark = theme === 'dark';
+  const chartColors = {
+    text: isDark ? '#cbd5e1' : '#525252',        // slate-300 / neutral-600
+    grid: isDark ? '#475569' : '#e5e5e5',        // slate-600 / neutral-200
+    tooltipBg: isDark ? '#1e293b' : '#ffffff',   // slate-800 / white
+    tooltipBorder: isDark ? '#475569' : '#e5e5e5', // slate-600 / neutral-200
+  };
+
   if (loading) {
     return (
       <Layout>
@@ -196,11 +207,11 @@ const Dashboard: React.FC = () => {
       <div className="space-y-4 sm:space-y-6">
         {/* Header */}
         <div className="mb-4 sm:mb-6">
-          <h1 className="text-xl sm:text-2xl font-bold text-neutral-800 flex items-center gap-2">
+          <h1 className="text-xl sm:text-2xl font-bold text-neutral-800 dark:text-slate-100 flex items-center gap-2">
             <Activity className="text-primary-600" size={24} />
             Dashboard
           </h1>
-          <p className="text-sm sm:text-base text-neutral-600 mt-1">
+          <p className="text-sm sm:text-base text-neutral-600 dark:text-slate-400 mt-1">
             Bem-vindo, {user?.name}!
           </p>
         </div>
@@ -296,14 +307,14 @@ const Dashboard: React.FC = () => {
               <CalendarCheck className="text-primary-600" size={20} />
               Eventos por Dia
             </h2>
-            <p className="text-xs sm:text-sm text-neutral-600 mb-2 sm:mb-4">Últimos 7 dias</p>
+            <p className="text-xs sm:text-sm text-neutral-600 dark:text-slate-400 mb-2 sm:mb-4">Últimos 7 dias</p>
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={eventsPerWeekday}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                <YAxis tick={{ fontSize: 12 }} />
-                <Tooltip />
-                <Legend wrapperStyle={{ fontSize: '12px' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
+                <XAxis dataKey="name" tick={{ fontSize: 12, fill: chartColors.text }} />
+                <YAxis tick={{ fontSize: 12, fill: chartColors.text }} />
+                <Tooltip contentStyle={{ backgroundColor: chartColors.tooltipBg, borderColor: chartColors.tooltipBorder, color: chartColors.text }} />
+                <Legend wrapperStyle={{ fontSize: '12px', color: chartColors.text }} />
                 <Bar dataKey="eventos" fill={PRIMARY_COLOR} name="Eventos" />
                 <Bar dataKey="audiencias" fill={SECONDARY_COLOR} name="Audiências" />
               </BarChart>
@@ -316,7 +327,7 @@ const Dashboard: React.FC = () => {
               <Briefcase className="text-primary-600" size={20} />
               Processos por Status
             </h2>
-            <p className="text-xs sm:text-sm text-neutral-600 mb-2 sm:mb-4">Distribuição atual</p>
+            <p className="text-xs sm:text-sm text-neutral-600 dark:text-slate-400 mb-2 sm:mb-4">Distribuição atual</p>
             <div className="flex items-center">
               {/* Gráfico de Pizza */}
               <div className="w-1/2">
@@ -334,7 +345,7 @@ const Dashboard: React.FC = () => {
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(value: number, name: string) => [value, formatStatusName(name)]} />
+                    <Tooltip formatter={(value: number, name: string) => [value, formatStatusName(name)]} contentStyle={{ backgroundColor: chartColors.tooltipBg, borderColor: chartColors.tooltipBorder, color: chartColors.text }} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
@@ -378,14 +389,14 @@ const Dashboard: React.FC = () => {
               <Activity className="text-primary-600" size={20} />
               Andamentos Recebidos
             </h2>
-            <p className="text-xs sm:text-sm text-neutral-600 mb-2 sm:mb-4">Últimos 30 dias</p>
+            <p className="text-xs sm:text-sm text-neutral-600 dark:text-slate-400 mb-2 sm:mb-4">Últimos 30 dias</p>
             <ResponsiveContainer width="100%" height={250}>
               <LineChart data={movementsTimeline}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" tick={{ fontSize: 10 }} />
-                <YAxis tick={{ fontSize: 12 }} />
-                <Tooltip />
-                <Legend wrapperStyle={{ fontSize: '12px' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
+                <XAxis dataKey="date" tick={{ fontSize: 10, fill: chartColors.text }} />
+                <YAxis tick={{ fontSize: 12, fill: chartColors.text }} />
+                <Tooltip contentStyle={{ backgroundColor: chartColors.tooltipBg, borderColor: chartColors.tooltipBorder, color: chartColors.text }} />
+                <Legend wrapperStyle={{ fontSize: '12px', color: chartColors.text }} />
                 <Line
                   type="monotone"
                   dataKey="andamentos"
@@ -404,14 +415,14 @@ const Dashboard: React.FC = () => {
               <Calendar className="text-primary-600" size={20} />
               Audiências Próximas
             </h2>
-            <p className="text-xs sm:text-sm text-neutral-600 mb-2 sm:mb-4">Próximos 7 dias</p>
+            <p className="text-xs sm:text-sm text-neutral-600 dark:text-slate-400 mb-2 sm:mb-4">Próximos 7 dias</p>
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={upcomingHearings}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="dia" tick={{ fontSize: 12 }} />
-                <YAxis tick={{ fontSize: 12 }} />
-                <Tooltip />
-                <Legend wrapperStyle={{ fontSize: '12px' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
+                <XAxis dataKey="dia" tick={{ fontSize: 12, fill: chartColors.text }} />
+                <YAxis tick={{ fontSize: 12, fill: chartColors.text }} />
+                <Tooltip contentStyle={{ backgroundColor: chartColors.tooltipBg, borderColor: chartColors.tooltipBorder, color: chartColors.text }} />
+                <Legend wrapperStyle={{ fontSize: '12px', color: chartColors.text }} />
                 <Bar dataKey="audiencias" fill={SECONDARY_COLOR} name="Audiências" />
               </BarChart>
             </ResponsiveContainer>
@@ -426,14 +437,14 @@ const Dashboard: React.FC = () => {
               <TrendingUp className="text-primary-600" size={20} />
               Novos Clientes
             </h2>
-            <p className="text-xs sm:text-sm text-neutral-600 mb-2 sm:mb-4">Últimos 6 meses</p>
+            <p className="text-xs sm:text-sm text-neutral-600 dark:text-slate-400 mb-2 sm:mb-4">Últimos 6 meses</p>
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={newClientsTimeline}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="mes" tick={{ fontSize: 12 }} />
-                <YAxis tick={{ fontSize: 12 }} />
-                <Tooltip />
-                <Legend wrapperStyle={{ fontSize: '12px' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
+                <XAxis dataKey="mes" tick={{ fontSize: 12, fill: chartColors.text }} />
+                <YAxis tick={{ fontSize: 12, fill: chartColors.text }} />
+                <Tooltip contentStyle={{ backgroundColor: chartColors.tooltipBg, borderColor: chartColors.tooltipBorder, color: chartColors.text }} />
+                <Legend wrapperStyle={{ fontSize: '12px', color: chartColors.text }} />
                 <Bar dataKey="clientes" fill="#059669" name="Clientes" />
               </BarChart>
             </ResponsiveContainer>
