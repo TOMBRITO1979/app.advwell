@@ -103,7 +103,7 @@ Jobs processed by dedicated worker (not API replicas):
 - `ENABLE_QUEUE_PROCESSORS=false` on API replicas
 - `ENABLE_QUEUE_PROCESSORS=true` on worker
 - Queues: `datajud-sync`, `email-campaign`, `whatsapp-messages`, `telegram-notifications`, `csv-import`, `csv-export`, `monitoring`
-- Cron Jobs: `document-request-reminder`, `accounts-payable-reminder` (hourly)
+- Cron Jobs (hourly): `document-request-reminder`, `accounts-payable-reminder`, `appointment-reminder`
 
 ## Subscription Plans
 
