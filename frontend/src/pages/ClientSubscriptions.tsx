@@ -218,13 +218,13 @@ export default function ClientSubscriptions() {
     <div className="p-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <CreditCard className="w-8 h-8 text-blue-600" />
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Planos de Servico</h1>
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <CreditCard className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600 flex-shrink-0" />
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-slate-100 truncate">Planos de Serviço</h1>
         </div>
         <button
           onClick={() => loadData()}
-          className="p-2 text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg"
+          className="p-2 min-h-[44px] min-w-[44px] text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg flex-shrink-0"
           title="Atualizar"
         >
           <RefreshCw className="w-5 h-5" />
@@ -281,33 +281,36 @@ export default function ClientSubscriptions() {
       <div className="flex border-b border-gray-200 dark:border-slate-700 mb-6">
         <button
           onClick={() => setActiveTab('subscriptions')}
-          className={`px-4 py-2 font-medium ${
+          className={`flex-1 sm:flex-none flex items-center justify-center sm:justify-start gap-1 sm:gap-2 px-3 sm:px-4 py-2 min-h-[44px] font-medium ${
             activeTab === 'subscriptions'
               ? 'text-blue-600 border-b-2 border-blue-600'
               : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'
           }`}
         >
-          Assinaturas
+          <Users className="w-4 h-4" />
+          <span className="hidden sm:inline">Assinaturas</span>
         </button>
         <button
           onClick={() => setActiveTab('plans')}
-          className={`px-4 py-2 font-medium ${
+          className={`flex-1 sm:flex-none flex items-center justify-center sm:justify-start gap-1 sm:gap-2 px-3 sm:px-4 py-2 min-h-[44px] font-medium ${
             activeTab === 'plans'
               ? 'text-blue-600 border-b-2 border-blue-600'
               : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'
           }`}
         >
-          Planos
+          <CreditCard className="w-4 h-4" />
+          <span className="hidden sm:inline">Planos</span>
         </button>
         <button
           onClick={() => setActiveTab('reports')}
-          className={`px-4 py-2 font-medium ${
+          className={`flex-1 sm:flex-none flex items-center justify-center sm:justify-start gap-1 sm:gap-2 px-3 sm:px-4 py-2 min-h-[44px] font-medium ${
             activeTab === 'reports'
               ? 'text-blue-600 border-b-2 border-blue-600'
               : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'
           }`}
         >
-          Relatorios
+          <TrendingUp className="w-4 h-4" />
+          <span className="hidden sm:inline">Relatórios</span>
         </button>
       </div>
 
@@ -317,15 +320,16 @@ export default function ClientSubscriptions() {
           <div className="flex justify-end mb-4">
             <button
               onClick={() => setShowNewSubscriptionModal(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-blue-600 text-white rounded-lg hover:bg-blue-700"
             >
               <Plus className="w-4 h-4" />
-              Nova Assinatura
+              <span className="hidden sm:inline">Nova Assinatura</span>
+              <span className="sm:hidden">Nova</span>
             </button>
           </div>
 
           {/* Mobile Card View */}
-          <div className="mobile-card-view">
+          <div className="md:hidden">
             <MobileCardList
               items={subscriptions.map((sub): MobileCardItem => ({
                 id: sub.id,
@@ -376,7 +380,7 @@ export default function ClientSubscriptions() {
           </div>
 
           {/* Desktop Table View */}
-          <div className="desktop-table-view bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 overflow-hidden">
+          <div className="hidden md:block bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 overflow-hidden">
             <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
               <thead className="bg-gray-50 dark:bg-slate-700">
                 <tr>
@@ -456,10 +460,11 @@ export default function ClientSubscriptions() {
           <div className="flex justify-end mb-4">
             <button
               onClick={() => setShowNewPlanModal(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-blue-600 text-white rounded-lg hover:bg-blue-700"
             >
               <Plus className="w-4 h-4" />
-              Novo Plano
+              <span className="hidden sm:inline">Novo Plano</span>
+              <span className="sm:hidden">Novo</span>
             </button>
           </div>
 

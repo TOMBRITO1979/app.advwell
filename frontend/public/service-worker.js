@@ -1,4 +1,4 @@
-const CACHE_NAME = 'advwell-v109';
+const CACHE_NAME = 'advwell-v111';
 const urlsToCache = [
   '/'
 ];

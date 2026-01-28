@@ -594,18 +594,18 @@ const Settings: React.FC = () => {
                   <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2">
                     Testar envio de mensagem
                   </label>
-                  <div className="flex gap-2">
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <input
                       type="text"
                       value={telegramTestChatId}
                       onChange={(e) => setTelegramTestChatId(e.target.value)}
                       placeholder="Informe seu Chat ID"
-                      className="flex-1 px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md min-h-[44px]"
+                      className="flex-1 min-w-0 px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md min-h-[44px]"
                     />
                     <button
                       onClick={handleTestTelegram}
                       disabled={testingTelegram || !telegramConfig.isActive}
-                      className="inline-flex items-center gap-2 px-4 py-2 min-h-[44px] bg-blue-100 text-blue-700 border border-blue-200 hover:bg-blue-200 font-medium rounded-lg disabled:opacity-50"
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-blue-100 text-blue-700 border border-blue-200 hover:bg-blue-200 font-medium rounded-lg disabled:opacity-50 flex-shrink-0"
                     >
                       <Send size={18} />
                       {testingTelegram ? 'Enviando...' : 'Testar'}
@@ -618,18 +618,18 @@ const Settings: React.FC = () => {
                   <p className="text-sm text-neutral-500 dark:text-slate-400 mb-2">
                     Para trocar o bot, informe um novo token:
                   </p>
-                  <div className="flex gap-2">
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <input
                       type="password"
                       value={telegramToken}
                       onChange={(e) => setTelegramToken(e.target.value)}
                       placeholder="Novo token do bot"
-                      className="flex-1 px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md min-h-[44px]"
+                      className="flex-1 min-w-0 px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md min-h-[44px]"
                     />
                     <button
                       onClick={handleSaveTelegram}
                       disabled={savingTelegram}
-                      className="inline-flex items-center gap-2 px-4 py-2 min-h-[44px] bg-orange-100 text-orange-700 border border-orange-200 hover:bg-orange-200 font-medium rounded-lg disabled:opacity-50"
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-orange-100 text-orange-700 border border-orange-200 hover:bg-orange-200 font-medium rounded-lg disabled:opacity-50 flex-shrink-0"
                     >
                       <RefreshCw size={18} className={savingTelegram ? 'animate-spin' : ''} />
                       {savingTelegram ? 'Salvando...' : 'Atualizar'}
@@ -655,18 +655,18 @@ const Settings: React.FC = () => {
                   <label className="block text-sm font-medium text-neutral-700 dark:text-slate-300 mb-2">
                     Token do Bot *
                   </label>
-                  <div className="flex gap-2">
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <input
                       type="password"
                       value={telegramToken}
                       onChange={(e) => setTelegramToken(e.target.value)}
                       placeholder="Cole o token do BotFather aqui"
-                      className="flex-1 px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md min-h-[44px]"
+                      className="flex-1 min-w-0 px-3 py-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md min-h-[44px]"
                     />
                     <button
                       onClick={handleSaveTelegram}
                       disabled={savingTelegram}
-                      className="inline-flex items-center gap-2 px-4 py-2 min-h-[44px] bg-blue-600 text-white hover:bg-blue-700 font-medium rounded-lg disabled:opacity-50"
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-blue-600 text-white hover:bg-blue-700 font-medium rounded-lg disabled:opacity-50 flex-shrink-0"
                     >
                       <Save size={18} />
                       {savingTelegram ? 'Salvando...' : 'Configurar'}
