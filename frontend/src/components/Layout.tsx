@@ -45,6 +45,7 @@ import {
   LayoutGrid,
   LucideProps,
   ClipboardList,
+  Menu,
 } from 'lucide-react';
 
 // WhatsApp icon component (outline style to match other icons)
@@ -110,6 +111,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [credentialsOpen, setCredentialsOpen] = React.useState(false);
   const [agendaOpen, setAgendaOpen] = React.useState(false);
   const [pessoasOpen, setPessoasOpen] = React.useState(false);
@@ -134,6 +136,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       setSidebarCollapsed(saved === 'true');
     }
   }, []);
+
+  // Fechar menu mobile ao mudar de rota
+  React.useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
 
   // Listener para evento de recolher sidebar (usado pela página Chatwell)
   React.useEffect(() => {
@@ -527,6 +534,17 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
           <div className="flex justify-between items-center py-3 sm:py-4">
             <div className="flex items-center gap-2 sm:gap-4">
+              {/* Botao menu mobile (hamburger) */}
+              {!shouldHideSidebar && (
+                <button
+                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                  className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-slate-700 text-neutral-700 dark:text-slate-200 transition-colors md:hidden"
+                  title="Menu"
+                  aria-label="Abrir menu"
+                >
+                  <Menu size={22} />
+                </button>
+              )}
               <div className="flex items-center gap-2">
                 <Scale className="text-primary-600 dark:text-primary-400 hidden sm:block" size={28} />
                 <h1 className="text-lg sm:text-2xl font-bold text-primary-600 dark:text-primary-400 hidden sm:block">{user?.companyName || 'AdvWell'}</h1>
@@ -568,15 +586,50 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       </header>
 
       <div className="flex relative">
+        {/* Overlay/backdrop para mobile */}
+        {!shouldHideSidebar && mobileMenuOpen && (
+          <div
+            className="fixed inset-0 bg-black/50 z-30 md:hidden"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+        )}
+
         {/* Sidebar - escondida quando shouldHideSidebar é true */}
+        {/* No mobile: drawer overlay, escondido por padrão */}
+        {/* No desktop (md+): sempre visível, colapsável */}
         {!shouldHideSidebar && (
           <aside
-            className={`${
-              sidebarCollapsed ? 'w-14 lg:w-16' : 'w-[160px] lg:w-[216px]'
-            } bg-white dark:bg-slate-800 shadow-lg h-[calc(100vh-56px)] lg:h-screen sticky top-[56px] lg:top-0 z-10 transition-all duration-300 ease-in-out border-r border-neutral-200 dark:border-slate-700 flex flex-col flex-shrink-0`}
+            className={`
+              ${sidebarCollapsed ? 'md:w-14 lg:w-16' : 'md:w-[160px] lg:w-[216px]'}
+              w-[260px]
+              bg-white dark:bg-slate-800 shadow-lg
+              flex flex-col flex-shrink-0
+              border-r border-neutral-200 dark:border-slate-700
+              transition-all duration-300 ease-in-out
+
+              /* Mobile: drawer fixo, oculto por padrão */
+              fixed md:sticky
+              top-0 md:top-0
+              left-0
+              h-full md:h-screen
+              z-40 md:z-10
+              ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+            `}
           >
-            {/* Botão de recolher/expandir */}
-            <div className="flex justify-center lg:justify-end p-2 border-b border-neutral-100 dark:border-slate-700 lg:border-0">
+            {/* Header do drawer mobile com botao fechar */}
+            <div className="flex items-center justify-between p-3 border-b border-neutral-100 dark:border-slate-700 md:hidden">
+              <span className="font-semibold text-neutral-800 dark:text-slate-200">Menu</span>
+              <button
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-slate-700 text-neutral-600 dark:text-slate-300 transition-colors"
+                title="Fechar menu"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Botão de recolher/expandir - apenas desktop */}
+            <div className="hidden md:flex justify-center lg:justify-end p-2 border-b border-neutral-100 dark:border-slate-700 lg:border-0">
               <button
                 onClick={toggleSidebarCollapse}
                 className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-slate-700 text-neutral-600 dark:text-slate-300 transition-colors"
@@ -586,22 +639,22 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               </button>
             </div>
 
-            <nav className={`${sidebarCollapsed ? 'mt-1' : 'mt-2 lg:mt-6'} flex-1 overflow-y-auto pb-4 safe-area-bottom`}>
+            <nav className={`${sidebarCollapsed ? 'md:mt-1' : 'md:mt-2 lg:mt-6'} mt-2 flex-1 overflow-y-auto pb-4 safe-area-bottom`}>
               {/* Dashboard (primeiro item) - verifica permissão */}
               {hasPermission('dashboard') && (
                 <SidebarTooltip label="Dashboard" isCollapsed={sidebarCollapsed}>
                   <Link
                     to="/dashboard"
                     className={`flex items-center ${
-                      sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-4'
-                    } py-3 transition-all duration-200 font-medium ${
+                      sidebarCollapsed ? 'md:justify-center md:px-4' : 'md:space-x-3 md:px-4'
+                    } space-x-3 px-4 py-3 transition-all duration-200 font-medium ${
                       location.pathname === '/dashboard'
                         ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 border-r-4 border-primary-500'
                         : 'text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-700 hover:text-primary-600 dark:hover:text-primary-400'
                     }`}
                                       >
                     <Home size={20} />
-                    {!sidebarCollapsed && <span className="text-sm">Dashboard</span>}
+                    <span className={`text-sm ${sidebarCollapsed ? 'md:hidden' : ''}`}>Dashboard</span>
                   </Link>
                 </SidebarTooltip>
               )}
@@ -711,34 +764,33 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                     <Link
                       to={item.path}
                       className={`flex items-center ${
-                        sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-4'
-                      } py-3 transition-all duration-200 font-medium ${
+                        sidebarCollapsed ? 'md:justify-center md:px-4' : 'md:space-x-3 md:px-4'
+                      } space-x-3 px-4 py-3 transition-all duration-200 font-medium ${
                         isActive
                           ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 border-r-4 border-primary-500'
                           : 'text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-700 hover:text-primary-600 dark:hover:text-primary-400'
                       }`}
                                           >
-                      <div className="relative">
+                      <div className="relative flex-shrink-0">
                         <Icon size={20} />
                         {showMessagesBadge && sidebarCollapsed && (
-                          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-4 h-4 md:flex items-center justify-center hidden">
                             {badgeCount && badgeCount > 9 ? '9+' : badgeCount}
                           </span>
                         )}
                       </div>
-                      {!sidebarCollapsed && (
-                        <div className="flex items-center justify-between flex-1">
-                          <span className="text-sm">{item.label}</span>
-                          {showMessagesBadge && (
-                            <span
-                              className="bg-red-500 text-white text-xs font-bold rounded-full px-2 py-0.5 ml-2"
-                              title={badgeTitle}
-                            >
-                              {badgeCount}
-                            </span>
-                          )}
-                        </div>
-                      )}
+                      {/* Label: sempre visivel no mobile, condicional no desktop */}
+                      <div className={`flex items-center justify-between flex-1 ${sidebarCollapsed ? 'md:hidden' : ''}`}>
+                        <span className="text-sm">{item.label}</span>
+                        {showMessagesBadge && (
+                          <span
+                            className="bg-red-500 text-white text-xs font-bold rounded-full px-2 py-0.5 ml-2"
+                            title={badgeTitle}
+                          >
+                            {badgeCount}
+                          </span>
+                        )}
+                      </div>
                     </Link>
                   </SidebarTooltip>
                 );
@@ -767,15 +819,16 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                     <Link
                       to={item.path}
                       className={`flex items-center ${
-                        sidebarCollapsed ? 'justify-center px-4' : 'space-x-3 px-4'
-                      } py-3 transition-all duration-200 font-medium ${
+                        sidebarCollapsed ? 'md:justify-center md:px-4' : 'md:space-x-3 md:px-4'
+                      } space-x-3 px-4 py-3 transition-all duration-200 font-medium ${
                         isActive
                           ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 border-r-4 border-primary-500'
                           : 'text-neutral-700 dark:text-slate-300 hover:bg-neutral-50 dark:hover:bg-slate-700 hover:text-primary-600 dark:hover:text-primary-400'
                       }`}
                                           >
-                      <Icon size={20} />
-                      {!sidebarCollapsed && <span className="text-sm">{item.label}</span>}
+                      <Icon size={20} className="flex-shrink-0" />
+                      {/* Label: sempre visivel no mobile, condicional no desktop */}
+                      <span className={`text-sm ${sidebarCollapsed ? 'md:hidden' : ''}`}>{item.label}</span>
                     </Link>
                   </SidebarTooltip>
                 );

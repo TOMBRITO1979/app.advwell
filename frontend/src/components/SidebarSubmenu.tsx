@@ -32,10 +32,21 @@ const SidebarSubmenu: React.FC<SidebarSubmenuProps> = ({
   const location = useLocation();
   const [isHovered, setIsHovered] = useState(false);
   const [position, setPosition] = useState({ top: 0, left: 0 });
+  const [isMobile, setIsMobile] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const isActive = items.some(item => location.pathname.startsWith(item.path));
+
+  // Detectar se e mobile (md breakpoint = 768px)
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(max-width: 767px)');
+    setIsMobile(mediaQuery.matches);
+
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mediaQuery.addEventListener('change', handler);
+    return () => mediaQuery.removeEventListener('change', handler);
+  }, []);
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -87,8 +98,9 @@ const SidebarSubmenu: React.FC<SidebarSubmenuProps> = ({
     }
   };
 
-  // When collapsed, show hover dropdown
-  if (isCollapsed) {
+  // When collapsed (desktop only), show hover dropdown
+  // On mobile, always show expanded mode (toggle dropdown)
+  if (isCollapsed && !isMobile) {
     return (
       <div
         ref={containerRef}
