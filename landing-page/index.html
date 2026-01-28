@@ -487,45 +487,94 @@
             font-size: 14px;
         }
 
-        /* Video Section */
-        .vídeo-section {
+        /* Carousel Section */
+        .carousel-section {
             padding: 100px 0;
             background: linear-gradient(135deg, var(--gray-50), white);
         }
 
-        .vídeo-header {
+        .carousel-header {
             text-align: center;
             margin-bottom: 48px;
         }
 
-        .vídeo-container {
-            max-width: 900px;
+        .carousel-container {
+            max-width: 1000px;
             margin: 0 auto;
             position: relative;
         }
 
-        .vídeo-wrapper {
-            background: var(--secondary);
-            border-radius: 16px;
-            overflow: hidden;
-            aspect-ratio: 16/9;
+        .carousel-wrapper {
             position: relative;
+            overflow: hidden;
+            border-radius: 16px;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            background: var(--secondary);
         }
 
-        .vídeo-wrapper vídeo {
+        .carousel-slides {
+            position: relative;
             width: 100%;
-            height: 100%;
-            object-fit: cover;
         }
 
-        .vídeo-wrapper iframe {
+        .carousel-slide {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
-            height: 100%;
-            border: none;
+            opacity: 0;
+            transition: opacity 0.8s ease-in-out;
         }
 
-        .vídeo-placeholder {
+        .carousel-slide:first-child {
+            position: relative;
+        }
+
+        .carousel-slide.active {
+            opacity: 1;
+            z-index: 1;
+        }
+
+        .carousel-slide img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .carousel-indicators {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 20px;
+        }
+
+        .carousel-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--gray-300);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .carousel-indicator.active {
+            background: var(--primary);
+            transform: scale(1.2);
+        }
+
+        .carousel-indicator:hover {
+            background: var(--primary-light);
+        }
+
+        .carousel-caption {
+            text-align: center;
+            margin-top: 16px;
+            font-size: 14px;
+            color: var(--gray-600);
+            font-weight: 500;
+        }
+
+        .carousel-placeholder {
             position: absolute;
             top: 0;
             left: 0;
@@ -1206,22 +1255,112 @@
                 max-width: 300px;
             }
 
-            /* Tabela de comparação mobile */
-            .pricing-comparison {
-                margin-top: 40px;
+            /* Carrossel mobile */
+            .carousel-container {
+                max-width: 100%;
+                padding: 0;
             }
 
-            .pricing-comparison h3 {
-                font-size: 1.2rem;
+            .carousel-wrapper {
+                border-radius: 12px;
             }
 
-            .comparison-table {
+            .carousel-indicators {
+                gap: 6px;
+                margin-top: 16px;
+            }
+
+            .carousel-indicator {
+                width: 8px;
+                height: 8px;
+            }
+
+            .carousel-caption {
                 font-size: 12px;
             }
 
-            .comparison-table th,
-            .comparison-table td {
-                padding: 10px 6px;
+            /* Pricing mobile - largura padronizada */
+            .pricing-grid {
+                display: flex !important;
+                flex-direction: column;
+                align-items: center;
+                gap: 16px;
+            }
+
+            .pricing-card {
+                width: 100%;
+                max-width: 320px;
+            }
+
+            .pricing-card.popular {
+                transform: none;
+                max-width: 320px;
+            }
+
+            /* Tabela comparativa mobile - formato cards */
+            .comparison-table {
+                display: none;
+            }
+
+            .comparison-cards-mobile {
+                display: flex !important;
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .comparison-card {
+                background: white;
+                border-radius: 12px;
+                padding: 20px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+                border: 1px solid var(--gray-200);
+                width: 100%;
+                max-width: 320px;
+                margin: 0 auto;
+            }
+
+            .comparison-card h4 {
+                font-size: 16px;
+                font-weight: 700;
+                color: var(--secondary);
+                margin-bottom: 12px;
+                padding-bottom: 12px;
+                border-bottom: 2px solid var(--primary);
+            }
+
+            .comparison-card ul {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+            }
+
+            .comparison-card li {
+                display: flex;
+                justify-content: space-between;
+                padding: 8px 0;
+                border-bottom: 1px solid var(--gray-100);
+                font-size: 13px;
+            }
+
+            .comparison-card li:last-child {
+                border-bottom: none;
+            }
+
+            .comparison-card .feature-name {
+                color: var(--gray-600);
+            }
+
+            .comparison-card .feature-value {
+                font-weight: 600;
+                color: var(--secondary);
+            }
+
+            .comparison-card .feature-value.yes {
+                color: var(--primary);
+            }
+
+            .comparison-card .feature-value.no {
+                color: var(--gray-400);
             }
         }
 
@@ -1307,6 +1446,24 @@
 
             footer {
                 padding: 40px 0 20px;
+            }
+
+            /* Carrossel em telas muito pequenas */
+            .carousel-section {
+                padding: 60px 0;
+            }
+
+            .carousel-header {
+                margin-bottom: 24px;
+            }
+
+            .carousel-container {
+                padding: 0;
+            }
+
+            .carousel-wrapper {
+                border-radius: 8px;
+                box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.2);
             }
         }
 
@@ -1495,7 +1652,7 @@
                 <ul class="nav-links">
                     <li><a href="#features">Funcionalidades</a></li>
                     <li><a href="#screenshots">Telas do Sistema</a></li>
-                    <li><a href="#vídeo">Demo</a></li>
+                    <li><a href="#demo">Demo</a></li>
                     <li><a href="#modules">Módulos</a></li>
                     <li><a href="#pricing">Preços</a></li>
                 </ul>
@@ -1522,7 +1679,7 @@
                             <i data-lucide="rocket" style="width: 20px; height: 20px;"></i>
                             Testar Grátis por 14 Dias
                         </a>
-                        <a href="#vídeo" class="btn btn-secondary">
+                        <a href="#demo" class="btn btn-secondary">
                             <i data-lucide="play-circle" style="width: 20px; height: 20px;"></i>
                             Ver Demonstração
                         </a>
@@ -1648,23 +1805,50 @@
         </div>
     </section>
 
-    <!-- Video Section -->
-    <section class="vídeo-section" id="vídeo">
+    <!-- Carousel Section -->
+    <section class="carousel-section" id="demo">
         <div class="container">
-            <div class="vídeo-header">
+            <div class="carousel-header">
                 <h2 class="section-title">Veja o AdvWell em Ação</h2>
-                <p class="section-subtitle">Assista uma demonstração completa do sistema e descubra como ele pode transformar seu escritório</p>
+                <p class="section-subtitle">Conheça as principais funcionalidades do sistema que vai transformar seu escritório</p>
             </div>
-            <div class="vídeo-container">
-                <div class="vídeo-wrapper">
-                    <iframe
-                        src="https://www.youtube.com/embed/PKkgJT8rEqE"
-                        title="AdvWell - Demonstração"
-                        frameborder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowfullscreen>
-                    </iframe>
+            <div class="carousel-container">
+                <div class="carousel-wrapper">
+                    <div class="carousel-slides" id="carouselSlides">
+                        <div class="carousel-slide active" data-caption="Dashboard">
+                            <img src="screenshots/dashboard.jpg" alt="Dashboard">
+                        </div>
+                        <div class="carousel-slide" data-caption="Processos">
+                            <img src="screenshots/processos.jpg" alt="Processos">
+                        </div>
+                        <div class="carousel-slide" data-caption="Clientes">
+                            <img src="screenshots/clientes.jpg" alt="Clientes">
+                        </div>
+                        <div class="carousel-slide" data-caption="Financeiro">
+                            <img src="screenshots/financeiro.jpg" alt="Financeiro">
+                        </div>
+                        <div class="carousel-slide" data-caption="Agenda">
+                            <img src="screenshots/agenda.jpg" alt="Agenda">
+                        </div>
+                        <div class="carousel-slide" data-caption="Kanban">
+                            <img src="screenshots/kanban.png" alt="Kanban">
+                        </div>
+                        <div class="carousel-slide" data-caption="Portal do Cliente">
+                            <img src="screenshots/portal-cliente.png" alt="Portal do Cliente">
+                        </div>
+                        <div class="carousel-slide" data-caption="Relatórios">
+                            <img src="screenshots/relatorios.png" alt="Relatórios">
+                        </div>
+                        <div class="carousel-slide" data-caption="Solicitações">
+                            <img src="screenshots/solicitacoes.png" alt="Solicitações">
+                        </div>
+                        <div class="carousel-slide" data-caption="Logs de Auditoria">
+                            <img src="screenshots/logs-auditoria.png" alt="Logs de Auditoria">
+                        </div>
+                    </div>
                 </div>
+                <div class="carousel-indicators" id="carouselIndicators"></div>
+                <div class="carousel-caption" id="carouselCaption">Dashboard</div>
             </div>
         </div>
     </section>
@@ -2325,6 +2509,90 @@
                         </tr>
                     </tbody>
                 </table>
+
+                <!-- Cards Mobile -->
+                <div class="comparison-cards-mobile" style="display: none;">
+                    <!-- Card Grátis -->
+                    <div class="comparison-card">
+                        <h4>Grátis</h4>
+                        <ul>
+                            <li><span class="feature-name">Usuários</span><span class="feature-value">1</span></li>
+                            <li><span class="feature-name">Armazenamento</span><span class="feature-value">1 GB</span></li>
+                            <li><span class="feature-name">Monitoramento</span><span class="feature-value no">—</span></li>
+                            <li><span class="feature-name">Processos</span><span class="feature-value">Ilimitado</span></li>
+                            <li><span class="feature-name">DataJud</span><span class="feature-value yes">✓</span></li>
+                            <li><span class="feature-name">Clientes</span><span class="feature-value yes">✓</span></li>
+                            <li><span class="feature-name">Financeiro</span><span class="feature-value yes">✓</span></li>
+                            <li><span class="feature-name">Agenda</span><span class="feature-value yes">✓</span></li>
+                            <li><span class="feature-name">Portal Cliente</span><span class="feature-value no">—</span></li>
+                        </ul>
+                    </div>
+
+                    <!-- Card Starter -->
+                    <div class="comparison-card">
+                        <h4>Starter - R$99/mês</h4>
+                        <ul>
+                            <li><span class="feature-name">Usuários</span><span class="feature-value">3</span></li>
+                            <li><span class="feature-name">Armazenamento</span><span class="feature-value">10 GB</span></li>
+                            <li><span class="feature-name">Monitoramento</span><span class="feature-value">150</span></li>
+                            <li><span class="feature-name">Processos</span><span class="feature-value">Ilimitado</span></li>
+                            <li><span class="feature-name">DataJud</span><span class="feature-value yes">✓</span></li>
+                            <li><span class="feature-name">Clientes</span><span class="feature-value yes">✓</span></li>
+                            <li><span class="feature-name">Financeiro</span><span class="feature-value yes">✓</span></li>
+                            <li><span class="feature-name">Agenda</span><span class="feature-value yes">✓</span></li>
+                            <li><span class="feature-name">Portal Cliente</span><span class="feature-value yes">✓</span></li>
+                        </ul>
+                    </div>
+
+                    <!-- Card Profissional -->
+                    <div class="comparison-card" style="border-color: var(--primary);">
+                        <h4>Profissional - R$299/mês</h4>
+                        <ul>
+                            <li><span class="feature-name">Usuários</span><span class="feature-value">8</span></li>
+                            <li><span class="feature-name">Armazenamento</span><span class="feature-value">20 GB</span></li>
+                            <li><span class="feature-name">Monitoramento</span><span class="feature-value">500</span></li>
+                            <li><span class="feature-name">Processos</span><span class="feature-value">Ilimitado</span></li>
+                            <li><span class="feature-name">DataJud</span><span class="feature-value yes">✓</span></li>
+                            <li><span class="feature-name">Clientes</span><span class="feature-value yes">✓</span></li>
+                            <li><span class="feature-name">Financeiro</span><span class="feature-value yes">✓</span></li>
+                            <li><span class="feature-name">Agenda</span><span class="feature-value yes">✓</span></li>
+                            <li><span class="feature-name">Portal Cliente</span><span class="feature-value yes">✓</span></li>
+                        </ul>
+                    </div>
+
+                    <!-- Card Escritório -->
+                    <div class="comparison-card">
+                        <h4>Escritório - R$499/mês</h4>
+                        <ul>
+                            <li><span class="feature-name">Usuários</span><span class="feature-value">15</span></li>
+                            <li><span class="feature-name">Armazenamento</span><span class="feature-value">30 GB</span></li>
+                            <li><span class="feature-name">Monitoramento</span><span class="feature-value">1.000</span></li>
+                            <li><span class="feature-name">Processos</span><span class="feature-value">Ilimitado</span></li>
+                            <li><span class="feature-name">DataJud</span><span class="feature-value yes">✓</span></li>
+                            <li><span class="feature-name">Clientes</span><span class="feature-value yes">✓</span></li>
+                            <li><span class="feature-name">Financeiro</span><span class="feature-value yes">✓</span></li>
+                            <li><span class="feature-name">Agenda</span><span class="feature-value yes">✓</span></li>
+                            <li><span class="feature-name">Portal Cliente</span><span class="feature-value yes">✓</span></li>
+                        </ul>
+                    </div>
+
+                    <!-- Card Enterprise -->
+                    <div class="comparison-card">
+                        <h4>Enterprise - R$899/mês</h4>
+                        <ul>
+                            <li><span class="feature-name">Usuários</span><span class="feature-value">30</span></li>
+                            <li><span class="feature-name">Armazenamento</span><span class="feature-value">50 GB</span></li>
+                            <li><span class="feature-name">Monitoramento</span><span class="feature-value">2.000</span></li>
+                            <li><span class="feature-name">Processos</span><span class="feature-value">Ilimitado</span></li>
+                            <li><span class="feature-name">DataJud</span><span class="feature-value yes">✓</span></li>
+                            <li><span class="feature-name">Clientes</span><span class="feature-value yes">✓</span></li>
+                            <li><span class="feature-name">Financeiro</span><span class="feature-value yes">✓</span></li>
+                            <li><span class="feature-name">Agenda</span><span class="feature-value yes">✓</span></li>
+                            <li><span class="feature-name">Portal Cliente</span><span class="feature-value yes">✓</span></li>
+                            <li><span class="feature-name">IA Integrada</span><span class="feature-value yes">✓</span></li>
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
@@ -2526,6 +2794,43 @@
         document.querySelectorAll('.feature-card, .module-card, .pricing-card, .testimonial-card').forEach(el => {
             observer.observe(el);
         });
+
+        // Carousel auto-slide
+        (function() {
+            const slides = document.querySelectorAll('.carousel-slide');
+            const indicatorsContainer = document.getElementById('carouselIndicators');
+            const captionEl = document.getElementById('carouselCaption');
+            let currentSlide = 0;
+            const totalSlides = slides.length;
+            const intervalTime = 4000; // 4 seconds
+
+            // Create indicators
+            slides.forEach((slide, index) => {
+                const indicator = document.createElement('div');
+                indicator.className = 'carousel-indicator' + (index === 0 ? ' active' : '');
+                indicator.addEventListener('click', () => goToSlide(index));
+                indicatorsContainer.appendChild(indicator);
+            });
+
+            const indicators = document.querySelectorAll('.carousel-indicator');
+
+            function goToSlide(index) {
+                slides[currentSlide].classList.remove('active');
+                indicators[currentSlide].classList.remove('active');
+                currentSlide = index;
+                slides[currentSlide].classList.add('active');
+                indicators[currentSlide].classList.add('active');
+                captionEl.textContent = slides[currentSlide].dataset.caption;
+            }
+
+            function nextSlide() {
+                const next = (currentSlide + 1) % totalSlides;
+                goToSlide(next);
+            }
+
+            // Auto-advance
+            setInterval(nextSlide, intervalTime);
+        })();
     </script>
 
     <!-- Chatwoot Widget -->
