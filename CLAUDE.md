@@ -43,7 +43,7 @@ AdvWell is a multitenant SaaS for Brazilian law firms with DataJud CNJ integrati
 - Grafana: https://grafana.advwell.pro
 - Landing Page: https://advwell.pro
 
-**Current Version:** v1.8.204 (Backend) | v1.8.289 (Frontend)
+**Current Version:** v1.8.210 (Backend) | v1.8.297 (Frontend)
 
 ## Technology Stack
 
@@ -194,6 +194,7 @@ source .env && curl -s "${ADVAPI_BASE_URL}/health" -H "x-api-key: ${ADVAPI_API_K
 
 ### Backup Locations
 - **Git tags**: GitHub - https://github.com/TOMBRITO1979/app.advwell/tags
+- **DB backup local**: `/root/advwell/backups/` (VPS Principal - rotação 7 dias)
 - **DB backup**: `/backup/` (PostgreSQL VPS)
 
 ### Create New Backups
