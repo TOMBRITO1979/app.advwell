@@ -169,23 +169,65 @@ if (ENABLE_QUEUE_PROCESSORS) {
           }
         }
 
+        // Mapear condição do cliente (Demandante/Demandado)
+        const conditionRaw = record['Condição']?.trim() || record['Condicao']?.trim() || null;
+        let clientCondition: 'DEMANDANTE' | 'DEMANDADO' | null = null;
+        if (conditionRaw) {
+          const conditionUpper = conditionRaw.toUpperCase();
+          if (conditionUpper === 'DEMANDANTE' || conditionUpper === 'AUTOR' || conditionUpper === 'REQUERENTE') {
+            clientCondition = 'DEMANDANTE';
+          } else if (conditionUpper === 'DEMANDADO' || conditionUpper === 'RÉU' || conditionUpper === 'REU' || conditionUpper === 'REQUERIDO') {
+            clientCondition = 'DEMANDADO';
+          }
+        }
+
+        // Mapeamento completo de todas as colunas do CSV para o modelo Client
         const clientData = {
-          personType: record['Tipo']?.trim() === 'JURIDICA' ? 'JURIDICA' : 'FISICA',
+          // Tipo de pessoa
+          personType: record['Tipo']?.trim()?.toUpperCase() === 'JURIDICA' ? 'JURIDICA' : 'FISICA',
+          clientCondition,
           name: record.Nome.trim(),
+
+          // Documentos
           cpf: importCpf,
           rg: record.RG?.trim() || null,
+          pis: record.PIS?.trim() || null,
+          ctps: record.CTPS?.trim() || null,
+          ctpsSerie: record['CTPS Série']?.trim() || record['CTPS Serie']?.trim() || record['ctpsSerie']?.trim() || null,
+          stateRegistration: record['Inscrição Estadual']?.trim() || record['Inscricao Estadual']?.trim() || null,
+
+          // Dados pessoais
+          motherName: record['Nome da Mãe']?.trim() || record['Nome da Mae']?.trim() || null,
+          birthDate,
+          profession: record['Profissão']?.trim() || record['Profissao']?.trim() || null,
+          nationality: record['Nacionalidade']?.trim() || null,
+          maritalStatus: record['Estado Civil']?.trim() || null,
+
+          // Contato
           email: importEmail,
           phone: importPhone,
-          address: record['Endereco']?.trim() || null,
+          phone2: record['Telefone 2']?.trim() || null,
+          instagram: record.Instagram?.trim() || null,
+          facebook: record.Facebook?.trim() || null,
+
+          // Endereço
+          address: record['Endereço']?.trim() || record['Endereco']?.trim() || null,
+          neighborhood: record['Bairro']?.trim() || null,
           city: record.Cidade?.trim() || null,
           state: record.Estado?.trim() || null,
           zipCode: record.CEP?.trim() || null,
-          profession: record['Profissao']?.trim() || null,
-          maritalStatus: record['Estado Civil']?.trim() || null,
-          birthDate,
+
+          // Representante Legal (para PJ)
           representativeName: record['Representante Legal']?.trim() || null,
           representativeCpf: record['CPF Representante']?.trim() || null,
-          notes: record['Observacoes']?.trim() || null,
+
+          // Campos personalizados
+          customField1: record['Campo Personalizado 1']?.trim() || record['Outros']?.trim() || null,
+          customField2: record['Campo Personalizado 2']?.trim() || record['Outros 2']?.trim() || null,
+
+          // Tag e observações
+          tag: record['Tags']?.trim() || record['Tag']?.trim() || null,
+          notes: record['Observações']?.trim() || record['Observacoes']?.trim() || record['Obs']?.trim() || null,
         };
 
         if (existingClient) {
@@ -194,20 +236,41 @@ if (ENABLE_QUEUE_PROCESSORS) {
             where: { id: existingClient.id },
             data: {
               personType: clientData.personType as any,
+              clientCondition: clientData.clientCondition || existingClient.clientCondition,
               name: clientData.name,
+              // Documentos
               cpf: clientData.cpf || existingClient.cpf,
               rg: clientData.rg || existingClient.rg,
+              pis: clientData.pis || existingClient.pis,
+              ctps: clientData.ctps || existingClient.ctps,
+              ctpsSerie: clientData.ctpsSerie || existingClient.ctpsSerie,
+              stateRegistration: clientData.stateRegistration || existingClient.stateRegistration,
+              // Dados pessoais
+              motherName: clientData.motherName || existingClient.motherName,
+              birthDate: clientData.birthDate || existingClient.birthDate,
+              profession: clientData.profession || existingClient.profession,
+              nationality: clientData.nationality || existingClient.nationality,
+              maritalStatus: clientData.maritalStatus || existingClient.maritalStatus,
+              // Contato
               email: clientData.email || existingClient.email,
               phone: clientData.phone || existingClient.phone,
+              phone2: clientData.phone2 || existingClient.phone2,
+              instagram: clientData.instagram || existingClient.instagram,
+              facebook: clientData.facebook || existingClient.facebook,
+              // Endereço
               address: clientData.address || existingClient.address,
+              neighborhood: clientData.neighborhood || existingClient.neighborhood,
               city: clientData.city || existingClient.city,
               state: clientData.state || existingClient.state,
               zipCode: clientData.zipCode || existingClient.zipCode,
-              profession: clientData.profession || existingClient.profession,
-              maritalStatus: clientData.maritalStatus || existingClient.maritalStatus,
-              birthDate: clientData.birthDate || existingClient.birthDate,
+              // Representante
               representativeName: clientData.representativeName || existingClient.representativeName,
               representativeCpf: clientData.representativeCpf || existingClient.representativeCpf,
+              // Campos personalizados
+              customField1: clientData.customField1 || existingClient.customField1,
+              customField2: clientData.customField2 || existingClient.customField2,
+              // Tag e observações
+              tag: clientData.tag || existingClient.tag,
               notes: clientData.notes || existingClient.notes,
             },
           });
@@ -218,6 +281,7 @@ if (ENABLE_QUEUE_PROCESSORS) {
               companyId,
               ...clientData,
               personType: clientData.personType as any,
+              clientCondition: clientData.clientCondition as any,
             },
           });
         }
@@ -324,17 +388,83 @@ if (ENABLE_QUEUE_PROCESSORS) {
           if (isNaN(value)) value = null;
         }
 
+        // Buscar adverso (demandado) se informado
+        let adverse = null;
+        const demandadoName = record['Demandado']?.trim() || record['Réu']?.trim() || record['Reu']?.trim();
+        const demandadoCpf = record['CPF Demandado']?.trim() || record['CPF Réu']?.trim();
+        if (demandadoName || demandadoCpf) {
+          adverse = await prisma.adverse.findFirst({
+            where: {
+              companyId,
+              active: true,
+              OR: [
+                ...(demandadoCpf ? [{ cpf: demandadoCpf }] : []),
+                ...(demandadoName ? [{ name: demandadoName }] : []),
+              ],
+            },
+          });
+        }
+
+        // Buscar advogado responsável se informado
+        let lawyerId: string | null = null;
+        const advogadoName = record['Advogado']?.trim() || record['Advogado Responsável']?.trim() || record['Advogado Responsavel']?.trim();
+        const advogadoOab = record['OAB Advogado']?.trim() || record['OAB']?.trim();
+        if (advogadoName || advogadoOab) {
+          const lawyer = await prisma.lawyer.findFirst({
+            where: {
+              companyId,
+              active: true,
+              OR: [
+                ...(advogadoOab ? [{ oab: advogadoOab }] : []),
+                ...(advogadoName ? [{ name: { contains: advogadoName, mode: 'insensitive' as const } }] : []),
+              ],
+            },
+          });
+          if (lawyer) lawyerId = lawyer.id;
+        }
+
+        // Parse de datas
+        const parseDate = (dateStr: string | undefined): Date | null => {
+          if (!dateStr) return null;
+          const trimmed = dateStr.trim();
+          if (!trimmed) return null;
+          let date: Date;
+          if (trimmed.includes('/')) {
+            const [day, month, year] = trimmed.split('/');
+            date = new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`);
+          } else {
+            date = new Date(trimmed);
+          }
+          return isNaN(date.getTime()) ? null : date;
+        };
+
+        const deadline = parseDate(record['Prazo']);
+        const distributionDate = parseDate(record['Data de Distribuição'] || record['Data de Distribuicao'] || record['Data Distribuição']);
+
         const caseData = {
-          clientId: client.id,
+          clientId: client.id, // Mantém para compatibilidade
           processNumber,
           court: record.Tribunal?.trim() || '',
           subject: record.Assunto?.trim() || '',
           value,
           status: record.Status?.trim() || 'ACTIVE',
           notes: record['Observacoes']?.trim() || record['Observações']?.trim() || null,
+          // Novos campos
+          lawyerId,
+          deadline,
+          distributionDate,
+          linkProcesso: record['Link do Processo']?.trim() || record['Link']?.trim() || record['URL']?.trim() || null,
+          phase: record['Fase']?.trim() || null,
+          nature: record['Natureza']?.trim() || null,
+          rite: record['Rito']?.trim() || null,
+          comarca: record['Comarca']?.trim() || null,
+          vara: record['Vara']?.trim() || null,
         };
 
+        let caseId: string;
+
         if (existingCase) {
+          caseId = existingCase.id;
           // Atualizar processo existente
           await prisma.case.update({
             where: { id: existingCase.id },
@@ -345,16 +475,59 @@ if (ENABLE_QUEUE_PROCESSORS) {
               value: caseData.value ?? existingCase.value,
               status: caseData.status || existingCase.status,
               notes: caseData.notes || existingCase.notes,
+              // Novos campos
+              lawyerId: caseData.lawyerId || existingCase.lawyerId,
+              deadline: caseData.deadline || existingCase.deadline,
+              distributionDate: caseData.distributionDate || existingCase.distributionDate,
+              linkProcesso: caseData.linkProcesso || existingCase.linkProcesso,
+              phase: caseData.phase || existingCase.phase,
+              nature: caseData.nature || existingCase.nature,
+              rite: caseData.rite || existingCase.rite,
+              comarca: caseData.comarca || existingCase.comarca,
+              vara: caseData.vara || existingCase.vara,
             },
           });
         } else {
           // Criar novo processo
-          await prisma.case.create({
+          const newCase = await prisma.case.create({
             data: {
               companyId,
               ...caseData,
             },
           });
+          caseId = newCase.id;
+        }
+
+        // Criar/atualizar CasePart para o Demandante (Cliente)
+        const existingDemandante = await prisma.casePart.findFirst({
+          where: { caseId, companyId, type: 'DEMANDANTE', clientId: client.id },
+        });
+        if (!existingDemandante) {
+          await prisma.casePart.create({
+            data: {
+              caseId,
+              companyId,
+              type: 'DEMANDANTE',
+              clientId: client.id,
+            },
+          });
+        }
+
+        // Criar/atualizar CasePart para o Demandado (Adverso) se encontrado
+        if (adverse) {
+          const existingDemandado = await prisma.casePart.findFirst({
+            where: { caseId, companyId, type: 'DEMANDADO', adverseId: adverse.id },
+          });
+          if (!existingDemandado) {
+            await prisma.casePart.create({
+              data: {
+                caseId,
+                companyId,
+                type: 'DEMANDADO',
+                adverseId: adverse.id,
+              },
+            });
+          }
         }
 
         successCount++;
@@ -483,6 +656,30 @@ if (ENABLE_QUEUE_PROCESSORS) {
           if (caseFound) caseId = caseFound.id;
         }
 
+        // Buscar centro de custo se informado
+        let costCenterId: string | null = null;
+        const costCenterName = record['Centro de Custo']?.trim() || record['CentroCusto']?.trim();
+        if (costCenterName) {
+          const costCenter = await prisma.costCenter.findFirst({
+            where: { companyId, name: { contains: costCenterName, mode: 'insensitive' } },
+          });
+          if (costCenter) costCenterId = costCenter.id;
+        }
+
+        // Mapear status da transação
+        const statusRaw = record.Status?.trim()?.toUpperCase() || 'PENDING';
+        const statusMap: Record<string, string> = {
+          'PAGO': 'PAID',
+          'PAID': 'PAID',
+          'PENDENTE': 'PENDING',
+          'PENDING': 'PENDING',
+          'PARCIAL': 'PARTIAL',
+          'PARTIAL': 'PARTIAL',
+          'CANCELADO': 'CANCELLED',
+          'CANCELLED': 'CANCELLED',
+        };
+        const status = statusMap[statusRaw] || 'PENDING';
+
         const amount = parseFloat(record.Valor.replace(',', '.'));
 
         let date: Date;
@@ -519,7 +716,9 @@ if (ENABLE_QUEUE_PROCESSORS) {
             where: { id: existingTransaction.id },
             data: {
               type,
+              status: status as any,
               caseId: caseId || existingTransaction.caseId,
+              costCenterId: costCenterId || existingTransaction.costCenterId,
             },
           });
         } else {
@@ -529,7 +728,9 @@ if (ENABLE_QUEUE_PROCESSORS) {
               companyId,
               clientId: client.id,
               caseId,
+              costCenterId,
               type,
+              status: status as any,
               description: descriptionNormalized,
               amount,
               date,
@@ -622,23 +823,56 @@ if (ENABLE_QUEUE_PROCESSORS) {
 
         const amount = parseFloat(record.Valor.replace(',', '.'));
 
-        let dueDate: Date;
-        const dateStr = record.Vencimento.trim();
-        if (dateStr.includes('/')) {
-          const [day, month, year] = dateStr.split('/');
-          dueDate = new Date(`${year}-${month}-${day}`);
-        } else {
-          dueDate = new Date(dateStr);
-        }
+        // Parse de datas
+        const parseDateAP = (dateStr: string | undefined): Date | null => {
+          if (!dateStr) return null;
+          const trimmed = dateStr.trim();
+          if (!trimmed) return null;
+          let date: Date;
+          if (trimmed.includes('/')) {
+            const [day, month, year] = trimmed.split('/');
+            date = new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`);
+          } else {
+            date = new Date(trimmed);
+          }
+          return isNaN(date.getTime()) ? null : date;
+        };
 
-        if (isNaN(dueDate.getTime())) {
+        const dueDate = parseDateAP(record.Vencimento);
+        if (!dueDate) {
           errors.push({ line: lineNumber, identifier: record.Fornecedor, error: 'Data de vencimento invalida' });
           errorCount++;
           continue;
         }
 
+        const paidDate = parseDateAP(record['Data Pagamento'] || record['Data de Pagamento'] || record['Pago em']);
+
+        // Buscar centro de custo se informado
+        let costCenterId: string | null = null;
+        const costCenterName = record['Centro de Custo']?.trim() || record['CentroCusto']?.trim();
+        if (costCenterName) {
+          const costCenter = await prisma.costCenter.findFirst({
+            where: { companyId, name: { contains: costCenterName, mode: 'insensitive' } },
+          });
+          if (costCenter) costCenterId = costCenter.id;
+        }
+
+        // Mapear status da conta
+        const statusRaw = record.Status?.trim()?.toUpperCase() || (paidDate ? 'PAID' : 'PENDING');
+        const statusMapAP: Record<string, string> = {
+          'PAGO': 'PAID',
+          'PAID': 'PAID',
+          'PENDENTE': 'PENDING',
+          'PENDING': 'PENDING',
+          'VENCIDO': 'OVERDUE',
+          'OVERDUE': 'OVERDUE',
+          'CANCELADO': 'CANCELLED',
+          'CANCELLED': 'CANCELLED',
+        };
+        const statusAP = statusMapAP[statusRaw] || 'PENDING';
+
         const supplierNormalized = sanitizeString(record.Fornecedor.trim()) || record.Fornecedor.trim();
-        const descriptionNormalized = sanitizeString(record['Descricao'].trim()) || record['Descricao'].trim();
+        const descriptionNormalized = sanitizeString(record['Descricao']?.trim() || record['Descrição']?.trim()) || record['Descricao']?.trim() || record['Descrição']?.trim();
 
         // Verificar se já existe conta com mesmos dados
         const existingAccount = await prisma.accountPayable.findFirst({
@@ -650,14 +884,19 @@ if (ENABLE_QUEUE_PROCESSORS) {
           },
         });
 
+        const notesValue = record['Observacoes']?.trim() || record['Observações']?.trim() || null;
+
         if (existingAccount) {
           // Atualizar conta existente
           await prisma.accountPayable.update({
             where: { id: existingAccount.id },
             data: {
               amount,
+              status: statusAP as any,
+              paidDate: paidDate || existingAccount.paidDate,
+              costCenterId: costCenterId || existingAccount.costCenterId,
               category: record.Categoria?.trim() || existingAccount.category,
-              notes: record['Observacoes'] ? (sanitizeString(record['Observacoes'].trim()) || record['Observacoes'].trim()) : existingAccount.notes,
+              notes: notesValue ? (sanitizeString(notesValue) || notesValue) : existingAccount.notes,
             },
           });
         } else {
@@ -669,10 +908,12 @@ if (ENABLE_QUEUE_PROCESSORS) {
               description: descriptionNormalized,
               amount,
               dueDate,
+              paidDate,
+              status: statusAP as any,
+              costCenterId,
               category: record.Categoria?.trim() || null,
-              notes: record['Observacoes'] ? (sanitizeString(record['Observacoes'].trim()) || record['Observacoes'].trim()) : null,
+              notes: notesValue ? (sanitizeString(notesValue) || notesValue) : null,
               createdBy: userId,
-              status: 'PENDING',
             },
           });
         }
@@ -788,6 +1029,16 @@ if (ENABLE_QUEUE_PROCESSORS) {
           if (client) clientId = client.id;
         }
 
+        // Buscar adverso se informado
+        let adverseId: string | null = null;
+        const adverseName = record['Adverso'] || record['adverso'] || record['Parte Contrária'] || record['Parte Contraria'];
+        if (adverseName) {
+          const adverse = await prisma.adverse.findFirst({
+            where: { companyId, active: true, name: { contains: adverseName.trim(), mode: 'insensitive' } },
+          });
+          if (adverse) adverseId = adverse.id;
+        }
+
         const pnjData = {
           number: sanitizeString(number.trim()) || number.trim(),
           protocol: protocol ? sanitizeString(protocol.trim()) : null,
@@ -797,6 +1048,7 @@ if (ENABLE_QUEUE_PROCESSORS) {
           openDate,
           closeDate,
           clientId,
+          adverseId,
         };
 
         if (existing) {
@@ -811,6 +1063,7 @@ if (ENABLE_QUEUE_PROCESSORS) {
               openDate: pnjData.openDate,
               closeDate: pnjData.closeDate || existing.closeDate,
               clientId: pnjData.clientId || existing.clientId,
+              adverseId: pnjData.adverseId || existing.adverseId,
             },
           });
         } else {
@@ -1106,6 +1359,55 @@ if (ENABLE_QUEUE_PROCESSORS) {
 
         const titleNormalized = sanitizeString(title.trim()) || title.trim();
 
+        // Buscar cliente se informado
+        let clientId: string | null = null;
+        const clienteName = record['Cliente']?.trim();
+        if (clienteName) {
+          const clientFound = await prisma.client.findFirst({
+            where: { companyId, active: true, name: { contains: clienteName, mode: 'insensitive' } },
+          });
+          if (clientFound) clientId = clientFound.id;
+        }
+
+        // Buscar processo se informado
+        let caseId: string | null = null;
+        const processoNum = record['Processo']?.trim() || record['Número do Processo']?.trim();
+        if (processoNum) {
+          const caseFound = await prisma.case.findFirst({
+            where: { companyId, processNumber: { contains: processoNum, mode: 'insensitive' } },
+          });
+          if (caseFound) caseId = caseFound.id;
+        }
+
+        // Parse endDate se informado
+        let endDate: Date | null = null;
+        const endTimeStr = record['Hora Fim']?.trim() || record['Horário Fim']?.trim();
+        if (endTimeStr) {
+          endDate = new Date(eventDate);
+          const endParts = endTimeStr.split(':');
+          if (endParts.length >= 2) {
+            endDate.setHours(parseInt(endParts[0]), parseInt(endParts[1]), 0, 0);
+          }
+        }
+
+        // Mapear status concluído
+        const statusRaw = record['Status']?.trim()?.toLowerCase() || '';
+        const completed = statusRaw === 'concluido' || statusRaw === 'concluído' || statusRaw === 'completed' || statusRaw === 'feito';
+
+        // Mapear kanbanStatus para TAREFA
+        const kanbanStatusMap: Record<string, string> = {
+          'a fazer': 'TODO',
+          'todo': 'TODO',
+          'em andamento': 'IN_PROGRESS',
+          'in_progress': 'IN_PROGRESS',
+          'em progresso': 'IN_PROGRESS',
+          'concluido': 'DONE',
+          'concluído': 'DONE',
+          'done': 'DONE',
+          'feito': 'DONE',
+        };
+        const kanbanStatus = type === 'TAREFA' && statusRaw ? (kanbanStatusMap[statusRaw] || null) : null;
+
         // Verificar se já existe evento com mesmo título e data
         const existingEvent = await prisma.scheduleEvent.findFirst({
           where: {
@@ -1123,6 +1425,11 @@ if (ENABLE_QUEUE_PROCESSORS) {
               description: description ? (sanitizeString(description.trim()) || description.trim()) : existingEvent.description,
               type: type as any,
               priority: priority as any,
+              clientId: clientId || existingEvent.clientId,
+              caseId: caseId || existingEvent.caseId,
+              endDate: endDate || existingEvent.endDate,
+              completed: completed || existingEvent.completed,
+              kanbanStatus: kanbanStatus as any || existingEvent.kanbanStatus,
             },
           });
         } else {
@@ -1135,6 +1442,11 @@ if (ENABLE_QUEUE_PROCESSORS) {
               type: type as any,
               priority: priority as any,
               date: eventDate,
+              endDate,
+              clientId,
+              caseId,
+              completed,
+              kanbanStatus: kanbanStatus as any,
               createdBy: userId,
             },
           });
@@ -1240,9 +1552,10 @@ if (ENABLE_QUEUE_PROCESSORS) {
         }
 
         const adverseData = {
-          personType: record['Tipo Pessoa']?.trim() === 'JURIDICA' ? 'JURIDICA' : 'FISICA',
+          personType: record['Tipo Pessoa']?.trim()?.toUpperCase() === 'JURIDICA' ? 'JURIDICA' : 'FISICA',
           name: record.Nome.trim(),
           cpf: importCpf,
+          stateRegistration: record['Inscrição Estadual']?.trim() || record['Inscricao Estadual']?.trim() || null,
           rg: record.RG?.trim() || null,
           pis: record.PIS?.trim() || null,
           ctps: record.CTPS?.trim() || null,
@@ -1253,8 +1566,8 @@ if (ENABLE_QUEUE_PROCESSORS) {
           phone2: record['Telefone 2']?.trim() || null,
           instagram: record.Instagram?.trim() || null,
           facebook: record.Facebook?.trim() || null,
-          customField1: record['Campo Personalizado 1']?.trim() || null,
-          customField2: record['Campo Personalizado 2']?.trim() || null,
+          customField1: record['Campo Personalizado 1']?.trim() || record['Outros']?.trim() || null,
+          customField2: record['Campo Personalizado 2']?.trim() || record['Outros 2']?.trim() || null,
           address: record['Endereço']?.trim() || record.Endereco?.trim() || null,
           neighborhood: record.Bairro?.trim() || null,
           city: record.Cidade?.trim() || null,
@@ -1264,8 +1577,8 @@ if (ENABLE_QUEUE_PROCESSORS) {
           nationality: record.Nacionalidade?.trim() || null,
           maritalStatus: record['Estado Civil']?.trim() || null,
           birthDate,
-          representativeName: record['Nome do Representante']?.trim() || null,
-          representativeCpf: record['CPF do Representante']?.trim() || null,
+          representativeName: record['Nome do Representante']?.trim() || record['Representante Legal']?.trim() || null,
+          representativeCpf: record['CPF do Representante']?.trim() || record['CPF Representante']?.trim() || null,
           notes: record['Observações']?.trim() || record.Observacoes?.trim() || null,
         };
 
@@ -1277,6 +1590,7 @@ if (ENABLE_QUEUE_PROCESSORS) {
               personType: adverseData.personType as any,
               name: adverseData.name,
               cpf: adverseData.cpf || existingAdverse.cpf,
+              stateRegistration: adverseData.stateRegistration || existingAdverse.stateRegistration,
               rg: adverseData.rg || existingAdverse.rg,
               pis: adverseData.pis || existingAdverse.pis,
               ctps: adverseData.ctps || existingAdverse.ctps,
