@@ -129,17 +129,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   // Verificar se a sidebar deve ser escondida para este usuário
   const shouldHideSidebar = user?.hideSidebar === true;
 
-  // Carregar estado do sidebar do localStorage
-  React.useEffect(() => {
-    const saved = localStorage.getItem('sidebarCollapsed');
-    if (saved !== null) {
-      setSidebarCollapsed(saved === 'true');
-    }
-  }, []);
-
-  // Fechar menu mobile ao mudar de rota
+  // Fechar menu mobile e recolher sidebar ao mudar de rota
   React.useEffect(() => {
     setMobileMenuOpen(false);
+    // Recolher sidebar no desktop quando navegar para uma nova página
+    setSidebarCollapsed(true);
   }, [location.pathname]);
 
   // Listener para evento de recolher sidebar (usado pela página Chatwell)
@@ -304,11 +298,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     }
   }, [user]);
 
-  // Salvar estado do sidebar no localStorage
+  // Expandir/recolher sidebar (não persiste - sempre inicia recolhido)
   const toggleSidebarCollapse = () => {
-    const newState = !sidebarCollapsed;
-    setSidebarCollapsed(newState);
-    localStorage.setItem('sidebarCollapsed', String(newState));
+    setSidebarCollapsed(!sidebarCollapsed);
   };
 
   const handleLogout = () => {
