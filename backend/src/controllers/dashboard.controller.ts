@@ -33,7 +33,8 @@ export const getStats = async (req: AuthRequest, res: Response) => {
     const [
       totalClients,
       totalCases,
-      todayHearings
+      todayHearings,
+      todayDeadlines
     ] = await Promise.all([
       // Total de clientes ativos
       prisma.client.count({
@@ -61,13 +62,26 @@ export const getStats = async (req: AuthRequest, res: Response) => {
             lt: tomorrow
           }
         }
+      }),
+
+      // Prazos vencendo hoje (processos com deadline = hoje e não completado)
+      prisma.case.count({
+        where: {
+          companyId,
+          deadline: {
+            gte: today,
+            lt: tomorrow
+          },
+          deadlineCompleted: false
+        }
       })
     ]);
 
     const stats = {
       clients: totalClients,
       cases: totalCases,
-      todayHearings: todayHearings
+      todayHearings: todayHearings,
+      todayDeadlines: todayDeadlines
     };
 
     // Cache the result

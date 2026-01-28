@@ -37,6 +37,7 @@ interface Stats {
   clients: number;
   cases: number;
   todayHearings: number;
+  todayDeadlines: number;
   companies?: number;
 }
 
@@ -121,6 +122,7 @@ const Dashboard: React.FC = () => {
     clients: 0,
     cases: 0,
     todayHearings: 0,
+    todayDeadlines: 0,
   });
   const [documentRequestStats, setDocumentRequestStats] = useState<DocumentRequestStats | null>(null);
 
@@ -161,6 +163,7 @@ const Dashboard: React.FC = () => {
         clients: statsRes.data.clients || 0,
         cases: statsRes.data.cases || 0,
         todayHearings: statsRes.data.todayHearings || 0,
+        todayDeadlines: statsRes.data.todayDeadlines || 0,
         companies: statsRes.data.companies,
       });
       setEventsPerWeekday(eventsRes.data);
@@ -245,6 +248,16 @@ const Dashboard: React.FC = () => {
                 <p className="stat-card-value">{stats.todayHearings}</p>
               </div>
               <Calendar size={32} className="text-info-200 hidden sm:block" />
+            </div>
+          </div>
+
+          <div className="stat-card bg-gradient-to-br from-amber-400 to-amber-500">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="stat-card-label text-amber-100">Prazos Hoje</p>
+                <p className="stat-card-value">{stats.todayDeadlines}</p>
+              </div>
+              <Clock size={32} className="text-amber-200 hidden sm:block" />
             </div>
           </div>
 

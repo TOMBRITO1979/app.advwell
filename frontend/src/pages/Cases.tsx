@@ -1265,28 +1265,28 @@ const Cases: React.FC = () => {
                   };
                   return (
                     <div key={caseItem.id} className="mobile-card">
-                      <div className="mobile-card-header">
-                        <div className="flex-1 min-w-0">
+                      <div className="mobile-card-header flex-col !items-start !gap-1">
+                        <div className="w-full">
                           <button
                             onClick={() => handleCaseClick(caseItem.id)}
-                            className="mobile-card-title text-primary-600 hover:underline text-left"
+                            className="mobile-card-title text-primary-600 dark:text-primary-400 hover:underline text-left block w-full"
                           >
                             {formatProcessNumber(caseItem.processNumber)}
                           </button>
-                          <p className="mobile-card-subtitle truncate text-success-700">
+                          <p className="mobile-card-subtitle truncate text-success-700 dark:text-success-400">
                             {caseItem.demandanteNames || caseItem.client?.name || '-'}
                           </p>
                           {caseItem.demandadoNames && (
-                            <p className="mobile-card-subtitle truncate text-error-600 text-xs">
+                            <p className="mobile-card-subtitle truncate text-error-600 dark:text-error-400 text-xs">
                               vs {caseItem.demandadoNames}
                             </p>
                           )}
                         </div>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap ml-2 ${
-                          statusColors[caseItem.status] === 'green' ? 'bg-success-100 text-success-800' :
-                          statusColors[caseItem.status] === 'yellow' ? 'bg-yellow-100 text-yellow-800' :
-                          statusColors[caseItem.status] === 'blue' ? 'bg-info-100 text-info-700' :
-                          'bg-neutral-100 text-neutral-800'
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap mt-1 ${
+                          statusColors[caseItem.status] === 'green' ? 'bg-success-100 dark:bg-success-900/40 text-success-700 dark:text-success-300' :
+                          statusColors[caseItem.status] === 'yellow' ? 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300' :
+                          statusColors[caseItem.status] === 'blue' ? 'bg-info-100 dark:bg-info-900/40 text-info-700 dark:text-info-300' :
+                          'bg-neutral-100 dark:bg-slate-700 text-neutral-700 dark:text-slate-300'
                         }`}>
                           {statusLabels[caseItem.status] || caseItem.status}
                         </span>

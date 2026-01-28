@@ -199,102 +199,178 @@ export default function Tags() {
               </button>
             </div>
           ) : (
-            <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md overflow-hidden">
-              <table className="w-full">
-                <thead className="bg-neutral-50 dark:bg-slate-700 border-b border-neutral-200 dark:border-slate-700">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 dark:text-slate-400 uppercase tracking-wider">
-                      Tag
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 dark:text-slate-400 uppercase tracking-wider">
-                      Cor
-                    </th>
-                    <th className="px-6 py-3 text-center text-xs font-semibold text-neutral-600 dark:text-slate-400 uppercase tracking-wider">
-                      Clientes
-                    </th>
-                    <th className="px-6 py-3 text-center text-xs font-semibold text-neutral-600 dark:text-slate-400 uppercase tracking-wider">
-                      Leads
-                    </th>
-                    <th className="px-6 py-3 text-right text-xs font-semibold text-neutral-600 dark:text-slate-400 uppercase tracking-wider">
-                      Ações
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-neutral-200 dark:divide-slate-700 bg-white dark:bg-slate-800">
-                  {tags.map((tag) => (
-                    <tr key={tag.id} className="odd:bg-white even:bg-neutral-50 dark:odd:bg-slate-800 dark:even:bg-slate-700 hover:bg-neutral-100 dark:hover:bg-slate-600 transition-colors">
-                      <td className="px-6 py-4">
-                        <span
-                          className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"
-                          style={{
-                            backgroundColor: tag.color,
-                            color: getTextColor(tag.color),
-                          }}
-                        >
-                          {tag.name}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          <div
-                            className="w-6 h-6 rounded border border-neutral-300 dark:border-slate-600"
-                            style={{ backgroundColor: tag.color }}
-                          />
-                          <span className="text-sm text-neutral-600 dark:text-slate-400">{tag.color}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        <div className="flex items-center justify-center gap-1 text-neutral-600 dark:text-slate-400">
-                          <Users size={16} />
-                          <span>{tag._count?.clients || 0}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        <div className="flex items-center justify-center gap-1 text-neutral-600 dark:text-slate-400">
-                          <UserCheck size={16} />
-                          <span>{tag._count?.leads || 0}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
+            <>
+              {/* Mobile Card View */}
+              <div className="mobile-card-view space-y-3">
+                {tags.map((tag) => (
+                  <div key={tag.id} className="mobile-card">
+                    <div className="mobile-card-header">
+                      <span
+                        className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"
+                        style={{
+                          backgroundColor: tag.color,
+                          color: getTextColor(tag.color),
+                        }}
+                      >
+                        {tag.name}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="w-5 h-5 rounded border border-neutral-300 dark:border-slate-600"
+                          style={{ backgroundColor: tag.color }}
+                        />
+                        <span className="text-xs text-neutral-500 dark:text-slate-400">{tag.color}</span>
+                      </div>
+                    </div>
+                    <div className="mobile-card-row">
+                      <span className="mobile-card-label">Clientes</span>
+                      <span className="mobile-card-value flex items-center gap-1">
+                        <Users size={14} />
+                        {tag._count?.clients || 0}
+                      </span>
+                    </div>
+                    <div className="mobile-card-row">
+                      <span className="mobile-card-label">Leads</span>
+                      <span className="mobile-card-value flex items-center gap-1">
+                        <UserCheck size={14} />
+                        {tag._count?.leads || 0}
+                      </span>
+                    </div>
+                    <div className="mobile-card-actions">
+                      <button
+                        onClick={() => handleOpenModal(tag)}
+                        className="mobile-card-action-btn text-primary-600"
+                      >
+                        <Edit2 size={16} />
+                        Editar
+                      </button>
+                      {deleteConfirm === tag.id ? (
+                        <>
                           <button
-                            onClick={() => handleOpenModal(tag)}
-                            className="p-2 text-neutral-600 dark:text-slate-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
-                            title="Editar"
+                            onClick={() => handleDelete(tag.id)}
+                            className="mobile-card-action-btn text-white bg-error-600 hover:bg-error-700 rounded px-2"
                           >
-                            <Edit2 size={18} />
+                            Confirmar
                           </button>
-                          {deleteConfirm === tag.id ? (
-                            <div className="flex items-center gap-2">
-                              <button
-                                onClick={() => handleDelete(tag.id)}
-                                className="px-2 py-1 text-xs bg-error-600 text-white rounded hover:bg-error-700"
-                              >
-                                Confirmar
-                              </button>
-                              <button
-                                onClick={() => setDeleteConfirm(null)}
-                                className="px-2 py-1 text-xs bg-neutral-200 text-neutral-700 dark:text-slate-300 rounded hover:bg-neutral-300"
-                              >
-                                Cancelar
-                              </button>
-                            </div>
-                          ) : (
-                            <button
-                              onClick={() => setDeleteConfirm(tag.id)}
-                              className="p-2 text-neutral-600 dark:text-slate-400 hover:text-error-600 hover:bg-error-50 rounded-lg transition-colors"
-                              title="Excluir"
-                            >
-                              <Trash2 size={18} />
-                            </button>
-                          )}
-                        </div>
-                      </td>
+                          <button
+                            onClick={() => setDeleteConfirm(null)}
+                            className="mobile-card-action-btn text-neutral-700 dark:text-slate-300 bg-neutral-200 dark:bg-slate-600 rounded px-2"
+                          >
+                            Cancelar
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          onClick={() => setDeleteConfirm(tag.id)}
+                          className="mobile-card-action-btn text-error-600"
+                        >
+                          <Trash2 size={16} />
+                          Excluir
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop Table View */}
+              <div className="desktop-table-view bg-white dark:bg-slate-800 rounded-lg shadow-md overflow-hidden">
+                <table className="w-full">
+                  <thead className="bg-neutral-50 dark:bg-slate-700 border-b border-neutral-200 dark:border-slate-700">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 dark:text-slate-400 uppercase tracking-wider">
+                        Tag
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 dark:text-slate-400 uppercase tracking-wider">
+                        Cor
+                      </th>
+                      <th className="px-6 py-3 text-center text-xs font-semibold text-neutral-600 dark:text-slate-400 uppercase tracking-wider">
+                        Clientes
+                      </th>
+                      <th className="px-6 py-3 text-center text-xs font-semibold text-neutral-600 dark:text-slate-400 uppercase tracking-wider">
+                        Leads
+                      </th>
+                      <th className="px-6 py-3 text-right text-xs font-semibold text-neutral-600 dark:text-slate-400 uppercase tracking-wider">
+                        Ações
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-neutral-200 dark:divide-slate-700 bg-white dark:bg-slate-800">
+                    {tags.map((tag) => (
+                      <tr key={tag.id} className="odd:bg-white even:bg-neutral-50 dark:odd:bg-slate-800 dark:even:bg-slate-700 hover:bg-neutral-100 dark:hover:bg-slate-600 transition-colors">
+                        <td className="px-6 py-4">
+                          <span
+                            className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"
+                            style={{
+                              backgroundColor: tag.color,
+                              color: getTextColor(tag.color),
+                            }}
+                          >
+                            {tag.name}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-2">
+                            <div
+                              className="w-6 h-6 rounded border border-neutral-300 dark:border-slate-600"
+                              style={{ backgroundColor: tag.color }}
+                            />
+                            <span className="text-sm text-neutral-600 dark:text-slate-400">{tag.color}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <div className="flex items-center justify-center gap-1 text-neutral-600 dark:text-slate-400">
+                            <Users size={16} />
+                            <span>{tag._count?.clients || 0}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <div className="flex items-center justify-center gap-1 text-neutral-600 dark:text-slate-400">
+                            <UserCheck size={16} />
+                            <span>{tag._count?.leads || 0}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => handleOpenModal(tag)}
+                              className="p-2 text-neutral-600 dark:text-slate-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+                              title="Editar"
+                            >
+                              <Edit2 size={18} />
+                            </button>
+                            {deleteConfirm === tag.id ? (
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() => handleDelete(tag.id)}
+                                  className="px-2 py-1 text-xs bg-error-600 text-white rounded hover:bg-error-700"
+                                >
+                                  Confirmar
+                                </button>
+                                <button
+                                  onClick={() => setDeleteConfirm(null)}
+                                  className="px-2 py-1 text-xs bg-neutral-200 text-neutral-700 dark:text-slate-300 rounded hover:bg-neutral-300"
+                                >
+                                  Cancelar
+                                </button>
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => setDeleteConfirm(tag.id)}
+                                className="p-2 text-neutral-600 dark:text-slate-400 hover:text-error-600 hover:bg-error-50 rounded-lg transition-colors"
+                                title="Excluir"
+                              >
+                                <Trash2 size={18} />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
 
           {/* Pagination */}

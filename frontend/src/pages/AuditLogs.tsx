@@ -490,16 +490,16 @@ const AuditLogs: React.FC = () => {
                       className="p-4 cursor-pointer"
                       onClick={() => setExpandedLogId(isExpanded ? null : log.id)}
                     >
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex items-start gap-3">
+                      <div className="flex items-start justify-between gap-2 sm:gap-4">
+                        <div className="flex items-start gap-2 sm:gap-3 flex-1 min-w-0">
                           {/* Action Icon */}
-                          <div className={`p-2 rounded-lg ${actionConfig.color}`}>
+                          <div className={`p-1.5 sm:p-2 rounded-lg ${actionConfig.color} flex-shrink-0`}>
                             {actionConfig.icon}
                           </div>
 
                           {/* Info */}
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 flex-wrap">
+                            <div className="flex flex-wrap gap-1 sm:gap-2">
                               <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${actionConfig.color}`}>
                                 {actionConfig.label}
                               </span>
@@ -513,7 +513,7 @@ const AuditLogs: React.FC = () => {
                               {' '}
                               {log.description || `${actionConfig.label.toLowerCase()} ${entityConfig.label.toLowerCase()}`}
                             </p>
-                            <div className="mt-1 flex items-center gap-4 text-xs text-neutral-500 dark:text-slate-400">
+                            <div className="mt-1 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-xs text-neutral-500 dark:text-slate-400">
                               <span className="flex items-center gap-1">
                                 <Calendar className="w-3 h-3" />
                                 {new Date(log.createdAt).toLocaleString('pt-BR', {
@@ -535,13 +535,13 @@ const AuditLogs: React.FC = () => {
                         </div>
 
                         {/* Expand Icon */}
-                        <div className="flex flex-col items-center justify-center flex-shrink-0 ml-2">
+                        <div className="flex flex-col items-center justify-center flex-shrink-0">
                           {log.changedFields.length > 0 && (
                             <>
                               <span className="text-sm font-semibold text-neutral-600 dark:text-slate-400">
                                 {log.changedFields.length}
                               </span>
-                              <span className="text-xs text-neutral-500 dark:text-slate-400">
+                              <span className="text-xs text-neutral-500 dark:text-slate-400 hidden sm:inline">
                                 {log.changedFields.length > 1 ? 'campos' : 'campo'}
                               </span>
                             </>
@@ -558,29 +558,31 @@ const AuditLogs: React.FC = () => {
                     {/* Expanded Details */}
                     {isExpanded && (
                       <div className="px-4 pb-4 pt-0">
-                        <div className="ml-12 border-l-2 border-neutral-200 dark:border-slate-700 pl-4">
+                        <div className="ml-0 sm:ml-12 border-l-2 border-neutral-200 dark:border-slate-700 pl-4">
                           {/* Changed Fields */}
                           {log.action === 'UPDATE' && log.changedFields.length > 0 && (
                             <div className="space-y-2">
                               <p className="text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wide">
                                 Campos alterados:
                               </p>
-                              <div className="space-y-1">
+                              <div className="space-y-2">
                                 {log.changedFields.map((field) => {
                                   const oldValue = log.oldValues?.[field];
                                   const newValue = log.newValues?.[field];
                                   return (
-                                    <div key={field} className="flex items-start gap-2 text-sm">
-                                      <span className="font-medium text-neutral-700 dark:text-slate-300 min-w-[120px]">
+                                    <div key={field} className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-2 text-sm">
+                                      <span className="font-medium text-neutral-700 dark:text-slate-300 sm:min-w-[120px]">
                                         {FIELD_LABELS[field] || field}:
                                       </span>
-                                      <span className="text-danger-600 line-through">
-                                        {formatValue(oldValue)}
-                                      </span>
-                                      <span className="text-neutral-400 dark:text-slate-500">→</span>
-                                      <span className="text-success-600">
-                                        {formatValue(newValue)}
-                                      </span>
+                                      <div className="flex flex-wrap items-center gap-1 sm:gap-2">
+                                        <span className="text-danger-600 line-through break-all">
+                                          {formatValue(oldValue)}
+                                        </span>
+                                        <span className="text-neutral-400 dark:text-slate-500">→</span>
+                                        <span className="text-success-600 break-all">
+                                          {formatValue(newValue)}
+                                        </span>
+                                      </div>
                                     </div>
                                   );
                                 })}
@@ -594,13 +596,13 @@ const AuditLogs: React.FC = () => {
                               <p className="text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wide">
                                 Dados criados:
                               </p>
-                              <div className="grid grid-cols-2 gap-2 text-sm">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
                                 {Object.entries(log.newValues).map(([field, value]) => (
-                                  <div key={field} className="flex items-start gap-2">
+                                  <div key={field} className="flex flex-col sm:flex-row sm:items-start gap-0.5 sm:gap-2">
                                     <span className="font-medium text-neutral-700 dark:text-slate-300">
                                       {FIELD_LABELS[field] || field}:
                                     </span>
-                                    <span className="text-neutral-600 dark:text-slate-400">{formatValue(value)}</span>
+                                    <span className="text-neutral-600 dark:text-slate-400 break-all">{formatValue(value)}</span>
                                   </div>
                                 ))}
                               </div>
@@ -613,13 +615,13 @@ const AuditLogs: React.FC = () => {
                               <p className="text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wide">
                                 Dados excluídos:
                               </p>
-                              <div className="grid grid-cols-2 gap-2 text-sm">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
                                 {Object.entries(log.oldValues).map(([field, value]) => (
-                                  <div key={field} className="flex items-start gap-2">
+                                  <div key={field} className="flex flex-col sm:flex-row sm:items-start gap-0.5 sm:gap-2">
                                     <span className="font-medium text-neutral-700 dark:text-slate-300">
                                       {FIELD_LABELS[field] || field}:
                                     </span>
-                                    <span className="text-danger-600">{formatValue(value)}</span>
+                                    <span className="text-danger-600 break-all">{formatValue(value)}</span>
                                   </div>
                                 ))}
                               </div>

@@ -542,24 +542,26 @@ const Hearings: React.FC = () => {
           </div>
 
           {/* Botões de Exportação e Toggle */}
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
             {/* Botões de Exportação */}
             <ExportButton
               type="csv"
               onClick={handleExportCSV}
               loading={exportingCSV}
+              className="w-full sm:w-auto"
             />
             <ExportButton
               type="pdf"
               onClick={handleExportPDF}
               loading={exportingPDF}
+              className="w-full sm:w-auto"
             />
 
             {/* Toggle de Visualização */}
-            <div className="flex bg-neutral-100 dark:bg-slate-700 rounded-lg p-1">
+            <div className="col-span-2 sm:col-span-1 flex bg-neutral-100 dark:bg-slate-700 rounded-lg p-1">
             <button
               onClick={() => setViewMode('list')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+              className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
                 viewMode === 'list'
                   ? 'bg-white dark:bg-slate-700 text-primary-700 dark:text-primary-400 shadow-sm'
                   : 'text-neutral-600 dark:text-slate-400 hover:text-neutral-900 dark:text-slate-100'
@@ -570,7 +572,7 @@ const Hearings: React.FC = () => {
             </button>
             <button
               onClick={() => setViewMode('week')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+              className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
                 viewMode === 'week'
                   ? 'bg-white dark:bg-slate-700 text-primary-700 dark:text-primary-400 shadow-sm'
                   : 'text-neutral-600 dark:text-slate-400 hover:text-neutral-900 dark:text-slate-100'

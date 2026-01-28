@@ -448,184 +448,305 @@ const DocumentRequests: React.FC = () => {
               </button>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 dark:bg-slate-700/50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">
-                      Documento
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">
-                      Cliente
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">
-                      Prazo
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">
-                      Canal
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">
-                      Lembretes
-                    </th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">
-                      Ações
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200 dark:divide-slate-700">
-                  {filteredRequests.map((request, index) => (
-                    <tr
-                      key={request.id}
-                      className={`${
-                        index % 2 === 0 ? 'bg-white dark:bg-slate-800' : 'bg-gray-50 dark:bg-slate-800/50'
-                      } hover:bg-gray-100 dark:hover:bg-slate-700/50 transition-colors`}
-                    >
-                      <td className="px-4 py-3">
-                        <div className="font-medium text-gray-900 dark:text-white">
+            <>
+              {/* Mobile Card View */}
+              <div className="mobile-card-view space-y-3 p-4">
+                {filteredRequests.map((request) => (
+                  <div key={request.id} className="mobile-card">
+                    <div className="mobile-card-header">
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-gray-900 dark:text-white truncate">
                           {request.documentName}
                         </div>
-                        {request.description && (
-                          <div className="text-sm text-gray-500 dark:text-slate-400 truncate max-w-xs">
-                            {request.description}
-                          </div>
-                        )}
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2">
-                          <User size={16} className="text-gray-400" />
-                          <span className="text-gray-900 dark:text-white">{request.client.name}</span>
+                        <div className="text-sm text-gray-500 dark:text-slate-400 flex items-center gap-1 mt-0.5">
+                          <User size={14} />
+                          {request.client.name}
                         </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2">
-                          {isOverdue(request.dueDate, request.status) ? (
-                            <AlertTriangle size={16} className="text-red-500" />
-                          ) : (
-                            <Calendar size={16} className="text-gray-400" />
-                          )}
-                          <div>
-                            <div
-                              className={`text-sm ${
-                                isOverdue(request.dueDate, request.status)
-                                  ? 'text-red-600 font-medium'
-                                  : 'text-gray-900 dark:text-white'
-                              }`}
-                            >
-                              {format(parseISO(request.dueDate), 'dd/MM/yyyy', { locale: ptBR })}
-                            </div>
-                            <div className="text-xs text-gray-500 dark:text-slate-400">
-                              {formatDistanceToNow(parseISO(request.dueDate), {
-                                addSuffix: true,
-                                locale: ptBR,
-                              })}
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span
-                          className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                            statusColors[request.status]
-                          }`}
-                        >
-                          {statusLabels[request.status]}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        {request.notificationChannel ? (
-                          <span className="text-gray-600 dark:text-slate-400 flex items-center gap-1">
-                            {channelIcons[request.notificationChannel]}
-                          </span>
+                      </div>
+                      <span
+                        className={`inline-flex px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap ${
+                          statusColors[request.status]
+                        }`}
+                      >
+                        {statusLabels[request.status]}
+                      </span>
+                    </div>
+                    <div className="mobile-card-row">
+                      <span className="mobile-card-label">Prazo</span>
+                      <span className={`mobile-card-value flex items-center gap-1 ${
+                        isOverdue(request.dueDate, request.status) ? 'text-red-600 font-medium' : ''
+                      }`}>
+                        {isOverdue(request.dueDate, request.status) ? (
+                          <AlertTriangle size={14} className="text-red-500" />
                         ) : (
-                          <span className="text-gray-400">-</span>
+                          <Calendar size={14} className="text-gray-400" />
                         )}
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="text-sm text-gray-600 dark:text-slate-400">
-                          {request.reminderCount > 0 ? (
-                            <span className="flex items-center gap-1">
-                              <Clock size={14} />
-                              {request.reminderCount}x
+                        {format(parseISO(request.dueDate), 'dd/MM/yyyy', { locale: ptBR })}
+                        <span className="text-xs text-gray-500 dark:text-slate-400 ml-1">
+                          ({formatDistanceToNow(parseISO(request.dueDate), { addSuffix: true, locale: ptBR })})
+                        </span>
+                      </span>
+                    </div>
+                    <div className="mobile-card-row">
+                      <span className="mobile-card-label">Canal</span>
+                      <span className="mobile-card-value flex items-center gap-1">
+                        {request.notificationChannel ? (
+                          <>
+                            {channelIcons[request.notificationChannel]}
+                            <span className="text-xs">{request.notificationChannel}</span>
+                          </>
+                        ) : (
+                          '-'
+                        )}
+                      </span>
+                    </div>
+                    <div className="mobile-card-row">
+                      <span className="mobile-card-label">Lembretes</span>
+                      <span className="mobile-card-value flex items-center gap-1">
+                        {request.reminderCount > 0 ? (
+                          <>
+                            <Clock size={14} />
+                            {request.reminderCount}x
+                          </>
+                        ) : (
+                          '-'
+                        )}
+                      </span>
+                    </div>
+                    <div className="mobile-card-actions">
+                      {!['RECEIVED', 'CANCELLED'].includes(request.status) && (
+                        <>
+                          <button
+                            onClick={() => handleEdit(request)}
+                            className="mobile-card-action-btn text-primary-600"
+                          >
+                            <Edit2 size={16} />
+                            Editar
+                          </button>
+                          <button
+                            onClick={() => handleSendReminder(request.id)}
+                            className="mobile-card-action-btn text-blue-600"
+                          >
+                            <Send size={16} />
+                            Lembrete
+                          </button>
+                          <button
+                            onClick={() => handleMarkAsReceived(request.id)}
+                            className="mobile-card-action-btn text-green-600"
+                          >
+                            <CheckCircle size={16} />
+                            Recebido
+                          </button>
+                          <button
+                            onClick={() => handleCancel(request.id)}
+                            className="mobile-card-action-btn text-red-600"
+                          >
+                            <Trash2 size={16} />
+                            Cancelar
+                          </button>
+                        </>
+                      )}
+                      {request.status === 'RECEIVED' && request.receivedDocument && (
+                        <a
+                          href={request.receivedDocument.fileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mobile-card-action-btn text-primary-600"
+                        >
+                          <FileText size={16} />
+                          Ver Doc
+                        </a>
+                      )}
+                      {request.status === 'CANCELLED' && (
+                        <span className="text-sm text-gray-500 dark:text-slate-400">
+                          Solicitação cancelada
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop Table View */}
+              <div className="desktop-table-view overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50 dark:bg-slate-700/50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">
+                        Documento
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">
+                        Cliente
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">
+                        Prazo
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">
+                        Status
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">
+                        Canal
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">
+                        Lembretes
+                      </th>
+                      <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">
+                        Ações
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200 dark:divide-slate-700">
+                    {filteredRequests.map((request, index) => (
+                      <tr
+                        key={request.id}
+                        className={`${
+                          index % 2 === 0 ? 'bg-white dark:bg-slate-800' : 'bg-gray-50 dark:bg-slate-800/50'
+                        } hover:bg-gray-100 dark:hover:bg-slate-700/50 transition-colors`}
+                      >
+                        <td className="px-4 py-3">
+                          <div className="font-medium text-gray-900 dark:text-white">
+                            {request.documentName}
+                          </div>
+                          {request.description && (
+                            <div className="text-sm text-gray-500 dark:text-slate-400 truncate max-w-xs">
+                              {request.description}
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2">
+                            <User size={16} className="text-gray-400" />
+                            <span className="text-gray-900 dark:text-white">{request.client.name}</span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2">
+                            {isOverdue(request.dueDate, request.status) ? (
+                              <AlertTriangle size={16} className="text-red-500" />
+                            ) : (
+                              <Calendar size={16} className="text-gray-400" />
+                            )}
+                            <div>
+                              <div
+                                className={`text-sm ${
+                                  isOverdue(request.dueDate, request.status)
+                                    ? 'text-red-600 font-medium'
+                                    : 'text-gray-900 dark:text-white'
+                                }`}
+                              >
+                                {format(parseISO(request.dueDate), 'dd/MM/yyyy', { locale: ptBR })}
+                              </div>
+                              <div className="text-xs text-gray-500 dark:text-slate-400">
+                                {formatDistanceToNow(parseISO(request.dueDate), {
+                                  addSuffix: true,
+                                  locale: ptBR,
+                                })}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span
+                            className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                              statusColors[request.status]
+                            }`}
+                          >
+                            {statusLabels[request.status]}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          {request.notificationChannel ? (
+                            <span className="text-gray-600 dark:text-slate-400 flex items-center gap-1">
+                              {channelIcons[request.notificationChannel]}
                             </span>
                           ) : (
-                            '-'
+                            <span className="text-gray-400">-</span>
                           )}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        <div className="relative">
-                          <button
-                            onClick={() =>
-                              setActionMenuOpen(actionMenuOpen === request.id ? null : request.id)
-                            }
-                            className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 rounded"
-                          >
-                            <MoreHorizontal size={20} />
-                          </button>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="text-sm text-gray-600 dark:text-slate-400">
+                            {request.reminderCount > 0 ? (
+                              <span className="flex items-center gap-1">
+                                <Clock size={14} />
+                                {request.reminderCount}x
+                              </span>
+                            ) : (
+                              '-'
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <div className="relative">
+                            <button
+                              onClick={() =>
+                                setActionMenuOpen(actionMenuOpen === request.id ? null : request.id)
+                              }
+                              className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 rounded"
+                            >
+                              <MoreHorizontal size={20} />
+                            </button>
 
-                          {actionMenuOpen === request.id && (
-                            <div className="absolute right-0 mt-1 w-48 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-gray-200 dark:border-slate-700 py-1 z-10">
-                              {!['RECEIVED', 'CANCELLED'].includes(request.status) && (
-                                <>
-                                  <button
-                                    onClick={() => handleEdit(request)}
+                            {actionMenuOpen === request.id && (
+                              <div className="absolute right-0 mt-1 w-48 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-gray-200 dark:border-slate-700 py-1 z-10">
+                                {!['RECEIVED', 'CANCELLED'].includes(request.status) && (
+                                  <>
+                                    <button
+                                      onClick={() => handleEdit(request)}
+                                      className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 flex items-center gap-2"
+                                    >
+                                      <Edit2 size={16} />
+                                      Editar
+                                    </button>
+                                    <button
+                                      onClick={() => handleSendReminder(request.id)}
+                                      className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 flex items-center gap-2"
+                                    >
+                                      <Send size={16} />
+                                      Enviar Lembrete
+                                    </button>
+                                    <button
+                                      onClick={() => handleMarkAsReceived(request.id)}
+                                      className="w-full px-4 py-2 text-left text-sm text-green-600 hover:bg-gray-100 dark:hover:bg-slate-700 flex items-center gap-2"
+                                    >
+                                      <CheckCircle size={16} />
+                                      Marcar Recebido
+                                    </button>
+                                    <hr className="my-1 border-gray-200 dark:border-slate-700" />
+                                    <button
+                                      onClick={() => handleCancel(request.id)}
+                                      className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-slate-700 flex items-center gap-2"
+                                    >
+                                      <Trash2 size={16} />
+                                      Cancelar
+                                    </button>
+                                  </>
+                                )}
+                                {request.status === 'RECEIVED' && request.receivedDocument && (
+                                  <a
+                                    href={request.receivedDocument.fileUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
                                     className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 flex items-center gap-2"
                                   >
-                                    <Edit2 size={16} />
-                                    Editar
-                                  </button>
-                                  <button
-                                    onClick={() => handleSendReminder(request.id)}
-                                    className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 flex items-center gap-2"
-                                  >
-                                    <Send size={16} />
-                                    Enviar Lembrete
-                                  </button>
-                                  <button
-                                    onClick={() => handleMarkAsReceived(request.id)}
-                                    className="w-full px-4 py-2 text-left text-sm text-green-600 hover:bg-gray-100 dark:hover:bg-slate-700 flex items-center gap-2"
-                                  >
-                                    <CheckCircle size={16} />
-                                    Marcar Recebido
-                                  </button>
-                                  <hr className="my-1 border-gray-200 dark:border-slate-700" />
-                                  <button
-                                    onClick={() => handleCancel(request.id)}
-                                    className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-slate-700 flex items-center gap-2"
-                                  >
-                                    <Trash2 size={16} />
-                                    Cancelar
-                                  </button>
-                                </>
-                              )}
-                              {request.status === 'RECEIVED' && request.receivedDocument && (
-                                <a
-                                  href={request.receivedDocument.fileUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 flex items-center gap-2"
-                                >
-                                  <FileText size={16} />
-                                  Ver Documento
-                                </a>
-                              )}
-                              {request.status === 'CANCELLED' && (
-                                <span className="px-4 py-2 text-sm text-gray-500 dark:text-slate-400 block">
-                                  Solicitação cancelada
-                                </span>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                                    <FileText size={16} />
+                                    Ver Documento
+                                  </a>
+                                )}
+                                {request.status === 'CANCELLED' && (
+                                  <span className="px-4 py-2 text-sm text-gray-500 dark:text-slate-400 block">
+                                    Solicitação cancelada
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </div>
 
