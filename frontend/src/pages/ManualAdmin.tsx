@@ -277,20 +277,70 @@ export default function ManualAdmin() {
 
   const renderCategoriesTab = () => (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
         <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
           Categorias ({categories.length})
         </h3>
         <button
           onClick={() => openModal('category')}
-          className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
+          className="flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-primary-600 text-white rounded-lg hover:bg-primary-700"
         >
           <Plus className="w-4 h-4" />
           Nova Categoria
         </button>
       </div>
 
-      <div className="bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700 overflow-hidden">
+      {/* Mobile: Cards */}
+      <div className="space-y-3 md:hidden">
+        {categories.map((category) => (
+          <div key={category.id} className="bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700 p-4">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-2 min-w-0">
+                <Folder className="w-5 h-5 text-neutral-400 flex-shrink-0" />
+                <span className="font-medium text-neutral-900 dark:text-white truncate">{category.name}</span>
+              </div>
+              <div className="flex items-center gap-1 flex-shrink-0">
+                <button
+                  onClick={() => openModal('category', category)}
+                  className="p-2 text-neutral-400 hover:text-primary-600"
+                >
+                  <Pencil className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => handleDelete('category', category.id)}
+                  className="p-2 text-neutral-400 hover:text-red-600"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+            <div className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
+              Slug: {category.slug}
+            </div>
+            <div className="mt-2 flex items-center justify-between">
+              <div className="flex items-center gap-3 text-xs text-neutral-500 dark:text-neutral-400">
+                <span>{category._count.articles} artigos</span>
+                <span>{category._count.faqs} FAQs</span>
+                <span>Ordem: {category.order}</span>
+              </div>
+              <button
+                onClick={() => toggleActive('category', category.id, !category.active)}
+                className={`flex items-center gap-1 px-2 py-1 rounded text-xs ${
+                  category.active
+                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                    : 'bg-neutral-100 text-neutral-600 dark:bg-neutral-700 dark:text-neutral-400'
+                }`}
+              >
+                {category.active ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+                {category.active ? 'Ativo' : 'Inativo'}
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop: Table */}
+      <div className="hidden md:block bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700 overflow-x-auto">
         <table className="w-full">
           <thead className="bg-neutral-50 dark:bg-neutral-700/50">
             <tr>
@@ -363,15 +413,15 @@ export default function ManualAdmin() {
 
   const renderArticlesTab = () => (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
         <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
           Artigos ({articles.length})
         </h3>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4">
           <select
             value={filterCategoryId}
             onChange={(e) => setFilterCategoryId(e.target.value)}
-            className="px-3 py-2 border border-neutral-200 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white"
+            className="px-3 py-2 min-h-[44px] border border-neutral-200 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white"
           >
             <option value="">Todas as categorias</option>
             {categories.map((cat) => (
@@ -380,7 +430,7 @@ export default function ManualAdmin() {
           </select>
           <button
             onClick={() => openModal('article')}
-            className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
+            className="flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-primary-600 text-white rounded-lg hover:bg-primary-700"
           >
             <Plus className="w-4 h-4" />
             Novo Artigo
@@ -388,7 +438,57 @@ export default function ManualAdmin() {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700 overflow-hidden">
+      {/* Mobile: Cards */}
+      <div className="space-y-3 md:hidden">
+        {articles.map((article) => (
+          <div key={article.id} className="bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700 p-4">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-2 min-w-0">
+                <FileText className="w-5 h-5 text-neutral-400 flex-shrink-0" />
+                <span className="font-medium text-neutral-900 dark:text-white truncate">{article.title}</span>
+                {article.videoUrl && <Video className="w-4 h-4 text-primary-600 flex-shrink-0" />}
+              </div>
+              <div className="flex items-center gap-1 flex-shrink-0">
+                <button
+                  onClick={() => openModal('article', article)}
+                  className="p-2 text-neutral-400 hover:text-primary-600"
+                >
+                  <Pencil className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => handleDelete('article', article.id)}
+                  className="p-2 text-neutral-400 hover:text-red-600"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+            <div className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
+              Categoria: {article.category.name}
+            </div>
+            <div className="mt-2 flex items-center justify-between">
+              <div className="flex items-center gap-3 text-xs text-neutral-500 dark:text-neutral-400">
+                <span>{article.viewCount} views</span>
+                <span>Ordem: {article.order}</span>
+              </div>
+              <button
+                onClick={() => toggleActive('article', article.id, !article.active)}
+                className={`flex items-center gap-1 px-2 py-1 rounded text-xs ${
+                  article.active
+                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                    : 'bg-neutral-100 text-neutral-600 dark:bg-neutral-700 dark:text-neutral-400'
+                }`}
+              >
+                {article.active ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+                {article.active ? 'Ativo' : 'Inativo'}
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop: Table */}
+      <div className="hidden md:block bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700 overflow-x-auto">
         <table className="w-full">
           <thead className="bg-neutral-50 dark:bg-neutral-700/50">
             <tr>
@@ -463,15 +563,15 @@ export default function ManualAdmin() {
 
   const renderFaqsTab = () => (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
         <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
           FAQs ({faqs.length})
         </h3>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4">
           <select
             value={filterCategoryId}
             onChange={(e) => setFilterCategoryId(e.target.value)}
-            className="px-3 py-2 border border-neutral-200 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white"
+            className="px-3 py-2 min-h-[44px] border border-neutral-200 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white"
           >
             <option value="">Todas as categorias</option>
             {categories.map((cat) => (
@@ -480,7 +580,7 @@ export default function ManualAdmin() {
           </select>
           <button
             onClick={() => openModal('faq')}
-            className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
+            className="flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-primary-600 text-white rounded-lg hover:bg-primary-700"
           >
             <Plus className="w-4 h-4" />
             Nova FAQ
@@ -488,7 +588,56 @@ export default function ManualAdmin() {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700 overflow-hidden">
+      {/* Mobile: Cards */}
+      <div className="space-y-3 md:hidden">
+        {faqs.map((faq) => (
+          <div key={faq.id} className="bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700 p-4">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-start gap-2 min-w-0">
+                <HelpCircle className="w-5 h-5 text-neutral-400 flex-shrink-0 mt-0.5" />
+                <span className="font-medium text-neutral-900 dark:text-white line-clamp-2">{faq.question}</span>
+              </div>
+              <div className="flex items-center gap-1 flex-shrink-0">
+                <button
+                  onClick={() => openModal('faq', faq)}
+                  className="p-2 text-neutral-400 hover:text-primary-600"
+                >
+                  <Pencil className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => handleDelete('faq', faq.id)}
+                  className="p-2 text-neutral-400 hover:text-red-600"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+            <div className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
+              Categoria: {faq.category?.name || 'Geral'}
+            </div>
+            <div className="mt-2 flex items-center justify-between">
+              <div className="flex items-center gap-3 text-xs text-neutral-500 dark:text-neutral-400">
+                <span><span className="text-green-600">{faq.helpful}</span> / <span className="text-red-600">{faq.notHelpful}</span> útil</span>
+                <span>Ordem: {faq.order}</span>
+              </div>
+              <button
+                onClick={() => toggleActive('faq', faq.id, !faq.active)}
+                className={`flex items-center gap-1 px-2 py-1 rounded text-xs ${
+                  faq.active
+                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                    : 'bg-neutral-100 text-neutral-600 dark:bg-neutral-700 dark:text-neutral-400'
+                }`}
+              >
+                {faq.active ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+                {faq.active ? 'Ativo' : 'Inativo'}
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop: Table */}
+      <div className="hidden md:block bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700 overflow-x-auto">
         <table className="w-full">
           <thead className="bg-neutral-50 dark:bg-neutral-700/50">
             <tr>
@@ -889,36 +1038,36 @@ export default function ManualAdmin() {
       <div className="flex border-b border-neutral-200 dark:border-neutral-700">
         <button
           onClick={() => { setActiveTab('categories'); setFilterCategoryId(''); }}
-          className={`flex items-center gap-2 px-4 py-2 border-b-2 -mb-px ${
+          className={`flex-1 sm:flex-none flex items-center justify-center sm:justify-start gap-1 sm:gap-2 px-3 sm:px-4 py-2 border-b-2 -mb-px min-h-[44px] ${
             activeTab === 'categories'
               ? 'border-primary-600 text-primary-600'
               : 'border-transparent text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
           }`}
         >
           <Folder className="w-4 h-4" />
-          Categorias
+          <span className="hidden sm:inline">Categorias</span>
         </button>
         <button
           onClick={() => setActiveTab('articles')}
-          className={`flex items-center gap-2 px-4 py-2 border-b-2 -mb-px ${
+          className={`flex-1 sm:flex-none flex items-center justify-center sm:justify-start gap-1 sm:gap-2 px-3 sm:px-4 py-2 border-b-2 -mb-px min-h-[44px] ${
             activeTab === 'articles'
               ? 'border-primary-600 text-primary-600'
               : 'border-transparent text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
           }`}
         >
           <FileText className="w-4 h-4" />
-          Artigos
+          <span className="hidden sm:inline">Artigos</span>
         </button>
         <button
           onClick={() => setActiveTab('faqs')}
-          className={`flex items-center gap-2 px-4 py-2 border-b-2 -mb-px ${
+          className={`flex-1 sm:flex-none flex items-center justify-center sm:justify-start gap-1 sm:gap-2 px-3 sm:px-4 py-2 border-b-2 -mb-px min-h-[44px] ${
             activeTab === 'faqs'
               ? 'border-primary-600 text-primary-600'
               : 'border-transparent text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
           }`}
         >
           <HelpCircle className="w-4 h-4" />
-          FAQs
+          <span className="hidden sm:inline">FAQs</span>
         </button>
       </div>
 

@@ -453,8 +453,8 @@ export default function Manual() {
         </div>
 
         {/* Search */}
-        <div className="flex items-center gap-2">
-          <div className="relative">
+        <div className="flex w-full md:w-auto gap-2">
+          <div className="relative flex-1 md:flex-none">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
             <input
               type="text"
@@ -462,13 +462,13 @@ export default function Manual() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-              className="pl-9 pr-4 py-2 w-64 border border-neutral-200 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="pl-9 pr-4 py-2 w-full md:w-64 min-h-[44px] border border-neutral-200 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
           </div>
           <button
             onClick={handleSearch}
             disabled={searching}
-            className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50"
+            className="px-4 py-2 min-h-[44px] bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 flex-shrink-0"
           >
             {searching ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Buscar'}
           </button>
