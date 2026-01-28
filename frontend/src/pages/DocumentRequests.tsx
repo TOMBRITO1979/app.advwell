@@ -6,7 +6,6 @@ import {
   Trash2,
   Send,
   CheckCircle,
-  MoreHorizontal,
   Clock,
   AlertTriangle,
   FileText,
@@ -17,10 +16,12 @@ import {
   Mail,
   MessageCircle,
   RefreshCw,
+  Eye,
 } from 'lucide-react';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import Layout from '../components/Layout';
+import ActionsDropdown, { ActionItem } from '../components/ui/ActionsDropdown';
 import { format, formatDistanceToNow, isPast, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -118,7 +119,6 @@ const DocumentRequests: React.FC = () => {
   const [filterClientId, setFilterClientId] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingRequest, setEditingRequest] = useState<DocumentRequest | null>(null);
-  const [actionMenuOpen, setActionMenuOpen] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
 
   const [formData, setFormData] = useState<DocumentRequestFormData>({
@@ -221,7 +221,6 @@ const DocumentRequests: React.FC = () => {
       autoFollowup: request.autoFollowup,
     });
     setShowModal(true);
-    setActionMenuOpen(null);
   };
 
   const handleCancel = async (id: string) => {
@@ -235,7 +234,6 @@ const DocumentRequests: React.FC = () => {
       console.error('Error cancelling request:', error);
       toast.error(error.response?.data?.error || 'Erro ao cancelar solicitação');
     }
-    setActionMenuOpen(null);
   };
 
   const handleSendReminder = async (id: string) => {
@@ -247,7 +245,6 @@ const DocumentRequests: React.FC = () => {
       console.error('Error sending reminder:', error);
       toast.error(error.response?.data?.error || 'Erro ao enviar lembrete');
     }
-    setActionMenuOpen(null);
   };
 
   const handleMarkAsReceived = async (id: string) => {
@@ -259,7 +256,6 @@ const DocumentRequests: React.FC = () => {
       console.error('Error marking as received:', error);
       toast.error(error.response?.data?.error || 'Erro ao marcar como recebido');
     }
-    setActionMenuOpen(null);
   };
 
   const resetForm = () => {
@@ -450,7 +446,7 @@ const DocumentRequests: React.FC = () => {
           ) : (
             <>
               {/* Mobile Card View */}
-              <div className="mobile-card-view space-y-3 p-4">
+              <div className="md:hidden space-y-3 p-4">
                 {filteredRequests.map((request) => (
                   <div key={request.id} className="mobile-card">
                     <div className="mobile-card-header">
@@ -513,33 +509,33 @@ const DocumentRequests: React.FC = () => {
                         )}
                       </span>
                     </div>
-                    <div className="mobile-card-actions">
+                    <div className="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-neutral-100 dark:border-slate-700">
                       {!['RECEIVED', 'CANCELLED'].includes(request.status) && (
                         <>
                           <button
                             onClick={() => handleEdit(request)}
-                            className="mobile-card-action-btn text-primary-600"
+                            className="flex items-center justify-center gap-1 px-3 py-2 text-sm font-medium text-primary-600 bg-primary-50 dark:bg-primary-900/20 rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900/30 min-h-[44px]"
                           >
                             <Edit2 size={16} />
                             Editar
                           </button>
                           <button
                             onClick={() => handleSendReminder(request.id)}
-                            className="mobile-card-action-btn text-blue-600"
+                            className="flex items-center justify-center gap-1 px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 min-h-[44px]"
                           >
                             <Send size={16} />
                             Lembrete
                           </button>
                           <button
                             onClick={() => handleMarkAsReceived(request.id)}
-                            className="mobile-card-action-btn text-green-600"
+                            className="flex items-center justify-center gap-1 px-3 py-2 text-sm font-medium text-green-600 bg-green-50 dark:bg-green-900/20 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 min-h-[44px]"
                           >
                             <CheckCircle size={16} />
                             Recebido
                           </button>
                           <button
                             onClick={() => handleCancel(request.id)}
-                            className="mobile-card-action-btn text-red-600"
+                            className="flex items-center justify-center gap-1 px-3 py-2 text-sm font-medium text-red-600 bg-red-50 dark:bg-red-900/20 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 min-h-[44px]"
                           >
                             <Trash2 size={16} />
                             Cancelar
@@ -551,14 +547,14 @@ const DocumentRequests: React.FC = () => {
                           href={request.receivedDocument.fileUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="mobile-card-action-btn text-primary-600"
+                          className="col-span-2 flex items-center justify-center gap-1 px-3 py-2 text-sm font-medium text-primary-600 bg-primary-50 dark:bg-primary-900/20 rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900/30 min-h-[44px]"
                         >
                           <FileText size={16} />
-                          Ver Doc
+                          Ver Documento
                         </a>
                       )}
                       {request.status === 'CANCELLED' && (
-                        <span className="text-sm text-gray-500 dark:text-slate-400">
+                        <span className="col-span-2 text-sm text-center text-gray-500 dark:text-slate-400 py-2">
                           Solicitação cancelada
                         </span>
                       )}
@@ -568,7 +564,7 @@ const DocumentRequests: React.FC = () => {
               </div>
 
               {/* Desktop Table View */}
-              <div className="desktop-table-view overflow-x-auto">
+              <div className="hidden md:block overflow-x-auto">
                 <table className="w-full">
                   <thead className="bg-gray-50 dark:bg-slate-700/50">
                     <tr>
@@ -675,71 +671,32 @@ const DocumentRequests: React.FC = () => {
                             )}
                           </div>
                         </td>
-                        <td className="px-4 py-3 text-right">
-                          <div className="relative">
-                            <button
-                              onClick={() =>
-                                setActionMenuOpen(actionMenuOpen === request.id ? null : request.id)
-                              }
-                              className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 rounded"
-                            >
-                              <MoreHorizontal size={20} />
-                            </button>
+                        <td className="px-4 py-3 text-center">
+                          <ActionsDropdown
+                            actions={(() => {
+                              const actions: ActionItem[] = [];
 
-                            {actionMenuOpen === request.id && (
-                              <div className="absolute right-0 mt-1 w-48 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-gray-200 dark:border-slate-700 py-1 z-10">
-                                {!['RECEIVED', 'CANCELLED'].includes(request.status) && (
-                                  <>
-                                    <button
-                                      onClick={() => handleEdit(request)}
-                                      className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 flex items-center gap-2"
-                                    >
-                                      <Edit2 size={16} />
-                                      Editar
-                                    </button>
-                                    <button
-                                      onClick={() => handleSendReminder(request.id)}
-                                      className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 flex items-center gap-2"
-                                    >
-                                      <Send size={16} />
-                                      Enviar Lembrete
-                                    </button>
-                                    <button
-                                      onClick={() => handleMarkAsReceived(request.id)}
-                                      className="w-full px-4 py-2 text-left text-sm text-green-600 hover:bg-gray-100 dark:hover:bg-slate-700 flex items-center gap-2"
-                                    >
-                                      <CheckCircle size={16} />
-                                      Marcar Recebido
-                                    </button>
-                                    <hr className="my-1 border-gray-200 dark:border-slate-700" />
-                                    <button
-                                      onClick={() => handleCancel(request.id)}
-                                      className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-slate-700 flex items-center gap-2"
-                                    >
-                                      <Trash2 size={16} />
-                                      Cancelar
-                                    </button>
-                                  </>
-                                )}
-                                {request.status === 'RECEIVED' && request.receivedDocument && (
-                                  <a
-                                    href={request.receivedDocument.fileUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 flex items-center gap-2"
-                                  >
-                                    <FileText size={16} />
-                                    Ver Documento
-                                  </a>
-                                )}
-                                {request.status === 'CANCELLED' && (
-                                  <span className="px-4 py-2 text-sm text-gray-500 dark:text-slate-400 block">
-                                    Solicitação cancelada
-                                  </span>
-                                )}
-                              </div>
-                            )}
-                          </div>
+                              if (!['RECEIVED', 'CANCELLED'].includes(request.status)) {
+                                actions.push(
+                                  { label: 'Editar', icon: <Edit2 size={16} />, onClick: () => handleEdit(request), variant: 'primary' },
+                                  { label: 'Enviar Lembrete', icon: <Send size={16} />, onClick: () => handleSendReminder(request.id), variant: 'info' },
+                                  { label: 'Marcar Recebido', icon: <CheckCircle size={16} />, onClick: () => handleMarkAsReceived(request.id), variant: 'success' },
+                                  { label: 'Cancelar', icon: <Trash2 size={16} />, onClick: () => handleCancel(request.id), variant: 'danger' }
+                                );
+                              }
+
+                              if (request.status === 'RECEIVED' && request.receivedDocument) {
+                                actions.push({
+                                  label: 'Ver Documento',
+                                  icon: <Eye size={16} />,
+                                  onClick: () => window.open(request.receivedDocument!.fileUrl, '_blank'),
+                                  variant: 'info'
+                                });
+                              }
+
+                              return actions;
+                            })()}
+                          />
                         </td>
                       </tr>
                     ))}
