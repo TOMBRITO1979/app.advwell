@@ -518,22 +518,22 @@ const Settings: React.FC = () => {
               </div>
 
               {/* Usage Instructions */}
-              <div className="mt-4 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4">
+              <div className="mt-4 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4 overflow-hidden">
                 <h4 className="font-medium text-orange-900 dark:text-orange-200 mb-2">Como usar:</h4>
-                <ul className="text-sm text-orange-800 dark:text-orange-300 space-y-1">
-                  <li><strong>Header:</strong> <code className="bg-orange-100 dark:bg-orange-800/30 text-orange-900 dark:text-orange-200 px-1 rounded">X-API-Key: sua-api-key</code></li>
-                  <li><strong>Base URL:</strong> <code className="bg-orange-100 dark:bg-orange-800/30 text-orange-900 dark:text-orange-200 px-1 rounded">https://api.advwell.pro/api/integration</code></li>
+                <ul className="text-sm text-orange-800 dark:text-orange-300 space-y-1 overflow-hidden">
+                  <li className="overflow-hidden"><strong>Header:</strong> <code className="bg-orange-100 dark:bg-orange-800/30 text-orange-900 dark:text-orange-200 px-1 rounded break-all">X-API-Key: sua-api-key</code></li>
+                  <li className="overflow-hidden"><strong>Base URL:</strong> <code className="bg-orange-100 dark:bg-orange-800/30 text-orange-900 dark:text-orange-200 px-1 rounded break-all">https://api.advwell.pro/api/integration</code></li>
                 </ul>
-                <div className="mt-3 text-sm text-orange-800 dark:text-orange-300">
+                <div className="mt-3 text-sm text-orange-800 dark:text-orange-300 overflow-hidden">
                   <strong>Endpoints disponíveis:</strong>
-                  <ul className="mt-1 ml-4 list-disc">
-                    <li><code>POST /validate-client</code> - Valida CPF + Data Nascimento</li>
-                    <li><code>GET /client/:id/cases</code> - Lista processos (inclui <strong>informarCliente</strong>)</li>
-                    <li><code>GET /client/:id/case/:caseId/movements</code> - Movimentações do processo</li>
-                    <li><code>GET /client/:id/schedule</code> - Lista audiências e prazos</li>
+                  <ul className="mt-1 ml-4 list-disc overflow-hidden">
+                    <li><code className="break-all">POST /validate-client</code> - Valida CPF + Data Nascimento</li>
+                    <li><code className="break-all">GET /client/:id/cases</code> - Lista processos (inclui <strong>informarCliente</strong>)</li>
+                    <li><code className="break-all">GET /client/:id/case/:caseId/movements</code> - Movimentações do processo</li>
+                    <li><code className="break-all">GET /client/:id/schedule</code> - Lista audiências e prazos</li>
                   </ul>
-                  <p className="mt-2 text-xs italic">
-                    O campo <code className="bg-orange-100 dark:bg-orange-800/30 text-orange-900 dark:text-orange-200 px-1 rounded">informarCliente</code> contém a "Informação para o Cliente" de cada processo.
+                  <p className="mt-2 text-xs italic overflow-hidden">
+                    O campo <code className="bg-orange-100 dark:bg-orange-800/30 text-orange-900 dark:text-orange-200 px-1 rounded break-all">informarCliente</code> contém a "Informação para o Cliente" de cada processo.
                   </p>
                 </div>
               </div>
@@ -562,12 +562,12 @@ const Settings: React.FC = () => {
             {telegramConfig.configured ? (
               <div className="space-y-4">
                 {/* Status atual */}
-                <div className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-                  <CheckCircle className="text-green-600" size={24} />
-                  <div>
+                <div className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg overflow-hidden">
+                  <CheckCircle className="text-green-600 flex-shrink-0" size={24} />
+                  <div className="min-w-0 overflow-hidden">
                     <p className="font-medium text-green-800 dark:text-green-200">Bot configurado!</p>
-                    <p className="text-sm text-green-700 dark:text-green-300">
-                      Username: <code className="bg-green-100 dark:bg-green-800/30 px-1 rounded">{telegramConfig.botUsername}</code>
+                    <p className="text-sm text-green-700 dark:text-green-300 truncate">
+                      Username: <code className="bg-green-100 dark:bg-green-800/30 px-1 rounded break-all">{telegramConfig.botUsername}</code>
                     </p>
                   </div>
                 </div>
@@ -677,7 +677,7 @@ const Settings: React.FC = () => {
             )}
 
             {/* Instruções */}
-            <div className="mt-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+            <div className="mt-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 overflow-hidden">
               <h4 className="font-medium text-blue-900 dark:text-blue-200 mb-2">Como criar um bot:</h4>
               <ol className="text-sm text-blue-800 dark:text-blue-300 space-y-1 list-decimal ml-4">
                 <li>Abra o Telegram e procure por <strong>@BotFather</strong></li>
@@ -685,13 +685,13 @@ const Settings: React.FC = () => {
                 <li>Siga as instruções para criar seu bot</li>
                 <li>Copie o <strong>token</strong> fornecido e cole acima</li>
               </ol>
-              <div className="mt-3 pt-3 border-t border-blue-200 dark:border-blue-700">
+              <div className="mt-3 pt-3 border-t border-blue-200 dark:border-blue-700 overflow-hidden">
                 <h4 className="font-medium text-blue-900 dark:text-blue-200 mb-2">Como obter o Chat ID:</h4>
-                <ol className="text-sm text-blue-800 dark:text-blue-300 space-y-1 list-decimal ml-4">
+                <ol className="text-sm text-blue-800 dark:text-blue-300 space-y-1 list-decimal ml-4 overflow-hidden">
                   <li>O usuário/cliente deve iniciar uma conversa com o bot</li>
                   <li>Enviar qualquer mensagem (ex: /start)</li>
-                  <li>Acessar: <code className="bg-blue-100 dark:bg-blue-800/30 px-1 rounded text-xs">https://api.telegram.org/bot[TOKEN]/getUpdates</code></li>
-                  <li>O Chat ID aparecerá no campo <code className="bg-blue-100 dark:bg-blue-800/30 px-1 rounded">"chat":{"{"}"id":123456789{"}"}</code></li>
+                  <li className="overflow-hidden">Acessar: <code className="bg-blue-100 dark:bg-blue-800/30 px-1 rounded text-xs break-all">https://api.telegram.org/bot[TOKEN]/getUpdates</code></li>
+                  <li>O Chat ID aparecerá no campo <code className="bg-blue-100 dark:bg-blue-800/30 px-1 rounded break-all">"chat":{"{"}"id":123456789{"}"}</code></li>
                 </ol>
               </div>
             </div>
@@ -709,7 +709,7 @@ const Settings: React.FC = () => {
                 O login será automático - não será necessário digitar senha.
               </p>
 
-              <div className="space-y-3">
+              <div className="space-y-3 overflow-hidden">
                 {[
                   { page: 'dashboard', label: 'Dashboard' },
                   { page: 'clients', label: 'Clientes' },
@@ -721,13 +721,13 @@ const Settings: React.FC = () => {
                 ].map(({ page, label }) => {
                   const embedUrl = `https://app.advwell.pro/embed/${apiKey}/${page}`;
                   return (
-                    <div key={page} className="flex items-center gap-2">
-                      <span className="w-24 text-sm font-medium text-neutral-600 dark:text-slate-400">{label}:</span>
+                    <div key={page} className="flex items-center gap-2 min-w-0">
+                      <span className="w-24 flex-shrink-0 text-sm font-medium text-neutral-600 dark:text-slate-400">{label}:</span>
                       <input
                         type="text"
                         readOnly
                         value={embedUrl}
-                        className="flex-1 px-3 py-1.5 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md bg-neutral-50 dark:bg-slate-700 text-neutral-700 dark:text-slate-300 font-mono text-xs"
+                        className="flex-1 min-w-0 px-3 py-1.5 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md bg-neutral-50 dark:bg-slate-700 text-neutral-700 dark:text-slate-300 font-mono text-xs truncate"
                       />
                       <button
                         type="button"
@@ -735,7 +735,7 @@ const Settings: React.FC = () => {
                           navigator.clipboard.writeText(embedUrl);
                           toast.success(`URL de ${label} copiada!`);
                         }}
-                        className="p-2 text-purple-600 hover:bg-purple-50 rounded transition-colors"
+                        className="flex-shrink-0 p-2 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded transition-colors"
                         title="Copiar URL"
                       >
                         <Copy size={16} />
