@@ -299,35 +299,34 @@ export default function Tags() {
 
           {/* Pagination */}
           {totalPages > 0 && (
-            <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-4 bg-white dark:bg-slate-800 rounded-lg shadow-md p-4">
-              <div className="flex items-center gap-2 text-sm text-neutral-600 dark:text-slate-400">
-                <span>Mostrando {((page - 1) * limit) + 1} a {Math.min(page * limit, total)} de {total} tags</span>
+            <div className="pagination-container mt-4 bg-white dark:bg-slate-800 rounded-lg shadow-md p-4 !mt-4">
+              <div className="pagination-info">
+                Mostrando {((page - 1) * limit) + 1} a {Math.min(page * limit, total)} de {total} tags
+              </div>
+
+              <div className="pagination-controls">
                 <select
                   value={limit}
                   onChange={(e) => {
                     setLimit(Number(e.target.value));
                     setPage(1);
                   }}
-                  className="ml-2 px-2 py-1 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="pagination-select"
                 >
-                  <option value={25}>25</option>
-                  <option value={50}>50</option>
-                  <option value={100}>100</option>
-                  <option value={200}>200</option>
+                  <option value={25}>25 por página</option>
+                  <option value={50}>50 por página</option>
+                  <option value={100}>100 por página</option>
+                  <option value={200}>200 por página</option>
                 </select>
-                <span>por página</span>
-              </div>
-
-              <div className="flex items-center gap-2">
                 <button
                   onClick={() => setPage(p => Math.max(1, p - 1))}
                   disabled={page === 1}
-                  className="p-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="pagination-btn"
                 >
                   <ChevronLeft size={20} />
                 </button>
 
-                <div className="flex items-center gap-1">
+                <div className="pagination-numbers">
                   {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                     let pageNum: number;
                     if (totalPages <= 5) {
@@ -343,10 +342,8 @@ export default function Tags() {
                       <button
                         key={pageNum}
                         onClick={() => setPage(pageNum)}
-                        className={`px-3 py-1 rounded-md text-sm ${
-                          page === pageNum
-                            ? 'bg-primary-600 text-white'
-                            : 'border border-neutral-300 dark:border-slate-600 hover:bg-neutral-50 dark:hover:bg-slate-700'
+                        className={`pagination-number ${
+                          page === pageNum ? 'pagination-number-active' : ''
                         }`}
                       >
                         {pageNum}
@@ -358,7 +355,7 @@ export default function Tags() {
                 <button
                   onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                   disabled={page === totalPages}
-                  className="p-2 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-md hover:bg-neutral-50 dark:hover:bg-slate-700 dark:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="pagination-btn"
                 >
                   <ChevronRight size={20} />
                 </button>

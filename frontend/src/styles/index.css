@@ -111,35 +111,44 @@ body.dark {
 
   /* Mobile Cards */
   .mobile-card {
-    @apply bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-neutral-200 dark:border-slate-700 p-4 mb-3;
+    @apply bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-neutral-200 dark:border-slate-700 p-4 mb-3 overflow-hidden;
   }
 
   .mobile-card-header {
-    @apply flex justify-between items-start mb-3;
+    @apply flex justify-between items-start mb-3 gap-2 overflow-hidden;
   }
 
   .mobile-card-title {
-    @apply font-semibold text-neutral-900 dark:text-slate-100 text-base;
+    @apply font-semibold text-neutral-900 dark:text-slate-100 text-base truncate;
   }
 
   .mobile-card-subtitle {
-    @apply text-sm text-neutral-500 dark:text-slate-400 mt-1;
+    @apply text-sm text-neutral-500 dark:text-slate-400 mt-1 truncate;
   }
 
   .mobile-card-row {
-    @apply flex justify-between items-center py-2 border-b border-neutral-100 dark:border-slate-700 last:border-0;
+    @apply flex justify-between items-center py-2 border-b border-neutral-100 dark:border-slate-700 last:border-0 gap-2 overflow-hidden;
   }
 
   .mobile-card-label {
-    @apply text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase;
+    @apply text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase flex-shrink-0;
   }
 
   .mobile-card-value {
-    @apply text-sm text-neutral-900 dark:text-slate-200 text-right;
+    @apply text-sm text-neutral-900 dark:text-slate-200 text-right truncate min-w-0;
   }
 
   .mobile-card-actions {
     @apply flex gap-2 mt-3 pt-3 border-t border-neutral-100 dark:border-slate-700;
+  }
+
+  /* Garante que botoes do card nao ultrapassem as margens */
+  .mobile-card-actions > button {
+    @apply min-w-0 px-2;
+  }
+
+  .mobile-card-actions > button > span {
+    @apply truncate;
   }
 
   /* Page Header Mobile */
@@ -207,8 +216,19 @@ body.dark {
     @apply p-4 sm:p-6;
   }
 
+  /* Garante que textos longos em modais quebrem corretamente */
+  .modal-body p {
+    @apply break-words;
+  }
+
   .modal-footer {
     @apply sticky bottom-0 bg-white dark:bg-slate-800 border-t border-neutral-200 dark:border-slate-700 px-4 sm:px-6 py-4 flex flex-col-reverse sm:flex-row justify-end gap-3;
+  }
+
+  /* Garante que botoes do footer nao ultrapassem as margens */
+  .modal-footer > button,
+  .modal-footer > a {
+    @apply min-w-0 truncate;
   }
 
   /* Form Grid Mobile */
@@ -242,6 +262,51 @@ body.dark {
     .modal-overlay {
       @apply items-center p-4;
     }
+  }
+
+  /* Pagination Mobile */
+  .pagination-container {
+    @apply flex flex-col items-center gap-4 mt-6 px-4;
+  }
+
+  @screen sm {
+    .pagination-container {
+      @apply flex-row justify-between;
+    }
+  }
+
+  .pagination-info {
+    @apply text-sm text-neutral-600 dark:text-slate-400 text-center;
+  }
+
+  .pagination-controls {
+    @apply flex flex-wrap items-center justify-center gap-2 w-full;
+  }
+
+  @screen sm {
+    .pagination-controls {
+      @apply w-auto justify-end;
+    }
+  }
+
+  .pagination-select {
+    @apply px-2 py-1 text-sm bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500;
+  }
+
+  .pagination-btn {
+    @apply inline-flex items-center gap-1 px-3 py-2 text-sm text-neutral-600 dark:text-slate-400 hover:bg-neutral-100 dark:hover:bg-slate-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap;
+  }
+
+  .pagination-numbers {
+    @apply flex items-center gap-1;
+  }
+
+  .pagination-number {
+    @apply px-3 py-1 text-sm rounded-lg text-neutral-600 dark:text-slate-400 hover:bg-neutral-100 dark:hover:bg-slate-700;
+  }
+
+  .pagination-number-active {
+    @apply bg-primary-600 text-white hover:bg-primary-700;
   }
 }
 

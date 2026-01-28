@@ -1014,18 +1014,18 @@ const Clients: React.FC = () => {
 
               {/* Pagination */}
               {total > 0 && (
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 px-4">
-                  <div className="text-sm text-neutral-600 dark:text-slate-400">
+                <div className="pagination-container">
+                  <div className="pagination-info">
                     Mostrando {(page - 1) * limit + 1} - {Math.min(page * limit, total)} de {total} clientes
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="pagination-controls">
                     <select
                       value={limit}
                       onChange={(e) => {
                         setLimit(Number(e.target.value));
                         setPage(1);
                       }}
-                      className="px-2 py-1 text-sm bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      className="pagination-select"
                     >
                       <option value={25}>25 por página</option>
                       <option value={50}>50 por página</option>
@@ -1035,13 +1035,13 @@ const Clients: React.FC = () => {
                     <button
                       onClick={() => setPage((p) => Math.max(1, p - 1))}
                       disabled={page === 1}
-                      className="inline-flex items-center gap-1 px-3 py-2 text-sm text-neutral-600 dark:text-slate-400 hover:bg-neutral-100 dark:hover:bg-slate-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="pagination-btn"
                     >
                       <ChevronLeft className="w-4 h-4" />
-                      Anterior
+                      <span className="hidden sm:inline">Anterior</span>
                     </button>
 
-                    <div className="flex items-center gap-1">
+                    <div className="pagination-numbers">
                       {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                         let pageNum: number;
                         if (totalPages <= 5) {
@@ -1058,10 +1058,8 @@ const Clients: React.FC = () => {
                           <button
                             key={pageNum}
                             onClick={() => setPage(pageNum)}
-                            className={`px-3 py-1 text-sm rounded-lg ${
-                              page === pageNum
-                                ? 'bg-primary-600 text-white'
-                                : 'text-neutral-600 dark:text-slate-400 hover:bg-neutral-100'
+                            className={`pagination-number ${
+                              page === pageNum ? 'pagination-number-active' : ''
                             }`}
                           >
                             {pageNum}
@@ -1073,9 +1071,9 @@ const Clients: React.FC = () => {
                     <button
                       onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                       disabled={page === totalPages}
-                      className="inline-flex items-center gap-1 px-3 py-2 text-sm text-neutral-600 dark:text-slate-400 hover:bg-neutral-100 dark:hover:bg-slate-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="pagination-btn"
                     >
-                      Próximo
+                      <span className="hidden sm:inline">Próximo</span>
                       <ChevronRight className="w-4 h-4" />
                     </button>
                   </div>

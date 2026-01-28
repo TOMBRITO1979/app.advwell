@@ -680,41 +680,38 @@ const LegalDocuments: React.FC = () => {
 
         {/* Pagination */}
         {total > 0 && (
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 px-4 py-3">
-            <span className="text-sm text-neutral-600 dark:text-slate-400">
+          <div className="pagination-container bg-white dark:bg-slate-800 rounded-lg shadow dark:shadow-slate-700/20 py-3">
+            <span className="pagination-info">
               Mostrando {((page - 1) * limit) + 1} a {Math.min(page * limit, total)} de {total} documentos
             </span>
-            <div className="flex items-center gap-2">
+            <div className="pagination-controls">
               <select
                 value={limit}
                 onChange={(e) => {
                   setLimit(Number(e.target.value));
                   setPage(1);
                 }}
-                className="px-2 py-1 bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 text-neutral-900 dark:text-slate-100 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="pagination-select"
               >
-                <option value={25}>25</option>
-                <option value={50}>50</option>
-                <option value={100}>100</option>
-                <option value={200}>200</option>
+                <option value={25}>25 por página</option>
+                <option value={50}>50 por página</option>
+                <option value={100}>100 por página</option>
+                <option value={200}>200 por página</option>
               </select>
-              <span className="text-sm text-neutral-600 dark:text-slate-400">por página</span>
-            </div>
-            <div className="flex items-center gap-2">
               <button
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="inline-flex items-center justify-center p-2 min-h-[40px] min-w-[40px] bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 text-neutral-700 dark:text-slate-300 rounded-md hover:bg-neutral-50 dark:hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="pagination-btn"
               >
                 <ChevronLeft size={18} />
               </button>
-              <span className="text-sm text-neutral-700 dark:text-slate-300 px-3">
-                Página {page} de {Math.ceil(total / limit)}
+              <span className="text-sm text-neutral-600 dark:text-slate-400 whitespace-nowrap">
+                {page} / {Math.ceil(total / limit)}
               </span>
               <button
                 onClick={() => setPage(p => Math.min(Math.ceil(total / limit), p + 1))}
                 disabled={page >= Math.ceil(total / limit)}
-                className="inline-flex items-center justify-center p-2 min-h-[40px] min-w-[40px] bg-white dark:bg-slate-700 border border-neutral-300 dark:border-slate-600 text-neutral-700 dark:text-slate-300 rounded-md hover:bg-neutral-50 dark:hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="pagination-btn"
               >
                 <ChevronRight size={18} />
               </button>
