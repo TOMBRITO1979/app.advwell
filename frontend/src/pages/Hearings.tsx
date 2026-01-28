@@ -542,7 +542,7 @@ const Hearings: React.FC = () => {
           </div>
 
           {/* Botões de Exportação e Toggle */}
-          <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
+          <div className="w-full sm:w-auto grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
             {/* Botões de Exportação */}
             <ExportButton
               type="csv"
@@ -558,13 +558,12 @@ const Hearings: React.FC = () => {
             />
 
             {/* Toggle de Visualização */}
-            <div className="col-span-2 sm:col-span-1 flex bg-neutral-100 dark:bg-slate-700 rounded-lg p-1">
             <button
               onClick={() => setViewMode('list')}
-              className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+              className={`w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all min-h-[44px] ${
                 viewMode === 'list'
-                  ? 'bg-white dark:bg-slate-700 text-primary-700 dark:text-primary-400 shadow-sm'
-                  : 'text-neutral-600 dark:text-slate-400 hover:text-neutral-900 dark:text-slate-100'
+                  ? 'bg-primary-600 text-white shadow-sm'
+                  : 'bg-neutral-100 dark:bg-slate-700 text-neutral-600 dark:text-slate-400 hover:bg-neutral-200 dark:hover:bg-slate-600'
               }`}
             >
               <List size={18} />
@@ -572,16 +571,15 @@ const Hearings: React.FC = () => {
             </button>
             <button
               onClick={() => setViewMode('week')}
-              className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+              className={`w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all min-h-[44px] ${
                 viewMode === 'week'
-                  ? 'bg-white dark:bg-slate-700 text-primary-700 dark:text-primary-400 shadow-sm'
-                  : 'text-neutral-600 dark:text-slate-400 hover:text-neutral-900 dark:text-slate-100'
+                  ? 'bg-primary-600 text-white shadow-sm'
+                  : 'bg-neutral-100 dark:bg-slate-700 text-neutral-600 dark:text-slate-400 hover:bg-neutral-200 dark:hover:bg-slate-600'
               }`}
             >
               <CalendarDays size={18} />
               Semana
             </button>
-          </div>
           </div>
         </div>
 

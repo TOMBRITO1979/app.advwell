@@ -461,33 +461,33 @@ export default function Announcements() {
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex gap-2 border-b border-gray-200 dark:border-slate-700">
+        <div className="flex border-b border-gray-200 dark:border-slate-700">
           <button
             onClick={() => setActiveTab('avisos')}
-            className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+            className={`flex-1 sm:flex-none px-3 sm:px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
               activeTab === 'avisos'
                 ? 'border-green-600 text-green-600'
-                : 'border-transparent text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:text-slate-300'
+                : 'border-transparent text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-300'
             }`}
           >
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-center sm:justify-start gap-1 sm:gap-2">
               <Megaphone size={18} />
-              Avisos
+              <span className="hidden sm:inline">Avisos</span>
             </div>
           </button>
           <button
             onClick={() => setActiveTab('mensagens')}
-            className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+            className={`flex-1 sm:flex-none px-3 sm:px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
               activeTab === 'mensagens'
                 ? 'border-green-600 text-green-600'
-                : 'border-transparent text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:text-slate-300'
+                : 'border-transparent text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-300'
             }`}
           >
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-center sm:justify-start gap-1 sm:gap-2">
               <MessageCircle size={18} />
-              Mensagens
+              <span className="hidden sm:inline">Mensagens</span>
               {unreadCount > 0 && (
-                <span className="px-2 py-0.5 bg-red-500 text-white text-xs rounded-full">
+                <span className="px-1.5 sm:px-2 py-0.5 bg-red-500 text-white text-xs rounded-full">
                   {unreadCount}
                 </span>
               )}
@@ -495,17 +495,17 @@ export default function Announcements() {
           </button>
           <button
             onClick={() => setActiveTab('documentos')}
-            className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+            className={`flex-1 sm:flex-none px-3 sm:px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
               activeTab === 'documentos'
                 ? 'border-green-600 text-green-600'
-                : 'border-transparent text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:text-slate-300'
+                : 'border-transparent text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-300'
             }`}
           >
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-center sm:justify-start gap-1 sm:gap-2">
               <FileText size={18} />
-              Documentos
+              <span className="hidden sm:inline">Documentos</span>
               {unreadDocsCount > 0 && (
-                <span className="px-2 py-0.5 bg-red-500 text-white text-xs rounded-full">
+                <span className="px-1.5 sm:px-2 py-0.5 bg-red-500 text-white text-xs rounded-full">
                   {unreadDocsCount}
                 </span>
               )}

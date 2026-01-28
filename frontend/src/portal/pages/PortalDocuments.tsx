@@ -150,23 +150,24 @@ export default function PortalDocuments() {
         </div>
 
         {/* Filters */}
-        <div className="flex gap-2 overflow-x-auto pb-2">
+        <div className="grid grid-cols-2 gap-2 sm:flex">
           {[
-            { value: 'ALL', label: 'Todos' },
-            { value: 'PENDING_SIGNATURE', label: 'Aguardando Assinatura' },
-            { value: 'SIGNED', label: 'Assinados' },
-            { value: 'UPLOADED', label: 'Enviados por mim' },
+            { value: 'ALL', label: 'Todos', mobileLabel: 'Todos' },
+            { value: 'PENDING_SIGNATURE', label: 'Aguardando Assinatura', mobileLabel: 'Aguardando' },
+            { value: 'SIGNED', label: 'Assinados', mobileLabel: 'Assinados' },
+            { value: 'UPLOADED', label: 'Enviados por mim', mobileLabel: 'Enviados' },
           ].map((item) => (
             <button
               key={item.value}
               onClick={() => setFilter(item.value)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors min-h-[44px] ${
                 filter === item.value
                   ? 'bg-green-600 text-white'
                   : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-600'
               }`}
             >
-              {item.label}
+              <span className="hidden sm:inline">{item.label}</span>
+              <span className="sm:hidden">{item.mobileLabel}</span>
               {item.value === 'PENDING_SIGNATURE' && pendingSignatures > 0 && (
                 <span className="ml-2 bg-yellow-500 text-white px-2 py-0.5 rounded-full text-xs">
                   {pendingSignatures}
