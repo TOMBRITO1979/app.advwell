@@ -443,7 +443,7 @@ const Hearings: React.FC = () => {
         params.endDate = weekDays[6].toISOString().split('T')[0];
       }
 
-      // Adicionar filtro de advogado se selecionado
+      // Adicionar filtro de responsável se selecionado
       if (selectedUserId) {
         params.userId = selectedUserId;
       }
@@ -492,7 +492,7 @@ const Hearings: React.FC = () => {
         params.endDate = weekDays[6].toISOString().split('T')[0];
       }
 
-      // Adicionar filtro de advogado se selecionado
+      // Adicionar filtro de responsável se selecionado
       const selectedUser = companyUsers.find(u => u.id === selectedUserId);
       if (selectedUserId) {
         params.userId = selectedUserId;
@@ -596,7 +596,7 @@ const Hearings: React.FC = () => {
               </button>
             </div>
 
-            {/* Navegação de Data e Filtro por Advogado - Segunda linha */}
+            {/* Navegação de Data e Filtro por Responsável - Segunda linha */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Navegação de Data */}
               <div className="flex items-center justify-center gap-2">
@@ -625,7 +625,7 @@ const Hearings: React.FC = () => {
                 </button>
               </div>
 
-              {/* Filtro por Advogado */}
+              {/* Filtro por Responsável */}
               <div className="flex items-center justify-center gap-2">
                 <User size={20} className="text-neutral-500 dark:text-slate-400 flex-shrink-0" />
                 <select
@@ -633,7 +633,7 @@ const Hearings: React.FC = () => {
                   onChange={(e) => setSelectedUserId(e.target.value)}
                   className="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[44px]"
                 >
-                  <option value="">Todos os advogados</option>
+                  <option value="">Todos os responsáveis</option>
                   {companyUsers.map((user) => (
                     <option key={user.id} value={user.id}>
                       {user.name}
@@ -700,7 +700,7 @@ const Hearings: React.FC = () => {
                       },
                       fields: [
                         { label: 'Processo', value: hearing.case?.processNumber || '-' },
-                        { label: 'Advogado', value: hearing.assignedUsers && hearing.assignedUsers.length > 0
+                        { label: 'Responsável', value: hearing.assignedUsers && hearing.assignedUsers.length > 0
                           ? hearing.assignedUsers[0].user.name
                           : hearing.user?.name || '-' },
                       ],
@@ -728,7 +728,7 @@ const Hearings: React.FC = () => {
                         Processo
                       </th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider hidden md:table-cell">
-                        Advogado
+                        Responsável
                       </th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 dark:text-slate-100 uppercase tracking-wider">
                         Prioridade
@@ -986,7 +986,7 @@ const Hearings: React.FC = () => {
                               </div>
                             )}
 
-                            {/* Advogado atribuído */}
+                            {/* Responsável atribuído */}
                             {hearing.assignedUsers && hearing.assignedUsers.length > 0 && (
                               <div className="text-neutral-500 dark:text-slate-400 truncate mt-1 flex items-center gap-1">
                                 <User size={10} />
