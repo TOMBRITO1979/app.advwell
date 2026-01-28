@@ -15,13 +15,13 @@ const commonConfig: Partial<RedisOptions> = {
   enableReadyCheck: false,
   // SEGURANCA: Timeout para conexao
   connectTimeout: 10000,
-  // Reconexao automatica
+  // Reconexao automatica - NUNCA desiste
   retryStrategy: (times: number) => {
+    const delay = Math.min(times * 100, 5000); // Max 5 segundos entre tentativas
     if (times > 10) {
-      appLogger.error('Redis: Max retry attempts reached');
-      return null; // Stop retrying
+      appLogger.warn(`Redis: Tentativa de reconexão #${times}, próxima em ${delay}ms`);
     }
-    return Math.min(times * 100, 3000);
+    return delay; // Sempre retorna delay, nunca null (nunca desiste)
   },
 };
 
@@ -73,6 +73,27 @@ if (isSentinelMode) {
 
 // Create Redis client for general caching
 export const redis = new Redis(redisConfig);
+
+// Eventos de conexão para diagnóstico
+redis.on('connect', () => {
+  appLogger.info('Redis: Conectado');
+});
+
+redis.on('ready', () => {
+  appLogger.info('Redis: Pronto para receber comandos');
+});
+
+redis.on('error', (err) => {
+  appLogger.error('Redis: Erro de conexão', err);
+});
+
+redis.on('close', () => {
+  appLogger.warn('Redis: Conexão fechada, tentando reconectar...');
+});
+
+redis.on('reconnecting', () => {
+  appLogger.info('Redis: Reconectando...');
+});
 
 // Create subscriber client for Bull
 export const createRedisClient = () => new Redis(redisConfig);
