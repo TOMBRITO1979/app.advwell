@@ -33,6 +33,41 @@ O `deploy.sh` automaticamente:
 
 ---
 
+## REGRA CRITICA: docker-compose.yml
+
+### NUNCA modifique docker-compose.yml sem autorizacao explicita!
+
+**Arquivo de Referencia**: `/root/advwell/docker-compose.TEMPLATE.md`
+
+### Antes de QUALQUER modificacao no docker-compose.yml:
+
+1. **LEIA o template**: `docker-compose.TEMPLATE.md` contem a estrutura correta
+2. **PERGUNTE ao usuario**: Explique:
+   - O que sera modificado
+   - Por que a modificacao e necessaria
+   - Quais os riscos (ex: variavel pode nao ser passada, servico pode falhar)
+3. **AGUARDE autorizacao**: So prossiga apos confirmacao explicita do usuario
+4. **VERIFIQUE o template**: Garanta que a modificacao segue o padrao documentado
+
+### Riscos de modificacoes incorretas:
+- Variaveis de ambiente nao passadas aos containers
+- Servicos falhando silenciosamente
+- Funcionalidades criticas (Telegram, Stripe, SMTP) nao funcionando
+- Problemas dificeis de diagnosticar em producao
+
+### Exemplo de pergunta correta:
+```
+Preciso adicionar a variavel X ao docker-compose.yml.
+- Modificacao: Adicionar `- NOVA_VAR=${NOVA_VAR}` nos servicos backend e backend-worker
+- Motivo: [explicar]
+- Risco: Se esquecermos de adicionar em um dos servicos, [consequencia]
+Posso prosseguir?
+```
+
+**Esta regra so pode ser removida por solicitacao expressa do usuario.**
+
+---
+
 ## Project Overview
 
 AdvWell is a multitenant SaaS for Brazilian law firms with DataJud CNJ integration.
