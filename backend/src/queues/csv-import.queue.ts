@@ -682,6 +682,22 @@ if (ENABLE_QUEUE_PROCESSORS) {
 
         const amount = parseFloat(record.Valor.replace(',', '.'));
 
+        // Mapear campos de parcelamento
+        const parceladoRaw = record['Parcelado']?.trim()?.toUpperCase() || '';
+        const isInstallment = parceladoRaw === 'SIM' || parceladoRaw === 'YES' || parceladoRaw === 'TRUE' || parceladoRaw === '1';
+
+        let installmentCount: number | null = null;
+        const installmentCountRaw = record['Número de Parcelas']?.trim() || record['Numero de Parcelas']?.trim() || record['Parcelas']?.trim();
+        if (installmentCountRaw && !isNaN(parseInt(installmentCountRaw))) {
+          installmentCount = parseInt(installmentCountRaw);
+        }
+
+        let installmentInterval: number | null = null;
+        const installmentIntervalRaw = record['Intervalo (dias)']?.trim() || record['Intervalo']?.trim() || record['Intervalo Dias']?.trim();
+        if (installmentIntervalRaw && !isNaN(parseInt(installmentIntervalRaw))) {
+          installmentInterval = parseInt(installmentIntervalRaw);
+        }
+
         let date: Date;
         const dateStr = record.Data.trim();
         if (dateStr.includes('/')) {
@@ -719,6 +735,9 @@ if (ENABLE_QUEUE_PROCESSORS) {
               status: status as any,
               caseId: caseId || existingTransaction.caseId,
               costCenterId: costCenterId || existingTransaction.costCenterId,
+              isInstallment: isInstallment || existingTransaction.isInstallment,
+              installmentCount: installmentCount || existingTransaction.installmentCount,
+              installmentInterval: installmentInterval || existingTransaction.installmentInterval,
             },
           });
         } else {
@@ -734,6 +753,9 @@ if (ENABLE_QUEUE_PROCESSORS) {
               description: descriptionNormalized,
               amount,
               date,
+              isInstallment,
+              installmentCount,
+              installmentInterval,
             },
           });
         }

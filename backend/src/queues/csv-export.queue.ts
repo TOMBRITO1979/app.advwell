@@ -135,26 +135,72 @@ async function generateClientsCSV(companyId: string, filters: Record<string, any
     orderBy: { createdAt: 'desc' },
   });
 
-  const csvHeader = 'Tipo,Nome,CPF/CNPJ,RG,Email,Telefone,Endereço,Bairro,Cidade,Estado,CEP,Profissão,Estado Civil,Data Nascimento,Representante,CPF Representante,Observações,Data Cadastro\n';
+  // Header com todos os campos (31 colunas) - ordem consistente com import
+  const csvHeader = [
+    'Tipo',
+    'Condição',
+    'Nome',
+    'CPF/CNPJ',
+    'Inscrição Estadual',
+    'RG',
+    'PIS',
+    'CTPS',
+    'CTPS Série',
+    'Nome da Mãe',
+    'Data de Nascimento',
+    'Profissão',
+    'Nacionalidade',
+    'Estado Civil',
+    'Email',
+    'Telefone',
+    'Telefone 2',
+    'Instagram',
+    'Facebook',
+    'Endereço',
+    'Bairro',
+    'Cidade',
+    'Estado',
+    'CEP',
+    'Representante Legal',
+    'CPF Representante',
+    'Campo Personalizado 1',
+    'Campo Personalizado 2',
+    'Tags',
+    'Observações',
+    'Data Cadastro',
+  ].join(',') + '\n';
 
   const csvRows = clients.map(client => {
     return [
       `"${client.personType || 'FISICA'}"`,
+      `"${client.clientCondition || ''}"`,
       `"${(client.name || '').replace(/"/g, '""')}"`,
       `"${client.cpf || ''}"`,
+      `"${client.stateRegistration || ''}"`,
       `"${client.rg || ''}"`,
+      `"${client.pis || ''}"`,
+      `"${client.ctps || ''}"`,
+      `"${client.ctpsSerie || ''}"`,
+      `"${(client.motherName || '').replace(/"/g, '""')}"`,
+      client.birthDate ? `"${new Date(client.birthDate).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}"` : '""',
+      `"${(client.profession || '').replace(/"/g, '""')}"`,
+      `"${(client.nationality || '').replace(/"/g, '""')}"`,
+      `"${client.maritalStatus || ''}"`,
       `"${client.email || ''}"`,
       `"${client.phone || ''}"`,
+      `"${client.phone2 || ''}"`,
+      `"${client.instagram || ''}"`,
+      `"${client.facebook || ''}"`,
       `"${(client.address || '').replace(/"/g, '""')}"`,
-      `"${client.neighborhood || ''}"`,
+      `"${(client.neighborhood || '').replace(/"/g, '""')}"`,
       `"${client.city || ''}"`,
       `"${client.state || ''}"`,
       `"${client.zipCode || ''}"`,
-      `"${client.profession || ''}"`,
-      `"${client.maritalStatus || ''}"`,
-      client.birthDate ? `"${new Date(client.birthDate).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}"` : '""',
       `"${(client.representativeName || '').replace(/"/g, '""')}"`,
       `"${client.representativeCpf || ''}"`,
+      `"${(client.customField1 || '').replace(/"/g, '""')}"`,
+      `"${(client.customField2 || '').replace(/"/g, '""')}"`,
+      `"${(client.tag || '').replace(/"/g, '""')}"`,
       `"${(client.notes || '').replace(/"/g, '""')}"`,
       `"${new Date(client.createdAt).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}"`,
     ].join(',');
@@ -178,24 +224,69 @@ async function generateCasesCSV(companyId: string, filters: Record<string, any>)
     where,
     include: {
       client: { select: { name: true, cpf: true } },
+      lawyer: { select: { name: true, oab: true } },
+      parts: {
+        include: {
+          client: { select: { name: true } },
+          adverse: { select: { name: true } },
+        },
+      },
     },
     orderBy: { createdAt: 'desc' },
   });
 
-  const csvHeader = 'Número Processo,Cliente,CPF Cliente,Tribunal,Assunto,Valor,Status,Última Sincronização,Data Cadastro,Observações\n';
+  // Header com todos os campos (21 colunas) - ordem consistente com import
+  const csvHeader = [
+    'Número do Processo',
+    'Cliente',
+    'CPF Cliente',
+    'Demandado',
+    'Tribunal',
+    'Assunto',
+    'Valor',
+    'Status',
+    'Advogado Responsável',
+    'OAB Advogado',
+    'Prazo',
+    'Data de Distribuição',
+    'Fase',
+    'Natureza',
+    'Rito',
+    'Comarca',
+    'Vara',
+    'Link do Processo',
+    'Última Sincronização',
+    'Observações',
+    'Data Cadastro',
+  ].join(',') + '\n';
 
   const csvRows = cases.map(c => {
+    // Buscar demandado nas partes do processo
+    const demandadoPart = c.parts?.find(p => p.type === 'DEMANDADO');
+    const demandadoName = demandadoPart?.adverse?.name || demandadoPart?.client?.name || '';
+
     return [
       `"${c.processNumber || ''}"`,
       `"${(c.client?.name || '').replace(/"/g, '""')}"`,
       `"${c.client?.cpf || ''}"`,
+      `"${(demandadoName || '').replace(/"/g, '""')}"`,
       `"${(c.court || '').replace(/"/g, '""')}"`,
       `"${(c.subject || '').replace(/"/g, '""')}"`,
       c.value ? `"R$ ${Number(c.value).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}"` : '""',
       `"${c.status || ''}"`,
+      `"${(c.lawyer?.name || '').replace(/"/g, '""')}"`,
+      `"${c.lawyer?.oab || ''}"`,
+      c.deadline ? `"${new Date(c.deadline).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}"` : '""',
+      c.distributionDate ? `"${new Date(c.distributionDate).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}"` : '""',
+      `"${(c.phase || '').replace(/"/g, '""')}"`,
+      `"${(c.nature || '').replace(/"/g, '""')}"`,
+      `"${(c.rite || '').replace(/"/g, '""')}"`,
+      `"${(c.comarca || '').replace(/"/g, '""')}"`,
+      `"${(c.vara || '').replace(/"/g, '""')}"`,
+      `"${(c.linkProcesso || '').replace(/"/g, '""')}"`,
       c.lastSyncedAt ? `"${new Date(c.lastSyncedAt).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}"` : '""',
-      `"${new Date(c.createdAt).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}"`,
       `"${(c.notes || '').replace(/"/g, '""')}"`,
+      `"${new Date(c.createdAt).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}"`,
     ].join(',');
   }).join('\n');
 
@@ -223,11 +314,26 @@ async function generateFinancialCSV(companyId: string, filters: Record<string, a
     include: {
       client: { select: { name: true, cpf: true } },
       case: { select: { processNumber: true } },
+      costCenter: { select: { name: true } },
     },
     orderBy: { date: 'desc' },
   });
 
-  const csvHeader = 'Data,Tipo,Cliente,CPF,Processo,Descrição,Valor,Status\n';
+  // Header com todos os campos (12 colunas) - ordem consistente com import
+  const csvHeader = [
+    'Data',
+    'Tipo',
+    'Cliente',
+    'CPF',
+    'Processo',
+    'Centro de Custo',
+    'Descrição',
+    'Valor',
+    'Status',
+    'Parcelado',
+    'Número de Parcelas',
+    'Intervalo (dias)',
+  ].join(',') + '\n';
 
   const csvRows = transactions.map(t => {
     return [
@@ -236,9 +342,13 @@ async function generateFinancialCSV(companyId: string, filters: Record<string, a
       `"${(t.client?.name || '').replace(/"/g, '""')}"`,
       `"${t.client?.cpf || ''}"`,
       `"${t.case?.processNumber || ''}"`,
+      `"${(t.costCenter?.name || '').replace(/"/g, '""')}"`,
       `"${(t.description || '').replace(/"/g, '""')}"`,
       `"R$ ${Number(t.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}"`,
       `"${t.status || ''}"`,
+      `"${t.isInstallment ? 'Sim' : 'Não'}"`,
+      `"${t.installmentCount || ''}"`,
+      `"${t.installmentInterval || ''}"`,
     ].join(',');
   }).join('\n');
 
@@ -262,19 +372,50 @@ async function generateScheduleCSV(companyId: string, filters: Record<string, an
     orderBy: { date: 'desc' },
   });
 
-  const csvHeader = 'Título,Descrição,Tipo,Prioridade,Data/Hora,Cliente,Processo,Responsáveis,Concluído\n';
+  // Header com todos os campos (12 colunas) - ordem consistente com import
+  const csvHeader = [
+    'Data',
+    'Horário',
+    'Título',
+    'Tipo',
+    'Prioridade',
+    'Cliente',
+    'Processo',
+    'Responsáveis',
+    'Status',
+    'Status Kanban',
+    'Hora Fim',
+    'Descrição',
+  ].join(',') + '\n';
 
   const csvRows = events.map(e => {
+    const eventDate = new Date(e.date);
+    const dateStr = eventDate.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+    const timeStr = eventDate.toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' });
+
+    let endTimeStr = '';
+    if (e.endDate) {
+      const endEventDate = new Date(e.endDate);
+      endTimeStr = endEventDate.toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' });
+    }
+
+    // Mapear status de conclusão
+    let statusStr = e.completed ? 'Concluído' : 'Pendente';
+    if (e.kanbanStatus === 'IN_PROGRESS') statusStr = 'Em Andamento';
+
     return [
+      `"${dateStr}"`,
+      `"${timeStr}"`,
       `"${(e.title || '').replace(/"/g, '""')}"`,
-      `"${(e.description || '').replace(/"/g, '""')}"`,
       `"${e.type || ''}"`,
       `"${e.priority || ''}"`,
-      `"${new Date(e.date).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}"`,
       `"${(e.client?.name || '').replace(/"/g, '""')}"`,
       `"${e.case?.processNumber || ''}"`,
       `"${e.assignedUsers.map(a => a.user.name).join(', ')}"`,
-      `"${e.completed ? 'Sim' : 'Não'}"`,
+      `"${statusStr}"`,
+      `"${e.kanbanStatus || ''}"`,
+      `"${endTimeStr}"`,
+      `"${(e.description || '').replace(/"/g, '""')}"`,
     ].join(',');
   }).join('\n');
 

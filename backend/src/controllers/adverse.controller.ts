@@ -285,9 +285,9 @@ export class AdverseController {
         orderBy: { name: 'asc' },
       });
 
-      // Cabeçalho CSV
+      // Cabeçalho CSV - todos os campos do modelo (28 colunas)
       const headers = [
-        'Tipo Pessoa', 'Nome', 'CPF/CNPJ', 'RG', 'PIS', 'CTPS', 'CTPS Série',
+        'Tipo Pessoa', 'Nome', 'CPF/CNPJ', 'Inscrição Estadual', 'RG', 'PIS', 'CTPS', 'CTPS Série',
         'Nome da Mãe', 'Email', 'Telefone', 'Telefone 2', 'Instagram', 'Facebook',
         'Campo Personalizado 1', 'Campo Personalizado 2', 'Endereço', 'Bairro',
         'Cidade', 'Estado', 'CEP', 'Profissão', 'Nacionalidade', 'Estado Civil',
@@ -299,6 +299,7 @@ export class AdverseController {
         adverse.personType || 'FISICA',
         adverse.name || '',
         adverse.cpf || '',
+        adverse.stateRegistration || '',
         adverse.rg || '',
         adverse.pis || '',
         adverse.ctps || '',

@@ -1103,6 +1103,11 @@ export class PNJController {
               name: true,
             },
           },
+          adverse: {
+            select: {
+              name: true,
+            },
+          },
           parts: true,
           movements: {
             orderBy: { date: 'desc' },
@@ -1128,8 +1133,8 @@ export class PNJController {
         return d.toLocaleDateString('pt-BR');
       };
 
-      // CSV Header
-      const csvHeader = 'Numero,Protocolo,Titulo,Descricao,Status,Data Abertura,Data Encerramento,Cliente,Partes,Ultimo Andamento\n';
+      // CSV Header (11 colunas) - inclui Adverso
+      const csvHeader = 'Numero,Protocolo,Titulo,Descricao,Status,Data Abertura,Data Encerramento,Cliente,Adverso,Partes,Ultimo Andamento\n';
 
       // Status labels
       const statusLabels: Record<string, string> = {
@@ -1148,10 +1153,11 @@ export class PNJController {
         const openDate = formatDate(pnj.openDate);
         const closeDate = formatDate(pnj.closeDate);
         const clientName = escapeCSV(pnj.client?.name);
+        const adverseName = escapeCSV(pnj.adverse?.name);
         const parts = escapeCSV(pnj.parts?.map(p => p.name).join('; '));
         const lastMovement = escapeCSV(pnj.movements?.[0]?.description);
 
-        return `${number},${protocol},${title},${description},${status},${openDate},${closeDate},${clientName},${parts},${lastMovement}`;
+        return `${number},${protocol},${title},${description},${status},${openDate},${closeDate},${clientName},${adverseName},${parts},${lastMovement}`;
       }).join('\n');
 
       const csv = csvHeader + csvRows;
