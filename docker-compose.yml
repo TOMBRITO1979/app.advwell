@@ -295,6 +295,10 @@ services:
       - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
       - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
 
+      # Telegram (bot do sistema para notificações)
+      - TELEGRAM_DEFAULT_BOT_TOKEN=${TELEGRAM_DEFAULT_BOT_TOKEN}
+      - TELEGRAM_DEFAULT_BOT_USERNAME=${TELEGRAM_DEFAULT_BOT_USERNAME}
+
       # Server
       - PORT=3000
       - NODE_ENV=production
